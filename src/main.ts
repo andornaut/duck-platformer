@@ -19,3 +19,9 @@ const game = new Game({
   type: AUTO,
   width: SCREEN.width,
 });
+
+// The game pauses while public/site.css shows the turn-sideways notice over it.
+const portrait = window.matchMedia("(orientation: portrait) and (pointer: coarse)");
+const followOrientation = () => (portrait.matches ? game.pause() : game.resume());
+portrait.addEventListener("change", followOrientation);
+followOrientation();

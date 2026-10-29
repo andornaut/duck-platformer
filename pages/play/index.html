@@ -8,9 +8,23 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Duck Platformer" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#181425" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="stylesheet" href="/site.css" />
+    <link rel="stylesheet" href="/nav.css" />
+    <script src="/nav.js" defer></script>
+    <script src="/site.js" defer></script>
   </head>
   <body>
     <div id="game" role="application" aria-label="Duck Platformer game"></div>
+    <div class="turn-sideways" role="alert">
+      <svg class="turn-sideways-phone" viewBox="0 0 20 12" aria-hidden="true">
+        <path d="M0 2v8h1v1h1v1h16v-1h1v-1h1V2h-1V1h-1V0H2v1H1v1z" />
+        <path class="turn-sideways-screen" d="M3 2v8h12V2z" />
+        <path class="turn-sideways-screen" d="M17 5v2h1V5z" />
+      </svg>
+      <p>Turn your phone sideways</p>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

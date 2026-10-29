@@ -1,0 +1,75 @@
+/* The site navigation bar that public/nav.js builds. Colours from art's palette
+   (public/art/palette.json). */
+.site-nav {
+  flex: none;
+  background: #181425;
+  border-bottom: 1px solid #3a4466;
+  font:
+    14px/1.4 system-ui,
+    sans-serif;
+}
+.site-nav ul {
+  list-style: none;
+  margin: 0 auto;
+  max-width: 1240px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 0;
+  align-items: center;
+  padding-block: 10px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.site-nav li + li::before {
+  content: "";
+  display: inline-block;
+  width: 1px;
+  height: 14px;
+  margin: 0 12px;
+  vertical-align: -2px;
+  background: #3a4466;
+}
+.site-nav a {
+  color: #c0cbdc;
+  text-decoration: none;
+}
+.site-nav a:hover {
+  color: #feae34;
+}
+/* The current page: a yellow face with plum text, ringed in amber and lifted onto a plum
+   shadow. */
+.site-nav a[aria-current="page"] {
+  position: relative;
+  top: -2px;
+  padding: 1px 6px;
+  color: #3e2731;
+  background: #fee761;
+  border: 1px solid #181425;
+  font-weight: 700;
+  box-shadow:
+    0 0 0 2px #feae34,
+    0 0 0 3px #181425,
+    0 2px 0 3px #3e2731;
+}
+.site-nav a:focus-visible {
+  outline: 2px solid #feae34;
+  outline-offset: 2px;
+}
+.site-nav.slim {
+  font-size: 13px;
+  line-height: 1;
+}
+/* The extra top padding holds the current page's lift and ring inside the row. */
+.site-nav.slim ul {
+  flex-wrap: nowrap;
+  padding-block: 9px 7px;
+  white-space: nowrap;
+}
+.site-nav.slim li + li::before {
+  height: 12px;
+  margin: 0 10px;
+  vertical-align: -1px;
+}
+.site-nav.slim a:focus-visible {
+  outline-offset: -2px;
+}
