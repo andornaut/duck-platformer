@@ -8,6 +8,7 @@ import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
 import { PAUSE_BUTTON, PAUSE_CARD } from "../layout/pauseCard";
 import { type CardAction, cardBackAction, cardKeyAction } from "../pause/cardInput";
+import { focusKeyAction, stepFocus } from "../pause/focusInput";
 import { coverZone, PHONE_EVENTS, startWakeLock, stopWakeLock, zoneShown } from "../pwa";
 import { setTouchControlsShown, touchControlsShown } from "../settings/touchControls";
 import { dimColour, type Palette } from "../view/dim";
@@ -17,9 +18,11 @@ import {
   addSlice,
   BODY_FONT,
   type ButtonLabel,
+  captureTab,
   palette,
   paletteColour,
   placeButtonLabel,
+  ringFocus,
   TITLE_FONT,
 } from "./cardParts";
 import type { SettingsData, SettingsOpener, SettingsScene } from "./SettingsScene";
@@ -33,6 +36,10 @@ const START = "start";
 const DIM_TEXTURES = { hidden: "pause-dim-hidden", shown: "pause-dim-shown" } as const;
 
 type Control = "close" | "home" | "pauseButton" | "resume" | "settings";
+type CardControl = Exclude<Control, "pauseButton">;
+
+// The card's controls, in the order the keyboard's focus moves through them.
+const FOCUS_ORDER: readonly CardControl[] = ["settings", "home", "resume", "close"];
 
 // The pause card over the dimmed zone, and the pause button that opens it, which shows on a
 // touch screen while a zone plays, never on the map. It runs beside the zone from the start.
@@ -42,6 +49,9 @@ type Control = "close" | "home" | "pauseButton" | "resume" | "settings";
 // the start screen.
 export class PauseScene extends Scene implements SettingsOpener {
   private card!: GameObjects.Container;
+  // The control the keyboard's focus is on, and art's ring round it.
+  private focus: CardControl | undefined;
+  private focusRing: GameObjects.NineSlice | undefined;
   private closeX!: GameObjects.Sprite;
   private dim!: GameObjects.Image;
   private pauseButton!: GameObjects.Sprite;
@@ -109,6 +119,7 @@ export class PauseScene extends Scene implements SettingsOpener {
     zone.showTouchControls(touchControlsShown());
     this.renderDim();
     this.showCard(true);
+    captureTab(this, true);
     camera.setVisible(true);
     this.state = "open";
   }
@@ -119,6 +130,7 @@ export class PauseScene extends Scene implements SettingsOpener {
     }
     this.state = "closed";
     this.showCard(false);
+    captureTab(this, false);
     this.scene.resume(ZONE);
     startWakeLock();
     coverZone("pauseCard", false);
@@ -128,6 +140,7 @@ export class PauseScene extends Scene implements SettingsOpener {
   private returnHome(): void {
     this.state = "closed";
     this.showCard(false);
+    captureTab(this, false);
     this.scene.stop(ZONE);
     this.scene.launch(START);
     startWakeLock();
@@ -145,6 +158,7 @@ export class PauseScene extends Scene implements SettingsOpener {
   private openSettings(): void {
     this.state = "settings";
     this.card.setVisible(false);
+    this.focusRing = ringFocus(this, this.focusRing, undefined);
     this.scene.launch(SETTINGS, { opener: this.scene.key } satisfies SettingsData);
   }
 
@@ -153,6 +167,7 @@ export class PauseScene extends Scene implements SettingsOpener {
     if (this.state === "settings") {
       this.state = "open";
       this.card.setVisible(true);
+      this.drawFocus();
     }
   }
 
@@ -169,7 +184,25 @@ export class PauseScene extends Scene implements SettingsOpener {
   private showCard(open: boolean): void {
     this.card.setVisible(open);
     this.dim.setVisible(open);
+    this.focus = undefined;
+    this.drawFocus();
     this.showPauseButton();
+  }
+
+  private drawFocus(): void {
+    const rect = this.focus === undefined ? undefined : this.focusedRect(this.focus);
+    this.focusRing = ringFocus(this, this.focusRing, rect);
+  }
+
+  // What the focus ring surrounds: a row, Resume, or the close X itself.
+  private focusedRect(control: CardControl): Rect {
+    const { close, home, resume, settings } = PAUSE_CARD;
+    return {
+      close: { height: this.closeX.height, width: this.closeX.width, ...close.at },
+      home: home.row,
+      resume: resume.hit,
+      settings: settings.row,
+    }[control];
   }
 
   // The pause button shows on a touch screen while a zone plays and the card is closed. The map
@@ -274,18 +307,21 @@ export class PauseScene extends Scene implements SettingsOpener {
     this.input.on("pointerup", (pointer: Input.Pointer) => {
       const control = this.pressed;
       this.setPressed(undefined);
-      if (control === undefined || control !== this.controlAt(pointer)) {
-        return;
+      if (control !== undefined && control === this.controlAt(pointer)) {
+        this.press(control);
       }
-      const actions: Record<Control, () => void> = {
-        close: () => this.close(),
-        home: () => this.returnHome(),
-        pauseButton: () => void this.open(),
-        resume: () => this.close(),
-        settings: () => this.openSettings(),
-      };
-      actions[control]();
     });
+  }
+
+  private press(control: Control): void {
+    const actions: Record<Control, () => void> = {
+      close: () => this.close(),
+      home: () => this.returnHome(),
+      pauseButton: () => void this.open(),
+      resume: () => this.close(),
+      settings: () => this.openSettings(),
+    };
+    actions[control]();
   }
 
   private watchKeys(): void {
@@ -297,7 +333,18 @@ export class PauseScene extends Scene implements SettingsOpener {
         this.settings().key(event);
         return;
       }
-      this.act(cardKeyAction(this.state === "open", event.key, event.repeat));
+      const action =
+        this.state === "open" ? focusKeyAction(event.key, event.shiftKey, event.repeat) : undefined;
+      if (action === "next" || action === "previous") {
+        this.focus = stepFocus(FOCUS_ORDER, this.focus, action);
+        this.drawFocus();
+      } else if (action === "press") {
+        if (this.focus !== undefined) {
+          this.press(this.focus);
+        }
+      } else {
+        this.act(cardKeyAction(this.state === "open", event.key, event.repeat));
+      }
     });
   }
 

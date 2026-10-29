@@ -11,14 +11,17 @@ import {
   type StartScreenLayout,
   startScreenLayout,
 } from "../layout/startScreen";
+import { focusKeyAction, stepFocus } from "../pause/focusInput";
 import { PHONE_EVENTS } from "../pwa";
 import { setTouchControlsShown } from "../settings/touchControls";
 import {
   addButtonLabel,
   addSlice,
   type ButtonLabel,
+  captureTab,
   paletteColour,
   placeButtonLabel,
+  ringFocus,
 } from "./cardParts";
 import type { SettingsData, SettingsOpener, SettingsScene } from "./SettingsScene";
 
@@ -34,9 +37,6 @@ interface IconButton {
   readonly layout: IconButtonLayout;
 }
 
-// The keys that press Start while the settings card is closed.
-const START_KEYS = new Set(["Enter", " "]);
-
 // The screen the game opens on: the Start button, which goes to the map, under a nav bar with
 // Settings and Exit at its right end. Settings opens the settings card over this screen, which
 // passes it the keys and back until it closes. Exit leaves the game (the kit's exitApp); Firefox
@@ -48,6 +48,9 @@ export class StartScene extends Scene implements SettingsOpener {
   private layout!: StartScreenLayout;
   // The control a press landed on, which acts if the press lifts on it too.
   private pressed: Control | undefined;
+  // The control the keyboard's focus is on, and art's ring round it.
+  private focus: Control | undefined;
+  private focusRing: GameObjects.NineSlice | undefined;
   private settingsOpen = false;
   private startButton!: GameObjects.Sprite;
   private startLabel!: ButtonLabel;
@@ -59,6 +62,8 @@ export class StartScene extends Scene implements SettingsOpener {
   create(): void {
     this.pressed = undefined;
     this.settingsOpen = false;
+    this.focus = undefined;
+    this.focusRing = undefined;
     // WORKAROUND: https://bugzilla.mozilla.org/show_bug.cgi?id=2079243 (see isFirefoxAndroidApp).
     const canExit = !isFirefoxAndroidApp(
       navigator.userAgent,
@@ -75,8 +80,10 @@ export class StartScene extends Scene implements SettingsOpener {
       }
     };
     window.addEventListener(PHONE_EVENTS.backPressed, onBack);
+    captureTab(this, true);
     this.events.once("shutdown", () => {
       window.removeEventListener(PHONE_EVENTS.backPressed, onBack);
+      captureTab(this, false);
     });
   }
 
@@ -87,6 +94,7 @@ export class StartScene extends Scene implements SettingsOpener {
 
   settingsClosed(): void {
     this.settingsOpen = false;
+    this.drawFocus();
   }
 
   // PLACEHOLDER: a plain ink background until art's background for the start screen is
@@ -155,12 +163,40 @@ export class StartScene extends Scene implements SettingsOpener {
     });
   }
 
+  // Tab and the arrows move the keyboard's focus through Start and the nav's buttons; Enter and
+  // Space press the focused one, or Start with nothing focused.
   private key(event: KeyboardEvent): void {
     if (this.settingsOpen) {
       this.settings().key(event);
-    } else if (START_KEYS.has(event.key) && !event.repeat) {
-      this.act("start");
+      return;
     }
+    const action = focusKeyAction(event.key, event.shiftKey, event.repeat);
+    if (action === "next" || action === "previous") {
+      this.focus = stepFocus(this.targets(), this.focus, action);
+      this.drawFocus();
+    } else if (action === "press") {
+      this.act(this.focus ?? "start");
+    }
+  }
+
+  // The controls the keyboard's focus moves through, in order.
+  private targets(): Control[] {
+    return ["start", "settings", ...(this.layout.exit === undefined ? [] : ["exit" as const])];
+  }
+
+  // Art's focus ring round Start's face or a nav button's face.
+  private drawFocus(): void {
+    const faceOf = (control: Control): Rect | undefined => {
+      if (control === "start") {
+        return this.layout.start.button;
+      }
+      const button = this.buttons.get(control);
+      return (
+        button && { height: button.face.height, width: button.face.width, ...button.layout.at }
+      );
+    };
+    const rect = this.focus === undefined || this.settingsOpen ? undefined : faceOf(this.focus);
+    this.focusRing = ringFocus(this, this.focusRing, rect);
   }
 
   private act(control: Control): void {
@@ -168,6 +204,7 @@ export class StartScene extends Scene implements SettingsOpener {
       this.scene.start(MAP);
     } else if (control === "settings") {
       this.settingsOpen = true;
+      this.drawFocus();
       this.scene.launch(SETTINGS, { opener: this.scene.key } satisfies SettingsData);
     } else {
       exitApp(browserExitPage());

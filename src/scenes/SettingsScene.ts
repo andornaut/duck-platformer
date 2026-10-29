@@ -15,7 +15,7 @@ import type { Rect } from "../data/types";
 import { centredLabel } from "../layout/buttonLabel";
 import { CARD_TEXT_SCALE } from "../layout/pauseCard";
 import { focusRingAround, SETTINGS_CARD, STEPS_CARD } from "../layout/settingsCard";
-import { settingsKeyAction, stepFocus } from "../pause/settingsInput";
+import { focusKeyAction, stepFocus } from "../pause/focusInput";
 import { installOffer } from "../pwa/installOffer";
 import { touchControlsShown } from "../settings/touchControls";
 import { addCardText, addSlice, BODY_FONT, paletteColour, TITLE_FONT } from "./cardParts";
@@ -94,7 +94,7 @@ export class SettingsScene extends Scene {
 
   // A key the opener passes on while the card shows.
   key(event: KeyboardEvent): void {
-    const action = settingsKeyAction(event.key, event.repeat);
+    const action = focusKeyAction(event.key, event.shiftKey, event.repeat);
     if (action === "close") {
       this.back();
     } else if (action === "press") {
@@ -103,7 +103,7 @@ export class SettingsScene extends Scene {
       } else if (this.focus !== undefined) {
         this.act(this.focus);
       }
-    } else if (action !== undefined && this.steps === undefined) {
+    } else if (action !== undefined) {
       this.focus = stepFocus(this.targets(), this.focus, action);
       this.render();
     }
@@ -128,7 +128,12 @@ export class SettingsScene extends Scene {
     return this.scene.get(this.opener) as Scene & SettingsOpener;
   }
 
+  // The controls the keyboard's focus moves through: the install steps card's close X alone while
+  // it shows.
   private targets(): Target[] {
+    if (this.steps !== undefined) {
+      return ["close"];
+    }
     return this.installButton === undefined
       ? ["touchControls", "close"]
       : ["touchControls", "install", "close"];
@@ -179,6 +184,8 @@ export class SettingsScene extends Scene {
       ...stepObjects,
     ]);
     this.card.setVisible(false);
+    // A keyboard that pressed Install keeps its focus, on the steps card's close X.
+    this.focus = this.focus === undefined ? undefined : "close";
     this.render();
   }
 
@@ -186,6 +193,7 @@ export class SettingsScene extends Scene {
     this.steps?.destroy();
     this.steps = undefined;
     this.card.setVisible(true);
+    this.focus = this.focus === undefined ? undefined : "install";
     this.render();
   }
 
@@ -276,7 +284,7 @@ export class SettingsScene extends Scene {
   private drawFocus(): void {
     this.focusRing?.destroy();
     this.focusRing =
-      this.steps === undefined && this.focus !== undefined
+      this.focus !== undefined
         ? addSlice(this, "ui-focus", focusRingAround(this.focusedRect(this.focus)))
         : undefined;
   }

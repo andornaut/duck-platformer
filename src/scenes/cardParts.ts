@@ -8,6 +8,7 @@ import type { GameObjects, Scene } from "phaser";
 import type { Point, Rect } from "../data/types";
 import { centredLabel, MARK_DROP, PLAY_MARK } from "../layout/buttonLabel";
 import { CARD_TEXT_SCALE } from "../layout/pauseCard";
+import { focusRingAround } from "../layout/settingsCard";
 import { ART_MANIFEST_KEY, type ArtManifest } from "../view/aseprite";
 import type { Palette } from "../view/dim";
 
@@ -95,4 +96,24 @@ export function addButtonLabel(
 export function placeButtonLabel({ label, mark }: ButtonLabel, labelY: number): void {
   label.setY(labelY);
   mark?.setY(labelY + MARK_DROP);
+}
+
+// Art's keyboard focus ring round rect, in place of the last one, or none for no focus.
+export function ringFocus(
+  scene: Scene,
+  last: GameObjects.NineSlice | undefined,
+  rect: Rect | undefined,
+): GameObjects.NineSlice | undefined {
+  last?.destroy();
+  return rect === undefined ? undefined : addSlice(scene, "ui-focus", focusRingAround(rect));
+}
+
+// Tab moves the keyboard's focus on a card or the start screen: while one shows, the game keeps
+// it from moving the page's focus out of the canvas.
+export function captureTab(scene: Scene, captured: boolean): void {
+  if (captured) {
+    scene.input.keyboard?.addCapture("TAB");
+  } else {
+    scene.input.keyboard?.removeCapture("TAB");
+  }
 }
