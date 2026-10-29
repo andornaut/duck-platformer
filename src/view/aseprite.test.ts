@@ -84,6 +84,7 @@ describe("artHitboxes", () => {
         backdrops: [],
         data: [],
         fonts: [],
+        images: [],
         sprites,
         tilesets: [],
       }),

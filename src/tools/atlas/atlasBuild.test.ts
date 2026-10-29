@@ -16,7 +16,7 @@ const readArt = async (path: string) => new Uint8Array(await readFile(join(ART_D
 const ART = JSON.parse(new TextDecoder().decode(await readArt(ART_MANIFEST_FILE))) as ArtManifest;
 const ATLAS = await buildAtlas(readArt, ART);
 
-// Every PNG art's manifest lists, by key.
+// Every PNG art's manifest lists for the game, by key: all but its images.
 const PNGS: ReadonlyMap<string, string> = new Map(
   [...ART.sprites, ...ART.tilesets, ...ART.fonts, ...ART.backdrops].map(({ key, png }) => [
     key,
@@ -48,8 +48,13 @@ function pixels(image: RgbaImage, x: number, y: number, width: number, height: n
 }
 
 describe("buildAtlas", () => {
-  it("packs every PNG art's manifest lists, once", () => {
+  it("packs every PNG art's manifest lists for the game, once, and none of its images", () => {
     expect(ATLAS.textures.map(({ key }) => key).sort()).toEqual([...PNGS.keys()].sort());
+  });
+
+  it.each(ART.images)("lists image $key at its PNG's size", async ({ height, png, width }) => {
+    const image = decodePng(await readArt(png));
+    expect({ height: image.height, width: image.width }).toEqual({ height, width });
   });
 
   it.each([...PNGS])(

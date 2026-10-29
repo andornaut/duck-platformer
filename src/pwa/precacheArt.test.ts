@@ -3,7 +3,14 @@ import { describe, expect, it } from "vitest";
 import { ART_PATH, type ArtManifest } from "../view/aseprite";
 import { ART_MANIFEST_URL, artUrls } from "./precacheArt";
 
-const EMPTY: ArtManifest = { backdrops: [], data: [], fonts: [], sprites: [], tilesets: [] };
+const EMPTY: ArtManifest = {
+  backdrops: [],
+  data: [],
+  fonts: [],
+  images: [],
+  sprites: [],
+  tilesets: [],
+};
 
 describe("artUrls", () => {
   it.each([
@@ -27,6 +34,11 @@ describe("artUrls", () => {
         backdrops: [{ height: 9, key: "e", png: "b/e.png", repeat: "x", width: 4, y: 9 } as const],
       },
       [],
+    ],
+    [
+      "an image",
+      { ...EMPTY, images: [{ height: 2, key: "f", png: "f.png", width: 3 }] },
+      ["f.png"],
     ],
   ])("lists the manifest and what a build loads from its files for %s", (_, manifest, files) => {
     expect(artUrls(manifest)).toEqual([ART_MANIFEST_URL, ...files.map((file) => ART_PATH + file)]);

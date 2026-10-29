@@ -18,10 +18,20 @@ export interface ArtBackdrop {
   readonly y: number;
 }
 
+// A plain image the site's HTML pages show, such as the logo, at its size in pixels. It ships as
+// its own file under /art/, never on the game's atlas pages.
+export interface ArtImage {
+  readonly height: number;
+  readonly key: string;
+  readonly png: string;
+  readonly width: number;
+}
+
 export interface ArtManifest {
   readonly backdrops: readonly ArtBackdrop[];
   readonly data: readonly { readonly json: string; readonly key: string }[];
   readonly fonts: readonly { readonly fnt: string; readonly key: string; readonly png: string }[];
+  readonly images: readonly ArtImage[];
   readonly sprites: readonly {
     // Where the sprite touches her as a hazard, in frame pixels, when it declares one.
     readonly hitbox?: Rect;

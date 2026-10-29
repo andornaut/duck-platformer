@@ -72,9 +72,10 @@ export interface AtlasBuild {
   readonly textures: readonly AtlasTexture[];
 }
 
-// Packs every PNG art's manifest lists (sprites, fonts, tilesets and backdrops) whole into
-// atlas pages, reading each file by its path relative to the art directory. A frame keeps its
-// rect in its PNG, moved to where the PNG sits on its page.
+// Packs every PNG art's manifest lists for the game (sprites, fonts, tilesets and backdrops)
+// whole into atlas pages, reading each file by its path relative to the art directory. Its
+// images are left off: the site's pages show them as plain files. A frame keeps its rect in its
+// PNG, moved to where the PNG sits on its page.
 export async function buildAtlas(
   readArt: (path: string) => Promise<Uint8Array>,
   manifest: ArtManifest,
