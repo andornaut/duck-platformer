@@ -303,15 +303,24 @@ export interface MapNode {
 }
 
 // A path from one node to the next, in the direction she travels, never back. A path not built
-// yet is drawn greyed out and cannot be chosen.
+// yet is drawn dotted and cannot be chosen.
 export interface MapEdge {
   readonly built: boolean;
   readonly from: string;
   readonly to: string;
 }
 
-// The map of zones: every path starts at start and ends at finish.
+// A pen mark on the map's paper: its art key and its top-left, in base pixels, at least a tile
+// clear of every node, path and label.
+export interface MapDecoration {
+  readonly art: string;
+  readonly at: Point;
+}
+
+// The map of zones: every path starts at start and ends at finish. decorations: the pen marks on
+// its paper.
 export interface ZoneMap {
+  readonly decorations: readonly MapDecoration[];
   readonly edges: readonly MapEdge[];
   readonly finish: string;
   readonly nodes: readonly MapNode[];

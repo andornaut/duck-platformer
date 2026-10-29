@@ -159,8 +159,9 @@ export class ZoneScene extends Scene {
   private landMs = 0;
   private layout!: ZoneLayout;
   private zoneIndex = startZoneIndex(window.location.search, CHAIN.length);
-  // The map node she plays, or undefined when ?zone=<n> chains the zones without the map.
-  private mapNode: string | undefined;
+  // The nodes she has walked this lap on the map, ending at the node she plays, or undefined
+  // when ?zone=<n> chains the zones without the map.
+  private mapRoute: readonly string[] | undefined;
   private areaArt!: GameObjects.Graphics;
   // The hit boxes art's sprites declare, by art key.
   private hitboxes: Readonly<Record<string, ArtHitbox>> = {};
@@ -180,9 +181,10 @@ export class ZoneScene extends Scene {
     super("zone");
   }
 
-  // data.node: the map node to play; without one, the chain from ?zone=<n>.
-  init(data: { node?: string }): void {
-    this.mapNode = data.node;
+  // data.route: the nodes she has walked this lap on the map, ending at the node to play; without
+  // one, the chain from ?zone=<n>.
+  init(data: { route?: readonly string[] }): void {
+    this.mapRoute = data.route;
     this.objectArt = [];
     this.heldKeys.clear();
     this.heldTouches.clear();
@@ -198,10 +200,11 @@ export class ZoneScene extends Scene {
     this.duck = this.add.sprite(0, 0, DUCK_SPRITE).setOrigin(0).setDepth(DUCK_DEPTH);
     this.manifest = this.cache.json.get(ART_MANIFEST_KEY) as ArtManifest;
     this.hitboxes = artHitboxes((key) => this.textures.getFrame(key), this.manifest);
-    if (this.mapNode === undefined) {
+    const node = this.mapRoute?.at(-1);
+    if (node === undefined) {
       this.loadZone(this.zoneIndex);
     } else {
-      this.loadPlan(zoneAt(this.mapNode));
+      this.loadPlan(zoneAt(node));
     }
 
     const font = phaserBitmapFont(this.cache.bitmapFont.get(LABEL_FONT).data as PhaserFontData);
@@ -260,8 +263,8 @@ export class ZoneScene extends Scene {
       );
       this.duckPose = stepPose(this.landMs, STEP_MS, before, this.zone.duck, this.duckPose);
       // Clearing a zone goes to the map, or without one, the next zone in the chain.
-      if (this.zone.cleared && this.mapNode !== undefined) {
-        this.scene.start("map", { at: this.mapNode, played: true });
+      if (this.zone.cleared && this.mapRoute !== undefined) {
+        this.scene.start("map", { played: true, route: this.mapRoute });
         return;
       }
       if (this.zone.cleared) {

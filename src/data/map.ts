@@ -1,8 +1,9 @@
 import type { ZoneMap } from "./types";
 
 // PLACEHOLDER: the map, until gameplay lays it out. One built path: the street, then home. A
-// second path through a park and an alley, not built yet, shows greyed out.
+// second path through a park and an alley, not built yet, shows dotted.
 export const ZONE_MAP: ZoneMap = {
+  decorations: [],
   edges: [
     { built: true, from: "street", to: "home" },
     { built: false, from: "street", to: "corner" },
