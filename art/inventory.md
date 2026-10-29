@@ -1,6 +1,6 @@
 # Art inventory
 
-Every served art asset. Sizes are in base pixels at 640x360. Tags are in frame order. A nine-slice lists its margins as left, top, right, bottom.
+Every served art asset. Sizes are in base pixels at 648x360. Tags are in frame order. A nine-slice lists its margins as left, top, right, bottom.
 
 ## Data
 

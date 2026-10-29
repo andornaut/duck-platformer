@@ -5,7 +5,7 @@ The art plan and pipeline for Duck Platformer. Art owns `art/` and the served ar
 ## Direction
 
 - Pixel art: minimalist, cute, a little retro, refined.
-- Everything, UI included, is pixel art at one base resolution, 640x360. The game scales it to fill the screen at 16:9 with nearest-neighbour sampling and no smoothing, by a fractional factor, so on most screens some pixels come out one device pixel wider than others. On a landscape phone 1 base pixel is about 1 CSS pixel. Judge art at a fractional scale as well as at 3x, and avoid 1px patterns (checks, dashes, alternating rows) that turn uneven when pixels vary in width.
+- Everything, UI included, is pixel art at one base resolution, 648x360. The game scales it to fill the screen at 16:9 with nearest-neighbour sampling and no smoothing, by a fractional factor, so on most screens some pixels come out one device pixel wider than others. On a landscape phone 1 base pixel is about 1 CSS pixel. Judge art at a fractional scale as well as at 3x, and avoid 1px patterns (checks, dashes, alternating rows) that turn uneven when pixels vary in width.
 - Chibi proportions: the head at least as big as the body, so a character reads from head shape and markings alone.
 - Style decisions are the user's (see Options and decisions).
 
@@ -139,17 +139,17 @@ All positions are in base pixels (x, y, w, h). A touch target is at least 44x44.
 
 ### Dialogue box
 
-- A box at the bottom, 8,256,624,96, with the speaker's 64px portrait in a 68px frame at 16,270 and a name tab on the box's top edge. Two or three speakers use the same box: the portrait and name tab change.
+- A box at the bottom, 12,256,624,96, with the speaker's 64px portrait in a 68px frame at 20,270 and a name tab on the box's top edge. Two or three speakers use the same box: the portrait and name tab change.
 - The name tab's fill is the speaker's colour: amber, green, pink or tan. Ink text holds at least 6.6:1 on each, and each holds at least 5:1 on the box's navy.
-- Text area at x 96, y 268, 488 wide, 3 lines at a 20px pitch, one paragraph per box.
-- Forward mark 10x14, hit area 588,308,44,44. A tap anywhere or a key also advances. There is no back button and no timer.
-- Skip at the top right: mark 554,8,78,20, hit area 554,8,78,44. It runs ahead to the next choice; while a choice shows, it is disabled (greyed with the grey ramp, and changed in shape).
-- Choices: a row of two or three answer buttons above the box, each 204x36 (hit 204x44), row top y 192, at most 162px of text. Three sit at x 8, 218 and 428; two at 113 and 323. The selected answer shows a cursor as well as a fill.
+- Text area at x 100, y 268, 488 wide, 3 lines at a 20px pitch, one paragraph per box.
+- Forward mark 10x14, hit area 592,308,44,44. A tap anywhere or a key also advances. There is no back button and no timer.
+- Skip at the top right: mark 562,8,78,20, hit area 562,8,78,44. It runs ahead to the next choice; while a choice shows, it is disabled (greyed with the grey ramp, and changed in shape).
+- Choices: a row of two or three answer buttons above the box, each 204x36 (hit 204x44), row top y 192, at most 162px of text. Three sit at x 12, 222 and 432; two at 117 and 327. The selected answer shows a cursor as well as a fill.
 - The touch controls hide while a box is open.
 
 ### Quip
 
-A one-line strip at the top centre, y 8, height 24, sized to its text and at most 452 wide, led by the speaker's name in their name-tab colour. It never pauses play and never reaches the lower corners.
+A one-line strip at the top centre (x 324), y 8, height 24, sized to its text and at most 452 wide (x 102 to 554), led by the speaker's name in their name-tab colour. It never pauses play and never reaches the lower corners.
 
 ### Touch controls
 
@@ -157,8 +157,8 @@ Two round buttons for the right thumb, Use above and to the left of Jump. Each i
 
 | Control | Centre  | Hit area       | Disc      | Icon       |
 | ------- | ------- | -------------- | --------- | ---------- |
-| Use     | 536,244 | 488,200,152,80 | 49px wide | three dots |
-| Jump    | 596,316 | 488,280,152,80 | 55px wide | caret      |
+| Use     | 544,244 | 496,200,152,80 | 49px wide | three dots |
+| Jump    | 604,316 | 496,280,152,80 | 55px wide | caret      |
 
 - Labels: "Use" and "Jump" in `font-body` at 2x, set by the game from text data and never baked in. Each is centred on its button's centre x, with its origin 3px above the centre, so the capitals sit just below it.
 - Press: the ring turns white and thickens to 3px and the face lifts a step, swelling 1px for the first frame (frame 0, then frame 1, 60ms each), then holds until release, which snaps back to rest.
@@ -168,10 +168,10 @@ Two round buttons for the right thumb, Use above and to the left of Jump. Each i
 
 A pause card over the game, which is dimmed by stepping every colour two ramp steps darker. A "Touch controls" checkbox reads Shown or Hidden, and the overlay behind the card updates as it changes. Resume and a close X return to the game.
 
-- Card 136,88,368,184 with a 36px header holding the title.
-- Close X hit area 460,88,44,44.
-- The "Touch controls" row, 144,136,352,48, is one hit area that toggles the checkbox (20x20 at 156,150).
-- Resume 240,212,160,44.
+- Card 140,88,368,184 with a 36px header holding the title.
+- Close X hit area 464,88,44,44.
+- The "Touch controls" row, 148,136,352,48, is one hit area that toggles the checkbox (20x20 at 160,150).
+- Resume 244,212,160,44.
 
 ## Animation
 
