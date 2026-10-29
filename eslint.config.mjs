@@ -8,8 +8,9 @@ import { plugins, sourceRules, toolingRules } from "./eslint.config.base.mjs";
 // Logic, layout and data stay free of Phaser and the scenes, so they run in unit tests
 // without a renderer. Only the scenes and the entry point may import them.
 const phaserBoundary = {
-  group: ["phaser", "phaser/*", "**/scenes", "**/scenes/*"],
-  message: "Only src/scenes/ and src/main.ts may import Phaser or a scene.",
+  group: ["phaser", "phaser/*", "**/phaser/*", "**/scenes", "**/scenes/*"],
+  message:
+    "Only src/scenes/ and src/main.ts may import Phaser, the kit's phaser/ modules or a scene.",
 };
 
 const testingBoundary = {
@@ -29,7 +30,8 @@ function restrictImports(patterns) {
 export default defineConfig(
   {
     // .claude/ holds agent worktrees: full copies of the repo that CI never checks out.
-    ignores: [".claude/", ".wrangler/", "dist/", "node_modules/"],
+    // vendor/game-kit/ is a copy of the kit, linted at its source.
+    ignores: [".claude/", ".wrangler/", "dist/", "node_modules/", "vendor/"],
   },
   js.configs.recommended,
   ts.configs.recommended,

@@ -33,9 +33,12 @@ export default defineConfig({
   },
   publicDir: repoPath("public"),
   // The pages load their modules as /src/..., which names the repository's src/ rather than
-  // pages/src/.
+  // pages/src/. The shared kit is a committed copy, imported as @andornaut/game-kit/<path>.
   resolve: {
-    alias: { "/src": repoPath("src") },
+    alias: {
+      "/src": repoPath("src"),
+      "@andornaut/game-kit": repoPath("vendor/game-kit/src"),
+    },
   },
   root: repoPath("pages"),
   server: {

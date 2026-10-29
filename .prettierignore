@@ -8,4 +8,5 @@ node_modules/
 package-lock.json
 public/art/
 shared/export/
+vendor/
 .claude/

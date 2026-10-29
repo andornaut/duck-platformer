@@ -15,7 +15,10 @@
     "verbatimModuleSyntax": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@andornaut/game-kit/*": ["./vendor/game-kit/src/*"]
+    }
   },
   "include": ["src", "*.ts"]
 }
