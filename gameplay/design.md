@@ -129,8 +129,9 @@ Everything in a zone except its terrain is placed in data, in three layers.
 
 ### Start screen
 
+- **Back:** back with no card open leaves the game, the same way as Exit. In an installed app that hides Exit, back is the browser's own
 - **Boot:** the game opens on the start screen, in landscape
-- **Exit:** at the top right, at the far end. It closes the installed app; in a browser it goes to the site's home page. Exit is hidden in Firefox for Android's installed app, which can't close itself, and Settings then sits at the far right
+- **Exit:** at the top right, at the far end. In an installed app it only closes the app; if the window stays open, the game stays as it was. In a browser tab it closes the tab, or goes to the site's home page if the tab stays open. Exit is hidden in installed apps that can't close themselves (iOS's and Firefox for Android's), and Settings then sits at the far right
 - **Settings:** at the top right, beside Exit. It opens the settings card
 - **Start:** the only other element. It opens the map, which at the beginning offers one place to go: the first zone
 
