@@ -8,24 +8,26 @@
 // pages/play/index.html offers it. The flow checks for one on each load, and again when the page
 // comes back into view (an installed app resumed without relaunching). The game loads meanwhile:
 // only its first screen and any save wait for the check (launchReady).
+import {
+  backCloseWatcher,
+  type BackGuard,
+  browserCloseWatcher,
+  guardBackNavigation,
+  isFirefoxAndroidApp,
+} from "@andornaut/game-kit/pwa/backNavigation";
 import { pageRunsAsApp } from "@andornaut/game-kit/pwa/installFlow";
 import { serviceWorkerUrl } from "@andornaut/game-kit/pwa/serviceWorkerUrl";
 import { requestPersistentStorage } from "@andornaut/game-kit/pwa/storagePersistence";
 import { createUpdateFlow, registerWhenDue } from "@andornaut/game-kit/pwa/updateReady";
 import { createScreenWakeLock, type ScreenWakeLock } from "@andornaut/game-kit/pwa/wakeLock";
 
-import {
-  backCloseWatcher,
-  type BackGuard,
-  type CloseWatcherFactory,
-  type CloseWatcherLike,
-  guardBackNavigation,
-  isFirefoxAndroidApp,
-} from "./backNavigation";
+import { dispatchPhoneEvent, PHONE_EVENTS } from "./events";
 import { type HomeCover, type HomeScreen, trackHomeScreen } from "./homeScreen";
 
 export { PHONE_EVENTS } from "./events";
 
+// The history state key of the extra entry that back pops instead of leaving the game.
+const BACK_GUARD_KEY = "duckBackGuard";
 const SERVICE_WORKER_URL = "/sw.js";
 const UPDATE_READY_ID = "update-ready";
 
@@ -84,12 +86,6 @@ function setupOfflinePlay(): void {
   ready = flow.bootable;
 }
 
-// The browser's CloseWatcher, where it has one (Chrome 120 and later, Firefox 149 and later).
-function closeWatcherFactory(): CloseWatcherFactory | undefined {
-  const CloseWatcher = (globalThis as { CloseWatcher?: new () => CloseWatcherLike }).CloseWatcher;
-  return CloseWatcher === undefined ? undefined : () => new CloseWatcher();
-}
-
 // Sets up offline play and the phone app's behaviour. The game is constructed at once and waits
 // on launchReady only for its first screen and any save.
 export function setupPhoneApp(): void {
@@ -104,9 +100,13 @@ export function setupPhoneApp(): void {
   // WORKAROUND: https://bugzilla.mozilla.org/show_bug.cgi?id=2079243 (see isFirefoxAndroidApp).
   if (!isFirefoxAndroidApp(navigator.userAgent, (query) => matchMedia(query).matches)) {
     backGuard = guardBackNavigation(
+      {
+        onBack: () => dispatchPhoneEvent(window, PHONE_EVENTS.backPressed),
+        stateKey: BACK_GUARD_KEY,
+      },
       window,
       window,
-      backCloseWatcher(navigator.userAgent, closeWatcherFactory()),
+      backCloseWatcher(navigator.userAgent, browserCloseWatcher()),
       history,
     );
   }
