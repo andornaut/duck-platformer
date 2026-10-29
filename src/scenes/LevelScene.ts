@@ -32,7 +32,7 @@ import {
   touchIntent,
   touchRoleAt,
 } from "../input/intent";
-import { gamePoint } from "../input/screenPoint";
+import { gamePoint, gameScaledPoint } from "../input/screenPoint";
 import { PAUSE_BUTTON } from "../layout/pauseCard";
 import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
 import { areaOf, enterArea, type LevelState, startLevel, stepLevel } from "../rules/level";
@@ -486,33 +486,38 @@ export class LevelScene extends Scene {
 
   // A touch takes the role it starts with and keeps it, wherever it moves, until it lifts. A new
   // touch goes last in heldTouches, so the latest move touch is the last. Touches anywhere on the
-  // page count, the letterbox bars beside the canvas included (gamePoint puts them on the game's
-  // nearest edge), except on the nav bar or a link or button, on the pause button, or while the
-  // pause card is open.
+  // page count, the letterbox bars and safe-area margins beside the canvas included, except on
+  // the nav bar or a link or button, on the pause button, or while the pause card is open. A
+  // touch's role is read where it starts on the game's nearest edge (gamePoint), and a move
+  // touch's travel unclamped (gameScaledPoint), so a drag within the bars still moves her. Only
+  // a touch on the canvas can be on the pause button: one in the bar beside it lands on the
+  // game's edge, inside the button's hit area, and moves her.
   private watchTouches(): void {
-    const toGame = (event: PointerEvent) => {
-      const canvas = this.game.canvas.getBoundingClientRect();
-      return gamePoint(canvas, SCREEN, { x: event.clientX, y: event.clientY });
-    };
+    const client = (event: PointerEvent) => ({ x: event.clientX, y: event.clientY });
+    const canvasRect = () => this.game.canvas.getBoundingClientRect();
     const down = (event: PointerEvent) => {
       const target = event.target instanceof Element ? event.target : null;
       if (event.pointerType !== "touch" || target?.closest("a, button, nav") != null) {
         return;
       }
-      const point = toGame(event);
-      if (!this.scene.isActive() || containsPoint(PAUSE_BUTTON.hit, point.x, point.y)) {
+      const point = gamePoint(canvasRect(), SCREEN, client(event));
+      const { x } = gameScaledPoint(canvasRect(), SCREEN, client(event));
+      const onPauseButton =
+        event.target === this.game.canvas && containsPoint(PAUSE_BUTTON.hit, point.x, point.y);
+      if (!this.scene.isActive() || onPauseButton) {
         return;
       }
       this.heldTouches.set(event.pointerId, {
         role: touchRoleAt(point),
-        startX: point.x,
-        x: point.x,
+        startX: x,
+        x,
       });
     };
     const move = (event: PointerEvent) => {
       const touch = this.heldTouches.get(event.pointerId);
       if (touch) {
-        this.heldTouches.set(event.pointerId, { ...touch, x: toGame(event).x });
+        const { x } = gameScaledPoint(canvasRect(), SCREEN, client(event));
+        this.heldTouches.set(event.pointerId, { ...touch, x });
       }
     };
     const release = (event: PointerEvent) => this.heldTouches.delete(event.pointerId);
