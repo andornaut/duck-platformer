@@ -1,0 +1,209 @@
+import { describe, expect, it } from "vitest";
+
+import type { AreaPlan, ChunkPlan, ZoneRecipe } from "../data/types";
+import { ASSEMBLED_AREA, assembleZone, type ChunkLibrary } from "./assemble";
+
+const ROWS = 60;
+const SEEDS = Array.from({ length: 20 }, (_, i) => i + 1);
+
+// A chunk 60 wide on ground at its entry row, rising or dropping to its exit row halfway.
+function chunk(entry: 30 | 40 | 50, exit: 30 | 40 | 50, extra: Partial<ChunkPlan> = {}): ChunkPlan {
+  return {
+    cols: 60,
+    difficulty: 1,
+    entry: { row: entry },
+    exit: { row: exit },
+    objects: [],
+    solids: [
+      { col: 0, cols: 30, look: "ground", row: entry, rows: ROWS - entry },
+      { col: 30, cols: 30, look: "ground", row: exit, rows: ROWS - exit },
+    ],
+    theme: "t",
+    ...extra,
+  };
+}
+
+function library(chunks: Readonly<Record<string, ChunkPlan>>): ChunkLibrary {
+  return {
+    chunks: { finish: chunk(50, 50), start: chunk(50, 50), ...chunks },
+    rows: ROWS,
+    rules: { cols: { max: 120, min: 60 }, footing: 4, headroom: 6 },
+    seams: [30, 40, 50],
+    themes: {
+      t: {
+        backdrops: [{ character: "sky", row: 0 }],
+        looks: { ground: "grass" },
+        tileset: "tiles",
+      },
+    },
+  };
+}
+
+// A recipe for start, middles chunks between, then finish: exactly that wide at 60 each.
+function recipe(middles: number, extra: Partial<ZoneRecipe> = {}): ZoneRecipe {
+  const cols = 60 * (middles + 2);
+  return {
+    difficulty: { from: 1, to: 1 },
+    doors: [],
+    events: [],
+    finish: "finish",
+    length: { max: cols, min: cols },
+    start: "start",
+    theme: "t",
+    ...extra,
+  };
+}
+
+const areaOf = (plan: ReturnType<typeof assembleZone>): AreaPlan => {
+  const area = plan.areas[ASSEMBLED_AREA];
+  if (!area) {
+    throw new Error("no area");
+  }
+  return area;
+};
+const middleIds = (area: AreaPlan) => (area.chunks ?? []).slice(1, -1).map(({ chunk: id }) => id);
+const runs = (lib: ChunkLibrary, zone: ZoneRecipe) =>
+  new Set(SEEDS.map((seed) => middleIds(areaOf(assembleZone(lib, seed, "z", zone))).join(" ")));
+
+describe("assembleZone", () => {
+  it.each<[string, Record<string, ChunkPlan>, ZoneRecipe, string[]]>([
+    [
+      "joins only where an exit meets the next entry, backing out of a likelier dead end",
+      { dead: chunk(50, 30, { weight: 1000 }), down: chunk(40, 50), up: chunk(50, 40) },
+      recipe(2),
+      ["up down"],
+    ],
+    [
+      "never places one chunk twice in a row",
+      { a: chunk(50, 50), b: chunk(50, 50) },
+      recipe(2),
+      ["a b", "b a"],
+    ],
+    [
+      "places a chunk at most its maxPerZone times",
+      { a: chunk(50, 50, { maxPerZone: 2 }), b: chunk(50, 50, { maxPerZone: 1 }) },
+      recipe(3),
+      ["a b a"],
+    ],
+    [
+      "keeps each chunk within 1 of the difficulty curve, at 2.2, 3 and 3.8 here",
+      {
+        easy: chunk(50, 50, { difficulty: 1 }),
+        hard: chunk(50, 50, { difficulty: 5 }),
+        x: chunk(50, 50, { difficulty: 2 }),
+        y: chunk(50, 50, { difficulty: 4 }),
+        z: chunk(50, 50, { difficulty: 3, maxPerZone: 1 }),
+      },
+      recipe(3, { difficulty: { from: 1, to: 5 } }),
+      ["x y z", "x z y", "z x y"],
+    ],
+    [
+      "keeps the whole zone within its length",
+      { a: chunk(50, 50), b: chunk(50, 50) },
+      recipe(1, { length: { max: 200, min: 120 } }),
+      ["", "a", "b"],
+    ],
+  ])("%s", (_, chunks, zone, allowed) => {
+    const found = [...runs(library(chunks), zone)];
+    expect(found.length).toBeGreaterThan(0);
+    expect(found.filter((run) => !allowed.includes(run))).toEqual([]);
+  });
+
+  it.each<[string, Record<string, ChunkPlan>, ZoneRecipe]>([
+    ["no chunk joins", { up: chunk(50, 40) }, recipe(1)],
+    ["only one chunk fits a run of two", { a: chunk(50, 50) }, recipe(2)],
+    [
+      "maxPerZone runs out",
+      { a: chunk(50, 50, { maxPerZone: 1 }), b: chunk(50, 50, { maxPerZone: 1 }) },
+      recipe(3),
+    ],
+    ["no chunk is near the curve", { a: chunk(50, 50, { difficulty: 4 }) }, recipe(1)],
+    [
+      "too few slots for the events",
+      {
+        a: chunk(50, 50, {
+          slots: [{ area: { col: 0, cols: 1, row: 0, rows: 1 }, id: "s", kind: "event" }],
+        }),
+      },
+      recipe(1, { events: [{ count: 2, id: "e" }] }),
+    ],
+  ])("fails clearly when %s", (_, chunks, zone) => {
+    expect(() => assembleZone(library(chunks), 1, "z", zone)).toThrow(/^No assembly of zone z/);
+  });
+
+  it("gives the same zone for the same seed, and different zones across seeds", () => {
+    const lib = library({ a: chunk(50, 50), b: chunk(50, 50), c: chunk(50, 50) });
+    const zone = recipe(3);
+    expect(assembleZone(lib, 7, "z", zone)).toEqual(assembleZone(lib, 7, "z", zone));
+    expect(runs(lib, zone).size).toBeGreaterThan(1);
+  });
+
+  it("moves each chunk's contents to its zone columns, drawn in the theme", () => {
+    const lib = library({
+      a: chunk(50, 50, {
+        backdrops: [{ character: "tree", col: 3, row: 20 }],
+        noCross: [{ from: { col: 1, row: 50 }, to: { col: 9, row: 50 } }],
+        objects: [{ character: "bench", col: 5, row: 48 }],
+        outOfReach: [{ col: 2, row: 10 }],
+        slots: [{ area: { col: 6, cols: 2, row: 40, rows: 4 }, id: "s", kind: "door" }],
+      }),
+    });
+    const area = areaOf(assembleZone(lib, 1, "z", recipe(1, { doors: [{ count: 1, room: "r" }] })));
+    expect(area).toMatchObject({
+      chunks: [
+        { chunk: "start", col: 0, cols: 60 },
+        { chunk: "a", col: 60, cols: 60 },
+        { chunk: "finish", col: 120, cols: 60 },
+      ],
+      cols: 180,
+      entries: { start: { col: 2, row: 50 } },
+      noCross: [{ from: { col: 61, row: 50 }, to: { col: 69, row: 50 } }],
+      objects: [
+        { character: "sky", col: 0, cols: 180, row: 0 },
+        { character: "tree", col: 63, row: 20 },
+        { character: "bench", col: 65, row: 48 },
+      ],
+      outOfReach: [{ col: 62, row: 10 }],
+      rows: ROWS,
+      slots: [
+        {
+          area: { col: 66, cols: 2, row: 40, rows: 4 },
+          chunk: 1,
+          fill: "r",
+          id: "s",
+          kind: "door",
+        },
+      ],
+      tileset: "tiles",
+    });
+    expect(area.solids.map(({ col, look }) => [col, look])).toEqual(
+      [0, 30, 60, 90, 120, 150].map((col) => [col, "grass"]),
+    );
+  });
+
+  it("fills as many slots as the recipe asks for, by the seed, and leaves the rest empty", () => {
+    const slot = (id: string, kind: "door" | "event") => ({
+      area: { col: 0, cols: 1, row: 0, rows: 1 },
+      id,
+      kind,
+    });
+    const lib = library({
+      a: chunk(50, 50, { slots: [slot("e1", "event"), slot("e2", "event"), slot("d1", "door")] }),
+      b: chunk(50, 50, { slots: [slot("e3", "event"), slot("d2", "door")] }),
+    });
+    const zone = recipe(2, {
+      doors: [{ count: 1, room: "r" }],
+      events: [
+        { count: 1, id: "x" },
+        { count: 1, id: "y" },
+      ],
+    });
+    const fills = SEEDS.map((seed) =>
+      (areaOf(assembleZone(lib, seed, "z", zone)).slots ?? []).map((each) => each.fill ?? "-"),
+    );
+    for (const each of fills) {
+      expect([...each].sort()).toEqual(["-", "-", "r", "x", "y"]);
+    }
+    expect(new Set(fills.map((each) => each.join())).size).toBeGreaterThan(1);
+  });
+});
