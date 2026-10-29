@@ -36,11 +36,12 @@ tiles-park (12x12; the tileset format and collision rules are in art/README.md, 
 - hazard-pond-left, hazard-pond, hazard-pond-right; hazard-pond-bed-left, hazard-pond-bed, hazard-pond-bed-right: a
   shallow pond two rows deep, drawn for a pond hazard placed with a width; not solid. The first row's water
   surface sits 4px below its top with 2px ripples; the second row is darker water over a mud bed. Touching the
-  water restarts her: hit box from 4px below the first row's top to the second row's bottom (20px). The grass
-  banks beside it stay solid; solid soil goes under the bed row.
+  water restarts her: the first row's tiles hit {x 0, y 4, width 12, height 8} (the tileset's "hitboxes") and the
+  bed row its whole cell, so 20px from the water surface down. The grass banks beside it stay solid; solid soil
+  goes under the bed row.
 - hazard-thorn-left, hazard-thorn, hazard-thorn-right: a low thorn hedge one tile tall, drawn for a thorn hazard
-  placed with a width; not solid. A dark bramble with pale 2px thorns and dark-red tips, no lip. Hit box y 2 to 12
-  of its row (10px).
+  placed with a width; not solid. A dark bramble with pale 2px thorns and dark-red tips, no lip. Each tile hits
+  {x 0, y 2, width 12, height 10} (the tileset's "hitboxes").
 
 Backdrops (bottom-left anchored at world y; repeat-x widths divide 720 so chunk seams never show)
 - park-sky 48x600 (y 600, x): peach above, a step deeper tan from y 200 behind play.
@@ -216,6 +217,15 @@ def thorn(kind):
     if kind == "r":
         R(t, (T - 1, 5, 1, 2, None), (T - 2, 3, 2, 2, th))
     return t
+
+
+# Hit boxes for the hazard tiles that hit less than their whole 12x12 cell, in pixels within the tile, written to
+# tiles-park.json's "hitboxes": each thorn tile from 2px below its top, and the pond's first row from its water
+# surface down. The pond's bed row hits its whole cell, so it has no entry.
+HITBOXES = {
+    **{f"hazard-thorn{s}": {"x": 0, "y": 2, "width": 12, "height": 10} for s in ("-left", "", "-right")},
+    **{f"hazard-pond{s}": {"x": 0, "y": 4, "width": 12, "height": 8} for s in ("-left", "", "-right")},
+}
 
 
 def three(name, fn):
@@ -404,20 +414,14 @@ def tileset_image(items):
 def build():
     os.makedirs(TILESETS, exist_ok=True)
     os.makedirs(BACKDROPS, exist_ok=True)
-    items = tiles()
-    tileset_image(items).save(f"{TILESETS}/{TILESET}.png")
-    with open(f"{TILESETS}/{TILESET}.json", "w") as f:
-        json.dump({"columns": COLUMNS, "pieces": {}, "tileSize": T, "tiles": {n: i for i, (n, _) in enumerate(items)}},
-                  f, indent=2, sort_keys=True)
-        f.write("\n")
+    tileset = pixel.write_tileset(TILESET, tiles(), hitboxes=HITBOXES, size=T, columns=COLUMNS)
     backdrops = []
     for key, (fn, y, repeat) in BACKDROP_DEFS.items():
         im = fn()
         im.save(f"{BACKDROPS}/{key}.png")
         backdrops.append({"key": key, "png": f"backdrops/{key}.png", "width": im.width, "height": im.height,
                           "anchor": "bottom-left", "y": y, "repeat": repeat})
-    pixel.update_manifest("tilesets", [{"key": TILESET, "png": f"tilesets/{TILESET}.png",
-                                        "json": f"tilesets/{TILESET}.json"}])
+    pixel.update_manifest("tilesets", [tileset])
     pixel.update_manifest("backdrops", backdrops)
     print("built", TILESET, "and", len(backdrops), "backdrops")
 

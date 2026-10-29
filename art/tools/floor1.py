@@ -514,12 +514,6 @@ def tileset_image(tiles):
     return im
 
 
-def tileset_json(tiles, pieces):
-    index = {name: i for i, (name, _) in enumerate(tiles)}
-    return {"columns": COLUMNS, "pieces": {k: [[index[n] for n in row] for row in v] for k, v in pieces.items()},
-            "tileSize": T, "tiles": index}
-
-
 # ---------------------------------------------------------------- backdrops
 
 # Sign icons, 11x11, one colour on a navy board. Signs are icons, never text.
@@ -927,11 +921,7 @@ def build():
     tilesets, backdrops = [], []
     for key, fn in TILESET_DEFS:
         tiles, pieces = fn()
-        tileset_image(tiles).save(f"{TILESETS}/{key}.png")
-        with open(f"{TILESETS}/{key}.json", "w") as f:
-            json.dump(tileset_json(tiles, pieces), f, indent=2, sort_keys=True)
-            f.write("\n")
-        tilesets.append({"key": key, "png": f"tilesets/{key}.png", "json": f"tilesets/{key}.json"})
+        tilesets.append(pixel.write_tileset(key, [(n, frame_image(g.px)) for n, g in tiles], pieces))
     for key, (fn, y, repeat) in BACKDROP_DEFS.items():
         g = fn()
         frame_image(g.px).save(f"{BACKDROPS}/{key}.png")

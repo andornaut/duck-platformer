@@ -139,6 +139,42 @@ class Grid:
         return out
 
 
+TILESETS = "public/art/tilesets"
+
+
+def write_tileset(key, items, pieces=None, hitboxes=None, size=12, columns=8):
+    """Write a tileset: public/art/tilesets/<key>.png, size x size tiles in rows of columns with no spacing or
+    margin, and <key>.json beside it, keys sorted:
+      {"tileSize": size, "columns": columns,
+       "tiles": {"<name>": <index>},                          index = row * columns + column
+       "pieces": {"<name>": [[<index>, ...], ...]},           multi-tile pieces, rows of indices, top row first
+       "hitboxes": {"<name>": {"x", "y", "width", "height"}}} optional: a hazard-* tile's hit box in pixels within
+                                                              its tile, the shape of a sprite's "hitbox"; written
+                                                              only when some tile has one. A tile without an entry
+                                                              hits its whole cell.
+    items is a list of (name, RGBA image of size x size); pieces maps a piece name to rows of tile names. Returns
+    the manifest entry."""
+    from PIL import Image
+
+    os.makedirs(TILESETS, exist_ok=True)
+    rows = -(-len(items) // columns)
+    im = Image.new("RGBA", (columns * size, rows * size), (0, 0, 0, 0))
+    for i, (_, tile) in enumerate(items):
+        im.alpha_composite(tile, ((i % columns) * size, (i // columns) * size))
+    im.save(f"{TILESETS}/{key}.png")
+    index = {name: i for i, (name, _) in enumerate(items)}
+    data = {"columns": columns, "pieces": {k: [[index[n] for n in row] for row in v] for k, v in (pieces or {}).items()},
+            "tileSize": size, "tiles": index}
+    if hitboxes:
+        unknown = set(hitboxes) - set(index)
+        assert not unknown, f"{key}: hit boxes for tiles it does not have: {sorted(unknown)}"
+        data["hitboxes"] = hitboxes
+    with open(f"{TILESETS}/{key}.json", "w") as f:
+        json.dump(data, f, indent=2, sort_keys=True)
+        f.write("\n")
+    return {"key": key, "png": f"tilesets/{key}.png", "json": f"tilesets/{key}.json"}
+
+
 def update_manifest(section, entries):
     """Merge entries (dicts with a "key") into the manifest's section (tilesets, backdrops): replace those with the
     same key, keep every other entry, sort by key. Each tool owns its own keys, so several tools can share a

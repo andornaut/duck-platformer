@@ -1,5 +1,43 @@
 {
   "columns": 8,
+  "hitboxes": {
+    "hazard-pond": {
+      "height": 8,
+      "width": 12,
+      "x": 0,
+      "y": 4
+    },
+    "hazard-pond-left": {
+      "height": 8,
+      "width": 12,
+      "x": 0,
+      "y": 4
+    },
+    "hazard-pond-right": {
+      "height": 8,
+      "width": 12,
+      "x": 0,
+      "y": 4
+    },
+    "hazard-thorn": {
+      "height": 10,
+      "width": 12,
+      "x": 0,
+      "y": 2
+    },
+    "hazard-thorn-left": {
+      "height": 10,
+      "width": 12,
+      "x": 0,
+      "y": 2
+    },
+    "hazard-thorn-right": {
+      "height": 10,
+      "width": 12,
+      "x": 0,
+      "y": 2
+    }
+  },
   "pieces": {},
   "tileSize": 12,
   "tiles": {
