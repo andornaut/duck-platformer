@@ -136,7 +136,7 @@ export interface Tuning {
 
 // A behaviour (ARCHETYPES by name, in src/data/archetypes.ts): its collision, fixed, and the
 // default motion, reaction and interaction its characters tune. collision: solid blocks her from
-// every side; ledge only from above; touching a hazard restarts the level; Use in a use zone goes
+// every side; ledge only from above; touching a hazard restarts the zone; Use in a use zone goes
 // through it; none is scenery.
 export interface Archetype {
   readonly collision: Collision;
@@ -184,7 +184,7 @@ export interface AreaLink {
 // starts in its round trip: 0 at the placed spot heading out, 0.5 at the far end heading back.
 // lines replace the character's for this one instance; scene names a dialogue scene. requires
 // and excludes are carried-choice flags: it is placed only while every required flag is set and
-// no excluded one is. to: where a door leads; a use thing with no `to` is the level's exit.
+// no excluded one is. to: where a door leads; a use thing with no `to` is the zone's exit.
 export interface Instance {
   readonly character: string;
   readonly col: number;
@@ -208,7 +208,7 @@ export interface TerrainRect extends TileRect {
   readonly look?: string;
 }
 
-// One area of a level: cols x rows tiles (rows is 60, two screens). solids are the terrain.
+// One area of a zone: cols x rows tiles (rows is 60, two screens). solids are the terrain.
 // entries are named points where she arrives: she stands on the top edge of row `row`, her
 // collision box centred on the grid line at the left edge of column `col`. tileset: the art
 // tileset its terrain and tile objects are drawn from; without one, both are flat rectangles.
@@ -221,9 +221,9 @@ export interface AreaPlan {
   readonly tileset?: string;
 }
 
-// A level: its areas by name, and where she starts, its only checkpoint: a fall or a hazard
+// A zone: its areas by name, and where she starts, its only checkpoint: a fall or a hazard
 // puts her back there.
-export interface LevelPlan {
+export interface ZonePlan {
   readonly areas: Readonly<Record<string, AreaPlan>>;
   readonly start: AreaLink;
 }
@@ -261,7 +261,7 @@ export interface ObjectLayout {
   readonly width: number;
 }
 
-// An area in base pixels. Falling below its height restarts the level. terrain and tileset are
+// An area in base pixels. Falling below its height restarts the zone. terrain and tileset are
 // its plan's, in tiles, for drawing.
 export interface AreaLayout {
   readonly entries: Readonly<Record<string, Point>>;
@@ -280,7 +280,7 @@ export interface ArtHitbox {
   readonly hitbox: Rect;
 }
 
-export interface LevelLayout {
+export interface ZoneLayout {
   readonly areas: Readonly<Record<string, AreaLayout>>;
   readonly start: AreaLink;
 }

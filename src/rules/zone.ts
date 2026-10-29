@@ -4,27 +4,27 @@ import type {
   AreaLayout,
   AreaLink,
   DuckTuning,
-  LevelLayout,
   ObjectLayout,
   Point,
   Rect,
+  ZoneLayout,
 } from "../data/types";
 import { duckBox, type DuckInput, type DuckState, EDGE, startDuck, stepDuck } from "./duck";
 import { axisOf, motionTrack, type Track } from "./motion";
 import { overlaps } from "./rect";
 
-// What the player asks of the level this step: the duck's input, and whether Use is held. Use
+// What the player asks of the zone this step: the duck's input, and whether Use is held. Use
 // acts on the step it goes down.
-export interface LevelInput extends DuckInput {
+export interface ZoneInput extends DuckInput {
   readonly useHeld: boolean;
 }
 
 // area: the area she is in. attempt: 0, and one more after each restart; it reseeds the random
 // motion, so a restart does not replay it. objects: each of the area's objects' top-left corner.
 // seconds: time since she entered the area, which places the objects on their tracks. using: Use
-// at a door, which holds the level still until enterArea takes her through. cleared: Use at the
-// level's exit.
-export interface LevelState {
+// at a door, which holds the zone still until enterArea takes her through. cleared: Use at the
+// zone's exit.
+export interface ZoneState {
   readonly area: string;
   readonly attempt: number;
   readonly cleared: boolean;
@@ -39,7 +39,7 @@ export interface LevelState {
   readonly using: AreaLink | undefined;
 }
 
-export function areaOf(layout: LevelLayout, area: string): AreaLayout {
+export function areaOf(layout: ZoneLayout, area: string): AreaLayout {
   const found = layout.areas[area];
   if (!found) {
     throw new Error(`No area ${area}`);
@@ -60,10 +60,10 @@ function pathAt(object: ObjectLayout, track: Track, seconds: number): Point {
 // tracks' random draws come from the seed and the attempt, so each attempt rolls them afresh.
 export function enterArea(
   tuning: DuckTuning,
-  layout: LevelLayout,
+  layout: ZoneLayout,
   link: AreaLink,
-  level: Pick<LevelState, "attempt" | "restarts" | "seed" | "steps">,
-): LevelState {
+  zone: Pick<ZoneState, "attempt" | "restarts" | "seed" | "steps">,
+): ZoneState {
   const area = areaOf(layout, link.area);
   const entry = area.entries[link.entry];
   if (!entry) {
@@ -73,11 +73,11 @@ export function enterArea(
     motionTrack(
       object.motion,
       object.phase,
-      randomStream(level.seed + level.attempt, `${link.area}:${index}`),
+      randomStream(zone.seed + zone.attempt, `${link.area}:${index}`),
     ),
   );
   return {
-    ...level,
+    ...zone,
     area: link.area,
     cleared: false,
     duck: startDuck(tuning, entry),
@@ -91,7 +91,7 @@ export function enterArea(
   };
 }
 
-export function startLevel(tuning: DuckTuning, layout: LevelLayout, seed: number): LevelState {
+export function startZone(tuning: DuckTuning, layout: ZoneLayout, seed: number): ZoneState {
   return enterArea(tuning, layout, layout.start, { attempt: 0, restarts: 0, seed, steps: 0 });
 }
 
@@ -155,35 +155,35 @@ function ride(
   return { ...duck, x, y };
 }
 
-// One fixed step of the level. Pure, so the game and a headless simulator run the same rules.
+// One fixed step of the zone. Pure, so the game and a headless simulator run the same rules.
 // Solid objects block like terrain and ledge objects only from above; standing on a moving one,
 // she moves with it, and leaving it by a jump or a walk off its edge she keeps its speed along x
-// until she lands. Touching a hazard or falling out of the area restarts the level at its start,
-// the next attempt. Use at a use zone clears the level at its exit, or at a door sets `using`,
-// and the level holds still until enterArea.
-export function stepLevel(
+// until she lands. Touching a hazard or falling out of the area restarts the zone at its start,
+// the next attempt. Use at a use zone clears the zone at its exit, or at a door sets `using`,
+// and the zone holds still until enterArea.
+export function stepZone(
   tuning: DuckTuning,
-  layout: LevelLayout,
+  layout: ZoneLayout,
   seconds: number,
-  input: LevelInput,
-  level: LevelState,
-): LevelState {
-  if (level.cleared || level.using) {
-    return level;
+  input: ZoneInput,
+  zone: ZoneState,
+): ZoneState {
+  if (zone.cleared || zone.using) {
+    return zone;
   }
-  const area = areaOf(layout, level.area);
-  const time = level.seconds + seconds;
+  const area = areaOf(layout, zone.area);
+  const time = zone.seconds + seconds;
   const objects = area.objects.map((object, index) => {
-    const before = level.objects[index] ?? object.origin;
-    const path = pathAt(object, level.tracks[index] as Track, time);
-    const after = objectStep(tuning, object, seconds, path, level.duck, before);
+    const before = zone.objects[index] ?? object.origin;
+    const path = pathAt(object, zone.tracks[index] as Track, time);
+    const after = objectStep(tuning, object, seconds, path, zone.duck, before);
     return { after: rectAt(object, after), before: rectAt(object, before), object };
   });
   const platforms = objects.filter(
     ({ object }) => object.collision === "solid" || object.collision === "ledge",
   );
-  const riding = platforms.find(({ before }) => standsOn(tuning, level.duck, before));
-  let duck = level.duck;
+  const riding = platforms.find(({ before }) => standsOn(tuning, zone.duck, before));
+  let duck = zone.duck;
   let dx = 0;
   if (riding) {
     dx = riding.after.x - riding.before.x;
@@ -217,27 +217,27 @@ export function stepLevel(
     duck = { ...duck, carryVx: dx / seconds };
   }
   const box = duckBox(tuning, duck);
-  const steps = level.steps + 1;
+  const steps = zone.steps + 1;
   if (duck.y > area.height || hazards.some((hazard) => overlaps(box, hazard))) {
     return enterArea(tuning, layout, layout.start, {
-      attempt: level.attempt + 1,
-      restarts: level.restarts + 1,
-      seed: level.seed,
+      attempt: zone.attempt + 1,
+      restarts: zone.restarts + 1,
+      seed: zone.seed,
       steps,
     });
   }
-  const usePressed = input.useHeld && !level.useHeld;
-  const zone = usePressed
+  const usePressed = input.useHeld && !zone.useHeld;
+  const useArea = usePressed
     ? objects.find(({ after, object }) => object.collision === "use" && overlaps(box, after))
     : undefined;
   return {
-    ...level,
-    cleared: zone !== undefined && zone.object.to === undefined,
+    ...zone,
+    cleared: useArea !== undefined && useArea.object.to === undefined,
     duck,
     objects: objects.map(({ after }) => ({ x: after.x, y: after.y })),
     seconds: time,
     steps,
     useHeld: input.useHeld,
-    using: zone?.object.to,
+    using: useArea?.object.to,
   };
 }

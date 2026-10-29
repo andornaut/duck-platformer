@@ -9,11 +9,11 @@ import { artKind } from "../view/objectArt";
 import { lookTiles, type Tileset } from "../view/tiles";
 import { ARCHETYPES, NO_INTERACTION, NO_REACTION, STATIC_MOTION } from "./archetypes";
 import { CHARACTERS } from "./characters";
-import { LEVEL_1 } from "./level1";
-import { TEST_LEVELS } from "./levels";
 import { SCREEN, TILE } from "./screen";
 import { TEXT } from "./text";
 import type { AreaPlan, Instance, TileRect, Tuning } from "./types";
+import { ZONE_1 } from "./zone1";
+import { TEST_ZONES } from "./zones";
 
 const MANIFEST = manifestJson as ArtManifest;
 const TILESETS: Readonly<Record<string, Tileset>> = {
@@ -28,7 +28,7 @@ const tagsOf = (art: string) => {
   const sheet = SHEETS[`../../public/art/sprites/${art}.json`];
   return sheet ? [...sheetTags(sheet).keys()] : [];
 };
-const LEVELS = [LEVEL_1, ...TEST_LEVELS];
+const ZONES = [ZONE_1, ...TEST_ZONES];
 const CATALOGUE = { archetypes: ARCHETYPES, characters: CHARACTERS };
 
 const inside = (area: AreaPlan, rect: TileRect) =>
@@ -53,8 +53,8 @@ function unknownFields(tuning: Tuning | undefined): string[] {
   );
 }
 
-const areas = LEVELS.flatMap((level, index) =>
-  Object.entries(level.areas).map(([name, area]) => [`${index + 1} ${name}`, level, area] as const),
+const areas = ZONES.flatMap((zone, index) =>
+  Object.entries(zone.areas).map(([name, area]) => [`${index + 1} ${name}`, zone, area] as const),
 );
 const instances = areas.flatMap(([name, , area]) =>
   area.objects.map(
@@ -83,7 +83,7 @@ describe("the characters", () => {
   );
 });
 
-describe("the levels", () => {
+describe("the zones", () => {
   it.each(instances)(
     "instance %s resolves, with real overrides and words",
     (_, area, instance: Instance) => {
@@ -111,10 +111,10 @@ describe("the levels", () => {
     expect(area.solids.every((rect) => inside(area, rect))).toBe(true);
   });
 
-  it.each(areas)("area %s's doors lead to an entry that exists", (_, level, area) => {
+  it.each(areas)("area %s's doors lead to an entry that exists", (_, zone, area) => {
     for (const { to } of area.objects) {
       if (to) {
-        expect(level.areas[to.area]?.entries[to.entry], JSON.stringify(to)).toBeDefined();
+        expect(zone.areas[to.area]?.entries[to.entry], JSON.stringify(to)).toBeDefined();
       }
     }
   });
@@ -138,11 +138,11 @@ describe("the levels", () => {
     },
   );
 
-  it.each(LEVELS.map((level, index) => [index + 1, level] as const))(
-    "level %i starts at an entry that exists and has an exit",
-    (_, level) => {
-      expect(level.areas[level.start.area]?.entries[level.start.entry]).toBeDefined();
-      const exits = Object.values(level.areas).flatMap((area) =>
+  it.each(ZONES.map((zone, index) => [index + 1, zone] as const))(
+    "zone %i starts at an entry that exists and has an exit",
+    (_, zone) => {
+      expect(zone.areas[zone.start.area]?.entries[zone.start.entry]).toBeDefined();
+      const exits = Object.values(zone.areas).flatMap((area) =>
         area.objects.filter(
           (instance) =>
             !instance.to &&

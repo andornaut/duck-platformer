@@ -213,7 +213,7 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 8,
     rows: 1,
   },
-  // The stairwell to the next floor: Use there clears the level.
+  // The stairwell to the next floor: Use there clears the zone.
   "stairwell-exit": {
     archetype: "exit",
     art: "exit",
@@ -287,7 +287,7 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 6,
     rows: 5,
   },
-  // PLACEHOLDER: the test levels' objects, drawn as flat rectangles: exits and a door (Use
+  // PLACEHOLDER: the test zones' objects, drawn as flat rectangles: exits and a door (Use
   // zones), hazards, moving platforms whose motion each placement sets, a wandering cart and a
   // pigeon that hops about and flies from her.
   "test-cart": {

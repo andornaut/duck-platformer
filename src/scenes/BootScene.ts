@@ -16,7 +16,7 @@ import { addAtlasArt, ATLAS, queueAtlasFonts, queueAtlasPages } from "./atlasArt
 
 // First scene to run. Loads everything art's manifest lists, makes an animation of every sprite
 // tag, looping unless the manifest lists it as played once, then, once launchReady resolves,
-// starts the test level and the pause scene beside it.
+// starts the test zone and the pause scene beside it.
 export class BootScene extends Scene {
   constructor() {
     super("boot");
@@ -72,11 +72,11 @@ export class BootScene extends Scene {
         });
       }
     }
-    // The level shows once a version about to be replaced by a newer one has had its chance to
-    // reload first, so it never draws the old level.
+    // The zone shows once a version about to be replaced by a newer one has had its chance to
+    // reload first, so it never draws the old zone.
     void launchReady().then(() => {
       this.scene.launch("pause");
-      this.scene.start("level");
+      this.scene.start("zone");
     });
   }
 

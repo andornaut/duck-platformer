@@ -19,8 +19,8 @@ function run(steps: readonly Step[]): boolean[] {
 
 describe("trackHomeScreen", () => {
   it.each<{ name: string; seen: boolean[]; steps: Step[] }>([
-    { name: "nothing before the level shows", seen: [], steps: [["cover", "sideways", true]] },
-    { name: "home once the level shows", seen: [true], steps: [["shown"], ["shown"]] },
+    { name: "nothing before the zone shows", seen: [], steps: [["cover", "sideways", true]] },
+    { name: "home once the zone shows", seen: [true], steps: [["shown"], ["shown"]] },
     {
       name: "away while the pause card is open",
       seen: [true, false, true],
@@ -38,7 +38,7 @@ describe("trackHomeScreen", () => {
       ],
     },
     {
-      name: "home only once a cover from before the level is gone",
+      name: "home only once a cover from before the zone is gone",
       seen: [true],
       steps: [["cover", "sideways", true], ["shown"], ["cover", "sideways", false]],
     },

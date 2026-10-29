@@ -1,14 +1,14 @@
-import type { LevelPlan } from "./types";
+import type { ZonePlan } from "./types";
 
-// PLACEHOLDER: parkour test levels, until gameplay designs the real levels.
+// PLACEHOLDER: parkour test zones, until gameplay designs the real zones.
 //
-// Every level is 60 rows, starts on the ground at the bottom left and exits in the upper screen
+// Every zone is 60 rows, starts on the ground at the bottom left and exits in the upper screen
 // on the right. Each solid runs down to the bottom row, so every gap is a pit she falls out of.
 // Rises and gaps are in tiles, from the top of the ground she leaves to the top of the ledge she
 // lands on. Every mover's path is 2 tiles from every solid and every other mover's path, so a
 // mover never meets her box where she stands at an edge. Gaps a mover crosses are 28 wide, past
 // the running jump's 22.
-export const TEST_LEVELS: readonly LevelPlan[] = [
+export const TEST_ZONES: readonly ZonePlan[] = [
   // Ledges.
   {
     areas: {

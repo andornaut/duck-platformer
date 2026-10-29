@@ -10,8 +10,6 @@ import { type GameObjects, Input, Scene, type Tilemaps } from "phaser";
 import { ARCHETYPES } from "../data/archetypes";
 import { CHARACTERS } from "../data/characters";
 import { DUCK } from "../data/duck";
-import { LEVEL_1 } from "../data/level1";
-import { TEST_LEVELS } from "../data/levels";
 import { SCREEN, TILE } from "../data/screen";
 import { TEXT } from "../data/text";
 import { TOUCH } from "../data/touch";
@@ -21,10 +19,12 @@ import type {
   ArtHitbox,
   CharacterState,
   Collision,
-  LevelLayout,
   ObjectLayout,
   Point,
+  ZoneLayout,
 } from "../data/types";
+import { ZONE_1 } from "../data/zone1";
+import { TEST_ZONES } from "../data/zones";
 import {
   combineIntents,
   type HeldTouch,
@@ -35,10 +35,10 @@ import {
 import { gamePoint, gameScaledPoint } from "../input/screenPoint";
 import { PAUSE_BUTTON } from "../layout/pauseCard";
 import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
-import { areaOf, enterArea, type LevelState, startLevel, stepLevel } from "../rules/level";
-import { nextLevelIndex, startLevelIndex } from "../rules/levelChain";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
-import { levelLayout } from "../rules/tiles";
+import { zoneLayout } from "../rules/tiles";
+import { areaOf, enterArea, startZone, stepZone, type ZoneState } from "../rules/zone";
+import { nextZoneIndex, startZoneIndex } from "../rules/zoneChain";
 import { touchControlsShown } from "../settings/touchControls";
 import {
   animKey,
@@ -64,11 +64,11 @@ import {
   trackPress,
 } from "../view/touchControls";
 
-// What every level's instances are resolved against.
+// What every zone's instances are resolved against.
 const CATALOGUE = { archetypes: ARCHETYPES, characters: CHARACTERS };
 
-// The levels in play order, looping: level 1, then the test levels.
-const LEVELS = [LEVEL_1, ...TEST_LEVELS];
+// The zones in play order, looping: zone 1, then the test zones.
+const ZONES = [ZONE_1, ...TEST_ZONES];
 
 // After a stall, run at most this much time at once rather than lurching ahead.
 const MAX_FRAME_MS = 250;
@@ -126,20 +126,20 @@ function show(sprite: GameObjects.Sprite, tag: string): void {
   }
 }
 
-// One level, played with the keyboard or the touch controls.
-export class LevelScene extends Scene {
+// One zone, played with the keyboard or the touch controls.
+export class ZoneScene extends Scene {
   private clock: StepClock = startStepClock;
   private readonly controls = new Map<TouchControl, GameObjects.Sprite>();
   private readonly labels = new Map<TouchControl, GameObjects.BitmapText>();
   private colours: Readonly<Record<string, string>> = {};
   private duck!: GameObjects.Sprite;
   private duckPose: DuckPose = startPose;
-  private level!: LevelState;
+  private zone!: ZoneState;
   private readonly heldKeys = new Set<string>();
   private readonly heldTouches = new Map<number, HeldTouch>();
   private landMs = 0;
-  private layout!: LevelLayout;
-  private levelIndex = startLevelIndex(window.location.search, LEVELS.length);
+  private layout!: ZoneLayout;
+  private zoneIndex = startZoneIndex(window.location.search, ZONES.length);
   private areaArt!: GameObjects.Graphics;
   // The hit boxes art's sprites declare, by art key.
   private hitboxes: Readonly<Record<string, ArtHitbox>> = {};
@@ -156,7 +156,7 @@ export class LevelScene extends Scene {
   private readonly tags = new Map<string, ReadonlyMap<string, readonly TagFrame[]>>();
 
   constructor() {
-    super("level");
+    super("zone");
   }
 
   create(): void {
@@ -169,7 +169,7 @@ export class LevelScene extends Scene {
     this.duck = this.add.sprite(0, 0, DUCK_SPRITE).setOrigin(0).setDepth(DUCK_DEPTH);
     this.manifest = this.cache.json.get(ART_MANIFEST_KEY) as ArtManifest;
     this.hitboxes = artHitboxes((key) => this.textures.getFrame(key), this.manifest);
-    this.loadLevel(this.levelIndex);
+    this.loadZone(this.zoneIndex);
 
     const font = phaserBitmapFont(this.cache.bitmapFont.get(LABEL_FONT).data as PhaserFontData);
     this.colours = (this.cache.json.get(PALETTE) as { colours: Record<string, string> }).colours;
@@ -201,7 +201,7 @@ export class LevelScene extends Scene {
     });
   }
 
-  // Shows or hides the touch buttons now, for the pause card to show the level behind it as the
+  // Shows or hides the touch buttons now, for the pause card to show the zone behind it as the
   // setting changes. They show only on a touch screen.
   showTouchControls(shown: boolean): void {
     const visible = shown && window.matchMedia("(pointer: coarse)").matches;
@@ -217,23 +217,23 @@ export class LevelScene extends Scene {
     const touches = [...this.heldTouches.values()];
     const intent = combineIntents(keyIntent(this.heldKeys), touchIntent(TOUCH, touches));
     for (let step = 0; step < frame.steps && !this.fading; step++) {
-      const before = this.level.duck;
-      this.level = stepLevel(
+      const before = this.zone.duck;
+      this.zone = stepZone(
         DUCK,
         this.layout,
         STEP_SECONDS,
         { jumpHeld: intent.jump, move: intent.move, useHeld: intent.use },
-        this.level,
+        this.zone,
       );
-      this.duckPose = stepPose(this.landMs, STEP_MS, before, this.level.duck, this.duckPose);
-      // PLACEHOLDER: what clearing a level leads to. For now the next level starts.
-      if (this.level.cleared) {
-        this.loadLevel(nextLevelIndex(this.levelIndex, LEVELS.length));
-      } else if (this.level.using) {
-        this.goThrough(this.level.using);
+      this.duckPose = stepPose(this.landMs, STEP_MS, before, this.zone.duck, this.duckPose);
+      // PLACEHOLDER: what clearing a zone leads to. For now the next zone starts.
+      if (this.zone.cleared) {
+        this.loadZone(nextZoneIndex(this.zoneIndex, ZONES.length));
+      } else if (this.zone.using) {
+        this.goThrough(this.zone.using);
       }
     }
-    if (this.level.area !== this.areaShown || this.level.attempt !== this.attemptShown) {
+    if (this.zone.area !== this.areaShown || this.zone.attempt !== this.attemptShown) {
       this.drawArea();
     }
     this.drawObjects();
@@ -241,19 +241,19 @@ export class LevelScene extends Scene {
     this.drawControls(time, touches);
   }
 
-  // Starts the level at index from its start. Each load draws a fresh seed, so the random
+  // Starts the zone at index from its start. Each load draws a fresh seed, so the random
   // motion differs from one play to the next; ?seed=<n> fixes it.
-  private loadLevel(index: number): void {
-    const plan = LEVELS[index];
+  private loadZone(index: number): void {
+    const plan = ZONES[index];
     if (!plan) {
-      throw new Error(`No level ${index + 1}`);
+      throw new Error(`No zone ${index + 1}`);
     }
-    this.levelIndex = index;
+    this.zoneIndex = index;
     // PLACEHOLDER: carried choices set no flags yet.
-    this.layout = levelLayout(TILE, CATALOGUE, this.hitboxes, new Set(), plan);
+    this.layout = zoneLayout(TILE, CATALOGUE, this.hitboxes, new Set(), plan);
     const asked = Number(new URLSearchParams(window.location.search).get("seed"));
     const seed = Number.isInteger(asked) && asked > 0 ? asked : Math.floor(Math.random() * 2 ** 31);
-    this.level = startLevel(DUCK, this.layout, seed);
+    this.zone = startZone(DUCK, this.layout, seed);
     this.drawArea();
   }
 
@@ -263,7 +263,7 @@ export class LevelScene extends Scene {
     const camera = this.cameras.main;
     camera.fadeOut(FADE_MS, 0, 0, 0);
     camera.once("camerafadeoutcomplete", () => {
-      this.level = enterArea(DUCK, this.layout, link, this.level);
+      this.zone = enterArea(DUCK, this.layout, link, this.zone);
       this.drawArea();
       this.drawObjects();
       this.drawDuck();
@@ -277,9 +277,9 @@ export class LevelScene extends Scene {
   // Draws the area she is in, with the camera kept inside it: its terrain from its tileset, or
   // flat where it has none, and each object's art.
   private drawArea(): void {
-    const area = areaOf(this.layout, this.level.area);
-    this.areaShown = this.level.area;
-    this.attemptShown = this.level.attempt;
+    const area = areaOf(this.layout, this.zone.area);
+    this.areaShown = this.zone.area;
+    this.attemptShown = this.zone.attempt;
     this.cameras.main.setBounds(0, 0, area.width, area.height);
     this.cameras.main.setBackgroundColor(area.tileset ? INK : BACKGROUND);
     const tileset = area.tileset ? this.tileset(area.tileset) : undefined;
@@ -366,8 +366,8 @@ export class LevelScene extends Scene {
         }
         const [quirk] = object.quirks;
         const random = randomStream(
-          this.level.seed + this.level.attempt,
-          `${this.level.area}:${index}:quirk`,
+          this.zone.seed + this.zone.attempt,
+          `${this.zone.area}:${index}:quirk`,
         );
         return {
           item: sprite,
@@ -389,10 +389,10 @@ export class LevelScene extends Scene {
   // Each object where the rules put it, in whole pixels. A character's sprite faces the way it
   // moved and plays the tag for its state, and an idle one now and then plays a quirk.
   private drawObjects(): void {
-    const area = areaOf(this.layout, this.level.area);
-    const { duck } = this.level;
+    const area = areaOf(this.layout, this.zone.area);
+    const { duck } = this.zone;
     const hers = { x: duck.x + DUCK.width / 2, y: duck.y + DUCK.height / 2 };
-    this.level.objects.forEach((at, index) => {
+    this.zone.objects.forEach((at, index) => {
       const art = this.objectArt[index];
       const object = area.objects[index];
       if (!art || !object) {
@@ -422,9 +422,9 @@ export class LevelScene extends Scene {
       sprite.anims.isPlaying &&
       sprite.anims.currentAnim?.key === animKey(object.art, quirk.tag);
     if (state === "idle" && quirk && art.quirk) {
-      if (this.level.seconds >= art.quirk.at) {
+      if (this.zone.seconds >= art.quirk.at) {
         sprite.play(animKey(object.art, quirk.tag));
-        art.quirk.at = nextQuirkAt(art.quirk.random, quirk, this.level.seconds);
+        art.quirk.at = nextQuirkAt(art.quirk.random, quirk, this.zone.seconds);
         return;
       }
       if (playingQuirk) {
@@ -455,13 +455,13 @@ export class LevelScene extends Scene {
   }
 
   private drawDuck(): void {
-    const { duck } = this.level;
+    const { duck } = this.zone;
     const { tag } = this.duckPose;
     show(this.duck, tag);
     const at = duckFrameAt(DUCK, this.duck.frame, duck);
     this.duck.setPosition(at.x, at.y).setFlipX(duck.facing < 0);
     const feet = { x: duck.x + DUCK.width / 2, y: duck.y + DUCK.height };
-    const scroll = cameraScroll(SCREEN, areaOf(this.layout, this.level.area), feet);
+    const scroll = cameraScroll(SCREEN, areaOf(this.layout, this.zone.area), feet);
     this.cameras.main.setScroll(scroll.x, scroll.y);
   }
 

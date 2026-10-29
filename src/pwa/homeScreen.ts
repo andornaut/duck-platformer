@@ -1,21 +1,21 @@
 // Whether the game's home screen is in front, for the kit's update flow: the game page counts as
-// the home screen once the level's first frame shows, except while something covers it.
+// the home screen once the zone's first frame shows, except while something covers it.
 export type HomeCover = "pauseCard" | "sideways";
 
 export interface HomeScreen {
-  // Something starts or stops covering the level.
+  // Something starts or stops covering the zone.
   cover(what: HomeCover, covering: boolean): void;
-  // The level's first frame has shown.
+  // The zone's first frame has shown.
   shown(): void;
 }
 
 // Calls onChange with whether the home screen is in front, on each change only.
 export function trackHomeScreen(onChange: (onHome: boolean) => void): HomeScreen {
-  let levelShown = false;
+  let zoneShown = false;
   const covers = new Set<HomeCover>();
   let last = false;
   const update = () => {
-    const now = levelShown && covers.size === 0;
+    const now = zoneShown && covers.size === 0;
     if (now !== last) {
       last = now;
       onChange(now);
@@ -31,7 +31,7 @@ export function trackHomeScreen(onChange: (onHome: boolean) => void): HomeScreen
       update();
     },
     shown() {
-      levelShown = true;
+      zoneShown = true;
       update();
     },
   };

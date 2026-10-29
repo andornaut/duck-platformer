@@ -7,8 +7,6 @@ import type {
   CharacterState,
   Instance,
   Interaction,
-  LevelLayout,
-  LevelPlan,
   Motion,
   ObjectLayout,
   Point,
@@ -16,6 +14,8 @@ import type {
   Rect,
   TilePoint,
   TileRect,
+  ZoneLayout,
+  ZonePlan,
 } from "../data/types";
 
 export function tileRect(tile: number, rect: TileRect): Rect {
@@ -147,15 +147,15 @@ export function areaLayout(
   };
 }
 
-// A level plan in base pixels, for the rules: each instance resolved against the catalogue, with
+// A zone plan in base pixels, for the rules: each instance resolved against the catalogue, with
 // the hit boxes art declares by art key, and only the instances the set flags place.
-export function levelLayout(
+export function zoneLayout(
   tile: number,
   catalogue: Catalogue,
   hitboxes: Readonly<Record<string, ArtHitbox>>,
   flags: ReadonlySet<string>,
-  plan: LevelPlan,
-): LevelLayout {
+  plan: ZonePlan,
+): ZoneLayout {
   return {
     areas: Object.fromEntries(
       Object.entries(plan.areas).map(([name, area]) => [

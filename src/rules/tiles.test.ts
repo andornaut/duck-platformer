@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import type { Archetype, Character, Instance, LevelPlan } from "../data/types";
-import { type Catalogue, isPlaced, levelLayout, tileRect } from "./tiles";
+import type { Archetype, Character, Instance, ZonePlan } from "../data/types";
+import { type Catalogue, isPlaced, tileRect, zoneLayout } from "./tiles";
 
 describe("tileRect", () => {
   it.each([
@@ -13,7 +13,7 @@ describe("tileRect", () => {
   });
 });
 
-describe("levelLayout", () => {
+describe("zoneLayout", () => {
   const PLATFORM: Archetype = {
     collision: "solid",
     interaction: { kind: "none", range: 0 },
@@ -40,7 +40,7 @@ describe("levelLayout", () => {
     tuning: { interaction: { kind: "quip", range: 4 }, motion: { speed: 4 } },
   };
   const CATALOGUE: Catalogue = { archetypes: { platform: PLATFORM }, characters: { lift: LIFT } };
-  const PLAN: LevelPlan = {
+  const PLAN: ZonePlan = {
     areas: {
       yard: {
         cols: 64,
@@ -69,7 +69,7 @@ describe("levelLayout", () => {
   const hitboxes = {
     lift: { frame: { height: 10, width: 40 }, hitbox: { height: 6, width: 30, x: 5, y: 2 } },
   };
-  const layout = levelLayout(10, CATALOGUE, hitboxes, new Set(), PLAN);
+  const layout = zoneLayout(10, CATALOGUE, hitboxes, new Set(), PLAN);
   const yard = layout.areas.yard;
   const [lift, special] = yard?.objects ?? [];
   it.each([
@@ -135,8 +135,8 @@ describe("levelLayout", () => {
     const bad = {
       ...PLAN,
       areas: { yard: { ...PLAN.areas.yard, objects: [instance] } },
-    } as LevelPlan;
-    expect(() => levelLayout(10, catalogue, {}, new Set(), bad)).toThrow(message);
+    } as ZonePlan;
+    expect(() => zoneLayout(10, catalogue, {}, new Set(), bad)).toThrow(message);
   });
 });
 

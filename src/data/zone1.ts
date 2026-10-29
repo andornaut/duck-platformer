@@ -1,13 +1,13 @@
-import type { LevelPlan } from "./types";
+import type { ZonePlan } from "./types";
 
-// Level 1, the ground floor: the street outside the hotel, then the lobby.
+// Zone 1, the ground floor: the street outside the hotel, then the lobby.
 //
 // The street is one screen of play: the sidewalk's top is row 26 (y 312), and below it the game
-// shows ink. A pit-floor hazard 4 below the sidewalk's top in every opening restarts the level
+// shows ink. A pit-floor hazard 4 below the sidewalk's top in every opening restarts the zone
 // soon after she drops in. Awnings and the
 // hotel canopy sit on row 20, 6 above the sidewalk. Left to right it teaches: walk, hop, jump, a
 // gap, a cellar hatch, the courier, then the ferret's trap at the hotel door.
-export const LEVEL_1: LevelPlan = {
+export const ZONE_1: ZonePlan = {
   areas: {
     // The lobby: the floor's top is row 56 (y 672). A climb at the right end leads from the
     // floor to the stairwell exit on the balcony, 40 up, in the upper screen.

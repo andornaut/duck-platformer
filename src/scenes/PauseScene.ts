@@ -11,32 +11,25 @@ import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
 import { CARD_TEXT_SCALE, PAUSE_BUTTON, PAUSE_CARD } from "../layout/pauseCard";
 import { type CardAction, cardBackAction, cardKeyAction } from "../pause/cardInput";
-import {
-  coverLevel,
-  leaveGame,
-  levelShown,
-  PHONE_EVENTS,
-  startWakeLock,
-  stopWakeLock,
-} from "../pwa";
+import { coverZone, leaveGame, PHONE_EVENTS, startWakeLock, stopWakeLock, zoneShown } from "../pwa";
 import { setTouchControlsShown, touchControlsShown } from "../settings/touchControls";
 import { animKey, type ArtManifest } from "../view/aseprite";
 import { dimPixels, type Palette } from "../view/dim";
-import type { LevelScene } from "./LevelScene";
+import type { ZoneScene } from "./ZoneScene";
 
-const LEVEL = "level";
+const ZONE = "zone";
 const MANIFEST = "manifest";
 const PALETTE = "palette";
 const BODY_FONT = "font-body";
 const TITLE_FONT = "font-title";
-// The dimmed level, with the touch buttons hidden and shown, so the Touch controls row updates
+// The dimmed zone, with the touch buttons hidden and shown, so the Touch controls row updates
 // the view behind the card as it changes.
 const DIM_TEXTURES = { hidden: "pause-dim-hidden", shown: "pause-dim-shown" } as const;
 
 type Control = "close" | "pauseButton" | "quit" | "resume" | "touchControls";
 
-// The pause card over the dimmed level, and the pause button that opens it, which shows on a
-// touch screen only. It runs beside the level from the start. Opening the card pauses the level
+// The pause card over the dimmed zone, and the pause button that opens it, which shows on a
+// touch screen only. It runs beside the zone from the start. Opening the card pauses the zone
 // and lets the screen sleep; Resume, the close X, back, Escape and P close it. The Touch controls
 // row shows or hides the touch buttons, and Quit leaves the game (leaveGame).
 export class PauseScene extends Scene {
@@ -75,8 +68,8 @@ export class PauseScene extends Scene {
       window.removeEventListener(PHONE_EVENTS.backPressed, onBack);
     });
     startWakeLock();
-    // The level's first frame: the game page is now the home screen.
-    this.game.events.once(Core.Events.POST_RENDER, () => levelShown());
+    // The zone's first frame: the game page is now the home screen.
+    this.game.events.once(Core.Events.POST_RENDER, () => zoneShown());
   }
 
   private act(action: CardAction | undefined): void {
@@ -87,23 +80,23 @@ export class PauseScene extends Scene {
     }
   }
 
-  // Pauses the level, reads it back twice (touch buttons hidden, then shown) to dim each, and
-  // shows the card over the dim. Nothing of this scene shows while the level is read back.
+  // Pauses the zone, reads it back twice (touch buttons hidden, then shown) to dim each, and
+  // shows the card over the dim. Nothing of this scene shows while the zone is read back.
   private async open(): Promise<void> {
-    if (this.state !== "closed" || !this.scene.isActive(LEVEL)) {
+    if (this.state !== "closed" || !this.scene.isActive(ZONE)) {
       return;
     }
     this.state = "opening";
-    this.scene.pause(LEVEL);
+    this.scene.pause(ZONE);
     stopWakeLock();
-    coverLevel("pauseCard", true);
+    coverZone("pauseCard", true);
     const camera = this.cameras.main.setVisible(false);
-    const level = this.scene.get(LEVEL) as LevelScene;
-    level.showTouchControls(false);
-    await this.dimLevel(DIM_TEXTURES.hidden);
-    level.showTouchControls(true);
-    await this.dimLevel(DIM_TEXTURES.shown);
-    level.showTouchControls(touchControlsShown());
+    const zone = this.scene.get(ZONE) as ZoneScene;
+    zone.showTouchControls(false);
+    await this.dimZone(DIM_TEXTURES.hidden);
+    zone.showTouchControls(true);
+    await this.dimZone(DIM_TEXTURES.shown);
+    zone.showTouchControls(touchControlsShown());
     this.renderTouchControls();
     this.showCard(true);
     camera.setVisible(true);
@@ -116,9 +109,9 @@ export class PauseScene extends Scene {
     }
     this.state = "closed";
     this.showCard(false);
-    this.scene.resume(LEVEL);
+    this.scene.resume(ZONE);
     startWakeLock();
-    coverLevel("pauseCard", false);
+    coverZone("pauseCard", false);
   }
 
   // Closed first, so a page kept for back-forward caching comes back to the game in play.
@@ -130,7 +123,7 @@ export class PauseScene extends Scene {
   private toggleTouchControls(): void {
     const shown = !touchControlsShown();
     setTouchControlsShown(shown);
-    (this.scene.get(LEVEL) as LevelScene).showTouchControls(shown);
+    (this.scene.get(ZONE) as ZoneScene).showTouchControls(shown);
     this.renderTouchControls();
   }
 
@@ -156,7 +149,7 @@ export class PauseScene extends Scene {
 
   // The canvas as rendered at the end of the next frame, redrawn two steps down each colour's
   // ramp into the texture key. Where the renderer gives no image, the card shows undimmed.
-  private dimLevel(key: string): Promise<void> {
+  private dimZone(key: string): Promise<void> {
     return new Promise((resolve) => {
       this.game.renderer.snapshotArea(0, 0, SCREEN.width, SCREEN.height, (snapshot) => {
         if (snapshot instanceof HTMLImageElement) {

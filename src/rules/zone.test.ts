@@ -1,24 +1,24 @@
 import { describe, expect, it } from "vitest";
 
 import { DUCK } from "../data/duck";
-import type { AreaLayout, LevelLayout, Motion, ObjectLayout, Point } from "../data/types";
+import type { AreaLayout, Motion, ObjectLayout, Point, ZoneLayout } from "../data/types";
 import { startDuck } from "./duck";
+import { STEP_SECONDS } from "./step";
 import {
   enterArea,
-  type LevelInput,
-  type LevelState,
   objectStep,
   standsOn,
-  startLevel,
-  stepLevel,
-} from "./level";
-import { STEP_SECONDS } from "./step";
+  startZone,
+  stepZone,
+  type ZoneInput,
+  type ZoneState,
+} from "./zone";
 
 const STEP = STEP_SECONDS;
 const SEED = 42;
 const GROUND = { height: 40, width: 1100, x: 0, y: 300 };
-const STILL: LevelInput = { jumpHeld: false, move: 0, useHeld: false };
-const RIGHT: LevelInput = { ...STILL, move: 1 };
+const STILL: ZoneInput = { jumpHeld: false, move: 0, useHeld: false };
+const RIGHT: ZoneInput = { ...STILL, move: 1 };
 const STATIC: Motion = {
   algorithm: "static",
   direction: "right",
@@ -64,26 +64,26 @@ function area(objects: readonly ObjectLayout[], fields: Partial<AreaLayout> = {}
   };
 }
 
-const level = (main: AreaLayout, others: Record<string, AreaLayout> = {}): LevelLayout => ({
+const zone = (main: AreaLayout, others: Record<string, AreaLayout> = {}): ZoneLayout => ({
   areas: { main, ...others },
   start: { area: "main", entry: "start" },
 });
 
 function run(
-  layout: LevelLayout,
+  layout: ZoneLayout,
   seconds: number,
-  input: LevelInput | ((step: number) => LevelInput),
-): LevelState[] {
-  let state = startLevel(DUCK, layout, SEED);
+  input: ZoneInput | ((step: number) => ZoneInput),
+): ZoneState[] {
+  let state = startZone(DUCK, layout, SEED);
   const states = [state];
   for (let step = 0; step < Math.round(seconds / STEP); step++) {
-    state = stepLevel(DUCK, layout, STEP, typeof input === "function" ? input(step) : input, state);
+    state = stepZone(DUCK, layout, STEP, typeof input === "function" ? input(step) : input, state);
     states.push(state);
   }
   return states;
 }
 
-const bottomOf = (state: LevelState | undefined) => (state?.duck.y ?? 0) + DUCK.height;
+const bottomOf = (state: ZoneState | undefined) => (state?.duck.y ?? 0) + DUCK.height;
 
 describe("restarts", () => {
   const narrow = area([], { solids: [{ ...GROUND, width: 200 }] });
@@ -94,8 +94,8 @@ describe("restarts", () => {
     width: 20,
   });
   it.each([
-    ["falling out of the area", level(narrow)],
-    ["touching a hazard", level(area([hazard]))],
+    ["falling out of the area", zone(narrow)],
+    ["touching a hazard", zone(area([hazard]))],
   ])("after %s, puts her back at the start for the next attempt", (_, layout) => {
     const states = run(layout, 3, RIGHT);
     const restart = states.find((state) => state.restarts === 1);
@@ -113,8 +113,8 @@ describe("restarts", () => {
   it.each([
     ["its rectangle but not its hit box", 128, false],
     ["its hit box", 154, true],
-  ])("standing in %s restarts the level: %s", (_, x, restarts) => {
-    const layout = level(area([boxed], { entries: { start: { x, y: GROUND.y } } }));
+  ])("standing in %s restarts the zone: %s", (_, x, restarts) => {
+    const layout = zone(area([boxed], { entries: { start: { x, y: GROUND.y } } }));
     expect(run(layout, 0.1, STILL).some((state) => state.restarts > 0)).toBe(restarts);
   });
 });
@@ -125,7 +125,7 @@ describe("ledges", () => {
     ["jumps up through from below and lands on top", true, ledge.origin.y],
     ["stands on the ground while never jumping", false, GROUND.y],
   ])("she %s", (_, jumps, top) => {
-    const states = run(level(area([ledge])), 2, (step) => ({
+    const states = run(zone(area([ledge])), 2, (step) => ({
       ...STILL,
       jumpHeld: jumps && step < 30,
     }));
@@ -141,7 +141,7 @@ describe("moving platforms", () => {
       width: 96,
     });
   const onPlatform = (mover: ObjectLayout) =>
-    level(
+    zone(
       area([mover], {
         entries: { start: { x: mover.origin.x + mover.width / 2, y: mover.origin.y } },
       }),
@@ -180,16 +180,16 @@ describe("use zones", () => {
   const press = (step: number) => ({ ...STILL, useHeld: step >= 10 });
 
   it.each([
-    ["Use at the exit clears the level", level(area([exit])), press, true],
+    ["Use at the exit clears the zone", zone(area([exit])), press, true],
     [
       "Use away from the exit does nothing",
-      level(area([{ ...exit, origin: { x: 400, y: 252 } }])),
+      zone(area([{ ...exit, origin: { x: 400, y: 252 } }])),
       press,
       false,
     ],
     [
       "Use held since before she arrived does nothing",
-      level(area([exit])),
+      zone(area([exit])),
       () => ({ ...STILL, useHeld: true }),
       false,
     ],
@@ -197,13 +197,13 @@ describe("use zones", () => {
     expect(run(layout, 0.5, input).at(-1)?.cleared).toBe(cleared);
   });
 
-  it("Use at a door holds the level still at the door until enterArea takes her through", () => {
-    const layout = level(area([door]), { hall });
+  it("Use at a door holds the zone still at the door until enterArea takes her through", () => {
+    const layout = zone(area([door]), { hall });
     const states = run(layout, 0.5, press);
     const at = states.findIndex((state) => state.using !== undefined);
     expect(states.at(-1)?.using).toEqual(door.to);
     expect(states.at(-1)).toBe(states[at]);
-    const through = enterArea(DUCK, layout, door.to, states.at(-1) as LevelState);
+    const through = enterArea(DUCK, layout, door.to, states.at(-1) as ZoneState);
     expect([through.area, through.duck, through.using]).toEqual([
       "hall",
       startDuck(DUCK, { x: 500, y: GROUND.y }),
@@ -264,7 +264,7 @@ describe("random motion", () => {
     },
     origin: { x: 300, y: 200 },
   });
-  const layout = level(area([cart]));
+  const layout = zone(area([cart]));
   const pathOf = (attempt: number, seed = SEED) => {
     let state = enterArea(DUCK, layout, layout.start, {
       attempt,
@@ -274,7 +274,7 @@ describe("random motion", () => {
     });
     const xs: number[] = [];
     for (let step = 0; step < 600; step++) {
-      state = stepLevel(DUCK, layout, STEP, STILL, state);
+      state = stepZone(DUCK, layout, STEP, STILL, state);
       xs.push(state.objects[0]?.x ?? 0);
     }
     return xs;

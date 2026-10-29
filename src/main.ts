@@ -10,15 +10,15 @@ import { Game, Scale, WEBGL } from "phaser";
 // eslint-disable-next-line no-duplicate-imports -- the side-effect import above runs it first.
 import { CRASH_SCREEN } from "./crash/install";
 import { SCREEN } from "./data/screen";
-import { coverLevel, setupPhoneApp } from "./pwa";
+import { coverZone, setupPhoneApp } from "./pwa";
 import { BootScene } from "./scenes/BootScene";
-import { LevelScene } from "./scenes/LevelScene";
 import { PauseScene } from "./scenes/PauseScene";
+import { ZoneScene } from "./scenes/ZoneScene";
 
 // Scale.FIT: the base resolution stretches by whatever amount fills #game, keeping its aspect
 // ratio, with bars on the other axis. pixelArt keeps the stretch nearest-neighbour. The game is
 // constructed at once and loads while a fresh load checks for a newer version: BootScene holds
-// only the level for the check (launchReady).
+// only the zone for the check (launchReady).
 function startGame(): void {
   const game = new Game({
     height: SCREEN.height,
@@ -30,8 +30,8 @@ function startGame(): void {
     // waiting on the page compositor, and the high-performance GPU where there is a choice.
     render: { antialias: false, desynchronized: true, powerPreference: "high-performance" },
     scale: { autoCenter: Scale.CENTER_BOTH, mode: Scale.FIT },
-    // Later scenes draw over earlier ones: the pause card over the level.
-    scene: [BootScene, LevelScene, PauseScene],
+    // Later scenes draw over earlier ones: the pause card over the zone.
+    scene: [BootScene, ZoneScene, PauseScene],
     // WebGL only: the build's Phaser has no Canvas renderer (src/tools/phaserBuild.ts).
     type: WEBGL,
     width: SCREEN.width,
@@ -43,15 +43,15 @@ function startGame(): void {
   if (parent !== null) {
     new ResizeObserver(() => game.scale.refresh()).observe(parent);
   }
-  // The pause card and BootScene draw at most about MENU_FPS frames a second; the level, every
+  // The pause card and BootScene draw at most about MENU_FPS frames a second; the zone, every
   // display frame. Under the turn-sideways notice the game is paused and draws nothing.
-  capFrameRate(MENU_FPS, () => game.scene.isActive("level"), game);
+  capFrameRate(MENU_FPS, () => game.scene.isActive("zone"), game);
   CRASH_SCREEN.stopGameOnCrash(() => game.pause());
   // The game pauses while main.css shows the turn-sideways notice over it, and the update toast
   // waits until the notice is gone.
   const portrait = window.matchMedia("(orientation: portrait) and (pointer: coarse)");
   const followOrientation = () => {
-    coverLevel("sideways", portrait.matches);
+    coverZone("sideways", portrait.matches);
     if (portrait.matches) {
       game.pause();
     } else {

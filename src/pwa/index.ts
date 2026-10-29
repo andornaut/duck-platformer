@@ -30,7 +30,7 @@ const SERVICE_WORKER_URL = "/sw.js";
 const UPDATE_READY_ID = "update-ready";
 
 // How long a fresh load holds the first screen and the save for a newer version to be checked for
-// and installed, so it reloads into that version before the level draws; the game loads
+// and installed, so it reloads into that version before the zone draws; the game loads
 // meanwhile.
 const BOOT_WAIT_MS = 4000;
 // Input that counts as the player interacting, after which the page never reloads on its own.
@@ -44,7 +44,7 @@ let screenWakeLock: ScreenWakeLock | undefined;
 
 // The production build only: the dev server has no sw.js, and a worker would serve stale
 // modules over hot reloads. A page a version controls registers now, so its update check runs
-// while the game loads; a first visit registers once the level shows, so the precache does not
+// while the game loads; a first visit registers once the zone shows, so the precache does not
 // compete with the game's own downloads (registerWhenDue).
 function setupOfflinePlay(): void {
   if (!import.meta.env.PROD || !("serviceWorker" in navigator)) {
@@ -123,14 +123,14 @@ export function launchReady(): Promise<void> {
   return ready;
 }
 
-// The level's first frame has shown: the game page is now the home screen, where the update
+// The zone's first frame has shown: the game page is now the home screen, where the update
 // toast may show and a first visit registers the service worker.
-export function levelShown(): void {
+export function zoneShown(): void {
   home?.shown();
 }
 
-// Something covers the level, so the update toast waits until it is gone.
-export function coverLevel(what: HomeCover, covering: boolean): void {
+// Something covers the zone, so the update toast waits until it is gone.
+export function coverZone(what: HomeCover, covering: boolean): void {
   home?.cover(what, covering);
 }
 

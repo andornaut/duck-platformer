@@ -36,14 +36,14 @@ export const ARCHETYPES: Readonly<Record<string, Archetype>> = {
     motion: STATIC_MOTION,
     reaction: NO_REACTION,
   },
-  // The level's exit: Use at it clears the level.
+  // The zone's exit: Use at it clears the zone.
   exit: {
     collision: "use",
     interaction: NO_INTERACTION,
     motion: STATIC_MOTION,
     reaction: NO_REACTION,
   },
-  // Touching it restarts the level.
+  // Touching it restarts the zone.
   hazard: {
     collision: "hazard",
     interaction: NO_INTERACTION,
