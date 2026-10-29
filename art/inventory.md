@@ -41,34 +41,34 @@ Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with 
 
 ## Sprites
 
-| Key                | Type                       | Size   | Tags                            |
-| ------------------ | -------------------------- | ------ | ------------------------------- |
-| dog-pug            | street cast                | 44x32  | idle, walk, perk (once), talk   |
-| duck               | character                  | 48x42  | idle, walk, jump, flutter, land |
-| ferret             | character                  | 64x80  | idle, scheme, talk              |
-| ferret-trap-snap   | hazard, hit box 4,14,42,12 | 50x26  | set, snap (once)                |
-| frog-courier       | hazard, hit box 6,6,48,30  | 60x36  | ride, idle                      |
-| pedestrian-cat     | street cast                | 34x50  | walk, idle                      |
-| pedestrian-raccoon | street cast                | 34x50  | walk, idle                      |
-| pigeon             | street cast                | 22x22  | idle, flee (once), fly          |
-| portrait-duck      | portrait                   | 64x64  | neutral, happy, worried         |
-| portrait-ferret    | portrait                   | 64x64  | neutral, smug, annoyed          |
-| ui-answer          | sprite                     | 208x36 | normal, selected, pressed       |
-| ui-checkbox        | sprite                     | 20x20  | off, on                         |
-| ui-close           | sprite                     | 24x24  | normal, pressed                 |
-| ui-dialogue-box    | sprite                     | 640x96 | rest                            |
-| ui-forward-mark    | sprite                     | 10x14  | idle                            |
-| ui-name-tab        | nine-slice (2,2,2,2)       | 12x20  | amber, green, pink, tan         |
-| ui-pause           | sprite                     | 35x35  | rest, press, held               |
-| ui-portrait-frame  | sprite                     | 68x68  | rest                            |
-| ui-quit            | sprite                     | 20x20  | normal, pressed                 |
-| ui-quip-strip      | nine-slice (2,2,2,2)       | 12x24  | rest                            |
-| ui-resume          | sprite                     | 160x44 | normal, pressed                 |
-| ui-settings-card   | nine-slice (2,38,2,2)      | 16x48  | rest                            |
-| ui-settings-row    | nine-slice (2,2,2,2)       | 12x48  | rest                            |
-| ui-skip            | sprite                     | 78x20  | normal, pressed, disabled       |
-| ui-touch-jump      | sprite                     | 75x75  | rest, press, held               |
-| ui-touch-use       | sprite                     | 67x67  | rest, press, held               |
+| Key                | Type                                | Size   | Tags                            |
+| ------------------ | ----------------------------------- | ------ | ------------------------------- |
+| dog-pug            | street cast                         | 44x32  | idle, walk, perk (once), talk   |
+| duck               | character                           | 48x42  | idle, walk, jump, flutter, land |
+| ferret             | character, upright champagne ferret | 64x80  | idle, scheme, talk              |
+| ferret-trap-snap   | hazard, hit box 4,14,42,12          | 50x26  | set, snap (once)                |
+| frog-courier       | hazard, hit box 6,6,48,30           | 60x36  | ride, idle                      |
+| pedestrian-cat     | street cast                         | 34x50  | walk, idle                      |
+| pedestrian-raccoon | street cast                         | 34x50  | walk, idle                      |
+| pigeon             | street cast                         | 22x22  | idle, flee (once), fly          |
+| portrait-duck      | portrait                            | 64x64  | neutral, happy, worried         |
+| portrait-ferret    | portrait                            | 64x64  | neutral, smug, annoyed          |
+| ui-answer          | sprite                              | 208x36 | normal, selected, pressed       |
+| ui-checkbox        | sprite                              | 20x20  | off, on                         |
+| ui-close           | sprite                              | 24x24  | normal, pressed                 |
+| ui-dialogue-box    | sprite                              | 640x96 | rest                            |
+| ui-forward-mark    | sprite                              | 10x14  | idle                            |
+| ui-name-tab        | nine-slice (2,2,2,2)                | 12x20  | amber, green, pink, tan         |
+| ui-pause           | sprite                              | 35x35  | rest, press, held               |
+| ui-portrait-frame  | sprite                              | 68x68  | rest                            |
+| ui-quit            | sprite                              | 20x20  | normal, pressed                 |
+| ui-quip-strip      | nine-slice (2,2,2,2)                | 12x24  | rest                            |
+| ui-resume          | sprite                              | 160x44 | normal, pressed                 |
+| ui-settings-card   | nine-slice (2,38,2,2)               | 16x48  | rest                            |
+| ui-settings-row    | nine-slice (2,2,2,2)                | 12x48  | rest                            |
+| ui-skip            | sprite                              | 78x20  | normal, pressed, disabled       |
+| ui-touch-jump      | sprite                              | 75x75  | rest, press, held               |
+| ui-touch-use       | sprite                              | 67x67  | rest, press, held               |
 
 ## Tilesets
 

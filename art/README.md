@@ -136,15 +136,16 @@ The logo is the duck peeking over a big sky-blue DUCK, her head and back showing
 
 ## The ferret
 
-The villain is a chibi sable ferret in a stovepipe hat and bow tie, a talking animal that schemes against the duck's climb: in dialogue, in quips and through the hazards it sets. It is cute with a touch of slyness (soft round eyes, a small smile, steepled paws), never scary or cross, and is never fought. `art/tools/ferret.py` draws it; its docstring gives every frame's pose and timing.
+The villain is a champagne ferret standing up on its hind legs in a stovepipe hat and bow tie, a talking animal that schemes against the duck's climb: in dialogue, in quips and through the hazards it sets. It is cute with a touch of slyness (round glinting eyes under a soft lid, a small smile, steepled paws), never scary or cross, and is never fought. `art/tools/ferret.py` draws it; its docstring gives every frame's pose and timing.
 
-- Stance: erect on short hind legs, leaning slightly forward, the front of the body one smooth line from the neck to the hips over a full, round chest, with no S wave. A long neck, a small wedge head with a narrow, pointed snout and a long tail curling out behind along the ground keep it from reading as a dog.
-- Fur: brown with a tan light rim and dark-brown cel crescents; a cream belly, muzzle and round cheek with a hint of tan blush; a dark-brown mask around a soft, round dark eye with a cream catchlight, under a small plum brow.
-- Hat: a tall, narrow plum stovepipe with a dark-brown rim light and a red band. Nothing touches it.
-- Colour: tan, brown, dark brown, plum and cream, with red (the band and bow tie) as the one accent. Ink outline; internal edges two ramp steps darker than the part in front.
+- Shape: modelled on a natural ferret rather than a chibi. A long, slinky body stood upright with a small forward arch (a Bezier spine from the low hip to the high neck, stamped as overlapping discs), a small wedge head held level, short dark legs, and a tapering tail touching the ground behind as a third contact point.
+- Fur: a champagne (skin1) coat with a skin2 shade crescent along the belly and a cream rim on the back; brown legs and tail with dark-brown far legs; a white face band, a skin2 mask round the eye and a pink nose.
+- Eyes: round, 5px across with the corners cut, ink with a 2x2 white glint and a 1px cream glint, under a soft brown lid line that dips at the outer corner. Scheming, the lid drops to half.
+- Kept apart from the duck: the coat is 1.24:1 against her cream and the shade 2.12:1, its outline is dark brown where hers is dark slate, its legs, tail and mask sit well below anything on her, and it stands tall where she is round.
+- Hat: a tall, narrow plum stovepipe with a dark-brown rim light and a red band. Nothing touches it. Red (the band and bow tie) is the one accent; the hat and bow tie take an ink outline.
 - Frame 64x80, facing left (mirrored for right), feet on rows 76 to 78 and the outline on row 79.
-- Anchor: the frame's bottom edge sits on the collision box's bottom edge, and its body-centre x, 32 (the spine's centre line and the frame's, between columns 31 and 32), sits on the box centre, so mirroring it does not move it.
-- Portrait: 64x64, its head and long neck facing right towards the text, as the duck's does, cut off by the bottom edge, with one ink outer line on a transparent ground.
+- Anchor: the frame's bottom edge sits on the collision box's bottom edge, and its body-centre x, 32 (between columns 31 and 32), sits on the box centre, so mirroring it does not move it.
+- Portrait: 64x64, its head and neck facing right towards the text, as the duck's does, cut off by the bottom edge, with one ink outer line on a transparent ground. Neutral, smug (the lid at half) and annoyed (a brow dipped towards the snout).
 
 ## UI
 
