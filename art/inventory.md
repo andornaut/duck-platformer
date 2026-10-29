@@ -33,7 +33,7 @@ Plain PNGs and one ICO from `art/tools/icons.py`, not manifest entries.
 
 | Key               | Type                  | Size   | Tags                            |
 | ----------------- | --------------------- | ------ | ------------------------------- |
-| duck              | character             | 64x48  | idle, walk, jump, flutter, land |
+| duck              | character             | 48x42  | idle, walk, jump, flutter, land |
 | ferret            | character             | 64x80  | idle, scheme, talk              |
 | portrait-duck     | portrait              | 64x64  | neutral, happy, worried         |
 | portrait-ferret   | portrait              | 64x64  | neutral, smug, annoyed          |

@@ -1,26 +1,25 @@
-"""The site's favicon and app icons: the duck's head and bow on a green disc.
+"""The site's favicon and app icons: the duck's head on a green disc.
 
 Usage, from the repository root:
   python3 -I art/tools/icons.py build            write every icon below
   python3 -I art/tools/icons.py preview OUT.png  every icon at 1x on light and dark ground, the 16 and 32 at 8x
 
 Plain PNGs (and one ICO), not Aseprite sprites and not manifest entries. Every pixel is fully opaque or
-fully transparent. The head, bill, eye, blush and bow come from art/tools/duck.py's shapes, placed as
-fractions of the icon's side, so each drawing is its own rasterization rather than a downscale.
+fully transparent. The head is the sprite's (art/tools/duck.py): a round cream head with a tan crescent, a
+white rim, a square ink dot eye and a short plain orange bill, outlined in dark slate, placed as fractions of
+the icon's side, so each drawing is its own rasterization rather than a downscale.
 
-| Path                               | Size    | Drawing                     | Ground                          |
-| ---------------------------------- | ------- | --------------------------- | ------------------------------- |
-| public/art/favicon-16.png          | 16x16   | 16, hand-placed bow and eye | disc, transparent outside       |
-| public/art/favicon.png             | 32x32   | 32                          | disc, transparent outside       |
-| public/favicon.ico                 | 16, 32  | the two favicons above      | disc, transparent outside       |
-| public/icons/apple-touch-icon.png  | 180x180 | 90, scaled 2x               | full-bleed green square         |
-| public/icons/icon-192.png          | 192x192 | 64, scaled 3x               | disc, transparent outside       |
-| public/icons/icon-512.png          | 512x512 | 64, scaled 8x               | disc, transparent outside       |
-| public/icons/icon-maskable-512.png | 512x512 | 64 at 78%, scaled 8x        | full-bleed green, subject in 80% |
+| Path                               | Size    | Drawing                | Ground                           |
+| ---------------------------------- | ------- | ---------------------- | -------------------------------- |
+| public/art/favicon-16.png          | 16x16   | 16, hand-placed        | disc, transparent outside        |
+| public/art/favicon.png             | 32x32   | 32                     | disc, transparent outside        |
+| public/favicon.ico                 | 16, 32  | the two favicons above | disc, transparent outside        |
+| public/icons/apple-touch-icon.png  | 180x180 | 90, scaled 2x          | full-bleed green square          |
+| public/icons/icon-192.png          | 192x192 | 64, scaled 3x          | disc, transparent outside        |
+| public/icons/icon-512.png          | 512x512 | 64, scaled 8x          | disc, transparent outside        |
+| public/icons/icon-maskable-512.png | 512x512 | 64 at 78%, scaled 8x   | full-bleed green, subject in 80% |
 
-At 16px only the bow and bill have to read: no mouth line, catchlight or blush. The 32px drawing adds the
-eye, blush and mouth line; 64px and up add the catchlight and the tilted two-loop bow. At 32px and below the
-bow is a level bow-tie pinched at the knot, which reads as a bow at that size.
+At 16px the head is a hand-placed circle with a 3x2 bill and a 2x2 eye; from 32px up the rim light shows.
 """
 
 import os
@@ -43,21 +42,8 @@ OUTPUTS = {
 ICO = "public/favicon.ico"
 MASK_SCALE = 0.78  # the subject's scale in the maskable icon, about the centre
 
-# The head in fractions of the side: head (cx, cy, r), bill (cx, cy, rx, ry), eye (x, y, w, h),
-# bow (knot x, knot y, width, tilt in radians).
-HEAD = dict(head=(0.47, 0.57, 0.30), bill=(0.80, 0.63, 0.12, 0.09), eye=(0.55, 0.45, 0.06, 0.10),
-            bow=(0.38, 0.28, 0.40, -0.35))
-BOW16 = ["PP...PP", "PPPMPPP", "PP...PP"]
-BOW32 = [".PPP...PPP.", "PPPPPMPPPPP", "PPPPPMPPPPP", "PPPPPMPPPPP", ".PPP...PPP."]
-
-
-def bow_tie(g, pattern, kx, ky):
-    """A level bow-tie, pinched at the knot, centred on kx, ky: P pink, M the mauve knot."""
-    h, w = len(pattern), len(pattern[0])
-    for j, row in enumerate(pattern):
-        for i, ch in enumerate(row):
-            if ch in "PM":
-                g.p(kx - w // 2 + i, ky - h // 2 + j, "pink" if ch == "P" else "mauve")
+# The head in fractions of the side: head (cx, cy, r), bill (x, y, w, h), eye (x, y, side).
+HEAD = dict(head=(0.46, 0.54, 0.31), bill=(0.70, 0.52, 0.17, 0.12), eye=(0.50, 0.36, 0.09))
 
 
 def scaled_spec(spec, f):
@@ -67,40 +53,26 @@ def scaled_spec(spec, f):
 
     return dict(head=(*at(*spec["head"][:2]), spec["head"][2] * f),
                 bill=(*at(*spec["bill"][:2]), spec["bill"][2] * f, spec["bill"][3] * f),
-                eye=(*at(*spec["eye"][:2]), spec["eye"][2] * f, spec["eye"][3] * f),
-                bow=(*at(*spec["bow"][:2]), spec["bow"][2] * f, spec["bow"][3]))
+                eye=(*at(*spec["eye"][:2]), spec["eye"][2] * f))
 
 
 def head16(g):
-    """The 16px drawing, hand-placed: head, a 3x2 bill, a 1x2 eye and the bow-tie."""
-    g.ell(7, 9.5, 4.6, 4.4, "cream", "tan")
-    g.rect(11, 9, 3, 2, "orange")
-    g.p(14, 9, None)
-    g.rect(9, 7, 1, 2, "ink")
-    bow_tie(g, BOW16, 6, 4)
+    """The 16px drawing, hand-placed: the head, a 3x2 bill and a 2x2 eye."""
+    g.ell(7, 8.5, 5, 4.8, "cream", "tan")
+    g.rect(11, 8, 3, 2, "orange")
+    g.rect(8, 5, 2, 2, "ink")
 
 
 def head(g, S, spec):
     """The head at side S from a spec in fractions of the side."""
     ks = max(1, round(S / 22))
     cx, cy, r = spec["head"]
-    duck.cel(g, duck.in_ell(cx * S, cy * S, r * S, r * S * 0.94), "cream", "tan", "white" if S >= 32 else None,
-             ks, 1)
-    bx, by, brx, bry = spec["bill"]
-    g.ell(bx * S, by * S, max(1.6, brx * S), max(1.2, bry * S), "orange")
-    if S >= 32:
-        g.rect(int((bx - brx * 0.8) * S), int((by + bry * 0.25) * S), round(brx * 1.6 * S), 1, "rust")
-    ex, ey, ew, eh = spec["eye"]
-    w, h = max(2, round(ew * S)), max(3, round(eh * S))
-    g.rect(int(ex * S), int(ey * S), w, h, "ink")
-    if S >= 48:
-        g.rect(int(ex * S), int(ey * S), w // 2, w // 2, "white")
-    g.rect(int(ex * S) - w + 1, int(ey * S) + h + 1, w, max(1, round(S / 32)), "pink")
-    kx, ky, bw, ang = spec["bow"]
-    if S <= 32:
-        bow_tie(g, BOW32, round(kx * S), round(ky * S))
-    else:
-        duck.bow(g, kx * S, ky * S, ang=ang, size=bw * S / 23)
+    duck.cel(g, duck.in_ell(cx * S, cy * S, r * S, r * S), duck.BASE, duck.SHADE, duck.LIGHT, ks, 1)
+    bx, by, bw, bh = spec["bill"]
+    g.rect(round(bx * S), round(by * S), max(3, round(bw * S)), max(2, round(bh * S)), "orange")
+    ex, ey, es = spec["eye"]
+    e = max(2, round(es * S))
+    g.rect(round(ex * S), round(ey * S), e, e, "ink")
 
 
 def icon(S, ground):
@@ -111,7 +83,7 @@ def icon(S, ground):
         head16(g)
     else:
         head(g, S, scaled_spec(HEAD, MASK_SCALE) if ground == "mask" else HEAD)
-    fig = g.outlined(lambda c: K["ink"])
+    fig = g.outlined(lambda c: K[duck.OUTLINE])
     out = Grid(S, S)
     if ground == "disc":
         out.ell(S / 2, S / 2, S / 2, S / 2, GROUND)

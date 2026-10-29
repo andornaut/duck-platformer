@@ -57,7 +57,7 @@ In order:
 - A nine-slice texture carries its margins as an Aseprite slice named after its key and as `slice` in its manifest entry.
 - `art/tools/fonts.py` rasterizes the fonts in `art/fonts/` into BMFonts in `public/art/fonts/`, white for tinting.
 - `art/tools/palette.py` writes `public/art/palette.json`, listed under `data` in the manifest: `colours` maps each palette name to `#rrggbb`, `darker` maps each colour one ramp step down, and `dim2` two steps down, the settings card's dim. Keys are sorted.
-- `art/tools/icons.py` draws the favicon and app icons as plain PNGs, not sprites or manifest entries: `public/favicon.ico` (16 and 32), `public/art/favicon-16.png` and `public/art/favicon.png`, and in `public/icons/` the 180 apple-touch icon on a green square, the 192 and 512 icons on a green disc with a transparent outside, and a 512 maskable icon with the subject inside the central 80%. The 16 and 32 are drawn natively; the larger icons are 64 and 90 drawings scaled by whole numbers.
+- `art/tools/icons.py` draws the favicon and app icons, the duck's head on a green disc, as plain PNGs, not sprites or manifest entries: `public/favicon.ico` (16 and 32), `public/art/favicon-16.png` and `public/art/favicon.png`, and in `public/icons/` the 180 apple-touch icon on a green square, the 192 and 512 icons on a green disc with a transparent outside, and a 512 maskable icon with the subject inside the central 80%. The 16 and 32 are drawn natively; the larger icons are 64 and 90 drawings scaled by whole numbers.
 - `art/inventory.md` lists every asset (key, type, size, tags).
 - Art reads game layout and data from the generated export files the game writes, never from `src/`. The export files are in `shared/export/`. Art writes the shared data files the game reads (`lights.json`, `palette.json`).
 - Keys are kebab-case, named after what the player sees. Internal names match displayed names.
@@ -95,7 +95,7 @@ In order:
 
 | Sprite          | Frame |
 | --------------- | ----- |
-| Duck            | 64x48 |
+| Duck            | 48x42 |
 | Duck portrait   | 64x64 |
 | Ferret          | 64x80 |
 | Ferret portrait | 64x64 |
@@ -110,16 +110,15 @@ In order:
 
 ## The duck
 
-The protagonist is a cute, chibi, cream-coloured female duck, drawn facing right and mirrored for left. `art/tools/duck.py` draws her; its docstring gives every frame's pose, timing and squash and stretch table.
+The protagonist is a wide, round, cream-coloured duck, drawn facing right and mirrored for left. `art/tools/duck.py` draws her; its docstring gives every frame's pose, timing and squash and stretch table.
 
-- Proportions: her head is about 1.5x the area of her body, set low on a round, squat body.
-- Bow: a pink two-loop bow on top of her head, tilted along the back of the crown so one loop overhangs the back of her head. Two level loops on a round head read as ears in silhouette.
-- Bill: short, round and orange, with a rust mouth line.
-- Body: cream, with tan cel crescents and a white rim light. The wing is a plain tan comma with a dark-brown line, the tail a round nub, and the feet tiny orange stubs with no legs.
-- Every jump flutters (a slow, steerable fall), so the flutter is her signature: the wing raised up and back with a clear gap from the head, the body 3px higher, and the feet tucked under her belly.
-- Frame 64x48, feet on rows 44 to 46 and the outline on row 47.
-- Anchor: the frame's bottom edge sits on the collision box's bottom edge, and her body-centre x, 32 (the frame's centre line, between columns 31 and 32), sits on the box centre, so mirroring her does not move it.
-- Portrait: 64x64, her head and shoulders facing right, cut off by the bottom edge, with one ink outer line on a transparent ground. The dialogue box's 68x68 frame supplies the backing.
+- Shape: a wide, round blob of a body with a small round head set into its top at the front, a square ink dot eye and a short, plain orange bill. No bow.
+- Colour: cream, with tan cel crescents and a white rim light. The wing is a flat tan patch, the feet tiny orange stubs. Dark-slate outline.
+- Every jump flutters (a slow, steerable fall), so the flutter is her signature: the wing raised up and back from the top of her back, the body 2px higher, and the feet tucked under her belly.
+- Frame 48x42, feet on rows 39 and 40 and the outline on row 41.
+- Collision body 24x36 (2x3 tiles), anchored bottom-centre: the frame's bottom edge sits on the body's bottom edge, and her body-centre x, 24 (the frame's centre line, between columns 23 and 24), sits on the body's centre, so mirroring her does not move it.
+- Overhang of the 24x36 body at rest: her back 5px on the left, her head and bill 10px on the right, and 2px of the body's height above her head left empty. The raised wing reaches up to 9px left and 5px above the body.
+- Portrait: 64x64, her head set into the top of her body, facing right, cut off by the bottom edge, with one ink outer line on a transparent ground. The dialogue box's 68x68 frame supplies the backing.
 
 ## The ferret
 
