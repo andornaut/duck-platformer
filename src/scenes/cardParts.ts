@@ -1,6 +1,12 @@
+import { inkWidth } from "@andornaut/game-kit/text/bitmapFont";
+import {
+  phaserBitmapFont,
+  type PhaserFontData,
+} from "@andornaut/game-kit/text/phaser/phaserBitmapFont";
 import type { GameObjects, Scene } from "phaser";
 
 import type { Point, Rect } from "../data/types";
+import { centredLabel, MARK_DROP, PLAY_MARK } from "../layout/buttonLabel";
 import { CARD_TEXT_SCALE } from "../layout/pauseCard";
 import { ART_MANIFEST_KEY, type ArtManifest } from "../view/aseprite";
 import type { Palette } from "../view/dim";
@@ -59,4 +65,34 @@ export function addCardText(
     .setScale(CARD_TEXT_SCALE)
     .setOrigin(0)
     .setTint(colour);
+}
+
+// A button's label: its text, and art's play mark before it on Start, Resume and Continue.
+export interface ButtonLabel {
+  readonly label: GameObjects.BitmapText;
+  readonly mark?: GameObjects.Image;
+}
+
+// A button's label in body text, centred across the button with the play mark before it when
+// marked, its origin at labelY.
+export function addButtonLabel(
+  scene: Scene,
+  button: Rect,
+  labelY: number,
+  text: string,
+  options: { readonly colour: number; readonly marked: boolean },
+): ButtonLabel {
+  const font = phaserBitmapFont(scene.cache.bitmapFont.get(BODY_FONT).data as PhaserFontData);
+  const ink = inkWidth(font, CARD_TEXT_SCALE, text);
+  const { labelX, markX } = centredLabel(button, ink, options.marked ? PLAY_MARK : undefined);
+  const label = addCardText(scene, BODY_FONT, { x: labelX, y: labelY }, text, options.colour);
+  return markX === undefined
+    ? { label }
+    : { label, mark: scene.add.image(markX, labelY + MARK_DROP, "ui-play-mark").setOrigin(0) };
+}
+
+// Moves a button's label, and its mark with it, to labelY: a pressed button's sink.
+export function placeButtonLabel({ label, mark }: ButtonLabel, labelY: number): void {
+  label.setY(labelY);
+  mark?.setY(labelY + MARK_DROP);
 }

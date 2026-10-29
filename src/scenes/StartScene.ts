@@ -2,16 +2,10 @@ import { animationKey } from "@andornaut/game-kit/art/aseprite";
 import { isFirefoxAndroidApp } from "@andornaut/game-kit/pwa/backNavigation";
 import { browserExitPage, exitApp } from "@andornaut/game-kit/pwa/exitApp";
 import { containsPoint } from "@andornaut/game-kit/rect";
-import { inkWidth } from "@andornaut/game-kit/text/bitmapFont";
-import {
-  phaserBitmapFont,
-  type PhaserFontData,
-} from "@andornaut/game-kit/text/phaser/phaserBitmapFont";
 import { type GameObjects, type Input, Scene } from "phaser";
 
 import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
-import { CARD_TEXT_SCALE } from "../layout/pauseCard";
 import {
   type IconButtonLayout,
   type StartScreenLayout,
@@ -19,7 +13,13 @@ import {
 } from "../layout/startScreen";
 import { PHONE_EVENTS } from "../pwa";
 import { setTouchControlsShown } from "../settings/touchControls";
-import { addCardText, addSlice, paletteColour, TITLE_FONT } from "./cardParts";
+import {
+  addButtonLabel,
+  addSlice,
+  type ButtonLabel,
+  paletteColour,
+  placeButtonLabel,
+} from "./cardParts";
 import type { SettingsData, SettingsOpener, SettingsScene } from "./SettingsScene";
 
 const LOGO = "logo";
@@ -50,7 +50,7 @@ export class StartScene extends Scene implements SettingsOpener {
   private pressed: Control | undefined;
   private settingsOpen = false;
   private startButton!: GameObjects.Sprite;
-  private startLabel!: GameObjects.BitmapText;
+  private startLabel!: ButtonLabel;
 
   constructor() {
     super("start");
@@ -101,16 +101,10 @@ export class StartScene extends Scene implements SettingsOpener {
       ...(exit === undefined ? [] : [["exit", this.iconButton(exit, "ui-quit")] as const]),
     ]);
     this.startButton = this.add.sprite(start.button.x, start.button.y, "ui-start").setOrigin(0);
-    const label = TEXT.start.start;
-    const font = phaserBitmapFont(this.cache.bitmapFont.get(TITLE_FONT).data as PhaserFontData);
-    const width = inkWidth(font, CARD_TEXT_SCALE, label);
-    this.startLabel = addCardText(
-      this,
-      TITLE_FONT,
-      { x: start.button.x + Math.floor((start.button.width - width) / 2), y: start.labelY },
-      label,
-      this.colour("ink"),
-    );
+    this.startLabel = addButtonLabel(this, start.button, start.labelY, TEXT.start.start, {
+      colour: this.colour("ink"),
+      marked: true,
+    });
   }
 
   // A nav icon button: its face, and its icon (the icon's first frame) over it.
@@ -128,7 +122,7 @@ export class StartScene extends Scene implements SettingsOpener {
     this.pressed = control;
     const { start } = this.layout;
     this.startButton.play(animationKey("ui-start", control === "start" ? "pressed" : "normal"));
-    this.startLabel.setY(control === "start" ? start.pressedLabelY : start.labelY);
+    placeButtonLabel(this.startLabel, control === "start" ? start.pressedLabelY : start.labelY);
     for (const [name, { face, icon, layout }] of this.buttons) {
       const pressed = control === name;
       face.play(animationKey("ui-icon-button", pressed ? "pressed" : "normal"));

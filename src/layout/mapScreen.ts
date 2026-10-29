@@ -4,15 +4,15 @@ import type { Arrowhead, PathStroke } from "../view/mapPath";
 // Art's paper map (art/README.md, Map), in base pixels. Offsets marked "from the centre" are from
 // a node's centre. The paper fills the screen; each marker's centre pixel sits on its node's
 // centre; a zone's icon sits centred over its marker; the duck stands on the current marker's
-// ring. Continue's label sinks to pressedLabel while Continue is pressed. At a fork, a choice
-// button per route on, gap apart and centred on middle at y, takes Continue's place; its press
-// area starts hitAbove px above it, and its label (at most labelWidth wide) and arrow sit at their
-// offsets inside it.
+// ring. Continue's label, centred with its play mark, starts at labelY, sinking to pressedLabelY
+// while Continue is pressed. At a fork, a choice button per route on, gap apart and centred on
+// middle at y, takes Continue's place; its press area starts hitAbove px above it, and its label
+// (at most labelWidth wide) and arrow sit at their offsets inside it.
 export const MAP_SCREEN = {
   continue: {
     hit: { height: 44, width: 160, x: 280, y: 300 } satisfies Rect,
-    label: { x: 339, y: 311 } satisfies Point,
-    pressedLabel: { x: 339, y: 313 } satisfies Point,
+    labelY: 311,
+    pressedLabelY: 313,
   },
   duck: {
     fork: { x: -13, y: -36 } satisfies Point,

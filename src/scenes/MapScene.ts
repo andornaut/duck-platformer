@@ -30,6 +30,7 @@ import {
   pathLook,
 } from "../view/mapMarks";
 import { bentCurve, pathRects } from "../view/mapPath";
+import { addButtonLabel, type ButtonLabel, placeButtonLabel } from "./cardParts";
 
 const PALETTE = "palette";
 const BODY_FONT = "font-body";
@@ -65,7 +66,7 @@ export class MapScene extends Scene {
   private choices: ChoiceButton[] = [];
   private colours: Readonly<Record<string, string>> = {};
   private continueArt: GameObjects.Sprite | undefined;
-  private continueLabel: GameObjects.BitmapText | undefined;
+  private continueLabel: ButtonLabel | undefined;
   private paths!: GameObjects.Graphics;
   private played = false;
   private pressed: Control | undefined;
@@ -204,12 +205,12 @@ export class MapScene extends Scene {
   }
 
   private addContinue(): void {
-    const { hit, label } = MAP_SCREEN.continue;
+    const { hit, labelY } = MAP_SCREEN.continue;
     this.continueArt = this.add.sprite(hit.x, hit.y, "ui-resume").setOrigin(0);
-    this.continueLabel = this.add
-      .bitmapText(label.x, label.y, TITLE_FONT, TEXT.map.continue)
-      .setScale(MAP_SCREEN.textScale)
-      .setTint(this.colour("ink"));
+    this.continueLabel = addButtonLabel(this, hit, labelY, TEXT.map.continue, {
+      colour: this.colour("ink"),
+      marked: true,
+    });
   }
 
   private addChoices(): void {
@@ -245,10 +246,12 @@ export class MapScene extends Scene {
   // a fork-choice button turns tan; otherwise the chosen one shows selected.
   private showPressed(control: Control | undefined): void {
     this.pressed = control;
-    const { label, pressedLabel } = MAP_SCREEN.continue;
+    const { labelY, pressedLabelY } = MAP_SCREEN.continue;
     const pressed = control === "continue";
     this.continueArt?.play(animationKey("ui-resume", pressed ? "pressed" : "normal"));
-    this.continueLabel?.setY(pressed ? pressedLabel.y : label.y);
+    if (this.continueLabel) {
+      placeButtonLabel(this.continueLabel, pressed ? pressedLabelY : labelY);
+    }
     this.choices.forEach((choice, i) => {
       const tag = control === i ? "pressed" : i === this.chosen ? "selected" : "normal";
       choice.art.play(animationKey("ui-fork-choice", tag));

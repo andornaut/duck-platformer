@@ -11,7 +11,17 @@ import { type CardAction, cardBackAction, cardKeyAction } from "../pause/cardInp
 import { coverZone, PHONE_EVENTS, startWakeLock, stopWakeLock, zoneShown } from "../pwa";
 import { setTouchControlsShown, touchControlsShown } from "../settings/touchControls";
 import { dimColour, type Palette } from "../view/dim";
-import { addCardText, addSlice, BODY_FONT, palette, paletteColour, TITLE_FONT } from "./cardParts";
+import {
+  addButtonLabel,
+  addCardText,
+  addSlice,
+  BODY_FONT,
+  type ButtonLabel,
+  palette,
+  paletteColour,
+  placeButtonLabel,
+  TITLE_FONT,
+} from "./cardParts";
 import type { SettingsData, SettingsOpener, SettingsScene } from "./SettingsScene";
 import type { ZoneScene } from "./ZoneScene";
 
@@ -39,7 +49,7 @@ export class PauseScene extends Scene implements SettingsOpener {
   private pressed: Control | undefined;
   private homeLabel!: GameObjects.BitmapText;
   private resume!: GameObjects.Sprite;
-  private resumeLabel!: GameObjects.BitmapText;
+  private resumeLabel!: ButtonLabel;
   private settingsLabel!: GameObjects.BitmapText;
   private state: "closed" | "open" | "opening" | "settings" = "closed";
 
@@ -204,13 +214,10 @@ export class PauseScene extends Scene implements SettingsOpener {
     this.homeLabel = this.text(BODY_FONT, home.label.x, home.label.y, words.home, cream);
     this.closeX = this.add.sprite(close.at.x, close.at.y, "ui-close").setOrigin(0);
     this.resume = this.add.sprite(resume.hit.x, resume.hit.y, "ui-resume").setOrigin(0);
-    this.resumeLabel = this.text(
-      TITLE_FONT,
-      resume.label.x,
-      resume.label.y,
-      words.resume,
-      this.colour("ink"),
-    );
+    this.resumeLabel = addButtonLabel(this, resume.hit, resume.labelY, words.resume, {
+      colour: this.colour("ink"),
+      marked: true,
+    });
     this.setPressed(undefined);
     return this.add.container(0, 0, [
       ...objects,
@@ -218,7 +225,8 @@ export class PauseScene extends Scene implements SettingsOpener {
       this.settingsLabel,
       this.homeLabel,
       this.resume,
-      this.resumeLabel,
+      this.resumeLabel.label,
+      ...(this.resumeLabel.mark === undefined ? [] : [this.resumeLabel.mark]),
     ]);
   }
 
@@ -227,12 +235,12 @@ export class PauseScene extends Scene implements SettingsOpener {
   // Resume's sinks.
   private setPressed(control: Control | undefined): void {
     this.pressed = control;
-    const { label, pressedLabel } = PAUSE_CARD.resume;
+    const { labelY, pressedLabelY } = PAUSE_CARD.resume;
     this.closeX.play(animationKey("ui-close", control === "close" ? "pressed" : "normal"));
     this.homeLabel.setTint(this.colour(control === "home" ? "white" : "cream"));
     this.settingsLabel.setTint(this.colour(control === "settings" ? "white" : "cream"));
     this.resume.play(animationKey("ui-resume", control === "resume" ? "pressed" : "normal"));
-    this.resumeLabel.setY(control === "resume" ? pressedLabel.y : label.y);
+    placeButtonLabel(this.resumeLabel, control === "resume" ? pressedLabelY : labelY);
     this.pauseButton.chain();
     if (control === "pauseButton") {
       this.pauseButton

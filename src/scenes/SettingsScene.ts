@@ -12,6 +12,7 @@ import { type GameObjects, type Input, Scene } from "phaser";
 
 import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
+import { centredLabel } from "../layout/buttonLabel";
 import { CARD_TEXT_SCALE } from "../layout/pauseCard";
 import { focusRingAround, SETTINGS_CARD, STEPS_CARD } from "../layout/settingsCard";
 import { settingsKeyAction, stepFocus } from "../pause/settingsInput";
@@ -225,8 +226,7 @@ export class SettingsScene extends Scene {
         this.colour("ink"),
       );
       this.installButtonLabel.setX(
-        install.button.x +
-          Math.floor((install.button.width - this.inkWidth(words.installButton)) / 2),
+        centredLabel(install.button, this.inkWidth(words.installButton)).labelX,
       );
       objects.push(
         addSlice(this, "ui-settings-row", install.row),

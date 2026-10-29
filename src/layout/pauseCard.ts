@@ -2,8 +2,8 @@ import type { Point, Rect } from "../data/types";
 
 // Art's pause card (art/README.md, Pause, settings and install cards), in base pixels: a 9-slice
 // card with the title in its header, the close X at its top right, the Settings and Return home
-// rows, and Resume at the foot. Each label's point is its text's top-left. Resume's label sinks to
-// pressedLabel while Resume is pressed.
+// rows, and Resume at the foot. Each label's point is its text's top-left. Resume's label, centred
+// with its play mark, starts at labelY, sinking to pressedLabelY while Resume is pressed.
 export const PAUSE_CARD = {
   card: { height: 236, width: 368, x: 176, y: 88 } satisfies Rect,
   close: { at: { x: 510, y: 94 } satisfies Point, hit: { height: 44, width: 44, x: 500, y: 88 } },
@@ -14,8 +14,8 @@ export const PAUSE_CARD = {
   },
   resume: {
     hit: { height: 44, width: 160, x: 280, y: 264 } satisfies Rect,
-    label: { x: 339, y: 275 } satisfies Point,
-    pressedLabel: { x: 339, y: 277 } satisfies Point,
+    labelY: 275,
+    pressedLabelY: 277,
   },
   settings: {
     icon: { x: 198, y: 152 } satisfies Point,
