@@ -41,7 +41,7 @@ describe("touchRoleAt", () => {
     [{ x: jump.hit.x + jump.hit.width - 1, y: jump.hit.y + jump.hit.height - 1 }, "jump"],
     [{ x: 72, y: 300 }, "move"],
     [{ x: 320, y: 180 }, "move"],
-    [{ x: jump.hit.x, y: jump.hit.y - 1 }, "move"],
+    [{ x: use.hit.x, y: use.hit.y - 1 }, "move"],
     [{ x: use.hit.x - 1, y: use.centre.y }, "move"],
   ])("takes %j as %s", (point, role) => {
     expect(touchRoleAt(point)).toBe(role);

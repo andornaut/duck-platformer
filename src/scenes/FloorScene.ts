@@ -1,9 +1,14 @@
 import { frameSteps, startStepClock, type StepClock } from "@andornaut/game-kit/clock/fixedStep";
+import {
+  phaserBitmapFont,
+  type PhaserFontData,
+} from "@andornaut/game-kit/text/phaser/phaserBitmapFont";
 import { type GameObjects, Input, Scene } from "phaser";
 
 import { DUCK } from "../data/duck";
 import { SCREEN } from "../data/screen";
 import { TEST_FLOOR } from "../data/testFloor";
+import { TEXT } from "../data/text";
 import { TOUCH } from "../data/touch";
 import type { Rect } from "../data/types";
 import {
@@ -13,11 +18,18 @@ import {
   touchIntent,
   touchRoleAt,
 } from "../input/intent";
-import { TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
+import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
 import { type FloorState, startFloor, stepFloor } from "../rules/floor";
 import { animKey, type AsepriteSheet, sheetTags, type TagFrame, tagMs } from "../view/aseprite";
 import { duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
-import { buttonHeld, centredAt, controlTag, trackPress } from "../view/touchControls";
+import {
+  buttonHeld,
+  centredAt,
+  controlTag,
+  labelAt,
+  labelColour,
+  trackPress,
+} from "../view/touchControls";
 
 const STEP_MS = 1000 / 60;
 // After a stall, run at most this much time at once rather than lurching ahead.
@@ -34,9 +46,10 @@ const COLOURS = {
 const DUCK_SPRITE = "duck";
 const CONTROL_SPRITES: Readonly<Record<TouchControl, string>> = {
   jump: "ui-touch-jump",
-  // Art renames this sprite ui-touch-use with the button redesign.
-  use: "ui-touch-interact",
+  use: "ui-touch-use",
 };
+const LABEL_FONT = "font-body";
+const PALETTE = "palette";
 
 // Starts a sprite's tag, unless it already shows it, playing or finished on its last frame.
 function show(sprite: GameObjects.Sprite, tag: string): void {
@@ -50,6 +63,8 @@ function show(sprite: GameObjects.Sprite, tag: string): void {
 export class FloorScene extends Scene {
   private clock: StepClock = startStepClock;
   private readonly controls = new Map<TouchControl, GameObjects.Sprite>();
+  private readonly labels = new Map<TouchControl, GameObjects.BitmapText>();
+  private colours: Readonly<Record<string, string>> = {};
   private duck!: GameObjects.Sprite;
   private duckPose: DuckPose = startPose;
   private floor!: FloorState;
@@ -91,13 +106,24 @@ export class FloorScene extends Scene {
     this.duck = this.add.sprite(0, 0, DUCK_SPRITE).setOrigin(0);
     this.cameras.main.startFollow(this.focus, true);
 
+    const font = phaserBitmapFont(this.cache.bitmapFont.get(LABEL_FONT).data as PhaserFontData);
+    this.colours = (this.cache.json.get(PALETTE) as { colours: Record<string, string> }).colours;
     for (const control of Object.keys(CONTROL_SPRITES) as TouchControl[]) {
       const sprite = this.add
         .sprite(0, 0, CONTROL_SPRITES[control])
         .setOrigin(0)
         .setScrollFactor(0);
-      const at = centredAt(TOUCH_CONTROLS[control].centre, sprite.frame);
+      const { centre } = TOUCH_CONTROLS[control];
+      const at = centredAt(centre, sprite.frame);
       this.controls.set(control, sprite.setPosition(at.x, at.y));
+      const text = TEXT.buttons[control];
+      const origin = labelAt(font, centre, text);
+      const label = this.add
+        .bitmapText(origin.x, origin.y, LABEL_FONT, text)
+        .setScale(LABEL_SCALE)
+        .setOrigin(0)
+        .setScrollFactor(0);
+      this.labels.set(control, label);
     }
     this.watchKeys();
     this.watchTouches();
@@ -184,7 +210,7 @@ export class FloorScene extends Scene {
   }
 
   // The buttons show only on a touch screen. A pressed button plays its press tag, then holds
-  // until release. Nothing marks where a move touch started.
+  // until release, its label white until then. Nothing marks where a move touch started.
   private drawControls(nowMs: number, touches: readonly HeldTouch[]): void {
     const shown = window.matchMedia("(pointer: coarse)").matches;
     for (const [control, sprite] of this.controls) {
@@ -195,7 +221,9 @@ export class FloorScene extends Scene {
       } else {
         this.presses.set(control, since);
       }
-      show(sprite, controlTag(this.sheet(sprite.texture.key), nowMs, since));
+      const tag = controlTag(this.sheet(sprite.texture.key), nowMs, since);
+      show(sprite, tag);
+      this.labels.get(control)?.setVisible(shown).setTint(labelColour(this.colours, tag));
     }
   }
 }
