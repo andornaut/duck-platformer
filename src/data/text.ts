@@ -10,4 +10,12 @@ export const TEXT: GameText = {
     reload: "Reload",
     title: "Something went wrong",
   },
+  pause: {
+    hidden: "Hidden",
+    quit: "Quit",
+    resume: "Resume",
+    shown: "Shown",
+    title: "Paused",
+    touchControls: "Touch controls",
+  },
 };

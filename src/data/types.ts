@@ -53,6 +53,15 @@ export interface GameText {
     readonly reload: string;
     readonly title: string;
   };
+  // The pause card: its title, the Touch controls row and its two states, Quit and Resume.
+  readonly pause: {
+    readonly hidden: string;
+    readonly quit: string;
+    readonly resume: string;
+    readonly shown: string;
+    readonly title: string;
+    readonly touchControls: string;
+  };
 }
 
 // The touch controls, in base pixels.
