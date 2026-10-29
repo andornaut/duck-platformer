@@ -20,17 +20,24 @@
     --inset-top: env(safe-area-inset-right, 0px);
   }
 
-  /* Turned about its top-left corner, then moved right by its own height, so it covers the
-     screen exactly. Its fixed children (the toast, the build label) turn with it. The html
-     prefix outranks public/site.css and public/nav.css whichever loads last. */
+  /* html's box, the visible page, measures the turned frame as a size container. Viewport
+     units can count the system bars in an installed app, and would make the frame overrun the
+     screen. */
+  html {
+    container-type: size;
+  }
+
+  /* Turned about its top-left corner, then moved right by its own height, so it covers html's
+     box exactly. Its fixed children (the toast) turn with it. The html prefix outranks
+     public/site.css and public/nav.css whichever loads last. */
   html > body {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100dvh;
-    height: 100dvw;
+    width: 100cqh;
+    height: 100cqw;
     padding-top: var(--inset-top);
-    transform: translateX(100dvw) rotate(90deg);
+    transform: translateX(100cqw) rotate(90deg);
     transform-origin: top left;
   }
 
