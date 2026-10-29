@@ -10,10 +10,10 @@ const IDLE: DuckInput = { jumpHeld: false, move: 0 };
 
 // Steps her from a standing start on GROUND, with input(step) each step; returns every state.
 function run(steps: number, input: (step: number) => DuckInput, solids = [GROUND]): DuckState[] {
-  let duck = stepDuck(DUCK, solids, STEP, IDLE, startDuck(DUCK, { x: 0, y: GROUND.y }));
+  let duck = stepDuck(DUCK, solids, [], STEP, IDLE, startDuck(DUCK, { x: 0, y: GROUND.y }));
   const states = [duck];
   for (let step = 0; step < steps; step++) {
-    duck = stepDuck(DUCK, solids, STEP, input(step), duck);
+    duck = stepDuck(DUCK, solids, [], STEP, input(step), duck);
     states.push(duck);
   }
   return states;

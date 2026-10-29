@@ -69,16 +69,40 @@ export interface TileRect {
   readonly rows: number;
 }
 
-// One floor on the tile grid, as authored. Its size is cols by rows tiles. She starts with her
-// collision box's centre on the grid line at the left edge of column start.col, standing on the
-// top edge of row start.row.
-export interface FloorPlan {
+export interface TilePoint {
+  readonly col: number;
+  readonly row: number;
+}
+
+// A moving platform or hazard: a cols x rows block whose top-left tile goes from `from` to `to` and back,
+// at speed tiles per second, waiting pause seconds at each end (0 allowed). phase (0 to 1) is
+// where it is in the round trip at the level's start: 0 at `from` heading to `to`, 0.5 at `to`
+// heading back. The round trip is: travel to `to`, pause, travel back, pause.
+export interface MoverPlan {
+  readonly cols: number;
+  readonly from: TilePoint;
+  readonly pause: number;
+  readonly phase: number;
+  readonly rows: number;
+  readonly speed: number;
+  readonly to: TilePoint;
+}
+
+// One level on the tile grid, as authored: cols x rows tiles (rows is 60, two screens). solids
+// block from every side; ledges are one-way, solid only from above; movers are moving platforms;
+// touching a hazard or a moving hazard (moving as a mover does, but never solid) restarts the
+// level; reaching the exit clears it. She starts standing on the top edge of row start.row,
+// her collision box centred on the grid line at the left edge of column start.col.
+export interface LevelPlan {
   readonly cols: number;
   readonly exit: TileRect;
   readonly hazards: readonly TileRect[];
+  readonly ledges: readonly TileRect[];
+  readonly movers: readonly MoverPlan[];
+  readonly movingHazards: readonly MoverPlan[];
   readonly rows: number;
   readonly solids: readonly TileRect[];
-  readonly start: { readonly col: number; readonly row: number };
+  readonly start: TilePoint;
 }
 
 // How far the duck can jump, in tiles, from the top of the ground she leaves to the top of the
@@ -90,13 +114,27 @@ export interface Reaches {
   readonly jump: number;
 }
 
-// One floor's geometry, in base pixels, converted from its FloorPlan. solids block her; touching
-// a hazard restarts the floor; reaching the exit clears it; falling below the floor's height
-// restarts it.
-export interface FloorLayout {
+// A moving platform or hazard in base pixels: its size, the top-left corners it travels between, its
+// speed in pixels per second, and its pause and phase as in MoverPlan.
+export interface MoverLayout {
+  readonly from: Point;
+  readonly height: number;
+  readonly pause: number;
+  readonly phase: number;
+  readonly speed: number;
+  readonly to: Point;
+  readonly width: number;
+}
+
+// One level's geometry, in base pixels, converted from its LevelPlan. Falling below its height
+// restarts the level.
+export interface LevelLayout {
   readonly exit: Rect;
   readonly hazards: readonly Rect[];
   readonly height: number;
+  readonly ledges: readonly Rect[];
+  readonly movers: readonly MoverLayout[];
+  readonly movingHazards: readonly MoverLayout[];
   readonly solids: readonly Rect[];
   // Where her collision box's bottom centre starts.
   readonly start: Point;

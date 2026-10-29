@@ -9,6 +9,7 @@ const STEP_MS = 1000 / 60;
 
 const STILL: DuckState = {
   bufferLeft: 0,
+  carryVx: 0,
   coyoteLeft: 0,
   facing: 1,
   grounded: true,

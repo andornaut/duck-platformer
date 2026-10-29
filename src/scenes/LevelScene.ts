@@ -6,11 +6,11 @@ import {
 import { type GameObjects, Input, Scene } from "phaser";
 
 import { DUCK } from "../data/duck";
+import { TEST_LEVELS } from "../data/levels";
 import { SCREEN, TILE } from "../data/screen";
-import { TEST_FLOOR } from "../data/testFloor";
 import { TEXT } from "../data/text";
 import { TOUCH } from "../data/touch";
-import type { Rect } from "../data/types";
+import type { LevelLayout, MoverLayout, Rect } from "../data/types";
 import {
   combineIntents,
   type HeldTouch,
@@ -20,8 +20,10 @@ import {
 } from "../input/intent";
 import { gamePoint } from "../input/screenPoint";
 import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
-import { type FloorState, startFloor, stepFloor } from "../rules/floor";
-import { floorLayout } from "../rules/tiles";
+import { type LevelState, startLevel, stepLevel } from "../rules/level";
+import { nextLevelIndex, startLevelIndex } from "../rules/levelChain";
+import { moverAt } from "../rules/movers";
+import { levelLayout } from "../rules/tiles";
 import { animKey, type AsepriteSheet, sheetTags, type TagFrame, tagMs } from "../view/aseprite";
 import { duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
 import {
@@ -42,6 +44,8 @@ const COLOURS = {
   background: 0x262b44,
   exit: 0x63c74d,
   hazard: 0xe43b44,
+  ledge: 0xc0cbdc,
+  mover: 0xe4a672,
   solid: 0x8b9bb4,
 };
 
@@ -51,6 +55,9 @@ const CONTROL_SPRITES: Readonly<Record<TouchControl, string>> = {
   use: "ui-touch-use",
 };
 const LABEL_FONT = "font-body";
+// Drawn above the level and its moving platforms, which the level adds whenever it loads.
+const DUCK_DEPTH = 1;
+const OVERLAY_DEPTH = 2;
 const PALETTE = "palette";
 
 // Starts a sprite's tag, unless it already shows it, playing or finished on its last frame.
@@ -61,52 +68,45 @@ function show(sprite: GameObjects.Sprite, tag: string): void {
   }
 }
 
-// One floor, played with the keyboard or the touch controls.
-export class FloorScene extends Scene {
+// One level, played with the keyboard or the touch controls.
+export class LevelScene extends Scene {
   private clock: StepClock = startStepClock;
   private readonly controls = new Map<TouchControl, GameObjects.Sprite>();
   private readonly labels = new Map<TouchControl, GameObjects.BitmapText>();
   private colours: Readonly<Record<string, string>> = {};
   private duck!: GameObjects.Sprite;
   private duckPose: DuckPose = startPose;
-  private floor!: FloorState;
+  private level!: LevelState;
   // The camera follows her collision box's centre.
   private readonly focus = { x: 0, y: 0 };
   private readonly heldKeys = new Set<string>();
   private readonly heldTouches = new Map<number, HeldTouch>();
   private landMs = 0;
-  private readonly layout = floorLayout(TILE, TEST_FLOOR);
+  private layout!: LevelLayout;
+  private levelIndex = startLevelIndex(window.location.search, TEST_LEVELS.length);
+  private levelArt!: GameObjects.Graphics;
+  private moverArt: { mover: MoverLayout; rectangle: GameObjects.Rectangle }[] = [];
   // When each held button's press began.
   private readonly presses = new Map<TouchControl, number>();
   private readonly tags = new Map<string, ReadonlyMap<string, readonly TagFrame[]>>();
 
   constructor() {
-    super("floor");
+    super("level");
   }
 
   create(): void {
     this.cameras.main.setBackgroundColor(COLOURS.background);
-    this.cameras.main.setBounds(0, 0, this.layout.width, SCREEN.height);
     this.cameras.main.setRoundPixels(true);
-    const level = this.add.graphics();
-    const fill = (rects: readonly Rect[], colour: number) => {
-      level.fillStyle(colour);
-      for (const rect of rects) {
-        level.fillRect(rect.x, rect.y, rect.width, rect.height);
-      }
-    };
-    fill(this.layout.solids, COLOURS.solid);
-    fill(this.layout.hazards, COLOURS.hazard);
-    fill([this.layout.exit], COLOURS.exit);
+    this.levelArt = this.add.graphics();
 
     for (const key of [DUCK_SPRITE, ...Object.values(CONTROL_SPRITES)]) {
       this.tags.set(key, sheetTags(this.cache.json.get(key) as AsepriteSheet));
     }
     this.landMs = tagMs(this.sheet(DUCK_SPRITE), "land");
 
-    this.floor = startFloor(DUCK, this.layout);
-    this.duck = this.add.sprite(0, 0, DUCK_SPRITE).setOrigin(0);
+    this.duck = this.add.sprite(0, 0, DUCK_SPRITE).setOrigin(0).setDepth(DUCK_DEPTH);
     this.cameras.main.startFollow(this.focus, true);
+    this.loadLevel(this.levelIndex);
 
     const font = phaserBitmapFont(this.cache.bitmapFont.get(LABEL_FONT).data as PhaserFontData);
     this.colours = (this.cache.json.get(PALETTE) as { colours: Record<string, string> }).colours;
@@ -114,7 +114,8 @@ export class FloorScene extends Scene {
       const sprite = this.add
         .sprite(0, 0, CONTROL_SPRITES[control])
         .setOrigin(0)
-        .setScrollFactor(0);
+        .setScrollFactor(0)
+        .setDepth(OVERLAY_DEPTH);
       const { centre } = TOUCH_CONTROLS[control];
       const at = centredAt(centre, sprite.frame);
       this.controls.set(control, sprite.setPosition(at.x, at.y));
@@ -124,7 +125,8 @@ export class FloorScene extends Scene {
         .bitmapText(origin.x, origin.y, LABEL_FONT, text)
         .setScale(LABEL_SCALE)
         .setOrigin(0)
-        .setScrollFactor(0);
+        .setScrollFactor(0)
+        .setDepth(OVERLAY_DEPTH);
       this.labels.set(control, label);
     }
     this.watchKeys();
@@ -137,22 +139,65 @@ export class FloorScene extends Scene {
     const touches = [...this.heldTouches.values()];
     const intent = combineIntents(keyIntent(this.heldKeys), touchIntent(TOUCH, touches));
     for (let step = 0; step < frame.steps; step++) {
-      const before = this.floor.duck;
-      this.floor = stepFloor(
+      const before = this.level.duck;
+      this.level = stepLevel(
         DUCK,
         this.layout,
         STEP_MS / 1000,
         { jumpHeld: intent.jump, move: intent.move },
-        this.floor,
+        this.level,
       );
-      // PLACEHOLDER: what clearing a floor leads to. For now the test floor starts over.
-      if (this.floor.cleared) {
-        this.floor = startFloor(DUCK, this.layout);
+      // PLACEHOLDER: what clearing a level leads to. For now the next test level starts.
+      if (this.level.cleared) {
+        this.loadLevel(nextLevelIndex(this.levelIndex, TEST_LEVELS.length));
       }
-      this.duckPose = stepPose(this.landMs, STEP_MS, before, this.floor.duck, this.duckPose);
+      this.duckPose = stepPose(this.landMs, STEP_MS, before, this.level.duck, this.duckPose);
     }
+    this.drawMovers();
     this.drawDuck();
     this.drawControls(time, touches);
+  }
+
+  // Starts the test level at index from its start, drawn in flat colours, with the camera kept
+  // inside it.
+  private loadLevel(index: number): void {
+    const plan = TEST_LEVELS[index];
+    if (!plan) {
+      throw new Error(`No level ${index + 1}`);
+    }
+    this.levelIndex = index;
+    this.layout = levelLayout(TILE, plan);
+    this.level = startLevel(DUCK, this.layout);
+    this.cameras.main.setBounds(0, 0, this.layout.width, this.layout.height);
+    const art = this.levelArt.clear();
+    const fill = (rects: readonly Rect[], colour: number) => {
+      art.fillStyle(colour);
+      for (const rect of rects) {
+        art.fillRect(rect.x, rect.y, rect.width, rect.height);
+      }
+    };
+    fill(this.layout.solids, COLOURS.solid);
+    fill(this.layout.ledges, COLOURS.ledge);
+    fill(this.layout.hazards, COLOURS.hazard);
+    fill([this.layout.exit], COLOURS.exit);
+    for (const { rectangle } of this.moverArt) {
+      rectangle.destroy();
+    }
+    this.moverArt = [
+      ...this.layout.movers.map((mover) => [mover, COLOURS.mover] as const),
+      ...this.layout.movingHazards.map((hazard) => [hazard, COLOURS.hazard] as const),
+    ].map(([mover, colour]) => ({
+      mover,
+      rectangle: this.add.rectangle(0, 0, mover.width, mover.height, colour).setOrigin(0),
+    }));
+  }
+
+  // Each moving platform and hazard where the rules put it, in whole pixels.
+  private drawMovers(): void {
+    for (const { mover, rectangle } of this.moverArt) {
+      const at = moverAt(mover, this.level.seconds);
+      rectangle.setPosition(Math.round(at.x), Math.round(at.y));
+    }
   }
 
   private sheet(key: string): ReadonlyMap<string, readonly TagFrame[]> {
@@ -164,7 +209,7 @@ export class FloorScene extends Scene {
   }
 
   private drawDuck(): void {
-    const { duck } = this.floor;
+    const { duck } = this.level;
     const { tag } = this.duckPose;
     show(this.duck, tag);
     const at = duckFrameAt(DUCK, this.duck.frame, duck);

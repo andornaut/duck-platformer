@@ -9,7 +9,7 @@ import { CRASH_SCREEN } from "./crash/install";
 import { SCREEN } from "./data/screen";
 import { setupOfflinePlay } from "./pwa";
 import { BootScene } from "./scenes/BootScene";
-import { FloorScene } from "./scenes/FloorScene";
+import { LevelScene } from "./scenes/LevelScene";
 
 // Scale.FIT: the base resolution stretches by whatever amount fills #game, keeping its aspect
 // ratio, with bars on the other axis. pixelArt keeps the stretch nearest-neighbour. The game
@@ -22,7 +22,7 @@ function startGame(): void {
     parent: "game",
     pixelArt: true,
     scale: { autoCenter: Scale.CENTER_BOTH, mode: Scale.FIT },
-    scene: [BootScene, FloorScene],
+    scene: [BootScene, LevelScene],
     type: AUTO,
     width: SCREEN.width,
   });

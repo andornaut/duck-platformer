@@ -1,6 +1,9 @@
 import type { DuckTuning, Point, Rect } from "../data/types";
 import { overlaps } from "./rect";
 
+// Pixels of rounding error allowed when she stands exactly on an edge.
+export const EDGE = 1e-6;
+
 // What the player asks of the duck this step. jumpHeld is the button's state; a jump starts on
 // the step it goes down.
 export interface DuckInput {
@@ -11,6 +14,8 @@ export interface DuckInput {
 export interface DuckState {
   // Seconds a pressed jump still waits to start, should she land or still be in coyote time.
   readonly bufferLeft: number;
+  // Speed along x carried from a moving platform she left, kept until she lands or meets a wall.
+  readonly carryVx: number;
   // Seconds after leaving the ground in which a jump still starts. 0 once she has jumped.
   readonly coyoteLeft: number;
   readonly facing: -1 | 1;
@@ -26,6 +31,7 @@ export interface DuckState {
 export function startDuck(tuning: DuckTuning, start: Point): DuckState {
   return {
     bufferLeft: 0,
+    carryVx: 0,
     coyoteLeft: 0,
     facing: 1,
     grounded: false,
@@ -47,10 +53,13 @@ function approach(speed: number, target: number, step: number): number {
 }
 
 // One fixed step of seconds: steer, jump, fall, then move along x and along y in turn, each
-// stopped at the first solid in the way. Every fall flutters: it never passes the flutter speed.
+// stopped at the first solid in the way. Ledges stop her only from above: falling onto one from
+// at or above its top, never rising or walking through it. Every fall flutters: it never passes
+// the flutter speed.
 export function stepDuck(
   tuning: DuckTuning,
   solids: readonly Rect[],
+  ledges: readonly Rect[],
   seconds: number,
   input: DuckInput,
   duck: DuckState,
@@ -75,12 +84,15 @@ export function stepDuck(
   }
   vy = Math.min(vy + tuning.gravity * seconds, tuning.flutterFallSpeed);
 
-  let x = duck.x + vx * seconds;
+  let carryVx = duck.carryVx;
+  const moving = vx + carryVx;
+  let x = duck.x + moving * seconds;
   for (const solid of solids) {
     const box = { height: tuning.height, width: tuning.width, x, y: duck.y };
     if (overlaps(box, solid)) {
-      x = vx > 0 ? solid.x - tuning.width : solid.x + solid.width;
+      x = moving > 0 ? solid.x - tuning.width : solid.x + solid.width;
       vx = 0;
+      carryVx = 0;
     }
   }
 
@@ -100,12 +112,23 @@ export function stepDuck(
       vy = 0;
     }
   }
+  const bottom = duck.y + tuning.height;
+  for (const ledge of ledges) {
+    const box = { height: tuning.height, width: tuning.width, x, y };
+    if (vy > 0 && bottom <= ledge.y + EDGE && overlaps(box, ledge)) {
+      y = ledge.y - tuning.height;
+      grounded = true;
+      vy = 0;
+    }
+  }
   if (grounded) {
     coyoteLeft = tuning.coyoteTime;
+    carryVx = 0;
   }
 
   return {
     bufferLeft,
+    carryVx,
     coyoteLeft,
     facing: input.move === 0 ? duck.facing : input.move,
     grounded,

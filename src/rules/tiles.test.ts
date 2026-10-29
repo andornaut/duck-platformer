@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import type { FloorPlan } from "../data/types";
-import { floorLayout, tileRect } from "./tiles";
+import type { LevelPlan } from "../data/types";
+import { levelLayout, tileRect } from "./tiles";
 
 describe("tileRect", () => {
   it.each([
@@ -13,11 +13,34 @@ describe("tileRect", () => {
   });
 });
 
-describe("floorLayout", () => {
-  const PLAN: FloorPlan = {
+describe("levelLayout", () => {
+  const PLAN: LevelPlan = {
     cols: 64,
     exit: { col: 60, cols: 2, row: 30, rows: 3 },
     hazards: [{ col: 20, cols: 4, row: 32, rows: 1 }],
+    ledges: [{ col: 30, cols: 6, row: 25, rows: 1 }],
+    movers: [
+      {
+        cols: 4,
+        from: { col: 10, row: 20 },
+        pause: 0.5,
+        phase: 0.25,
+        rows: 1,
+        speed: 3,
+        to: { col: 20, row: 20 },
+      },
+    ],
+    movingHazards: [
+      {
+        cols: 2,
+        from: { col: 40, row: 32 },
+        pause: 0,
+        phase: 0.5,
+        rows: 1,
+        speed: 6,
+        to: { col: 50, row: 32 },
+      },
+    ],
     rows: 36,
     solids: [{ col: 0, cols: 64, row: 33, rows: 3 }],
     start: { col: 5, row: 33 },
@@ -26,10 +49,39 @@ describe("floorLayout", () => {
     ["exit", { height: 30, width: 20, x: 600, y: 300 }],
     ["hazards", [{ height: 10, width: 40, x: 200, y: 320 }]],
     ["height", 360],
+    ["ledges", [{ height: 10, width: 60, x: 300, y: 250 }]],
+    [
+      "movers",
+      [
+        {
+          from: { x: 100, y: 200 },
+          height: 10,
+          pause: 0.5,
+          phase: 0.25,
+          speed: 30,
+          to: { x: 200, y: 200 },
+          width: 40,
+        },
+      ],
+    ],
+    [
+      "movingHazards",
+      [
+        {
+          from: { x: 400, y: 320 },
+          height: 10,
+          pause: 0,
+          phase: 0.5,
+          speed: 60,
+          to: { x: 500, y: 320 },
+          width: 20,
+        },
+      ],
+    ],
     ["solids", [{ height: 30, width: 640, x: 0, y: 330 }]],
     ["start", { x: 50, y: 330 }],
     ["width", 640],
   ])("converts the %s", (field, pixels) => {
-    expect(floorLayout(10, PLAN)).toHaveProperty(field, pixels);
+    expect(levelLayout(10, PLAN)).toHaveProperty(field, pixels);
   });
 });
