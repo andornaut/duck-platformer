@@ -49,8 +49,6 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.ts", "vendor/game-kit/src/**/*.test.ts"],
-    // No tests exist until the first game module does.
-    passWithNoTests: true,
     root: repoPath("."),
   },
 });
