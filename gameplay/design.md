@@ -27,7 +27,7 @@ A landscape platformer: a duck falls out of her room at the top of a New York ho
 - **Data:** every string a player sees lives in the text data files, with `{placeholders}` the game fills, never as a literal in code
 - **Fit:** text never shrinks to fit. Reword it or grow its box
 - **Labels:** one label for one action, everywhere
-- **Lengths:** text is Tiny5 drawn at 2×, about 6.5 base px a character on average; measure the width, don't count characters. A dialogue paragraph fits 3 lines of 488 px (about 70 characters a line). An answer fits 162 px (about 24 characters). A quip, with its speaker's name, fits 452 px (about 60 characters)
+- **Lengths:** text is Tiny5 drawn at 2×, about 6.5 base px a character on average; measure the width, don't count characters. A dialogue paragraph fits 3 lines of 504 px (about 72 characters a line). An answer fits 166 px (about 25 characters). A quip, with its speaker's name, fits 452 px (about 60 characters)
 - **Spelling:** Canadian (colour, favourite, neighbour). No em dashes and no emojis
 - **Style:** plain, short and consistent: no flourishes, no figures of speech, no redundancy
 
