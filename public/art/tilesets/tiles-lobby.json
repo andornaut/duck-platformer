@@ -1,0 +1,63 @@
+{
+  "columns": 8,
+  "pieces": {
+    "exit": [
+      [
+        21,
+        22,
+        23
+      ],
+      [
+        24,
+        25,
+        26
+      ],
+      [
+        27,
+        28,
+        29
+      ],
+      [
+        30,
+        31,
+        32
+      ]
+    ]
+  },
+  "tileSize": 12,
+  "tiles": {
+    "column-base-left": 17,
+    "column-base-right": 18,
+    "column-cap-left": 11,
+    "column-cap-right": 12,
+    "column-left": 13,
+    "column-lintel-left": 19,
+    "column-lintel-right": 20,
+    "column-right": 14,
+    "column-vein-left": 15,
+    "column-vein-right": 16,
+    "exit-0": 21,
+    "exit-1": 22,
+    "exit-10": 31,
+    "exit-11": 32,
+    "exit-2": 23,
+    "exit-3": 24,
+    "exit-4": 25,
+    "exit-5": 26,
+    "exit-6": 27,
+    "exit-7": 28,
+    "exit-8": 29,
+    "exit-9": 30,
+    "floor-face": 5,
+    "floor-face-left": 6,
+    "floor-face-right": 7,
+    "floor-top": 0,
+    "floor-top-joint": 2,
+    "floor-top-left": 3,
+    "floor-top-right": 4,
+    "floor-top-vein": 1,
+    "one-way-ledge": 9,
+    "one-way-ledge-left": 8,
+    "one-way-ledge-right": 10
+  }
+}

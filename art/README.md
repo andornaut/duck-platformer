@@ -59,6 +59,9 @@ In order:
 - `art/tools/palette.py` writes `public/art/palette.json`, listed under `data` in the manifest: `colours` maps each palette name to `#rrggbb`, `darker` maps each colour one ramp step down, and `dim2` two steps down, the settings card's dim. Keys are sorted.
 - `art/tools/icons.py` draws the favicon and app icons, the duck's head on a green disc, as plain PNGs, not sprites or manifest entries: `public/favicon.ico` (16 and 32), `public/art/favicon-16.png` and `public/art/favicon.png`, and in `public/icons/` the 180 apple-touch icon on a green square, the 192 and 512 icons on a green disc with a transparent outside, and a 512 maskable icon with the subject inside the central 80%. The 16 and 32 are drawn natively; the larger icons are 64 and 90 drawings scaled by whole numbers.
 - `art/inventory.md` lists every asset (key, type, size, tags).
+- `art/tools/floor<n>.py` draws one floor's tilesets and backdrop pieces as plain PNGs, not Aseprite sprites, so the game builds each floor from level data instead of a fixed panorama.
+- A tileset is `public/art/tilesets/<key>.png`, 12x12 tiles in rows of 8 with no spacing or margin, plus `<key>.json`: `{"tileSize": 12, "columns": 8, "tiles": {"<name>": <index>}, "pieces": {"<name>": [[<index>, ...], ...]}}`. An index counts row by row. A piece is a multi-tile unit as rows of indices, top row first. A tile named `one-way-*` is a one-way ledge, which stops only a fall onto its top edge; every other tile with art is solid. The manifest lists each under `tilesets` as `{"key", "png", "json"}`.
+- A backdrop piece is `public/art/backdrops/<key>.png`, drawn behind the play layer. The manifest lists each under `backdrops` as `{"key", "png", "width", "height", "anchor": "bottom-left", "y", "repeat"}`: its bottom edge sits at world `y`, at an x the level data chooses, and `"repeat": "x"` tiles it across a run while `"none"` places it once.
 - Art reads game layout and data from the generated export files the game writes, never from `src/`. The export files are in `shared/export/`. Art writes the shared data files the game reads (`lights.json`, `palette.json`).
 - Keys are kebab-case, named after what the player sees. Internal names match displayed names.
 - Checks run in a container: the art manifest, art tests that assert every key the game uses exists with its tags, and prettier on the docs. PLACEHOLDER: the image and command.
@@ -213,7 +216,41 @@ A pause card over the game, which is dimmed by stepping every colour two ramp st
 - An impact frame is an eight-point star in the event's colour with a white core.
 - Edge flashes pair a light ink with a dark fringe on the inward edge, so they hold 3:1 on light and dark grounds.
 
+## Floor 1
+
+The street front of the building, then its lobby: a brick high street in the morning, a plain open front door, and a cream marble lobby. `art/tools/floor1.py` draws it; its docstring lists every tile and piece.
+
+- The sidewalk and lobby floor line is y 312 (tile row 26). The road sits one tile lower, behind a cream stone kerb.
+- Street tiles (`tiles-street`): brick sidewalk (tops alternating with a 2px joint every 24px, ends, face), kerb, road, a green-and-cream one-way awning, a 2-tile planter with a hedge top, an iron post 2 tiles tall, and the front wall.
+- Lobby tiles (`tiles-lobby`): cream marble floor (a 48px slab: top, vein, top, joint), its face a step darker, a one-way marble shelf, a green marble column darker than the duck, and the stairwell exit as a 3x4 piece.
+- One-way ledges sit 6 tiles above the floor (row 20, y 240), which is a full jump; awnings fit under the storefront signs there.
+- The entrance: a 4-tile front wall in section from the top of the screen down to row 21, its lintels the door head. Its 2 left columns are `front-wall-*` (street face) and its 2 right columns `column-*` (lobby face). Under it, `entrance-street` and `entrance-lobby` sit side by side, and the street backdrop gives way to the lobby backdrop at the door's centre line, which they cover.
+- Signs are icons, never text: a cup, a flower, a gift box, a lipstick, a paw, a fork and knife, a noodle bowl.
+
+| Backdrop                | Size    | Bottom y | Repeat |
+| ----------------------- | ------- | -------- | ------ |
+| street-sky              | 48x48   | 48       | x      |
+| street-facade           | 48x144  | 192      | x      |
+| street-wall             | 12x120  | 312      | x      |
+| street-lamp             | 24x168  | 312      | none   |
+| storefront-cafe         | 144x120 | 312      | none   |
+| storefront-florist      | 144x120 | 312      | none   |
+| storefront-gift-shop    | 144x120 | 312      | none   |
+| storefront-makeup-store | 120x120 | 312      | none   |
+| storefront-pet-shop     | 120x120 | 312      | none   |
+| storefront-diner        | 168x120 | 312      | none   |
+| storefront-noodle-bar   | 144x120 | 312      | none   |
+| entrance-street         | 24x48   | 312      | none   |
+| entrance-lobby          | 24x48   | 312      | none   |
+| lobby-wall              | 48x312  | 312      | x      |
+| lobby-pilaster          | 24x192  | 240      | none   |
+| lobby-window            | 72x144  | 216      | none   |
+| lobby-mailboxes         | 108x84  | 228      | none   |
+| lobby-plant             | 36x72   | 312      | none   |
+
+Below the floor line the game shows ink.
+
 ## Remaining for the first build
 
 - The look of the hazards the ferret sets, distinct from each floor's own hazards.
-- The floors: one everyday place per floor.
+- The floors above Floor 1: one everyday place per floor.

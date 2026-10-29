@@ -157,5 +157,181 @@
       "key": "palette",
       "json": "palette.json"
     }
+  ],
+  "tilesets": [
+    {
+      "key": "tiles-lobby",
+      "png": "tilesets/tiles-lobby.png",
+      "json": "tilesets/tiles-lobby.json"
+    },
+    {
+      "key": "tiles-street",
+      "png": "tilesets/tiles-street.png",
+      "json": "tilesets/tiles-street.json"
+    }
+  ],
+  "backdrops": [
+    {
+      "key": "entrance-lobby",
+      "png": "backdrops/entrance-lobby.png",
+      "width": 24,
+      "height": 48,
+      "anchor": "bottom-left",
+      "y": 312,
+      "repeat": "none"
+    },
+    {
+      "key": "entrance-street",
+      "png": "backdrops/entrance-street.png",
+      "width": 24,
+      "height": 48,
+      "anchor": "bottom-left",
+      "y": 312,
+      "repeat": "none"
+    },
+    {
+      "key": "lobby-mailboxes",
+      "png": "backdrops/lobby-mailboxes.png",
+      "width": 108,
+      "height": 84,
+      "anchor": "bottom-left",
+      "y": 228,
+      "repeat": "none"
+    },
+    {
+      "key": "lobby-pilaster",
+      "png": "backdrops/lobby-pilaster.png",
+      "width": 24,
+      "height": 192,
+      "anchor": "bottom-left",
+      "y": 240,
+      "repeat": "none"
+    },
+    {
+      "key": "lobby-plant",
+      "png": "backdrops/lobby-plant.png",
+      "width": 36,
+      "height": 72,
+      "anchor": "bottom-left",
+      "y": 312,
+      "repeat": "none"
+    },
+    {
+      "key": "lobby-wall",
+      "png": "backdrops/lobby-wall.png",
+      "width": 48,
+      "height": 312,
+      "anchor": "bottom-left",
+      "y": 312,
+      "repeat": "x"
+    },
+    {
+      "key": "lobby-window",
+      "png": "backdrops/lobby-window.png",
+      "width": 72,
+      "height": 144,
+      "anchor": "bottom-left",
+      "y": 216,
+      "repeat": "none"
+    },
+    {
+      "key": "storefront-cafe",
+      "png": "backdrops/storefront-cafe.png",
+      "width": 144,
+      "height": 120,
+      "anchor": "bottom-left",
+      "y": 312,
+      "repeat": "none"
+    },
+    {
+      "key": "storefront-diner",
+      "png": "backdrops/storefront-diner.png",
+      "width": 168,
+      "height": 120,
+      "anchor": "bottom-left",
+      "y": 312,
+      "repeat": "none"
+    },
+    {
+      "key": "storefront-florist",
+      "png": "backdrops/storefront-florist.png",
+      "width": 144,
+      "height": 120,
+      "anchor": "bottom-left",
+      "y": 312,
+      "repeat": "none"
+    },
+    {
+      "key": "storefront-gift-shop",
+      "png": "backdrops/storefront-gift-shop.png",
+      "width": 144,
+      "height": 120,
+      "anchor": "bottom-left",
+      "y": 312,
+      "repeat": "none"
+    },
+    {
+      "key": "storefront-makeup-store",
+      "png": "backdrops/storefront-makeup-store.png",
+      "width": 120,
+      "height": 120,
+      "anchor": "bottom-left",
+      "y": 312,
+      "repeat": "none"
+    },
+    {
+      "key": "storefront-noodle-bar",
+      "png": "backdrops/storefront-noodle-bar.png",
+      "width": 144,
+      "height": 120,
+      "anchor": "bottom-left",
+      "y": 312,
+      "repeat": "none"
+    },
+    {
+      "key": "storefront-pet-shop",
+      "png": "backdrops/storefront-pet-shop.png",
+      "width": 120,
+      "height": 120,
+      "anchor": "bottom-left",
+      "y": 312,
+      "repeat": "none"
+    },
+    {
+      "key": "street-facade",
+      "png": "backdrops/street-facade.png",
+      "width": 48,
+      "height": 144,
+      "anchor": "bottom-left",
+      "y": 192,
+      "repeat": "x"
+    },
+    {
+      "key": "street-lamp",
+      "png": "backdrops/street-lamp.png",
+      "width": 24,
+      "height": 168,
+      "anchor": "bottom-left",
+      "y": 312,
+      "repeat": "none"
+    },
+    {
+      "key": "street-sky",
+      "png": "backdrops/street-sky.png",
+      "width": 48,
+      "height": 48,
+      "anchor": "bottom-left",
+      "y": 48,
+      "repeat": "x"
+    },
+    {
+      "key": "street-wall",
+      "png": "backdrops/street-wall.png",
+      "width": 12,
+      "height": 120,
+      "anchor": "bottom-left",
+      "y": 312,
+      "repeat": "x"
+    }
   ]
 }

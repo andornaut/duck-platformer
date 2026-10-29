@@ -1,0 +1,33 @@
+{
+  "columns": 8,
+  "pieces": {},
+  "tileSize": 12,
+  "tiles": {
+    "front-wall-left": 22,
+    "front-wall-lintel-left": 24,
+    "front-wall-lintel-right": 25,
+    "front-wall-right": 23,
+    "kerb-left": 4,
+    "kerb-right": 5,
+    "one-way-awning": 12,
+    "one-way-awning-left": 11,
+    "one-way-awning-right": 13,
+    "planter": 18,
+    "planter-left": 17,
+    "planter-right": 19,
+    "planter-top": 15,
+    "planter-top-left": 14,
+    "planter-top-right": 16,
+    "post-base": 21,
+    "post-top": 20,
+    "road": 10,
+    "road-top": 9,
+    "sidewalk-face": 6,
+    "sidewalk-face-left": 7,
+    "sidewalk-face-right": 8,
+    "sidewalk-top": 0,
+    "sidewalk-top-joint": 1,
+    "sidewalk-top-left": 2,
+    "sidewalk-top-right": 3
+  }
+}
