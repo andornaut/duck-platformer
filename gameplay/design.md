@@ -73,15 +73,25 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 ### Zones
 
 - **Areas:** a zone can have more than one area, joined by doors. Use at a door fades to the other area
-- **Camera:** on the ground she sits about two thirds down the screen. The camera rises only when she climbs above the middle, and never shows below the lowest ground
+- **Camera:** on the ground she sits about two thirds down the screen. In an assembled zone, the ground line follows the chunk she is in. The camera rises only when she climbs above the middle, and never shows below the lowest ground
 - **Challenge:** platforming, hazards and choices. There is no combat
 - **Checkpoint:** the start of a zone is its only checkpoint. Falling or touching a hazard restarts the zone from its start. Progress is saved: entering a zone saves its start, and clearing it saves the map where she stands. Continue on the start screen resumes from the save, so a cleared zone never replays
 - **Exit:** Use at the zone's exit clears the zone
 - **Kinds:** indoor, outdoor, or a hybrid with both
-- **Layout:** zone 1 is hand-built as the tutorial. Every later zone is assembled from hand-built chunks, each a screen or two wide: a fixed start chunk, a seeded run of chunks whose entry and exit heights match, then a fixed finish chunk. Every chunk, and many seeded assemblies, pass the zone reach test. PLACEHOLDER: the chunk format, difficulty scale and themes
+- **Layout:** zone 1 is hand-built as the tutorial. Every later zone is assembled from hand-built chunks: a fixed start chunk, a seeded run of chunks whose entry and exit heights match, then a fixed finish chunk. The rules for chunks are under Chunks
 - **Reroll:** the layout changes on each new lap. Restarts and Continue keep it, since the seed is saved
 - **Scale:** outdoors, the scenery is drawn at a quarter of indoor scale; the duck, the tiles and the reaches stay the same everywhere
 - **Shape:** a zone is 2 screens (60 tiles) tall and as wide as it needs, and scrolls sideways and up. Indoors, to a small duck the ceilings are high: a door is 15 tiles tall, half the screen
+
+### Chunks
+
+- **Assembly:** a zone's recipe names its theme, start and finish chunks, a length range, a difficulty that rises from start to finish, and the events and doors to place. The seed picks chunks within ±1 of the difficulty curve, never the same chunk twice in a row, and fills the slots
+- **Difficulty:** 1 to 5. 1: walking and taps. 2: full jumps and still hazards. 3: gaps near the reach and single moving platforms. 4: timed platforms or moving hazards on the required path. 5: platform-to-platform jumps and tap-only spots under hazards
+- **Fairness:** every chunk is walked on its own from entry to exit, with its slots empty and filled, and a sample of seeds per recipe is walked end to end
+- **Seams:** a chunk's entry and exit are the ground rows at its left and right edges: 50, 40 or 30. The seam surface runs at least 4 tiles in from the edge, with no gap, hazard or moving platform within those 4 tiles, and 6 clear rows above it
+- **Shape:** one or two screens wide (60 to 120 tiles) and 60 rows tall
+- **Slots:** marked regions where the seed places an event or a door. A chunk must pass with every slot empty
+- **Themes:** a theme sets the tileset, terrain looks and repeated backdrops for every chunk of that theme, so seams never show. A chunk can still place its own scenery. The first theme is the park (outdoor)
 
 ### Objects
 
