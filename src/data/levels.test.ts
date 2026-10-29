@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
+import manifestJson from "../../public/art/manifest.json";
 import lobbyTiles from "../../public/art/tilesets/tiles-lobby.json";
 import streetTiles from "../../public/art/tilesets/tiles-street.json";
+import type { ArtManifest } from "../view/aseprite";
+import { artKind } from "../view/objectArt";
 import { lookTiles, type Tileset } from "../view/tiles";
 import { LEVEL_1 } from "./level1";
 import { TEST_LEVELS } from "./levels";
@@ -9,6 +12,7 @@ import { OBJECT_TYPES } from "./objects";
 import { SCREEN, TILE } from "./screen";
 import type { AreaPlan, TileRect } from "./types";
 
+const MANIFEST = manifestJson as ArtManifest;
 const TILESETS: Readonly<Record<string, Tileset>> = {
   "tiles-lobby": lobbyTiles,
   "tiles-street": streetTiles,
@@ -71,6 +75,16 @@ describe("the levels", () => {
       }
     },
   );
+
+  it.each(areas)("area %s's objects name art the game can draw", (_, __, area) => {
+    const tileset = area.tileset === undefined ? undefined : TILESETS[area.tileset];
+    for (const placed of area.objects) {
+      const art = OBJECT_TYPES[placed.type]?.art ?? "";
+      const known =
+        art.startsWith("placeholder-") || artKind(MANIFEST, tileset, art) !== "placeholder";
+      expect(known || art.startsWith("test-"), `${placed.type}: ${art}`).toBe(true);
+    }
+  });
 
   it.each(LEVELS.map((level, index) => [index + 1, level] as const))(
     "level %i starts at an entry that exists and has an exit",
