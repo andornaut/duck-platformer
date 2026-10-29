@@ -126,5 +126,11 @@
       "png": "sprites/ui-touch-move.png",
       "json": "sprites/ui-touch-move.json"
     }
+  ],
+  "data": [
+    {
+      "key": "palette",
+      "json": "palette.json"
+    }
   ]
 }

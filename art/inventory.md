@@ -2,6 +2,12 @@
 
 Every served art asset. Sizes are in base pixels at 640x360. Tags are in frame order. A nine-slice lists its margins as left, top, right, bottom.
 
+## Data
+
+| Key     | Type                        | Size       | Tags |
+| ------- | --------------------------- | ---------- | ---- |
+| palette | JSON: colours, darker, dim2 | 32 colours |      |
+
 ## Fonts
 
 | Key        | Type               | Size         | Tags |
