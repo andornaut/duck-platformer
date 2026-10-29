@@ -44,4 +44,4 @@ Open questions:
 - **Confirm, restarts reset choices:** assumed, a floor restart also resets the choices made on that floor
 - **Ending:** the rest of the ending, beyond outwitting the ferret
 - **Floors:** the list and order of floor themes
-- **Interact:** what it acts on (assumed: talking to animals, and doors and objects at route forks)
+- **Use:** what it acts on (assumed: talking to animals, and doors and objects at route forks)

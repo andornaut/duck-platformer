@@ -35,11 +35,11 @@ A landscape, left-to-right platformer: a duck falls out of her apartment at the 
 ### Screen and controls
 
 - Landscape, 640×360 base resolution. Phone browser first, with on-screen touch controls; keyboard on desktop
-- **Interact:** PLACEHOLDER: what it acts on
-- **Keyboard:** ←/→ or A/D to move; Space, ↑ or W to jump; E to interact
-- **Overlay:** a subtle overlay of rings marks the touch buttons, without obscuring much of the play area. A button animates subtly when pressed. The overlay is visible by default; Settings hides it
-- **Touch buttons** (right thumb): Jump and Interact
+- **Keyboard:** ←/→ or A/D to move; Space, ↑ or W to jump; E to use
+- **Overlay:** the touch buttons show by default. Settings hides them, and hidden buttons still work
+- **Touch buttons** (right thumb): Use above, Jump below. Each is labelled with its name, reads clearly as a button and stands out against any floor, while hiding little of the play area. A button animates subtly when pressed
 - **Touch movement:** a touch anywhere except on a button or other interactive element sets the neutral point where it lands. Dragging left or right from it past a small dead zone moves the duck that way at full speed; back inside the dead zone, she stops. Releasing ends the movement. Nothing marks the neutral point
+- **Use:** PLACEHOLDER: what it acts on
 
 ### Interface
 
