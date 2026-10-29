@@ -1,8 +1,13 @@
 {
+  "id": "/play/",
   "name": "Duck Platformer",
   "short_name": "Duck Platformer",
-  "start_url": "/",
-  "display": "standalone",
+  "description": "A pixel-art platformer about a duck climbing back up her high-rise.",
+  "start_url": "/play/",
+  "scope": "/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
   "background_color": "#181425",
   "theme_color": "#181425",
   "icons": [
