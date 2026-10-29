@@ -41,7 +41,7 @@ import type {
   ZonePlan,
 } from "../data/types";
 import { ZONE_1 } from "../data/zone1";
-import { TEST_ZONES, ZONES } from "../data/zones";
+import { RECIPES, TEST_ZONES } from "../data/zones";
 import { pageFrameTurn } from "../input/frameTurn";
 import {
   combineIntents,
@@ -56,8 +56,9 @@ import { nodeOf } from "../rules/map";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
 import { zoneLayout } from "../rules/tiles";
 import { areaOf, enterArea, startZone, stepZone, type ZoneState } from "../rules/zone";
-import { nextZoneIndex, startZoneIndex } from "../rules/zoneChain";
-import { saveClearedZone, saveZoneStart } from "../save";
+import { askedLapSeed, askedRecipe, nextZoneIndex, startZoneIndex } from "../rules/zoneChain";
+import { zonePlanFor } from "../rules/zonePlans";
+import { newLapSeed, saveClearedZone, saveZoneStart } from "../save";
 import { touchControlsShown } from "../settings/touchControls";
 import { ART_MANIFEST_KEY, artHitboxes, type ArtManifest } from "../view/aseprite";
 import { cameraScroll } from "../view/camera";
@@ -75,14 +76,13 @@ import {
 } from "../view/touchControls";
 import type { PauseScene } from "./PauseScene";
 
-// The zone a map node plays.
-function zoneAt(node: string): ZonePlan {
+// The zone a map node plays on the lap with seed.
+function zoneAt(seed: number, node: string): ZonePlan {
   const key = nodeOf(ZONE_MAP, node).zone;
-  const plan = key === undefined ? undefined : ZONES[key];
-  if (!plan) {
+  if (key === undefined) {
     throw new Error(`Map node ${node} has no zone to play`);
   }
-  return plan;
+  return zonePlanFor(seed, key);
 }
 
 // What every zone's instances are resolved against.
@@ -153,6 +153,7 @@ export interface ZoneData {
   readonly backdrop?: boolean;
   readonly paused?: boolean;
   readonly route?: readonly string[];
+  readonly seed?: number;
 }
 
 // One zone, played with the keyboard or the touch controls.
@@ -172,6 +173,11 @@ export class ZoneScene extends Scene {
   // The nodes she has walked this lap on the map, ending at the node she plays, or undefined
   // when ?zone=<n> chains the zones without the map.
   private mapRoute: readonly string[] | undefined;
+  // The lap's seed, which assembled zones are assembled from.
+  private lapSeed = 0;
+  // The recipe ?zone=<key> plays on its own, assembled afresh each time she clears it unless
+  // ?lap=<n> fixes the seed.
+  private trial: string | undefined;
   private areaArt!: GameObjects.Graphics;
   // Drawn as the start screen's backdrop rather than played.
   private backdrop = false;
@@ -196,13 +202,16 @@ export class ZoneScene extends Scene {
   }
 
   // data.route: the nodes she has walked this lap on the map, ending at the node to play; without
-  // one, the chain from ?zone=<n>. data.paused: open the pause card over the zone's first frame,
-  // as when the game reopens at a saved zone. data.backdrop: the start screen's backdrop instead
-  // (holdStill).
+  // one, the recipe ?zone=<key> names, or the chain from ?zone=<n>. data.seed: the lap's seed.
+  // data.paused: open the pause card over the zone's first frame, as when the game reopens at a
+  // saved zone. data.backdrop: the start screen's backdrop instead (holdStill).
   init(data: ZoneData): void {
+    const { search } = window.location;
     this.backdrop = data.backdrop === true;
     this.openPaused = data.paused === true;
     this.mapRoute = data.route;
+    this.trial = askedRecipe(search, Object.keys(RECIPES));
+    this.lapSeed = data.seed ?? askedLapSeed(search) ?? newLapSeed();
     this.objectArt = [];
     this.heldKeys.clear();
     this.heldTouches.clear();
@@ -224,11 +233,13 @@ export class ZoneScene extends Scene {
       this.holdStill();
       return;
     }
-    if (node === undefined) {
-      this.loadZone(this.zoneIndex);
+    if (node !== undefined) {
+      this.loadPlan(zoneAt(this.lapSeed, node));
+      saveZoneStart(this.lapSeed, this.mapRoute ?? []);
+    } else if (this.trial !== undefined) {
+      this.loadPlan(zonePlanFor(this.lapSeed, this.trial));
     } else {
-      this.loadPlan(zoneAt(node));
-      saveZoneStart(this.mapRoute ?? []);
+      this.loadZone(this.zoneIndex);
     }
 
     const font = phaserBitmapFont(this.cache.bitmapFont.get(LABEL_FONT).data as PhaserFontData);
@@ -301,13 +312,17 @@ export class ZoneScene extends Scene {
         this.zone,
       );
       this.duckPose = stepPose(this.landMs, STEP_MS, before, this.zone.duck, this.duckPose);
-      // Clearing a zone goes to the map, or without one, the next zone in the chain.
+      // Clearing a zone goes to the map; without one, the recipe ?zone=<key> names assembled
+      // again, or the next zone in the chain.
       if (this.zone.cleared && this.mapRoute !== undefined) {
-        saveClearedZone(this.mapRoute);
-        this.scene.start("map", { played: true, route: this.mapRoute });
+        saveClearedZone(this.lapSeed, this.mapRoute);
+        this.scene.start("map", { played: true, route: this.mapRoute, seed: this.lapSeed });
         return;
       }
-      if (this.zone.cleared) {
+      if (this.zone.cleared && this.trial !== undefined) {
+        this.lapSeed = askedLapSeed(window.location.search) ?? newLapSeed();
+        this.loadPlan(zonePlanFor(this.lapSeed, this.trial));
+      } else if (this.zone.cleared) {
         this.loadZone(nextZoneIndex(this.zoneIndex, CHAIN.length));
       } else if (this.zone.using) {
         this.goThrough(this.zone.using);

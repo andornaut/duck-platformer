@@ -5,6 +5,7 @@ import { ZONE_ROWS } from "../data/screen";
 import type { ChunkPlan, TerrainRect, ThemePlan, ZoneRecipe } from "../data/types";
 import { RECIPES } from "../data/zones";
 import type { ChunkLibrary } from "../rules/assemble";
+import { CHUNK_LIBRARY } from "../rules/zonePlans";
 
 // Ground from col, cols wide, its top at row, down to the bottom row.
 const ground = (col: number, cols: number, row: number): TerrainRect => ({
@@ -165,20 +166,12 @@ export const FIXTURE_RECIPE: ZoneRecipe = {
   theme: "test",
 };
 
-export const GAME_LIBRARY: ChunkLibrary = {
-  chunks: CHUNKS,
-  rows: ZONE_ROWS,
-  rules: CHUNK_RULES,
-  seams: SEAM_ROWS,
-  themes: THEMES,
-};
-
 // Every chunk, by name, with its library: the fixtures' and gameplay's.
 export const ALL_CHUNKS: readonly (readonly [string, ChunkLibrary, ChunkPlan])[] = [
   ...Object.entries(FIXTURE_CHUNKS).map(
     ([id, chunk]) => [`fixture ${id}`, FIXTURE_LIBRARY, chunk] as const,
   ),
-  ...Object.entries(CHUNKS).map(([id, chunk]) => [id, GAME_LIBRARY, chunk] as const),
+  ...Object.entries(CHUNKS).map(([id, chunk]) => [id, CHUNK_LIBRARY, chunk] as const),
 ];
 
 // Every theme, by name: the fixtures' and gameplay's.
@@ -192,5 +185,5 @@ export const ALL_THEMES: readonly (readonly [string, ThemePlan])[] = [
 // Every recipe, by zone key, with its library.
 export const ALL_RECIPES: readonly (readonly [string, ChunkLibrary, ZoneRecipe])[] = [
   ["fixture", FIXTURE_LIBRARY, FIXTURE_RECIPE],
-  ...Object.entries(RECIPES).map(([key, recipe]) => [key, GAME_LIBRARY, recipe] as const),
+  ...Object.entries(RECIPES).map(([key, recipe]) => [key, CHUNK_LIBRARY, recipe] as const),
 ];

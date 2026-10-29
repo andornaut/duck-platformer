@@ -1,0 +1,28 @@
+import { CHUNK_RULES, CHUNKS, SEAM_ROWS, THEMES } from "../data/chunks";
+import { ZONE_ROWS } from "../data/screen";
+import type { ZonePlan } from "../data/types";
+import { RECIPES, ZONES } from "../data/zones";
+import { assembleZone, type ChunkLibrary } from "./assemble";
+
+// The game's chunks and themes.
+export const CHUNK_LIBRARY: ChunkLibrary = {
+  chunks: CHUNKS,
+  rows: ZONE_ROWS,
+  rules: CHUNK_RULES,
+  seams: SEAM_ROWS,
+  themes: THEMES,
+};
+
+// The zone key names on the lap with seed: hand-built in ZONES, or assembled from its recipe in
+// RECIPES, the same for the same seed.
+export function zonePlanFor(seed: number, key: string): ZonePlan {
+  const plan = ZONES[key];
+  if (plan) {
+    return plan;
+  }
+  const recipe = RECIPES[key];
+  if (!recipe) {
+    throw new Error(`No zone or recipe ${key}`);
+  }
+  return assembleZone(CHUNK_LIBRARY, seed, key, recipe);
+}

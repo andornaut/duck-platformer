@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { nextZoneIndex, startZoneIndex } from "./zoneChain";
+import { askedLapSeed, askedRecipe, nextZoneIndex, startZoneIndex } from "./zoneChain";
 
 describe("startZoneIndex", () => {
   it.each([
@@ -15,6 +15,34 @@ describe("startZoneIndex", () => {
     ["?dev=1&zone=2", 1],
   ])("starts %j of 3 zones at index %i", (search, index) => {
     expect(startZoneIndex(search, 3)).toBe(index);
+  });
+});
+
+describe("askedRecipe", () => {
+  it.each([
+    ["", undefined],
+    ["?zone=park", "park"],
+    ["?dev=1&zone=park", "park"],
+    ["?zone=alley", undefined],
+    ["?zone=2", undefined],
+  ])("reads %j as %s", (search, key) => {
+    expect(askedRecipe(search, ["park"])).toBe(key);
+  });
+});
+
+describe("askedLapSeed", () => {
+  it.each([
+    ["", undefined],
+    ["?lap=", undefined],
+    ["?lap=0", 0],
+    ["?lap=42", 42],
+    ["?lap=4294967295", 2 ** 32 - 1],
+    ["?lap=4294967296", undefined],
+    ["?lap=-1", undefined],
+    ["?lap=1.5", undefined],
+    ["?lap=one", undefined],
+  ])("reads %j as %s", (search, seed) => {
+    expect(askedLapSeed(search)).toBe(seed);
   });
 });
 

@@ -6,14 +6,18 @@ import { saveStore } from "@andornaut/game-kit/save/saveStore";
 import { localSaveStorage } from "@andornaut/game-kit/save/storage";
 
 import { ZONE_MAP } from "../data/map";
-import { ZONES } from "../data/zones";
-import { BEGINNING, type Progress, progressFormat } from "./progress";
+import { RECIPES, ZONES } from "../data/zones";
+import { BEGINNING, newLapSeed, type Progress, progressFormat } from "./progress";
 
-export { type Progress } from "./progress";
+export { newLapSeed, type Progress } from "./progress";
 
 const KEYS = { backup: "duck-platformer.save-backup", save: "duck-platformer.save" } as const;
 
-const store = saveStore(localSaveStorage(), KEYS, progressFormat(ZONE_MAP, ZONES));
+const store = saveStore(
+  localSaveStorage(),
+  KEYS,
+  progressFormat(ZONE_MAP, { ...ZONES, ...RECIPES }, newLapSeed),
+);
 let progress: Progress = BEGINNING;
 
 // Reads the stored progress into savedProgress.
@@ -26,15 +30,16 @@ export function savedProgress(): Progress {
   return progress;
 }
 
-// She has entered the zone at the end of route: Continue resumes at that zone's start.
-export function saveZoneStart(route: readonly string[]): void {
-  write({ at: "zone", route });
+// She has entered the zone at the end of route, on the lap with seed: Continue resumes at that
+// zone's start, assembled the same.
+export function saveZoneStart(seed: number, route: readonly string[]): void {
+  write({ at: "zone", route, seed });
 }
 
-// She has cleared the zone at the end of route: Continue resumes on the map, where she stands
-// after it.
-export function saveClearedZone(route: readonly string[]): void {
-  write({ at: "map", route });
+// She has cleared the zone at the end of route, on the lap with seed: Continue resumes on the
+// map, where she stands after it.
+export function saveClearedZone(seed: number, route: readonly string[]): void {
+  write({ at: "map", route, seed });
 }
 
 function write(next: Progress): void {

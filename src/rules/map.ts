@@ -85,10 +85,15 @@ export function mapStand(map: ZoneMap, played: boolean, route: readonly string[]
   };
 }
 
+// Whether taking route on starts a new lap: it passes the finish.
+export function startsLap(map: ZoneMap, route: MapRoute): boolean {
+  return route.via.includes(map.finish);
+}
+
 // The nodes she has walked this lap once she takes a route on from where she stands, ending at
 // its zone; past the finish, a new lap from the start.
 export function walkOn(map: ZoneMap, stand: MapStand, route: MapRoute): string[] {
-  if (route.via.includes(map.finish)) {
+  if (startsLap(map, route)) {
     return [map.start];
   }
   return [...stand.walked, ...route.via, route.zone.id];

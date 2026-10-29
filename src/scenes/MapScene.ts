@@ -18,7 +18,8 @@ import {
   mapLabel,
   type PathLook,
 } from "../layout/mapScreen";
-import { type MapStand, mapStand, nodeOf, walkOn } from "../rules/map";
+import { type MapStand, mapStand, nodeOf, startsLap, walkOn } from "../rules/map";
+import { newLapSeed } from "../save";
 import { ART_MANIFEST_KEY, type ArtManifest } from "../view/aseprite";
 import {
   advanceWidth,
@@ -73,6 +74,7 @@ export class MapScene extends Scene {
   private played = false;
   private pressed: Control | undefined;
   private route: readonly string[] = [];
+  private seed = 0;
   private stand!: MapStand;
 
   constructor() {
@@ -80,10 +82,11 @@ export class MapScene extends Scene {
   }
 
   // data.route: the nodes she has walked this lap, ending at the node she is at; data.played:
-  // whether she has played it.
-  init(data: { played?: boolean; route?: readonly string[] }): void {
+  // whether she has played it; data.seed: the lap's seed. Without a seed, a new lap begins.
+  init(data: { played?: boolean; route?: readonly string[]; seed?: number }): void {
     this.played = data.played ?? false;
     this.route = data.route ?? [ZONE_MAP.start];
+    this.seed = data.seed ?? newLapSeed();
     this.chosen = 0;
     this.choices = [];
     this.continueArt = undefined;
@@ -288,7 +291,7 @@ export class MapScene extends Scene {
   }
 
   // Plays the node she is at, or after it, the zone at the end of route choice, or with no route
-  // on, the start again.
+  // on, the start again. Past the finish, a new lap draws a new seed.
   private goOn(choice: number): void {
     const route = this.stand.routes[choice];
     const walked = !this.played
@@ -296,7 +299,8 @@ export class MapScene extends Scene {
       : route
         ? walkOn(ZONE_MAP, this.stand, route)
         : [ZONE_MAP.start];
-    this.scene.start("zone", { route: walked });
+    const lap = this.played && (route ? startsLap(ZONE_MAP, route) : true);
+    this.scene.start("zone", { route: walked, seed: lap ? newLapSeed() : this.seed });
   }
 
   private slice(key: string, rect: Rect): GameObjects.NineSlice {

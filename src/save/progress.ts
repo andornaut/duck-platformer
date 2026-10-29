@@ -4,15 +4,26 @@ import type { ZoneMap } from "../data/types";
 
 // Where the player's progress resumes: the beginning (no progress saved, the start screen offers
 // Start), the map where she stands after clearing a zone, or the start of the zone she is in.
-// route is the nodes she has walked this lap, ending at that zone's node.
+// route is the nodes she has walked this lap, ending at that zone's node. seed: the lap's seed,
+// which every assembled zone this lap is assembled from.
 export type Progress =
-  { readonly at: "beginning" } | { readonly at: "map" | "zone"; readonly route: readonly string[] };
+  | { readonly at: "beginning" }
+  | { readonly at: "map" | "zone"; readonly route: readonly string[]; readonly seed: number };
 
 export const BEGINNING: Progress = { at: "beginning" };
 
 // The save format's version. Before the first release, a change to the format or a map node or
-// zone renamed bumps it, and older saves reset to the beginning.
-export const PROGRESS_VERSION = 1;
+// zone renamed bumps it, and older saves reset to the beginning. Version 1 had no lap seed: its
+// saves gain a new one.
+export const PROGRESS_VERSION = 2;
+
+// A new lap's seed: a whole number in [0, 2^32).
+export function newLapSeed(): number {
+  return Math.floor(Math.random() * 2 ** 32);
+}
+
+const isSeed = (seed: unknown): seed is number =>
+  Number.isInteger(seed) && (seed as number) >= 0 && (seed as number) < 2 ** 32;
 
 const RESUMES = new Set(["map", "zone"]);
 
@@ -42,10 +53,11 @@ export function routeProblem(
 
 // The progress save's format on map and zones: a save whose route no longer fits them (a
 // renamed node, a path not built, a zone removed) is refused, and the player starts from the
-// beginning.
+// beginning. A version 1 save gains a lap seed from drawSeed.
 export function progressFormat(
   map: ZoneMap,
   zones: Readonly<Record<string, unknown>>,
+  drawSeed: () => number,
 ): SaveFormat<Progress> {
   const checked = (progress: Progress): Checked<Progress> => {
     if (progress.at === "beginning") {
@@ -55,7 +67,7 @@ export function progressFormat(
     return problem === undefined ? { ok: true, value: progress } : { ok: false, reason: problem };
   };
   return {
-    decode: ({ at, route }: StoredObject): Checked<Progress> => {
+    decode: ({ at, route, seed }: StoredObject): Checked<Progress> => {
       if (at === "beginning") {
         return { ok: true, value: BEGINNING };
       }
@@ -65,14 +77,19 @@ export function progressFormat(
       if (!Array.isArray(route) || !route.every((node) => typeof node === "string")) {
         return { ok: false, reason: "the save's route is not a list of map nodes" };
       }
-      return checked({ at: at as "map" | "zone", route: route as string[] });
+      if (!isSeed(seed)) {
+        return { ok: false, reason: "the save's lap seed is not a whole number in [0, 2^32)" };
+      }
+      return checked({ at: at as "map" | "zone", route: route as string[], seed });
     },
     encode: (progress: Progress): Checked<StoredObject> => {
       const valid = checked(progress);
       return valid.ok ? { ok: true, value: { ...valid.value } } : valid;
     },
     fresh: () => BEGINNING,
-    migrations: {},
+    migrations: {
+      1: (save) => (save.at === "beginning" ? save : { ...save, seed: drawSeed() }),
+    },
     version: PROGRESS_VERSION,
   };
 }

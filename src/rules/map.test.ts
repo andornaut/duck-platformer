@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { ZoneMap } from "../data/types";
-import { type MapRoute, mapStand, pathsFrom, routesOn, walkOn } from "./map";
+import { type MapRoute, mapStand, pathsFrom, routesOn, startsLap, walkOn } from "./map";
 
 // a, then a fork f with built paths to b and c and an unbuilt one to d, all three joining at the
 // finish z, a fork.
@@ -92,11 +92,11 @@ describe("mapStand", () => {
 
 describe("walkOn", () => {
   it.each([
-    ["from the fork after a, to c", ["a"], "c", ["a", "f", "c"]],
-    ["from b, past the finish, to a new lap", ["a", "f", "b"], "a", ["a"]],
-  ])("walks %s", (_, route, zone, walked) => {
+    ["from the fork after a, to c", ["a"], "c", ["a", "f", "c"], false],
+    ["from b, past the finish, to a new lap", ["a", "f", "b"], "a", ["a"], true],
+  ])("walks %s", (_, route, zone, walked, lap) => {
     const stand = mapStand(MAP, true, route);
     const taken = stand.routes.find((each) => each.zone.id === zone);
-    expect(taken && walkOn(MAP, stand, taken)).toEqual(walked);
+    expect(taken && [walkOn(MAP, stand, taken), startsLap(MAP, taken)]).toEqual([walked, lap]);
   });
 });
