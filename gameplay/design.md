@@ -29,6 +29,7 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 - **Lengths:** text is Tiny5 drawn at 2×, about 6.5 base px a character on average; measure the width, don't count characters. A dialogue paragraph fits 3 lines of 504 px (about 72 characters a line). An answer fits 166 px (about 25 characters). A quip, with its speaker's name, fits 452 px (about 60 characters)
 - **Spelling:** Canadian (colour, favourite, neighbour). No em dashes and no emojis
 - **Style:** plain, short and consistent: no flourishes, no figures of speech, no redundancy
+- **Terms:** the home page is the website's page at `/`; it is never shown inside an installed app. The start screen is the game's first screen, in a browser and in an installed app. Return home always goes to the start screen, from any zone, the map or a card
 
 ## Rules
 
@@ -140,5 +141,5 @@ Everything in a zone except its terrain is placed in data, in three layers.
 - **Back:** back during play opens the pause card, and back with the card open closes it. Where the browser can't hand back to the game (Firefox for Android's installed app, and before the first tap or key in browsers without CloseWatcher), back is the browser's own
 - **Open:** the pause button at the top left, shown only while a zone plays, P or Esc, or back
 - **Pause card:** a card titled Paused, over the dimmed game, which pauses play, with a close X. Its rows: Settings, Return home, then Resume
-- **Return home:** goes back to the start screen
+- **Return home:** always goes to the start screen
 - **Settings card:** opened from Settings on the pause card or the start screen. Its rows: Touch controls (Shown or Hidden, Shown by default), then Install while the game can be installed, which opens the install steps. The build label sits at its foot. Its close X, P, Esc and back each return to whichever opened it
