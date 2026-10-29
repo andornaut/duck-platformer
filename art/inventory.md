@@ -29,6 +29,15 @@ Plain PNGs and one ICO from `art/tools/icons.py`, not manifest entries.
 | icon-512          | web manifest icon, disc on transparent   | 512x512 | `public/icons/icon-512.png`          |
 | icon-maskable-512 | maskable icon, green square, central 80% | 512x512 | `public/icons/icon-maskable-512.png` |
 
+## Images
+
+Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with their sizes.
+
+| Key      | Type                   | Size    | Path                      |
+| -------- | ---------------------- | ------- | ------------------------- |
+| logo     | title-screen logo      | 360x193 | `public/art/logo.png`     |
+| logo-nav | nav-bar logo, one line | 214x30  | `public/art/logo-nav.png` |
+
 ## Sprites
 
 | Key                | Type                       | Size   | Tags                            |

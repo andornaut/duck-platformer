@@ -127,6 +127,13 @@ The protagonist is a wide, round, cream-coloured duck, drawn facing right and mi
 - Overhang of the 24x36 body at rest: her back and tail 8px on the left, her head and bill 10px on the right, and 2px of the body's height above her head left empty. The raised wing reaches 5px above the body, and the jump crouch and land squash push her tail out to 12px on the left.
 - Portrait: 64x64, her head set into the top of her body, facing right, cut off by the bottom edge, with one ink outer line on a transparent ground. The dialogue box's 68x68 frame supplies the backing.
 
+## Logo
+
+The logo is the duck peeking over a big sky-blue DUCK, her head and back showing over its top edge, with PLATFORMER in cream below. `art/tools/logo.py` draws it as plain PNGs on a transparent ground, listed in the manifest under `images` with their sizes: `logo` (360x193, the title screen) and `logo-nav` (214x30, the site's nav bar, on one line).
+
+- The lettering is a 5x7 pixel alphabet drawn bold at a block size, with rounded corners, a light rim, a shade crescent and an ink outline; PLATFORMER takes a 2px blue drop shadow so it holds on a cream ground.
+- The title is one string in the script, `WORDMARK`. The alphabet has A C D E F K L M O P R T U, so a new title adds any other letters to `GLYPHS`.
+
 ## The ferret
 
 The villain is a chibi sable ferret in a stovepipe hat and bow tie, a talking animal that schemes against the duck's climb: in dialogue, in quips and through the hazards it sets. It is cute with a touch of slyness (soft round eyes, a small smile, steepled paws), never scary or cross, and is never fought. `art/tools/ferret.py` draws it; its docstring gives every frame's pose and timing.

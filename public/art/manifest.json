@@ -536,5 +536,19 @@
       "y": 312,
       "repeat": "none"
     }
+  ],
+  "images": [
+    {
+      "key": "logo",
+      "png": "logo.png",
+      "width": 360,
+      "height": 193
+    },
+    {
+      "key": "logo-nav",
+      "png": "logo-nav.png",
+      "width": 214,
+      "height": 30
+    }
   ]
 }
