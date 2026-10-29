@@ -4,13 +4,13 @@ import type { DuckTuning } from "./types";
 export const DUCK: DuckTuning = {
   airAccel: 2880,
   coyoteTime: 0.1,
-  flutterFallSpeed: 172,
-  gravity: 1100,
+  flutterFallSpeed: 275,
+  gravity: 1800,
   groundAccel: 2880,
   height: 36,
   jumpBuffer: 0.1,
-  jumpHoldTime: 0.2,
-  jumpSpeed: 300,
+  jumpHoldTime: 0.06,
+  jumpSpeed: 430,
   walkSpeed: 288,
   width: 24,
 };
