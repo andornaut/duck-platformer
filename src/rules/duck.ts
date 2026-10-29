@@ -9,9 +9,11 @@ export interface DuckInput {
 }
 
 export interface DuckState {
+  // Seconds a pressed jump still waits to start, should she land or still be in coyote time.
+  readonly bufferLeft: number;
+  // Seconds after leaving the ground in which a jump still starts. 0 once she has jumped.
+  readonly coyoteLeft: number;
   readonly facing: -1 | 1;
-  // After a jump, until she lands: her fall is capped at the flutter speed.
-  readonly fluttering: boolean;
   readonly grounded: boolean;
   readonly jumpHeld: boolean;
   readonly vx: number;
@@ -23,8 +25,9 @@ export interface DuckState {
 
 export function startDuck(tuning: DuckTuning, start: Point): DuckState {
   return {
+    bufferLeft: 0,
+    coyoteLeft: 0,
     facing: 1,
-    fluttering: false,
     grounded: false,
     jumpHeld: false,
     vx: 0,
@@ -44,7 +47,7 @@ function approach(speed: number, target: number, step: number): number {
 }
 
 // One fixed step of seconds: steer, jump, fall, then move along x and along y in turn, each
-// stopped at the first solid in the way.
+// stopped at the first solid in the way. Every fall flutters: it never passes the flutter speed.
 export function stepDuck(
   tuning: DuckTuning,
   solids: readonly Rect[],
@@ -55,17 +58,22 @@ export function stepDuck(
   const accel = duck.grounded ? tuning.groundAccel : tuning.airAccel;
   let vx = approach(duck.vx, input.move * tuning.walkSpeed, accel * seconds);
   let vy = duck.vy;
-  let fluttering = duck.fluttering;
 
   const jumpPressed = input.jumpHeld && !duck.jumpHeld;
-  if (jumpPressed && duck.grounded) {
+  let bufferLeft = jumpPressed ? tuning.jumpBuffer : Math.max(0, duck.bufferLeft - seconds);
+  let coyoteLeft = Math.max(0, duck.coyoteLeft - seconds);
+  if ((jumpPressed || bufferLeft > 0) && (duck.grounded || duck.coyoteLeft > 0)) {
     vy = -tuning.jumpSpeed;
-    fluttering = true;
+    bufferLeft = 0;
+    coyoteLeft = 0;
+    // A buffered jump whose button was already released starts as a short hop.
+    if (!input.jumpHeld) {
+      vy *= tuning.jumpReleaseCut;
+    }
   } else if (!input.jumpHeld && duck.jumpHeld && vy < 0) {
     vy *= tuning.jumpReleaseCut;
   }
-  vy += tuning.gravity * seconds;
-  vy = Math.min(vy, fluttering ? tuning.flutterFallSpeed : tuning.maxFallSpeed);
+  vy = Math.min(vy + tuning.gravity * seconds, tuning.flutterFallSpeed);
 
   let x = duck.x + vx * seconds;
   for (const solid of solids) {
@@ -93,12 +101,13 @@ export function stepDuck(
     }
   }
   if (grounded) {
-    fluttering = false;
+    coyoteLeft = tuning.coyoteTime;
   }
 
   return {
+    bufferLeft,
+    coyoteLeft,
     facing: input.move === 0 ? duck.facing : input.move,
-    fluttering,
     grounded,
     jumpHeld: input.jumpHeld,
     vx,

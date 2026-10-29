@@ -19,6 +19,17 @@ function run(steps: number, input: (step: number) => DuckInput, solids = [GROUND
   return states;
 }
 
+// A short jump from the ground, and optionally a second press on pressStep.
+function hop(pressStep?: number): DuckState[] {
+  return run(600, (step) => ({ jumpHeld: step < 2 || step === pressStep, move: 0 }));
+}
+
+// Walking right off a narrow ledge, and optionally a jump press on jumpStep.
+const LEDGE: Rect = { height: 40, width: 40, x: -20, y: 300 };
+function walkOff(jumpStep?: number): DuckState[] {
+  return run(120, (step) => ({ jumpHeld: step === jumpStep, move: 1 }), [LEDGE]);
+}
+
 const last = (states: DuckState[]) => states[states.length - 1] as DuckState;
 const lowestY = (states: DuckState[]) => Math.min(...states.map((state) => state.y));
 const startY = GROUND.y - DUCK.height;
@@ -41,17 +52,35 @@ describe("stepDuck", () => {
     expect(startY - lowestY(states)).toBeCloseTo(apex, -1);
   });
 
-  it("never falls faster than the flutter after a jump", () => {
-    const states = run(240, (step) => ({ jumpHeld: step < 2, move: 0 }));
+  it.each([
+    ["after a jump", hop()],
+    ["off a ledge", walkOff()],
+  ])("falls at the flutter speed at most %s", (_name, states) => {
     const falling = states.filter((state) => state.vy > 0 && !state.grounded);
     expect(falling.length).toBeGreaterThan(0);
     expect(Math.max(...falling.map((state) => state.vy))).toBe(DUCK.flutterFallSpeed);
   });
 
-  it("falls faster than the flutter after walking off a ledge", () => {
-    const ledge: Rect = { height: 40, width: 40, x: -20, y: 300 };
-    const states = run(120, () => ({ jumpHeld: false, move: 1 }), [ledge]);
-    expect(Math.max(...states.map((state) => state.vy))).toBeGreaterThan(DUCK.flutterFallSpeed);
+  // A press on step s acts on the state after step s - 1; that state's coyote time has run
+  // for (s - leave) steps since states[leave], the first one in the air.
+  it.each([
+    ["within coyote time", Math.floor(DUCK.coyoteTime / STEP) - 1, true],
+    ["after coyote time", Math.ceil(DUCK.coyoteTime / STEP) + 1, false],
+  ])("jumps when pressed %s after leaving a ledge", (_name, after, jumps) => {
+    const leave = walkOff().findIndex((state) => !state.grounded);
+    const states = walkOff(leave - 1 + after);
+    expect(states.some((state) => state.vy < 0)).toBe(jumps);
+  });
+
+  // A press kept in the buffer starts a jump on the step after she lands, so the buffer must
+  // outlast the steps to landing plus one.
+  it.each([
+    ["within the buffer", Math.floor(DUCK.jumpBuffer / STEP) - 2, true],
+    ["before the buffer", Math.ceil(DUCK.jumpBuffer / STEP) + 1, false],
+  ])("jumps as she lands when pressed %s", (_name, before, jumps) => {
+    const land = hop().findIndex((state, i) => i > 2 && state.grounded);
+    const states = hop(land - 1 - before);
+    expect(states.slice(land).some((state) => state.vy < 0)).toBe(jumps);
   });
 
   it("hops lower when Jump is released early", () => {
@@ -60,9 +89,8 @@ describe("stepDuck", () => {
     expect(lowestY(tapped)).toBeGreaterThan(lowestY(held));
   });
 
-  it("lands and stops fluttering", () => {
-    const states = run(600, (step) => ({ jumpHeld: step < 2, move: 0 }));
-    expect(last(states)).toMatchObject({ fluttering: false, grounded: true, y: startY });
+  it("lands after a jump", () => {
+    expect(last(hop())).toMatchObject({ grounded: true, vy: 0, y: startY });
   });
 
   it.each([

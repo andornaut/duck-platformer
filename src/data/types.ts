@@ -18,19 +18,20 @@ export interface DuckTuning {
   // Speed gained per second while a direction is held, on the ground and in the air.
   readonly airAccel: number;
   readonly groundAccel: number;
-  // Downward acceleration while rising, and while falling without a flutter.
+  // Seconds after walking off a ledge in which a jump still starts.
+  readonly coyoteTime: number;
+  // Fastest fall: every fall flutters.
+  readonly flutterFallSpeed: number;
   readonly gravity: number;
   // Her collision box.
   readonly height: number;
   readonly width: number;
+  // Seconds before landing in which a jump press is kept, to start as she lands.
+  readonly jumpBuffer: number;
   // Upward speed when a jump starts.
   readonly jumpSpeed: number;
   // Upward speed is multiplied by this when Jump is released while rising: a shorter hop.
   readonly jumpReleaseCut: number;
-  // Fastest fall after a jump: the flutter.
-  readonly flutterFallSpeed: number;
-  // Fastest fall otherwise.
-  readonly maxFallSpeed: number;
   readonly walkSpeed: number;
 }
 
