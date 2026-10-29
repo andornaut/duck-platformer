@@ -21,7 +21,10 @@ export interface DuckState {
   readonly facing: -1 | 1;
   readonly grounded: boolean;
   readonly jumpHeld: boolean;
-  // Seconds a still-held jump keeps her rising at jumpSpeed. 0 once Jump is released.
+  // Seconds Jump has been held since it started her jump; 0 while it is up.
+  readonly jumpHeldFor: number;
+  // Seconds a still-held jump keeps her rising at jumpSpeed once its tap window has passed. 0 once
+  // Jump is released or she meets a ceiling.
   readonly jumpHoldLeft: number;
   readonly vx: number;
   readonly vy: number;
@@ -38,6 +41,7 @@ export function startDuck(tuning: DuckTuning, start: Point): DuckState {
     facing: 1,
     grounded: false,
     jumpHeld: false,
+    jumpHeldFor: 0,
     jumpHoldLeft: 0,
     vx: 0,
     vy: 0,
@@ -75,19 +79,28 @@ export function stepDuck(
   let bufferLeft = jumpPressed ? tuning.jumpBuffer : Math.max(0, duck.bufferLeft - seconds);
   let coyoteLeft = Math.max(0, duck.coyoteLeft - seconds);
   let jumpHoldLeft = input.jumpHeld ? duck.jumpHoldLeft : 0;
+  // Seconds Jump was held before this step, since it started her jump.
+  let heldBefore = duck.jumpHeldFor;
   if ((jumpPressed || bufferLeft > 0) && (duck.grounded || duck.coyoteLeft > 0)) {
     vy = -tuning.jumpSpeed;
     bufferLeft = 0;
     coyoteLeft = 0;
     // A buffered jump whose button was already released is a hop: no hold.
     jumpHoldLeft = input.jumpHeld ? tuning.jumpHoldTime : 0;
+    heldBefore = 0;
   }
-  if (jumpHoldLeft > 0 && vy < 0) {
-    // A held jump rises steadily at jumpSpeed until the hold runs out.
+  const jumpHeldFor = input.jumpHeld ? heldBefore + seconds : 0;
+  // Letting go of a jump held past its tap window while she still rises cuts her climb short. A
+  // press let go within the window is a hop, the launch alone, however short it was.
+  const released = duck.jumpHeld && !input.jumpHeld;
+  if (released && heldBefore >= tuning.jumpTapWindow && vy < 0) {
+    vy *= tuning.jumpReleaseCut;
+  }
+  if (jumpHoldLeft > 0 && heldBefore >= tuning.jumpTapWindow) {
+    // Held past the tap window, a jump rises steadily at jumpSpeed until the hold runs out.
     vy = -tuning.jumpSpeed;
     jumpHoldLeft = Math.max(0, jumpHoldLeft - seconds);
   } else {
-    jumpHoldLeft = 0;
     vy = Math.min(vy + tuning.gravity * seconds, tuning.flutterFallSpeed);
   }
 
@@ -115,6 +128,7 @@ export function stepDuck(
         grounded = true;
       } else {
         y = solid.y + solid.height;
+        jumpHoldLeft = 0;
       }
       vy = 0;
     }
@@ -140,6 +154,7 @@ export function stepDuck(
     facing: input.move === 0 ? duck.facing : input.move,
     grounded,
     jumpHeld: input.jumpHeld,
+    jumpHeldFor,
     jumpHoldLeft,
     vx,
     vy,

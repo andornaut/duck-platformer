@@ -14,6 +14,7 @@ const STILL: DuckState = {
   facing: 1,
   grounded: true,
   jumpHeld: false,
+  jumpHeldFor: 0,
   jumpHoldLeft: 0,
   vx: 0,
   vy: 0,

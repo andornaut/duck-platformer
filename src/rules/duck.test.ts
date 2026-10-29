@@ -10,11 +10,16 @@ const GROUND: Rect = { height: 40, width: 2000, x: -1000, y: 300 };
 const IDLE: DuckInput = { jumpHeld: false, move: 0 };
 
 // Steps her from a standing start on GROUND, with input(step) each step; returns every state.
-function run(steps: number, input: (step: number) => DuckInput, solids = [GROUND]): DuckState[] {
-  let duck = stepDuck(DUCK, solids, [], STEP, IDLE, startDuck(DUCK, { x: 0, y: GROUND.y }));
+function run(
+  steps: number,
+  input: (step: number) => DuckInput,
+  solids = [GROUND],
+  tuning = DUCK,
+): DuckState[] {
+  let duck = stepDuck(tuning, solids, [], STEP, IDLE, startDuck(tuning, { x: 0, y: GROUND.y }));
   const states = [duck];
   for (let step = 0; step < steps; step++) {
-    duck = stepDuck(DUCK, solids, [], STEP, input(step), duck);
+    duck = stepDuck(tuning, solids, [], STEP, input(step), duck);
     states.push(duck);
   }
   return states;
@@ -47,20 +52,61 @@ describe("stepDuck", () => {
     expect(last(states).facing).toBe(move);
   });
 
-  // Held for n steps, she rises at the jump speed for those steps, up to the hold time, then as
-  // far as the jump speed carries her against gravity.
-  const holdSteps = Math.round(DUCK.jumpHoldTime / STEP);
+  // Jump held for a press's seconds from a standing start: how high she rises.
+  const rise = (tuning: typeof DUCK, seconds: number) =>
+    startY -
+    lowestY(run(240, (step) => ({ jumpHeld: step * STEP < seconds, move: 0 }), [GROUND], tuning));
+  const { gravity, jumpHoldTime, jumpSpeed, jumpTapWindow } = DUCK;
+  // The launch alone, and the most a hold adds: the hold time at jumpSpeed, from where the hop
+  // is at the end of the tap window.
+  const hopHeight = jumpSpeed ** 2 / (2 * gravity);
+  const fullHeight = rise(DUCK, 10);
+  const within = jumpSpeed * STEP;
+
   it.each([
-    ["a tap", 1],
-    ["a third of the hold", Math.round(holdSteps / 3)],
-    ["the whole hold", holdSteps],
-    ["longer than the hold", holdSteps * 2],
-  ])("rises as high as %s gives, within a step", (_name, steps) => {
-    const states = run(240, (step) => ({ jumpHeld: step < steps, move: 0 }));
-    const held = Math.min(steps, holdSteps) * STEP;
-    const apex = DUCK.jumpSpeed * held + DUCK.jumpSpeed ** 2 / (2 * DUCK.gravity);
-    expect(Math.abs(startY - lowestY(states) - apex)).toBeLessThanOrEqual(DUCK.jumpSpeed * STEP);
+    ["a one-step tap", STEP],
+    ["half the tap window", jumpTapWindow / 2],
+    ["a step short of the tap window", jumpTapWindow - STEP],
+  ])("hops the launch alone for %s", (_name, seconds) => {
+    expect(Math.abs(rise(DUCK, seconds) - hopHeight)).toBeLessThanOrEqual(within);
   });
+
+  it("rises no higher than the hop for a press of the tap window", () => {
+    expect(rise(DUCK, jumpTapWindow)).toBeLessThanOrEqual(hopHeight + within);
+  });
+
+  it.each([
+    ["a third of the hold", 1 / 3],
+    ["half the hold", 1 / 2],
+    ["two thirds of the hold", 2 / 3],
+  ])("rises between the hop and the full jump for %s past the tap window", (_name, share) => {
+    const height = rise(DUCK, jumpTapWindow + STEP + share * jumpHoldTime);
+    expect(height).toBeGreaterThan(hopHeight + within);
+    expect(height).toBeLessThan(fullHeight - within);
+  });
+
+  it.each([
+    ["the whole hold", jumpTapWindow + STEP + jumpHoldTime + 0.2],
+    ["twice as long", 2 * (jumpTapWindow + jumpHoldTime + 0.2)],
+  ])("rises the full jump for %s", (_name, seconds) => {
+    expect(rise(DUCK, seconds)).toBe(fullHeight);
+  });
+
+  it("rises higher for a longer press, past the tap window", () => {
+    const heights = Array.from({ length: 30 }, (_, step) =>
+      rise(DUCK, jumpTapWindow + step * STEP),
+    );
+    expect(heights.every((height, i) => i === 0 || height >= (heights[i - 1] ?? 0))).toBe(true);
+  });
+
+  it.each([0.25, 0.5, 0.75])(
+    "stops climbing sooner when let go mid-hold, keeping %d of her speed",
+    (cut) => {
+      const press = jumpTapWindow + STEP + jumpHoldTime / 2;
+      const kept = rise({ ...DUCK, jumpReleaseCut: 1 }, press);
+      expect(rise({ ...DUCK, jumpReleaseCut: cut }, press)).toBeLessThan(kept - within);
+    },
+  );
 
   it("hops when a buffered jump's button was already released", () => {
     const land = hop().findIndex((state, i) => i > 2 && state.grounded);
