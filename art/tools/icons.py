@@ -1,17 +1,18 @@
-"""The site's favicon and app icons: the duck's head on a green disc.
+"""The site's favicon and app icons: the duck on a green disc.
 
 Usage, from the repository root:
   python3 -I art/tools/icons.py build            write every icon below
   python3 -I art/tools/icons.py preview OUT.png  every icon at 1x on light and dark ground, the 16 and 32 at 8x
 
 Plain PNGs (and one ICO), not Aseprite sprites and not manifest entries. Every pixel is fully opaque or
-fully transparent. The head is the sprite's (art/tools/duck.py): a round cream head with a tan crescent, a
-white rim, a square ink dot eye and a short plain orange bill, outlined in dark slate, placed as fractions of
-the icon's side, so each drawing is its own rasterization rather than a downscale.
+fully transparent. She is drawn from the sprite's shapes in art/tools/duck.py at each icon's own size, so each
+drawing is its own rasterization rather than a downscale: the round cream head set into the body, the nape dip,
+the softened back, the tail tip, a flat tan wing, a square ink dot eye and the short orange bill, with tan cel
+crescents, a white rim from 32px up and a dark-slate outline.
 
 | Path                               | Size    | Drawing                | Ground                           |
 | ---------------------------------- | ------- | ---------------------- | -------------------------------- |
-| public/art/favicon-16.png          | 16x16   | 16, hand-placed        | disc, transparent outside        |
+| public/art/favicon-16.png          | 16x16   | 16, close-up           | disc, transparent outside        |
 | public/art/favicon.png             | 32x32   | 32                     | disc, transparent outside        |
 | public/favicon.ico                 | 16, 32  | the two favicons above | disc, transparent outside        |
 | public/icons/apple-touch-icon.png  | 180x180 | 90, scaled 2x          | full-bleed green square          |
@@ -19,7 +20,8 @@ the icon's side, so each drawing is its own rasterization rather than a downscal
 | public/icons/icon-512.png          | 512x512 | 64, scaled 8x          | disc, transparent outside        |
 | public/icons/icon-maskable-512.png | 512x512 | 64 at 78%, scaled 8x   | full-bleed green, subject in 80% |
 
-At 16px the head is a hand-placed circle with a 3x2 bill and a 2x2 eye; from 32px up the rim light shows.
+From 32px up she stands whole in the disc, her head 0.18 of the side. At 16px she is a close-up, her head and the
+top of her back cut off by the disc inside a 1px green edge, so the 3x3 bill and the 2x2 eye still read.
 """
 
 import os
@@ -42,57 +44,64 @@ OUTPUTS = {
 ICO = "public/favicon.ico"
 MASK_SCALE = 0.78  # the subject's scale in the maskable icon, about the centre
 
-# The head in fractions of the side: head (cx, cy, r), bill (x, y, w, h), eye (x, y, side).
-HEAD = dict(head=(0.46, 0.54, 0.31), bill=(0.70, 0.52, 0.17, 0.12), eye=(0.50, 0.36, 0.09))
+# Her size in each drawing: her head's radius as a fraction of the side. From 32px up she stands whole in the
+# disc; at 16px only her head and the top of her back show, cut off by the disc, so the bill and eye still read.
+WHOLE_R = 0.18
+CLOSE = (0.54, 0.44, 0.30)  # the 16px close-up: head centre x, y and radius, as fractions of the side
 
 
-def scaled_spec(spec, f):
-    """The head shrunk by f about the icon's centre."""
-    def at(x, y):
-        return 0.5 + (x - 0.5) * f, 0.5 + (y - 0.5) * f
-
-    return dict(head=(*at(*spec["head"][:2]), spec["head"][2] * f),
-                bill=(*at(*spec["bill"][:2]), spec["bill"][2] * f, spec["bill"][3] * f),
-                eye=(*at(*spec["eye"][:2]), spec["eye"][2] * f))
-
-
-def head16(g):
-    """The 16px drawing, hand-placed: the head, a 3x2 bill and a 2x2 eye."""
-    g.ell(7, 8.5, 5, 4.8, "cream", "tan")
-    g.rect(11, 8, 3, 2, "orange")
-    g.rect(8, 5, 2, 2, "ink")
-
-
-def head(g, S, spec):
-    """The head at side S from a spec in fractions of the side."""
-    ks = max(1, round(S / 22))
-    cx, cy, r = spec["head"]
-    duck.cel(g, duck.in_ell(cx * S, cy * S, r * S, r * S), duck.BASE, duck.SHADE, duck.LIGHT, ks, 1)
-    bx, by, bw, bh = spec["bill"]
-    g.rect(round(bx * S), round(by * S), max(3, round(bw * S)), max(2, round(bh * S)), "orange")
-    ex, ey, es = spec["eye"]
-    e = max(2, round(es * S))
-    g.rect(round(ex * S), round(ey * S), e, e, "ink")
+def duck_px(S, hr, place, feet=True):
+    """Her side view with her head radius hr px, drawn from duck.py's shapes: the round head set into the body,
+    the 3px nape dip, the softened back, the tail tip, a folded wing, the short bill, the dot eye and (whole)
+    the stub feet. place(bounds) returns the head centre for the figure's bounds (left, top, right, bottom,
+    relative to the head centre)."""
+    s = hr / duck.HEAD_R
+    bw, bh = duck.BRX * s, duck.BRY * s
+    dx, dy = -duck.HEAD_X * bw, duck.HEAD_UP * bh  # body centre from the head centre
+    bounds = (dx - bw - 4 * s, -hr, hr + 5 * s, dy + bh + (2 * s if feet else 0))
+    hx, hy = place(bounds)
+    bx, by = hx + dx, hy + dy
+    g = Grid(S, S)
+    ks = max(1, round(3 * s))
+    light = duck.LIGHT if S >= 32 else None
+    if feet:
+        fw, fh = max(2, round(4 * s)), max(1, round(2 * s))
+        for fx in (-5, 2):
+            g.rect(int(bx + fx * s), int(by + bh), fw, fh, "orange")
+    duck.cel(g, duck.in_ell(bx - bw + s, by - s, 4.4 * s, 2.2 * s, -0.45), duck.BASE, duck.SHADE, None,
+             max(1, round(s)), 1)
+    duck.cel(g, duck.in_body(bx, by, bw, bh, hx - hr * 0.7, duck.NAPE_DROP * s, duck.BACK_FLAT * s), duck.BASE,
+             duck.SHADE, light, ks, 1)
+    duck.cel(g, duck.in_ell(hx, hy, hr, hr), duck.BASE, duck.SHADE, light, ks, 1)
+    duck.flat(g, duck.in_ell(bx - 2 * s, by + 2 * s, bw * 0.5, bh * 0.3, -0.3), duck.WING)
+    g.rect(int(hx + hr - 2 * s), int(hy), max(3, round(7 * s)), max(2, round(5 * s)), "orange")  # bill
+    e = max(2, round(4 * s))
+    g.rect(int(hx), int(hy - hr * 0.55), e, e, "ink")  # dot eye
+    return g.outlined(lambda c: K[duck.OUTLINE])
 
 
 def icon(S, ground):
     """One drawing: ground is "disc" (transparent outside), "full" (green square) or "mask" (green square,
-    the subject shrunk into the central 80%)."""
-    g = Grid(S, S)
-    if S == 16:
-        head16(g)
+    the disc and her shrunk into the central 80%)."""
+    f = MASK_SCALE if ground == "mask" else 1.0
+    c, R = S / 2, S / 2 * f
+    if S <= 16:
+        cx, cy, r = CLOSE
+        fig = duck_px(S, r * S, lambda b: (cx * S, cy * S), feet=False)
     else:
-        head(g, S, scaled_spec(HEAD, MASK_SCALE) if ground == "mask" else HEAD)
-    fig = g.outlined(lambda c: K[duck.OUTLINE])
+        def centred(b):  # the figure's bounds centred in the disc
+            return c - (b[0] + b[2]) / 2, c - (b[1] + b[3]) / 2
+        fig = duck_px(S, WHOLE_R * f * S, centred)
     out = Grid(S, S)
-    if ground == "disc":
-        out.ell(S / 2, S / 2, S / 2, S / 2, GROUND)
-    else:
+    if ground != "disc":
         out.rect(0, 0, S, S, GROUND)
     for y in range(S):
         for x in range(S):
-            if fig[y][x]:
-                out.px[y][x] = fig[y][x]
+            d = ((x + 0.5 - c) ** 2 + (y + 0.5 - c) ** 2) ** 0.5
+            if d <= R - 1:
+                out.px[y][x] = fig[y][x] or K[GROUND]
+            elif d <= R:  # a 1px green edge, so the 16px close-up's cut never meets the page
+                out.px[y][x] = K[GROUND] if S <= 16 else fig[y][x] or K[GROUND]
     return out.px
 
 
