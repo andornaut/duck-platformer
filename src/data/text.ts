@@ -14,6 +14,11 @@ export const TEXT: GameText = {
   map: {
     continue: "Continue",
     title: "Map",
+    zones: {
+      alley: "Alley",
+      park: "Park",
+      street: "Street",
+    },
   },
   pause: {
     hidden: "Hidden",
