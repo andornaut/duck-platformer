@@ -82,7 +82,7 @@ A landscape platformer: a duck falls out of her room at the top of a New York ho
 ### Level 1
 
 - **Entrance:** the hotel door is seen only from the street. Use at the door enters the hotel after a quick fade, into the lobby, a separate indoor scene
-- **Length:** 10 screens (540 tiles): 4 of street, then 6 of lobby
+- **Length:** 10 screens (600 tiles): 4 of street (240), then 6 of lobby (360)
 - **Lobby:** PLACEHOLDER: what happens there
 - **Street:** a day-time New York street past the hotel's ground-floor shops: a café, a florist, a gift shop, a makeup store, a pet shop and two restaurants. Its hazards are open cellar hatches in the sidewalk, a frog courier riding a delivery bike back and forth along it, and the ferret's first trap, a giant snap trap set near the hotel door with a quip. PLACEHOLDER: pigeons that flee, a dog that approaches, and pedestrians walking past
 
