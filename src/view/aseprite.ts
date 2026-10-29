@@ -1,5 +1,9 @@
 // Art's sprites, as public/art/manifest.json lists them and Aseprite exports them.
 
+// public/art/ is served here, with its manifest of everything BootScene loads.
+export const ART_PATH = "/art/";
+export const ART_MANIFEST_FILE = "manifest.json";
+
 export interface ArtManifest {
   readonly data: readonly { readonly json: string; readonly key: string }[];
   readonly fonts: readonly { readonly fnt: string; readonly key: string; readonly png: string }[];

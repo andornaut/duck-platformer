@@ -21,7 +21,7 @@ const KIT_ALIAS = { "@andornaut/game-kit": repoPath("vendor/game-kit/src") };
 // Vite bundles this file without its own resolve.alias, so the repository's code, which imports
 // the kit by its alias, loads through a module runner given the alias.
 const {
-  module: { gitHead, securityHeadersPlugin, shortCommit },
+  module: { gitHead, precachePlugin, securityHeadersPlugin, shortCommit },
 } = await runnerImport<typeof ConfigModules>(repoPath("src/tools/viteConfigModules.ts"), {
   configFile: false,
   resolve: { alias: KIT_ALIAS },
@@ -56,8 +56,12 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(packageVersion),
     __COMMIT__: JSON.stringify(shortCommit(() => gitHead(repoPath(".")), process.env)),
   },
+  // precachePlugin writes /sw.js, the service worker that precaches the game for offline play.
   // securityHeadersPlugin writes /_headers, the response headers with each page's CSP.
-  plugins: [securityHeadersPlugin()],
+  plugins: [
+    precachePlugin("play/index.html", repoPath("src/pwa/serviceWorker.ts")),
+    securityHeadersPlugin(),
+  ],
   publicDir: repoPath("public"),
   // The pages load their modules as /src/..., which names the repository's src/ rather than
   // pages/src/. The shared kit is a committed copy, imported as @andornaut/game-kit/<path>.

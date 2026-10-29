@@ -2,6 +2,8 @@ import { Scene } from "phaser";
 
 import {
   animKey,
+  ART_MANIFEST_FILE,
+  ART_PATH,
   type ArtManifest,
   type AsepriteSheet,
   sheetTags,
@@ -18,8 +20,8 @@ export class BootScene extends Scene {
   }
 
   preload(): void {
-    this.load.setPath("/art/");
-    this.load.json(MANIFEST, "manifest.json");
+    this.load.setPath(ART_PATH);
+    this.load.json(MANIFEST, ART_MANIFEST_FILE);
     this.load.once(`filecomplete-json-${MANIFEST}`, () => {
       const manifest = this.manifest();
       for (const { json, key, png } of manifest.sprites) {
