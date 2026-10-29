@@ -311,6 +311,21 @@ The ambient characters of the Zone 1 street, drawn by `art/tools/cast.py`; its d
 - The cat has the coat body: a big round head over an A-line coat and two stub legs. The raccoon has its own front-on body after a knitted raccoon: a cream face band over ink masks, a wide round muzzle and belly, its head low on a round body, and a banded tail. Both walk the two-leg cycle: a foot lifted 2px, passing (body 1px up), the other foot lifted, passing.
 - Grey exception: the pigeon is grey with an lgrey rim. In greyscale, slate alone does not separate from the dark storefronts. The raccoon needs none: its cream face band and belly carry it.
 
+## Environment aesthetic
+
+Every environment theme (a zone's street, a chunk theme's park) follows these rules. The park theme (`art/tools/park.py`) is the reference; its values are given after each rule.
+
+- One sky hue and a limited, tonal palette built around it. Every background layer is a step or two along that hue's ramp, and saturated colour is kept for the few things that matter. Park: a skin1 (`#e8b796`) sky, stepping to tan (`#e4a672`) from y 200 behind play.
+- Background layers read as atmosphere: the far city, the distant trees and the tall treetops sit close to the sky's value and saturation, low in contrast, and step down in value only slightly as they come nearer. Park: the city and the treetops' base skin2 (`#c28569`, 1.46:1 against the tan sky), shaded brown (`#b86f50`), lit tan; no windows in the far city.
+- Walkable tops are the brightest edges in the scene: a 2px light lip under a 1px dark edge, the lip at least 2:1 against whatever is directly behind it, measured in greyscale. Cream (`#ead4aa`) is the default lip; use white where cream falls short. Park: cream on grass, paths, benches and branches (2.12:1 against skin2); white on the stone stairs and the bandstand roof, which stand against the tan treetops (2.10:1, where cream would be 1.45:1); dark edges dark green, dark brown or plum.
+- Ground is a bright top band two or three rows deep over a soft, low-contrast fill, never a busy or dark mass. Clusters in the fill are 2px and sparse (about one tile in five), and an exposed side shows a narrow band of a darker step. Park: a grass top (dark-green edge, cream lip, green body) over a green turf row with 2px dark-green roots, then brown soil with dark-brown 2px pebbles; a 3px dark-brown band and a plum edge on an exposed side.
+- Tree crowns are lobed and cel-shaded, never round blobs: a mass of overlapping lobes in the shade colour, the base colour over it a little up and left, then a few small lit lobes on the top-left only, so the edge is broken and no colour sits as a round blob inside another (a round orange or gold blob reads as a coin). Park: near crowns rust over dark brown with ochre lit lobes; background crowns skin2 over brown, unlit.
+- Steps are soft: whole-tile rises of 1 or 2 rows, drawn as rounded grass lips with a stone stair tread on about every other step; collision is the full tile, and there are no slopes. Park: steps 2 columns deep and 2 rows high.
+- Saturation is spent where it matters: the walkable lips, the hazards, the accents that guide the eye (an awning, a lit door, a crown in the foreground). Props and backdrops otherwise stay within the palette's tones.
+- Hazards read as hazards, never as ledges or pickups: no light lip on a hazard, a spiky or watery silhouette, and its own accent. Park: the thorns' dark-red tips; the pond's water surface 4px below the ground line with white ripples.
+- Repeating backdrops tile at widths that divide 720, so seams never show.
+- Every scene is checked in greyscale: each walkable top separates from what is behind it, the ground band reads over its fill, and the background stays behind play.
+
 ## Zone 1: New York street
 
 A lost duck travels zone to zone across a map with forks. Zone 1 is a New York street on a summer day, brick and brownstone with ground-floor shops, two screens tall: the sidewalk runs along the bottom and she climbs the buildings into the upper screen. Its right end has an exit she takes with Use. `art/tools/floor1.py` draws it; its docstring lists every tile and piece.
