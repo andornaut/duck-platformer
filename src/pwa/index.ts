@@ -1,10 +1,12 @@
 // Offline play and updates: registers the service worker (serviceWorker.ts) and follows the
-// kit's update flow. A newer version takes over at once before the player has interacted, and
-// after that on the next launch.
+// kit's update flow. The game page is the only screen, so it counts as the home screen: a newer
+// version takes over at once before the player has interacted, and after that the
+// #update-ready toast in pages/play/index.html offers it.
 import { serviceWorkerUrl } from "@andornaut/game-kit/pwa/serviceWorkerUrl";
 import { createUpdateFlow } from "@andornaut/game-kit/pwa/updateReady";
 
 const SERVICE_WORKER_URL = "/sw.js";
+const UPDATE_READY_ID = "update-ready";
 
 // How long a fresh load holds the boot for a newer version to be checked for and installed, so
 // it reloads into that version before the game draws.
@@ -20,13 +22,20 @@ export function setupOfflinePlay(): Promise<void> {
     return Promise.resolve();
   }
   const container = navigator.serviceWorker;
+  const toast = document.getElementById(UPDATE_READY_ID);
   const flow = createUpdateFlow(
     container,
     () => Date.now(),
     () => navigator.onLine,
     () => window.location.reload(),
-    () => undefined,
+    (visible) => {
+      if (toast) {
+        toast.hidden = !visible;
+      }
+    },
   );
+  toast?.querySelector("button")?.addEventListener("click", () => flow.accept());
+  flow.setOnHome(true);
   for (const type of INTERACTION_EVENTS) {
     window.addEventListener(type, () => flow.noteInteraction(), { capture: true, passive: true });
   }
