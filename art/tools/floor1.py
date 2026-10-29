@@ -921,11 +921,11 @@ def example_strip(chars=True, hud=True):
         ferret = Image.open(f"{SPRITES}/ferret.png").convert("RGBA").crop((0, 0, 64, 80))
         im.alpha_composite(ferret, (372 - 32, EXAMPLE["ledge_row"] * T - 80))
     if hud:
-        use = Image.open(f"{SPRITES}/ui-touch-use.png").convert("RGBA").crop((0, 0, 51, 51))
-        jump = Image.open(f"{SPRITES}/ui-touch-jump.png").convert("RGBA").crop((0, 0, 57, 57))
+        use = Image.open(f"{SPRITES}/ui-touch-use.png").convert("RGBA").crop((0, 0, 67, 67))
+        jump = Image.open(f"{SPRITES}/ui-touch-jump.png").convert("RGBA").crop((0, 0, 75, 75))
         for s in range(2):
-            im.alpha_composite(use, (s * W + 591, 219))
-            im.alpha_composite(jump, (s * W + 648, 288))
+            im.alpha_composite(use, (s * W + 559, 177))
+            im.alpha_composite(jump, (s * W + 630, 270))
     return im.convert("RGB")
 
 
@@ -981,11 +981,11 @@ def lobby_example(chars=True, hud=True):
         ferret = Image.open(f"{SPRITES}/ferret.png").convert("RGBA").crop((0, 0, 64, 80))
         im.alpha_composite(ferret, (200 - 32, 24 * T - 80))
     if hud:
-        use = Image.open(f"{SPRITES}/ui-touch-use.png").convert("RGBA").crop((0, 0, 51, 51))
-        jump = Image.open(f"{SPRITES}/ui-touch-jump.png").convert("RGBA").crop((0, 0, 57, 57))
+        use = Image.open(f"{SPRITES}/ui-touch-use.png").convert("RGBA").crop((0, 0, 67, 67))
+        jump = Image.open(f"{SPRITES}/ui-touch-jump.png").convert("RGBA").crop((0, 0, 75, 75))
         for top in (0, 360):
-            im.alpha_composite(use, (591, top + 219))
-            im.alpha_composite(jump, (648, top + 288))
+            im.alpha_composite(use, (559, top + 177))
+            im.alpha_composite(jump, (630, top + 270))
     return im.convert("RGB")
 
 

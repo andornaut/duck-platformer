@@ -156,15 +156,16 @@ A one-line strip at the top centre (x 360), y 8, height 24, sized to its text an
 
 ### Touch controls
 
-Two round buttons for the right thumb, Use above and to the left of Jump. Each is an opaque disc: an ink edge, a 2px cream ring and a navy face, so it holds 3:1 on light and dark ground, with its icon above its label. Hidden on desktop and when the setting is off.
+Two round buttons for the right thumb, Use above and to the left of Jump. Each is an opaque disc: an ink edge, a 3px cream ring and a navy face, so it holds 3:1 on light and dark ground, with its icon above its label. Hidden on desktop and when the setting is off.
 
-| Control | Centre  | Hit area       | Disc      | Icon       |
-| ------- | ------- | -------------- | --------- | ---------- |
-| Use     | 616,244 | 568,200,152,80 | 49px wide | three dots |
-| Jump    | 676,316 | 568,280,152,80 | 55px wide | caret      |
+| Control | Centre  | Hit area        | Disc      | Icon       | Label origin | Label room |
+| ------- | ------- | --------------- | --------- | ---------- | ------------ | ---------- |
+| Use     | 592,210 | 522,152,198,104 | 65px wide | three dots | 580,207      | 45         |
+| Jump    | 667,307 | 522,256,198,104 | 73px wide | caret      | 650,306      | 53         |
 
-- Labels: "Use" and "Jump" in `font-body` at 2x, set by the game from text data and never baked in. Each is centred on its button's centre x, with its origin 3px above the centre, so the capitals sit just below it.
-- Press: the ring turns white and thickens to 3px and the face lifts a step, swelling 1px for the first frame (frame 0, then frame 1, 60ms each), then holds until release, which snaps back to rest.
+- The hit areas fill the right of the screen from y 152 down, Jump's in the bottom-right corner and Use's directly above it. Each disc sits inside its own hit area.
+- Labels: "Use" and "Jump" in `font-body` at 2x, set by the game from text data and never baked in. Each is centred on its button's centre x, 4 rows below the icon. Label room is the widest ink that keeps 2px of face on each side while pressed.
+- Press: the ring turns white and thickens 1px and the face lifts a step, swelling 1px for the first frame (frame 0, then frame 1, 60ms each), then holds until release, which snaps back to rest.
 - Movement has no art: a touch anywhere off a button sets its own neutral point, and nothing marks it.
 
 ### Pause card

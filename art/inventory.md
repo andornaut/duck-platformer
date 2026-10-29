@@ -53,8 +53,8 @@ Plain PNGs and one ICO from `art/tools/icons.py`, not manifest entries.
 | ui-settings-card  | nine-slice (2,38,2,2)      | 16x48  | rest                            |
 | ui-settings-row   | nine-slice (2,2,2,2)       | 12x48  | rest                            |
 | ui-skip           | sprite                     | 78x20  | normal, pressed, disabled       |
-| ui-touch-jump     | sprite                     | 57x57  | rest, press, held               |
-| ui-touch-use      | sprite                     | 51x51  | rest, press, held               |
+| ui-touch-jump     | sprite                     | 75x75  | rest, press, held               |
+| ui-touch-use      | sprite                     | 67x67  | rest, press, held               |
 
 ## Tilesets
 

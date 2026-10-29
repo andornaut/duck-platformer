@@ -35,19 +35,23 @@ Quip
   line cream in font-body, origin x+15+An, y 11.
 
 Touch controls (two round buttons for the right thumb and a pause button at the top left; movement has no art)
-- ui-touch-use, 51x51, centre pixel 25,25: top-left 591,219 for the centre 616,244 (hit 568,200,152,80).
-- ui-touch-jump, 57x57, centre pixel 28,28: top-left 648,288 for the centre 676,316 (hit 568,280,152,80).
-- Each is an opaque disc: an ink edge, a 2px cream ring and a navy face, 49px across for Use and 55px for Jump,
-  with its icon above the centre: three dots (19x5) on Use with their top 9px above the centre, a caret (17x9) on
-  Jump with its top 12px above. Tags rest (100ms); press, once (frame 0 the ring turns white and thickens to 3px,
-  the face lifts to dslate and the whole disc swells 1px; frame 1 the same at rest size; 60ms each); held (as
-  press frame 1, 100ms).
+- ui-touch-use, 67x67, centre pixel 33,33: top-left 559,177 for the centre 592,210 (hit 522,152,198,104).
+- ui-touch-jump, 75x75, centre pixel 37,37: top-left 630,270 for the centre 667,307 (hit 522,256,198,104, the
+  bottom-right corner; Use's hit area sits directly above it).
+- Each is an opaque disc: an ink edge, a 3px cream ring and a navy face, 65px across for Use and 73px for Jump,
+  with its icon above the centre in 2px strokes: three round dots (25x7) on Use with their top 10px above the
+  centre, a caret (21x11) on Jump with its top 12px above. Tags rest (100ms); press, once (frame 0 the ring turns
+  white and thickens to 4px, the face lifts to dslate and the whole disc swells 1px; frame 1 the same at rest
+  size; 60ms each); held (as press frame 1, 100ms).
 - ui-pause, 35x35, centre pixel 17,17: top-left 9,9 for the centre 26,26 (hit 0,0,52,52, reaching the screen's
-  corner). The same disc, 33px across, with two pause bars (11x13, each 4 wide, 3 apart) centred on the centre;
-  no label. Tags as for Use and Jump: rest; press, once (2 frames at 60ms, frame 0 swells 1px); held.
+  corner). The same disc, 33px across with a 2px ring (3px pressed), with two pause bars (11x13, each 4 wide,
+  3 apart) centred on the centre; no label. Tags as for Use and Jump: rest; press, once (2 frames at 60ms,
+  frame 0 swells 1px); held.
 - Label "Use" or "Jump" in font-body at 2x, never baked in: centred on the button's centre x (origin x = centre x
-  minus half the label's visible width, rounded down), origin y = centre y - 3, so the capitals sit on rows
-  centre+1 to centre+10. Use: origin 604,241; Jump: origin 659,313. Cream at rest, white while pressed or held.
+  minus half the label's visible width, rounded down), 4 rows below the icon. Use: origin y = centre y - 3 (the
+  capitals on rows centre+1 to centre+10), origin 580,207. Jump: origin y = centre y - 1 (capitals on centre+3 to
+  centre+12), origin 650,306. Cream at rest, white while pressed or held. Label room, the widest ink that keeps
+  2px of face on each side when pressed: Use 45, Jump 53.
 
 Pause card (over the game dimmed two ramp steps)
 - ui-settings-card, nine-slice 16x48, margins 2,38,2,2: a cream border with cut corners, an ink header 36 high and
@@ -179,12 +183,13 @@ def quip_strip():
 
 # ---------------------------------------------------------------- touch controls
 
-BUTTON_R = {"use": 24, "jump": 27, "pause": 16}  # disc radius: 49, 55 and 33px across
-CARET = [(x, y) for y in range(9) for x in (8 - y, 9 - y, 7 + y, 8 + y)]  # 17x9, 2px strokes
-DOT = bm(".###.", "#####", "#####", "#####", ".###.")
-DOTS = [(x + i * 7, y) for i in range(3) for x, y in DOT]  # 19x5
+BUTTON_R = {"use": 32, "jump": 36, "pause": 16}  # disc radius: 65, 73 and 33px across
+RING_W = {"use": 3, "jump": 3, "pause": 2}  # the cream ring at rest; pressed, it thickens 1px
+CARET = [(x, y) for y in range(11) for x in (10 - y, 11 - y, 9 + y, 10 + y)]  # 21x11, 2px strokes
+DOT = bm("..###..", ".#####.", "#######", "#######", "#######", ".#####.", "..###..")
+DOTS = [(x + i * 9, y) for i in range(3) for x, y in DOT]  # 25x7
 BARS = [(x + i * 7, y) for i in range(2) for x in range(4) for y in range(13)]  # 11x13, two pause bars
-ICON = {"use": (DOTS, -9), "jump": (CARET, -12), "pause": (BARS, -6)}  # bitmap, top row relative to the centre
+ICON = {"use": (DOTS, -10), "jump": (CARET, -12), "pause": (BARS, -6)}  # bitmap, top row relative to the centre
 
 
 def disc(g, cx, cy, r, c):
@@ -195,15 +200,15 @@ def disc(g, cx, cy, r, c):
 
 
 def touch_button_frame(key, frame=None):
-    """frame None is rest; 0 and 1 the press; 2 held. Pressed, the ring turns white and thickens to 3px and the
-    face lifts to dslate; frame 0 swells the disc 1px."""
+    """frame None is rest; 0 and 1 the press; 2 held. Pressed, the ring turns white and thickens 1px and the face
+    lifts to dslate; frame 0 swells the disc 1px."""
     r = BUTTON_R[key] + (1 if frame == 0 else 0)
     c = BUTTON_R[key] + 1
     hot = frame is not None
     g = Grid(2 * c + 1, 2 * c + 1)
     disc(g, c, c, r, "ink")
     disc(g, c, c, r - 1, "white" if hot else "cream")
-    disc(g, c, c, r - (4 if hot else 3), "dslate" if hot else "navy")
+    disc(g, c, c, r - 1 - RING_W[key] - (1 if hot else 0), "dslate" if hot else "navy")
     pts, top = ICON[key]
     w = max(x for x, _ in pts) + 1
     stamp(g, pts, c - w // 2, c + top, "white" if hot else "cream")
