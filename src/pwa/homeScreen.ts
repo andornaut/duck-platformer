@@ -1,6 +1,6 @@
 // Whether the game's home screen is in front, for the kit's update flow: the game page counts as
 // the home screen once the zone's first frame shows, except while something covers it.
-export type HomeCover = "pauseCard" | "sideways";
+export type HomeCover = "pauseCard";
 
 export interface HomeScreen {
   // Something starts or stops covering the zone.

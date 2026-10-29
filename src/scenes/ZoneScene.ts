@@ -27,6 +27,7 @@ import type {
 } from "../data/types";
 import { ZONE_1 } from "../data/zone1";
 import { TEST_ZONES, ZONES } from "../data/zones";
+import { pageFrameTurn } from "../input/frameTurn";
 import {
   combineIntents,
   type HeldTouch,
@@ -523,9 +524,10 @@ export class ZoneScene extends Scene {
   // page count, the letterbox bars and safe-area margins beside the canvas included, except on
   // the nav bar or a link or button, on the pause button, or while the pause card is open. A
   // touch's role is read where it starts on the game's nearest edge (gamePoint), and a move
-  // touch's travel unclamped (gameScaledPoint), so a drag within the bars still moves her. Only
-  // a touch on the canvas can be on the pause button: one in the bar beside it lands on the
-  // game's edge, inside the button's hit area, and moves her.
+  // touch's travel unclamped (gameScaledPoint), so a drag within the bars still moves her. Both
+  // read through the page frame's turn (pageFrameTurn). Only a touch on the canvas can be on the
+  // pause button: one in the bar beside it lands on the game's edge, inside the button's hit
+  // area, and moves her.
   private watchTouches(): void {
     const client = (event: PointerEvent) => ({ x: event.clientX, y: event.clientY });
     const canvasRect = () => this.game.canvas.getBoundingClientRect();
@@ -534,8 +536,8 @@ export class ZoneScene extends Scene {
       if (event.pointerType !== "touch" || target?.closest("a, button, nav") != null) {
         return;
       }
-      const point = gamePoint(canvasRect(), SCREEN, client(event));
-      const { x } = gameScaledPoint(canvasRect(), SCREEN, client(event));
+      const point = gamePoint(pageFrameTurn(), canvasRect(), SCREEN, client(event));
+      const { x } = gameScaledPoint(pageFrameTurn(), canvasRect(), SCREEN, client(event));
       const onPauseButton =
         event.target === this.game.canvas && containsPoint(PAUSE_BUTTON.hit, point.x, point.y);
       if (!this.scene.isActive() || onPauseButton) {
@@ -550,7 +552,7 @@ export class ZoneScene extends Scene {
     const move = (event: PointerEvent) => {
       const touch = this.heldTouches.get(event.pointerId);
       if (touch) {
-        const { x } = gameScaledPoint(canvasRect(), SCREEN, client(event));
+        const { x } = gameScaledPoint(pageFrameTurn(), canvasRect(), SCREEN, client(event));
         this.heldTouches.set(event.pointerId, { ...touch, x });
       }
     };

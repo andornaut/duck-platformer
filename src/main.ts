@@ -5,16 +5,51 @@ import "./main.css";
 import { BUILD_LABEL } from "@andornaut/game-kit/build/buildLabel";
 import { MENU_FPS } from "@andornaut/game-kit/clock/frameCap";
 import { capFrameRate } from "@andornaut/game-kit/clock/phaser/capFrameRate";
-import { Game, Scale, WEBGL } from "phaser";
+import { Game, type Input, Scale, WEBGL } from "phaser";
 
 // eslint-disable-next-line no-duplicate-imports -- the side-effect import above runs it first.
 import { CRASH_SCREEN } from "./crash/install";
 import { SCREEN } from "./data/screen";
-import { coverZone, setupPhoneApp } from "./pwa";
+import { pageFrameTurn } from "./input/frameTurn";
+import { gameScaledPoint } from "./input/screenPoint";
+import { setupPhoneApp } from "./pwa";
 import { BootScene } from "./scenes/BootScene";
 import { MapScene } from "./scenes/MapScene";
 import { PauseScene } from "./scenes/PauseScene";
 import { ZoneScene } from "./scenes/ZoneScene";
+
+// On a touch screen in portrait, src/main.css turns the page frame 90 degrees clockwise, so the
+// game reads correctly with the phone turned counter-clockwise onto its side. Phaser measures
+// #game and maps pointers by their bounding rects on the page, which the turn swaps, so here it
+// measures #game's own layout size and maps each pointer through the turn (gameScaledPoint).
+function followFrameTurn(game: Game, parent: HTMLElement): void {
+  const scale = game.scale;
+  const measure = scale.getParentBounds.bind(scale);
+  scale.getParentBounds = () => {
+    if (pageFrameTurn() === 0) {
+      return measure();
+    }
+    const { offsetHeight: height, offsetWidth: width } = parent;
+    if (scale.parentSize.width === width && scale.parentSize.height === height) {
+      return false;
+    }
+    scale.parentSize.setSize(width, height);
+    return true;
+  };
+  const input = game.input;
+  const transform = input.transformPointer.bind(input);
+  input.transformPointer = (pointer: Input.Pointer, pageX: number, pageY: number, wasMove) => {
+    const turn = pageFrameTurn();
+    if (turn === 0) {
+      transform(pointer, pageX, pageY, wasMove);
+      return;
+    }
+    const client = { x: pageX - window.scrollX, y: pageY - window.scrollY };
+    const point = gameScaledPoint(turn, game.canvas.getBoundingClientRect(), SCREEN, client);
+    pointer.prevPosition.copy(pointer.position);
+    pointer.position.set(point.x, point.y);
+  };
+}
 
 // Scale.FIT: the base resolution stretches by whatever amount fills #game, keeping its aspect
 // ratio, with bars on the other axis. pixelArt keeps the stretch nearest-neighbour. The game is
@@ -30,7 +65,9 @@ function startGame(): void {
     // Lower input-to-screen delay: a desynchronized context lets the browser show a frame without
     // waiting on the page compositor, and the high-performance GPU where there is a choice.
     render: { antialias: false, desynchronized: true, powerPreference: "high-performance" },
-    scale: { autoCenter: Scale.CENTER_BOTH, mode: Scale.FIT },
+    // src/main.css centres the canvas in #game: Phaser's own centring measures the canvas's
+    // bounding rect, which the portrait turn swaps.
+    scale: { autoCenter: Scale.NO_CENTER, mode: Scale.FIT },
     // Later scenes draw over earlier ones: the pause card over the zone.
     scene: [BootScene, MapScene, ZoneScene, PauseScene],
     // WebGL only: the build's Phaser has no Canvas renderer (src/tools/phaserBuild.ts).
@@ -39,28 +76,20 @@ function startGame(): void {
   });
   // Phaser measures #game on window resizes only, but its size also changes without one: an
   // installed app learns its safe-area insets (the gesture bar, the notch) after the first
-  // layout. Re-fit whenever #game itself changes size, so the canvas never overflows it.
+  // layout, and the frame turns as the phone does. Re-fit whenever #game itself changes size, so
+  // the canvas never overflows it.
   const parent = document.getElementById("game");
   if (parent !== null) {
-    new ResizeObserver(() => game.scale.refresh()).observe(parent);
+    followFrameTurn(game, parent);
+    new ResizeObserver(() => {
+      game.scale.getParentBounds();
+      game.scale.refresh();
+    }).observe(parent);
   }
   // The pause card and BootScene draw at most about MENU_FPS frames a second; the zone, every
-  // display frame. Under the turn-sideways notice the game is paused and draws nothing.
+  // display frame.
   capFrameRate(MENU_FPS, () => game.scene.isActive("zone"), game);
   CRASH_SCREEN.stopGameOnCrash(() => game.pause());
-  // The game pauses while main.css shows the turn-sideways notice over it, and the update toast
-  // waits until the notice is gone.
-  const portrait = window.matchMedia("(orientation: portrait) and (pointer: coarse)");
-  const followOrientation = () => {
-    coverZone("sideways", portrait.matches);
-    if (portrait.matches) {
-      game.pause();
-    } else {
-      game.resume();
-    }
-  };
-  portrait.addEventListener("change", followOrientation);
-  followOrientation();
 }
 
 // An element in pages/play/index.html.
@@ -72,8 +101,8 @@ if (buildLabel !== null) {
 }
 
 // Asks for landscape, on the game page only. Browsers allow the lock only in fullscreen or an
-// installed app and reject it elsewhere, which needs no handling: the turn-sideways notice
-// covers portrait. TypeScript's DOM library leaves lock out.
+// installed app and reject it elsewhere, which needs no handling: in portrait the frame turns.
+// TypeScript's DOM library leaves lock out.
 (screen.orientation as ScreenOrientation & { lock?: (orientation: string) => Promise<void> })
   .lock?.("landscape")
   .catch(() => undefined);

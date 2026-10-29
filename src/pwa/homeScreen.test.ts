@@ -19,7 +19,7 @@ function run(steps: readonly Step[]): boolean[] {
 
 describe("trackHomeScreen", () => {
   it.each<{ name: string; seen: boolean[]; steps: Step[] }>([
-    { name: "nothing before the zone shows", seen: [], steps: [["cover", "sideways", true]] },
+    { name: "nothing before the zone shows", seen: [], steps: [["cover", "pauseCard", true]] },
     { name: "home once the zone shows", seen: [true], steps: [["shown"], ["shown"]] },
     {
       name: "away while the pause card is open",
@@ -27,20 +27,9 @@ describe("trackHomeScreen", () => {
       steps: [["shown"], ["cover", "pauseCard", true], ["cover", "pauseCard", false]],
     },
     {
-      name: "away until every cover is gone",
-      seen: [true, false, true],
-      steps: [
-        ["shown"],
-        ["cover", "pauseCard", true],
-        ["cover", "sideways", true],
-        ["cover", "pauseCard", false],
-        ["cover", "sideways", false],
-      ],
-    },
-    {
       name: "home only once a cover from before the zone is gone",
       seen: [true],
-      steps: [["cover", "sideways", true], ["shown"], ["cover", "sideways", false]],
+      steps: [["cover", "pauseCard", true], ["shown"], ["cover", "pauseCard", false]],
     },
   ])("$name", ({ seen, steps }) => {
     expect(run(steps)).toEqual(seen);
