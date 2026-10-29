@@ -1,6 +1,6 @@
 # Art inventory
 
-Every served art asset. Sizes are in base pixels at 640x360. A nine-slice lists its margins as left, top, right, bottom.
+Every served art asset. Sizes are in base pixels at 640x360. Tags are in frame order. A nine-slice lists its margins as left, top, right, bottom.
 
 ## Fonts
 
@@ -13,6 +13,8 @@ Every served art asset. Sizes are in base pixels at 640x360. A nine-slice lists 
 
 | Key               | Type                  | Size   | Tags                                                 |
 | ----------------- | --------------------- | ------ | ---------------------------------------------------- |
+| duck              | character             | 64x48  | idle, walk, jump, flutter, land                      |
+| portrait-duck     | portrait              | 64x64  | neutral, happy, worried                              |
 | ui-answer         | sprite                | 204x36 | normal, selected, pressed                            |
 | ui-checkbox       | sprite                | 20x20  | off, on                                              |
 | ui-close          | sprite                | 24x24  | normal, pressed                                      |

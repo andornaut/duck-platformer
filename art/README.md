@@ -90,9 +90,10 @@ In order:
 - Feet sit on the frame's bottom rows.
 - Size classes step evenly. Draw each to a target inked area, not just a frame size, so small and large read as distinct steps.
 
-| Sprite | Frame |
-| ------ | ----- |
-| Duck   | 64x48 |
+| Sprite        | Frame |
+| ------------- | ----- |
+| Duck          | 64x48 |
+| Duck portrait | 64x64 |
 
 ### Text
 
@@ -104,14 +105,16 @@ In order:
 
 ## The duck
 
-The protagonist is a cute, chibi, cream-coloured female duck, drawn facing right and mirrored for left.
+The protagonist is a cute, chibi, cream-coloured female duck, drawn facing right and mirrored for left. `art/tools/duck.py` draws her; its docstring gives every frame's pose, timing and squash and stretch table.
 
 - Proportions: her head is about 1.5x the area of her body.
-- Bow: a classic two-loop pink bow on top of her head.
-- Bill: long, flat and orange. Feet orange.
-- Body: cream, with tan cel shading; the wing is peach.
-- Every jump flutters (a slow, steerable fall), so the flutter pose is her signature: the wing raised up and back with a clear gap from the head, the body 2px higher, feet hanging.
+- Bow: a pink two-loop bow on top of her head, tilted along the back of the crown so one loop overhangs the back of her head. Two level loops on a round head read as ears in silhouette.
+- Bill: long, flat and orange, with a rust mouth line and nostril.
+- Body: cream, with tan cel crescents and a white rim light. The wing is a plain tan comma with a dark-brown line, the tail a round nub, and the feet tiny orange stubs with no legs.
+- Every jump flutters (a slow, steerable fall), so the flutter is her signature: the wing raised up and back with a clear gap from the head, the body 3px higher, and the feet tucked under her belly.
 - Frame 64x48, feet on rows 44 to 46 and the outline on row 47.
+- Anchor: the frame's bottom edge sits on the collision box's bottom edge, and her body-centre x, 32 (the frame's centre line, between columns 31 and 32), sits on the box centre, so mirroring her does not move it.
+- Portrait: 64x64, her head and shoulders facing right, cut off by the bottom edge, with one ink outer line on a transparent ground. The dialogue box's 68x68 frame supplies the backing.
 
 ## UI
 
@@ -196,5 +199,5 @@ A pause card over the game, which is dimmed by stepping every colour two ramp st
 
 ## Remaining for the first build
 
-- The shared drawing module, `art/tools/pixel.py`.
-- The duck's animations.
+- The ferret's sprite and dialogue portrait.
+- `palette.json`: the ramp map the game uses to dim the game behind the settings card.

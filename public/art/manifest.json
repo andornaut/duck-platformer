@@ -13,6 +13,16 @@
   ],
   "sprites": [
     {
+      "key": "duck",
+      "png": "sprites/duck.png",
+      "json": "sprites/duck.json"
+    },
+    {
+      "key": "portrait-duck",
+      "png": "sprites/portrait-duck.png",
+      "json": "sprites/portrait-duck.json"
+    },
+    {
       "key": "ui-answer",
       "png": "sprites/ui-answer.png",
       "json": "sprites/ui-answer.json"
