@@ -19,6 +19,13 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 3,
     rows: 1,
   },
+  // A roof's cornice: one-way, along the top of its roofline.
+  cornice: {
+    archetype: "ledge",
+    art: "one-way-cornice",
+    cols: 3,
+    rows: 1,
+  },
   "cross-street": {
     archetype: "scenery",
     art: "cross-street",
@@ -46,6 +53,26 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     animations: { idle: "set", move: "set", react: "set", talk: "set" },
     archetype: "hazard",
     art: "ferret-trap-snap",
+    cols: 4,
+    rows: 2,
+  },
+  // A fire escape's ladder between its landings, and the railing standing on each landing.
+  "fire-escape-ladder": {
+    archetype: "scenery",
+    art: "fire-escape-ladder",
+    cols: 2,
+    rows: 8,
+  },
+  // A fire escape's landing: one-way, on a walk-up.
+  "fire-escape-landing": {
+    archetype: "ledge",
+    art: "one-way-fire-escape",
+    cols: 3,
+    rows: 1,
+  },
+  "fire-escape-railing": {
+    archetype: "scenery",
+    art: "fire-escape-railing",
     cols: 4,
     rows: 2,
   },
@@ -172,13 +199,13 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     archetype: "scenery",
     art: "street-sky",
     cols: 4,
-    rows: 26,
+    rows: 50,
   },
   "street-skyline": {
     archetype: "scenery",
     art: "street-skyline",
     cols: 28,
-    rows: 23,
+    rows: 50,
   },
   "street-tree": {
     archetype: "scenery",
@@ -240,5 +267,25 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     art: "walk-signal",
     cols: 1,
     rows: 7,
+  },
+  // A water tower on a brownstone's roof, and its tank's flat top: one-way, 6 above the roof.
+  "water-tank": {
+    archetype: "ledge",
+    art: "one-way-tank",
+    cols: 4,
+    rows: 1,
+  },
+  "water-tower": {
+    archetype: "scenery",
+    art: "water-tower",
+    cols: 4,
+    rows: 7,
+  },
+  // A window sill: one-way, on a brownstone.
+  "window-sill": {
+    archetype: "ledge",
+    art: "one-way-sill",
+    cols: 3,
+    rows: 1,
   },
 };
