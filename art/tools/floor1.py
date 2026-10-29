@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Zone 1 art: a New York street (brick and brownstone, a day scene, two screens tall, climbed into its upper
+"""Zone 1 art: a New York street (downtown on a pale steel morning, two screens tall, climbed into its upper
 screen), and the boutique lobby kept for a later indoor zone, as 12px tilesets and modular backdrop pieces that the
 game places from level data. Nothing here is a fixed panorama.
 
@@ -19,6 +19,13 @@ Scale
   storey runs from y 420 to it, and storeys stack every 180px above (a three-storey walk-up's roof is at y 60,
   row 5). Indoors (the lobby) is a separate scene at full scale, also 720px tall, its floor at y 672.
 
+Palette (the street; the lobby keeps its own)
+- A pale steel morning: an lgrey sky over grey, faded downtown skyscrapers in grey and slate, buildings and
+  shopfronts in slate, dslate and grey, play tiles with white lips over a pale concrete band and a slate fill, and
+  warm accents kept where they guide the eye: the ochre-and-cream awnings, the cream sign icons, the amber door and
+  cab, the frog's bike. The pieces are drawn with warm ramp names and recoloured at export through the COOL_* maps,
+  so their shapes, sizes and tile indices do not depend on the palette.
+
 Tilesets
 - A tileset is one PNG of 12x12 tiles in rows of COLUMNS (8), no spacing or margin, transparent where a tile has no
   art, and a JSON beside it:
@@ -35,18 +42,18 @@ Tilesets
 
 tiles-street
 - sidewalk-top, sidewalk-top-joint (a 2px slab joint at the right edge; alternate them, 24px rhythm),
-  sidewalk-top-left, sidewalk-top-right (plain ends, over a drop), kerb-left, kerb-right (a cream stone kerb where
+  sidewalk-top-left, sidewalk-top-right (plain ends, over a drop), kerb-left, kerb-right (a pale stone kerb where
   the sidewalk meets a cross street, one tile above the road), sidewalk-face, sidewalk-face-left,
-  sidewalk-face-right: warm stone.
+  sidewalk-face-right: pale concrete (white lip, lgrey slabs) over a slate face.
 - road-top, road: asphalt, one tile below the sidewalk.
-- one-way-awning-left, one-way-awning, one-way-awning-right: a green-and-cream shop awning seen front-on, 4px
+- one-way-awning-left, one-way-awning, one-way-awning-right: an ochre-and-cream shop awning seen front-on, 4px
   stripes and a scalloped hem, art in the top 11 rows. Lay them on row 20 (y 240), 6 tiles above the sidewalk,
   across a shopfront under its sign.
-- one-way-canopy-left, one-way-canopy, one-way-canopy-right: the hotel's forest-green canopy, the same shape,
+- one-way-canopy-left, one-way-canopy, one-way-canopy-right: the exit's dark-brown canopy with a white lip, the same shape,
   laid on row 20 over the hotel door.
 - planter-top-left, planter-top, planter-top-right (a clipped hedge: the walkable top), planter-left, planter,
   planter-right (the box). A planter is 2 tiles tall: a 2-tile step.
-- door (piece, 3x4 tiles, 36x48): a pair of lit amber glass doors in a tan frame, the street's exit until the exit
+- door (piece, 3x4 tiles, 36x48): a pair of lit amber glass doors in a slate frame, the street's exit until the exit
   is decided. Tiles door-0 to door-11 in row order; a Use zone, no collision.
 - The cellar hatch, a hazard: an open pit in the sidewalk, any number of tiles wide, its two steel leaves standing
   up. On the sidewalk row: hatch-left, then pit-opening for each opening tile, then hatch-right. pit-opening fills
@@ -57,7 +64,7 @@ tiles-street
   outwards, with no collision. Steel is the slate ramp (slate, dslate, navy), no grey. Tiles 35 to 41, after the
   door, so every earlier index holds.
 - Climbing, tiles 42 to 53, after the hatch, so every earlier index holds. One-way ledges, each with left, middle
-  and right tiles, laid any width at the reaches (a hop rises 3 tiles, a full jump 8); every top has a 2px cream
+  and right tiles, laid any width at the reaches (a hop rises 3 tiles, a full jump 8); every top has a 2px white
   lip under a 1px dark edge, so it reads against any facade in greyscale:
   one-way-fire-escape-* (a black iron landing, art in the top 7 rows; stand fire-escape-railing on it and run
   fire-escape-ladder up to the next landing, a few tiles and at most 8 above), one-way-sill-* (a stone window sill,
@@ -182,6 +189,36 @@ def shelf(kind, edge, lip, top, face, bracket, bracket_sh):
         bx = 4 if kind == "l" else T - 6
         R(g, (bx, 7, 2, 4, bracket), (bx, 11, 2, 1, bracket_sh))
     return g
+
+
+# ---------------------------------------------------------------- the street's cool palette
+
+# Zone 1 is a pale steel morning downtown. Its pieces are drawn with the warm ramp names in the functions below and
+# recoloured at export through these maps, so their shapes, sizes and indices never depend on the palette. Colours
+# a map does not name keep their own (the warm accents: cream sign icons, the amber door and cab, red, pink).
+COOL_NEAR = {  # buildings, shopfronts and street furniture: muted blue-grey and slate
+    "dbrown": "slate", "plum": "dslate", "brown": "grey", "rust": "slate", "ochre": "grey", "tan": "lgrey",
+    "ink": "navy", "forest": "dslate", "teal": "dslate", "purple": "dslate", "dgreen": "slate", "green": "grey",
+    "sky": "lgrey", "blue": "slate", "skin2": "grey", "skin1": "lgrey"}
+COOL_TILES = {  # play tiles: white lips, a light concrete band over a soft slate fill
+    "skin1": "white", "skin2": "lgrey", "cream": "white", "tan": "lgrey", "brown": "slate", "dbrown": "navy",
+    "plum": "dslate"}
+COOL_AWNING = {"dgreen": "ochre", "forest": "dbrown"}                  # the awnings stay warm: ochre and cream
+COOL_CANOPY = {"tan": "white", "forest": "dbrown"}                     # the exit canopy: dark brown, a white lip
+COOL_DOOR = {"tan": "slate", "cream": "grey", "brown": "dslate"}      # the exit's frame, darker so its amber glass
+                                                                       # glows and the sidewalk's lip holds under it
+
+
+def recolour(g, mapping):
+    """A copy of a Grid with each colour in mapping (K names) replaced by its target."""
+    table = {pixel.hexc(a): pixel.hexc(b) for a, b in mapping.items()}
+    out = Grid(g.w, g.h)
+    out.px = [[table.get(c, c) if c else None for c in row] for row in g.px]
+    return out
+
+
+def cool(fn, mapping):
+    return lambda: recolour(fn(), mapping)
 
 
 # ---------------------------------------------------------------- street tiles
@@ -345,6 +382,22 @@ def street_tiles():
     ] + door + hatch_tiles() + climb_tiles(), {"door": door_rows}
 
 
+def street_tiles_cool():
+    """The street's tiles in the cool palette: the awnings and the canopy keep their own accent maps, the door its
+    frame map, every other tile the play map."""
+    tiles, pieces = street_tiles()
+
+    def m(name):
+        if name.startswith("one-way-awning"):
+            return COOL_AWNING
+        if name.startswith("one-way-canopy"):
+            return COOL_CANOPY
+        if name.startswith("door-"):
+            return COOL_DOOR
+        return COOL_TILES
+    return [(n, recolour(g, m(n))) for n, g in tiles], pieces
+
+
 def hatch_tiles():
     """Appended after the door so every earlier index holds."""
     lt, lb = split_leaf("l")
@@ -501,7 +554,7 @@ def lobby_tiles():
     return tiles + exit_tiles, {"exit": exit_rows}
 
 
-TILESET_DEFS = (("tiles-street", street_tiles), ("tiles-lobby", lobby_tiles))
+TILESET_DEFS = (("tiles-street", street_tiles_cool), ("tiles-lobby", lobby_tiles))
 
 
 def tileset_image(tiles):
@@ -564,36 +617,34 @@ def icon(g, kind, x, y, c):
 
 
 def street_sky():
-    """48x600, repeat x: the day sky behind the whole street above the sidewalk."""
-    return R(Grid(48, STREET_FY), (0, 0, 48, STREET_FY, "sky"))
+    """48x600, repeat x: a pale steel sky (lgrey) for the top 48px, then grey behind the whole street, so every
+    rooftop and ledge stands against grey."""
+    return R(Grid(48, STREET_FY), (0, 0, 48, STREET_FY, "grey"), (0, 0, 48, 48, "lgrey"))
+
+
+def towers(g, x0, x1, bottom, height, base, shade, seed):
+    """A layer of downtown towers between x0 and x1 standing on row bottom: set-back crowns and spires, a 2px shade
+    down each tower's right side. Seeded, so it is the same every build."""
+    x, k = x0, seed
+    while x < x1:
+        k = (k * 37 + 11) % 97
+        w = min(28 + k % 34, x1 - x)
+        top = bottom - height + 20 + (k * 7) % (height // 2)
+        R(g, (x, top, w, bottom - top, base), (x + w - 3, top, 3, bottom - top, shade))
+        if k % 3 == 0 and w > 14:                               # a set-back crown
+            R(g, (x + 6, top - 18, w - 12, 18, base))
+        if k % 4 == 1:                                          # a spire
+            R(g, (x + w // 2 - 1, top - 30, 2, 30, base))
+        x += w + 2
 
 
 def street_skyline():
-    """The far skyline, 336x600 (its top at y 72 with its bottom on the sidewalk line): blue buildings with navy
-    windows and water towers on their roofs, and two tall towers that rise above the near roofs, drawn smaller than
-    the street so the city reads as far away."""
-    hgt = 600
-    off = hgt - 272
-    g = Grid(336, hgt)
-    spans = [(0, 40, 110), (40, 60, 70), (100, 30, 150), (130, 50, 90), (224, 60, 80), (284, 52, 120)]
-    for x, w, top in spans:
-        R(g, (x, top + off, w, hgt - top - off, "blue"))
-        for wy in range(top + off + 8, hgt - 20, 24):
-            for wx in range(x + 6, x + w - 6, 10):
-                R(g, (wx, wy, 4, 8, "navy"))
-    R(g, (180, 0, 44, hgt, "blue"))                      # the glass tower: 2px navy mullions every 8px
-    for mx in range(184, 222, 8):
-        R(g, (mx, 4, 2, hgt - 4, "navy"))
-    R(g, (178, 0, 48, 4, "navy"))
-    R(g, (270, 150, 40, hgt - 150, "blue"), (268, 150, 44, 4, "navy"))   # a second, shorter tower
-    for wy in range(162, hgt - 20, 24):
-        for wx in range(276, 306, 10):
-            R(g, (wx, wy, 4, 8, "navy"))
-    for tx, top in ((10, 110), (60, 70), (150, 90), (240, 80)):   # water towers: legs, barrel, cone
-        top += off
-        R(g, (tx + 2, top - 6, 2, 6, "navy"), (tx + 10, top - 6, 2, 6, "navy"), (tx, top - 20, 14, 14, "navy"))
-        for k in range(4):
-            R(g, (tx + 1 + 2 * k, top - 22 - 2 * k, 12 - 4 * k, 2, "navy"))
+    """The far skyline, 336x600 (its bottom on the sidewalk line): faded downtown skyscrapers in two layers pushed
+    back towards the sky, the far layer grey with slate shade (y 120 to 540), the nearer slate with dslate shade
+    (y 270 to 600)."""
+    g = Grid(336, 600)
+    towers(g, 0, 336, 540, 420, "grey", "slate", 5)
+    towers(g, 0, 336, 600, 330, "slate", "dslate", 17)
     return g
 
 
@@ -867,7 +918,7 @@ def lobby_balustrade():
 
 
 # key: (draw, anchor y, repeat)
-BACKDROP_DEFS = {
+STREET_DEFS = {
     "street-sky": (street_sky, STREET_FY, "x"),
     "street-skyline": (street_skyline, STREET_FY, "x"),
     **{f"facade-{k}": ((lambda k=k: facade(k)), STREET_FY, "x") for k in BUILDINGS},
@@ -889,6 +940,14 @@ BACKDROP_DEFS = {
     "fire-escape-ladder": (fire_escape_ladder, 432, "none"),
     **{f"fire-escape-ladder-{n}": ((lambda n=n: fire_escape_ladder(n)), 432, "none") for n in LADDER_ROWS},
     "water-tower": (water_tower, 240, "none"),
+}
+# the street's pieces in the cool palette; the sky and skyline are drawn in it already
+# pieces standing on the sidewalk keep the line just above it darker than the sidewalk's white lip: the tree's
+# trunk and the canopy's poles take grey, not lgrey
+NEAR_FOR = {"street-tree": dict(COOL_NEAR, tan="grey"), "canopy-poles": dict(COOL_NEAR, tan="grey")}
+BACKDROP_DEFS = {k: (fn if k in ("street-sky", "street-skyline") else cool(fn, NEAR_FOR.get(k, COOL_NEAR)), y, rep)
+                 for k, (fn, y, rep) in STREET_DEFS.items()}
+BACKDROP_DEFS.update({
     "lobby-wall": (lobby_wall, LOBBY_H, "x"),
     "lobby-balustrade": (lobby_balustrade, 288, "x"),
     "lobby-bookcase": (lobby_bookcase, LOBBY_FY, "none"),
@@ -898,7 +957,7 @@ BACKDROP_DEFS = {
     "lobby-lamp": (lobby_lamp, 220, "none"),
     "lobby-window": (lobby_window, 552, "none"),
     "lobby-front-door": (lobby_front_door, LOBBY_FY, "none"),
-}
+})
 
 
 # ---------------------------------------------------------------- export
@@ -999,7 +1058,7 @@ def street_example(chars=True, hud=True):
     from PIL import Image
 
     E = STREET_EXAMPLE
-    tiles = {name: frame_image(g.px) for name, g in street_tiles()[0]}
+    tiles = {name: frame_image(g.px) for name, g in street_tiles_cool()[0]}
     im = Image.new("RGBA", (720, 720), rgb("ink") + (255,))
     compose(im, BACKDROP_DEFS, E["runs"], E["pieces"])
     ground = STREET_FY // T

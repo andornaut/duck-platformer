@@ -12,7 +12,7 @@ None of them is a hazard or a pickup, and none carries a hit box.
 pigeon, 22x22: a small pigeon at true street scale, placed in groups. A grey body with an lgrey rim light on its back
 and head and a slate shade, slate wing and tail, a dslate wing bar and tail band, a bold green-and-mauve neck sheen,
 an ink eye, a navy beak and pink feet. Feet on row 20, outline on row 21 (navy); centre x 11: tail tip to beak spans
-columns 0 to 21. Grey is an exception here: a slate pigeon merged with the dark storefronts at 1x in greyscale.
+columns 0 to 21.
 
 | Tag  | Frame | ms  | Pose                                                     |
 | ---- | ----- | --- | -------------------------------------------------------- |
