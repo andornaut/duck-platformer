@@ -145,6 +145,12 @@ function show(sprite: GameObjects.Sprite, tag: string): void {
   }
 }
 
+// What a zone starts with: see ZoneScene.init.
+export interface ZoneData {
+  readonly backdrop?: boolean;
+  readonly route?: readonly string[];
+}
+
 // One zone, played with the keyboard or the touch controls.
 export class ZoneScene extends Scene {
   private clock: StepClock = startStepClock;
@@ -163,6 +169,8 @@ export class ZoneScene extends Scene {
   // when ?zone=<n> chains the zones without the map.
   private mapRoute: readonly string[] | undefined;
   private areaArt!: GameObjects.Graphics;
+  // Drawn as the start screen's backdrop rather than played.
+  private backdrop = false;
   // The hit boxes art's sprites declare, by art key.
   private hitboxes: Readonly<Record<string, ArtHitbox>> = {};
   private manifest!: ArtManifest;
@@ -182,8 +190,9 @@ export class ZoneScene extends Scene {
   }
 
   // data.route: the nodes she has walked this lap on the map, ending at the node to play; without
-  // one, the chain from ?zone=<n>.
-  init(data: { route?: readonly string[] }): void {
+  // one, the chain from ?zone=<n>. data.backdrop: the start screen's backdrop instead (holdStill).
+  init(data: ZoneData): void {
+    this.backdrop = data.backdrop === true;
     this.mapRoute = data.route;
     this.objectArt = [];
     this.heldKeys.clear();
@@ -201,6 +210,11 @@ export class ZoneScene extends Scene {
     this.manifest = this.cache.json.get(ART_MANIFEST_KEY) as ArtManifest;
     this.hitboxes = artHitboxes((key) => this.textures.getFrame(key), this.manifest);
     const node = this.mapRoute?.at(-1);
+    if (this.backdrop) {
+      this.loadPlan(ZONE_1);
+      this.holdStill();
+      return;
+    }
     if (node === undefined) {
       this.loadZone(this.zoneIndex);
     } else {
@@ -235,6 +249,16 @@ export class ZoneScene extends Scene {
       this.clock = startStepClock;
       this.heldKeys.clear();
     });
+  }
+
+  // The start screen's backdrop: zone 1's street as she starts it, without her or the touch
+  // buttons, drawn once and paused as soon as it is created, so it never steps, animates or takes
+  // input, and isActive("zone") stays false for the pause scene and the frame rate cap.
+  private holdStill(): void {
+    this.duck.setVisible(false);
+    this.drawObjects();
+    this.drawDuck();
+    this.events.once("create", () => this.sys.pause());
   }
 
   // Shows or hides the touch buttons now, for the pause card to show the zone behind it as the

@@ -1,8 +1,10 @@
 import { animationKey } from "@andornaut/game-kit/art/aseprite";
 import { browserExitPage, exitApp } from "@andornaut/game-kit/pwa/exitApp";
 import { containsPoint } from "@andornaut/game-kit/rect";
+import { snapshotRemapped } from "@andornaut/game-kit/view/phaser/snapshotRemap";
 import { type GameObjects, type Input, Scene } from "phaser";
 
+import { SCREEN } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
 import {
@@ -14,20 +16,26 @@ import { startBackAction } from "../pause/cardInput";
 import { focusKeyAction, stepFocus } from "../pause/focusInput";
 import { exitShown, PHONE_EVENTS } from "../pwa";
 import { setTouchControlsShown } from "../settings/touchControls";
+import { dimColour } from "../view/dim";
 import {
   addButtonLabel,
   addSlice,
   type ButtonLabel,
   captureTab,
+  palette,
   paletteColour,
   placeButtonLabel,
   ringFocus,
 } from "./cardParts";
 import type { SettingsData, SettingsOpener, SettingsScene } from "./SettingsScene";
+import type { ZoneData } from "./ZoneScene";
 
 const LOGO = "logo";
 const MAP = "map";
 const SETTINGS = "settings";
+const ZONE = "zone";
+// Zone 1's street dimmed, read back once and kept for every later visit to the start screen.
+const STREET_DIM = "start-street-dim";
 
 type Control = "exit" | "settings" | "start";
 
@@ -55,6 +63,7 @@ export class StartScene extends Scene implements SettingsOpener {
   private settingsOpen = false;
   private startButton!: GameObjects.Sprite;
   private startLabel!: ButtonLabel;
+  private street!: GameObjects.Image;
 
   constructor() {
     super("start");
@@ -67,6 +76,7 @@ export class StartScene extends Scene implements SettingsOpener {
     this.focusRing = undefined;
     this.layout = startScreenLayout(exitShown());
     this.draw();
+    void this.showStreet();
     this.showPressed(undefined);
     this.watchPresses();
     this.input.keyboard?.on("keydown", (event: KeyboardEvent) => this.key(event));
@@ -96,11 +106,11 @@ export class StartScene extends Scene implements SettingsOpener {
     this.drawFocus();
   }
 
-  // PLACEHOLDER: a plain ink background until art's background for the start screen is
-  // decided.
+  // Zone 1's street dimmed behind everything, over plain ink until it is read back.
   private draw(): void {
     const { exit, logo, nav, settings, start } = this.layout;
     this.cameras.main.setBackgroundColor(this.colour("ink"));
+    this.street = this.add.image(0, 0, "__DEFAULT").setOrigin(0).setVisible(false);
     addSlice(this, "ui-nav-bar", nav);
     this.add.image(logo.x, logo.y, LOGO).setOrigin(0);
     this.buttons = new Map([
@@ -111,6 +121,45 @@ export class StartScene extends Scene implements SettingsOpener {
     this.startLabel = addButtonLabel(this, start.button, start.labelY, TEXT.start.start, {
       colour: this.colour("ink"),
       marked: true,
+    });
+  }
+
+  // Shows the dimmed street, reading it back first if no visit has yet. Nothing of this scene is
+  // drawn while the street is read back, and the canvas is hidden over the page's ink meanwhile,
+  // so the undimmed street never shows. Where the renderer gives no image, the ink stays.
+  private async showStreet(): Promise<void> {
+    if (!this.textures.exists(STREET_DIM)) {
+      const camera = this.cameras.main.setVisible(false);
+      const canvas = this.game.canvas.style;
+      canvas.visibility = "hidden";
+      await this.dimStreet();
+      canvas.visibility = "";
+      if (!this.sys.isActive()) {
+        return;
+      }
+      camera.setVisible(true);
+    }
+    if (this.textures.exists(STREET_DIM)) {
+      this.street.setTexture(STREET_DIM).setVisible(true);
+    }
+  }
+
+  // Draws zone 1's street as ZoneScene's still backdrop, reads the frame it first renders in back
+  // two steps down each colour's ramp, as the pause card dims the zone, and stops the zone.
+  private dimStreet(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.scene.get(ZONE).events.once("create", () => {
+        void snapshotRemapped(
+          dimColour(palette(this)),
+          this,
+          { ...SCREEN, x: 0, y: 0 },
+          STREET_DIM,
+        ).then((dimmed) => {
+          this.scene.stop(ZONE);
+          resolve(dimmed);
+        });
+      });
+      this.scene.launch(ZONE, { backdrop: true } satisfies ZoneData);
     });
   }
 
