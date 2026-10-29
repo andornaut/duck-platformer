@@ -67,6 +67,7 @@ A landscape platformer: a duck falls out of her room at the top of a New York ho
 - **Areas:** a level can have more than one area, joined by doors. Use at a door fades to the other area
 - **Challenge:** platforming, hazards and choices. There is no combat
 - **Checkpoint:** the start of a level is its only checkpoint. Falling or touching a hazard restarts the level from its start
+- **Exit:** Use at the level's exit, such as the lobby's stairwell, clears the level
 - **No backtracking:** once she leaves a level, she never returns to it
 - **Scale:** outdoors, the scenery is drawn at a quarter of indoor scale; the duck, the tiles and the reaches stay the same everywhere
 - **Shape:** a level is 2 screens (60 tiles) tall and as wide as it needs, and scrolls sideways and up. To a small duck the hotel's ceilings are high: a door is 15 tiles tall, half the screen
