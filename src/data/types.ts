@@ -45,6 +45,11 @@ export interface DuckTuning {
 export interface GameText {
   // What characters say in dialogue, by key.
   readonly lines: Readonly<Record<string, string>>;
+  // The map screen between zones: its title, and the button that goes on.
+  readonly map: {
+    readonly continue: string;
+    readonly title: string;
+  };
   // The touch buttons' labels.
   readonly buttons: {
     readonly jump: string;

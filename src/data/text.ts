@@ -11,6 +11,10 @@ export const TEXT: GameText = {
     title: "Something went wrong",
   },
   lines: {},
+  map: {
+    continue: "Continue",
+    title: "Map",
+  },
   pause: {
     hidden: "Hidden",
     quit: "Quit",
