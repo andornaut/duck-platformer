@@ -52,14 +52,14 @@ A landscape platformer: a duck falls out of her room at the top of a New York ho
 ### Grid
 
 - **Duck:** 2 tiles wide and 3 tall
-- **Reaches:** levels are built to the duck's reaches, measured in tiles from the top of the ground she leaves to the top of the ledge she lands on. A short hop rises 2 tiles; a full jump rises 6; a full jump with flutter crosses a 12-tile gap at the same height. A ledge at a reach is always makeable, and one tile beyond it never is
+- **Reaches:** levels are built to the duck's reaches, measured in tiles from the top of the ground she leaves to the top of the ledge she lands on. A short hop rises 3 tiles; a full jump rises 8; a full running jump with flutter crosses a 22-tile gap at the same height. A ledge at a reach is always makeable, and one tile beyond it never is
 - **Tiles:** levels are built on a grid of 12 px tiles, so the screen is 60 columns by 30 rows. Every solid, ledge, hazard and exit sits on whole tiles and spans whole tiles
 
 ### The duck
 
 - **Flutter:** every fall flutters, after a jump or off a ledge: her fall is slow enough to use, and the player steers her in the air
 - **Jump timing:** a jump pressed just after she leaves a ledge still jumps (coyote time), and a jump pressed just before she lands jumps as she lands (jump buffering)
-- **Movement:** she walks left and right and jumps. Her speeds, jump, flutter and timing values are in `src/data/duck.ts`, tuned to the reaches under Grid
+- **Movement:** she walks left and right and jumps. She is quick and responsive: about 0.1 s to reach full speed or stop, on the ground and in the air. Her speeds, jump, flutter and timing values are in `src/data/duck.ts`, tuned to the reaches under Grid
 - **Short hop:** releasing Jump while she rises cuts the jump short, so precise short hops stay possible
 
 ### Levels
