@@ -20,6 +20,7 @@ export default defineConfig({
     rolldownOptions: {
       input: {
         main: repoPath("pages/index.html"),
+        play: repoPath("pages/play/index.html"),
       },
     },
     // Phaser alone is about 1.4 MB minified, so the 500 kB default always warns.

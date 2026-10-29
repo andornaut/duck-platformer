@@ -15,7 +15,7 @@ Each folder's README is its plan, with what's left for the first build:
 
 Requires Node 24 (`.nvmrc`).
 
-The site's HTML pages are in `pages/`, each at its URL's path (`pages/index.html` is `/`).
+The site's HTML pages are in `pages/`, each at its URL's path (`pages/index.html` is `/`, the home page, and `pages/play/index.html` is `/play/`, the game).
 
 ```bash
 npm install

@@ -18,7 +18,7 @@ export class BootScene extends Scene {
   }
 
   preload(): void {
-    this.load.setPath("art/");
+    this.load.setPath("/art/");
     this.load.json(MANIFEST, "manifest.json");
     this.load.once(`filecomplete-json-${MANIFEST}`, () => {
       const manifest = this.manifest();

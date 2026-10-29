@@ -4,13 +4,103 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Duck Platformer</title>
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Duck Platformer" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <style>
+      /* Colours from art's palette (public/art/palette.json). Art's fonts are BMFont files for
+         the game, so the page uses the system font stack. */
+      :root {
+        --amber: #feae34;
+        --cream: #ead4aa;
+        --grey: #8b9bb4;
+        --ink: #181425;
+        --orange: #f77622;
+        --yellow: #fee761;
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--ink);
+        color: var(--cream);
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        font-size: 18px;
+        line-height: 1.5;
+      }
+      main {
+        display: grid;
+        gap: 24px;
+        justify-items: start;
+        max-width: 640px;
+        margin: 0 auto;
+        padding-block: 32px;
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px));
+      }
+      /* A landscape phone: tighter, so Play shows without scrolling. */
+      @media (max-height: 480px) {
+        main {
+          gap: 12px;
+          padding-block: 16px;
+        }
+      }
+      /* The duck's first frame, at twice its size. */
+      .duck {
+        display: block;
+        width: 64px;
+        height: 48px;
+        object-fit: none;
+        object-position: 0 0;
+        image-rendering: pixelated;
+        zoom: 2;
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(32px, 8vw, 48px);
+        line-height: 1.1;
+      }
+      p {
+        margin: 0;
+        max-width: 40ch;
+      }
+      .play {
+        padding: 10px 28px;
+        border-radius: 4px;
+        background: var(--amber);
+        box-shadow: 0 4px 0 var(--orange);
+        color: var(--ink);
+        font-size: 24px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+      .play:hover {
+        background: var(--yellow);
+      }
+      .play:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 var(--orange);
+      }
+      .note {
+        color: var(--grey);
+        font-size: 16px;
+      }
+    </style>
   </head>
   <body>
-    <div id="game" role="application" aria-label="Duck Platformer game"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <main>
+      <img class="duck" src="/art/sprites/duck.png" alt="" />
+      <h1>Duck Platformer</h1>
+      <p>
+        A duck falls out of her apartment at the top of a high-rise, flutters safely down to the
+        bottom, and climbs back up through the building to get home.
+      </p>
+      <a class="play" href="/play/">Play</a>
+      <p class="note">Plays in a landscape phone browser, or on a computer with a keyboard.</p>
+    </main>
   </body>
 </html>
