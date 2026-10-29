@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="/site.css" />
     <link rel="stylesheet" href="/nav.css" />
     <script src="/nav.js" defer></script>
+    <script type="module" src="/src/homePage/main.ts"></script>
     <style>
       /* Colours from art's palette (public/art/palette.json). Art's fonts are BMFont files for
          the game, so the page uses the system font stack. */
@@ -25,6 +26,8 @@
         --grey: #8b9bb4;
         --ink: #181425;
         --orange: #f77622;
+        --plum: #3e2731;
+        --tan: #e4a672;
         --yellow: #fee761;
         color-scheme: dark;
       }
@@ -80,6 +83,12 @@
       p {
         margin: 0;
       }
+      /* Play, and Install beside it while the game can be installed. */
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
       .play {
         padding: 10px 28px;
         border-radius: 4px;
@@ -97,6 +106,75 @@
         transform: translateY(2px);
         box-shadow: 0 2px 0 var(--orange);
       }
+      .play:focus-visible,
+      .install:focus-visible,
+      .steps-close:focus-visible {
+        outline: 3px solid var(--yellow);
+        outline-offset: 4px;
+      }
+      /* The secondary button: Play's shape and height with a cream face on a tan lip. */
+      .install,
+      .steps-close {
+        padding: 10px 20px;
+        border: 0;
+        border-radius: 4px;
+        background: var(--cream);
+        box-shadow: 0 4px 0 var(--tan);
+        color: var(--ink);
+        font: inherit;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: inherit;
+        cursor: pointer;
+      }
+      .install[hidden] {
+        display: none;
+      }
+      .install:hover,
+      .steps-close:hover {
+        background: var(--yellow);
+      }
+      .install:active,
+      .steps-close:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 var(--tan);
+      }
+      /* The install steps for the browser's own menu (iOS, Firefox for Android), one browser's
+         shown over the dimmed page. */
+      .steps {
+        box-sizing: border-box;
+        width: min(320px, calc(100vw - 32px));
+        padding: 16px;
+        border: 2px solid var(--tan);
+        border-radius: 4px;
+        background: var(--plum);
+        color: var(--cream);
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        font-size: 18px;
+        line-height: 1.5;
+      }
+      .steps::backdrop {
+        background: rgb(24 20 37 / 0.75);
+      }
+      .steps h2 {
+        margin: 0 0 8px;
+        font-size: 22px;
+        line-height: 1.2;
+      }
+      .steps-body {
+        display: grid;
+      }
+      .steps-close {
+        justify-self: end;
+        margin-top: 16px;
+        padding: 6px 16px;
+        font-size: 18px;
+      }
       .note {
         color: var(--grey);
         font-size: 16px;
@@ -112,9 +190,26 @@
           A duck falls out of her apartment at the top of a high-rise, flutters safely down to the
           bottom, and climbs back up through the building to get home.
         </p>
-        <a class="play" href="/play/">Play</a>
+        <div class="actions">
+          <a class="play" href="/play/">Play</a>
+          <button class="install" id="install" type="button" hidden>Install</button>
+        </div>
         <p class="note">Plays in a landscape phone browser, or on a computer with a keyboard.</p>
       </div>
     </main>
+
+    <dialog class="steps" id="install-steps" aria-labelledby="install-steps-ios">
+      <div class="steps-body">
+        <div data-browser="firefoxAndroid" hidden>
+          <h2 id="install-steps-firefoxAndroid">Add app to Home screen</h2>
+          <p>Tap the menu, then More, then Add app to Home screen.</p>
+        </div>
+        <div data-browser="ios" hidden>
+          <h2 id="install-steps-ios">Add to Home Screen</h2>
+          <p>Tap Share, then Add to Home Screen.</p>
+        </div>
+        <button class="steps-close" type="button">Close</button>
+      </div>
+    </dialog>
   </body>
 </html>
