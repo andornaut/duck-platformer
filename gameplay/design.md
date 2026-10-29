@@ -51,7 +51,7 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 ### Grid
 
 - **Duck:** 2 tiles wide and 3 tall
-- **Reaches:** zones are built to the duck's reaches, measured in tiles from the top of the ground she leaves to the top of the ledge she lands on. A short hop rises 3 tiles; a full jump rises 8; a full running jump with flutter crosses a 29-tile gap at the same height. A ledge at a reach is always makeable, and one tile beyond it never is
+- **Reaches:** zones are built to the duck's reaches, measured in tiles from the top of the ground she leaves to the top of the ledge she lands on. A short hop rises 3 tiles; a full jump rises 8; a full running jump with flutter crosses a 31-tile gap at the same height, with the jump pressed at its best moment, coyote time included. A ledge at a reach is always makeable, and one tile beyond it never is
 - **Tiles:** zones are built on a grid of 12 px tiles, so the screen is 60 columns by 30 rows. Every solid, ledge, hazard and exit sits on whole tiles and spans whole tiles
 
 ### The duck
