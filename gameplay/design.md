@@ -34,7 +34,7 @@ A landscape, left-to-right platformer: a duck falls out of her apartment at the 
 
 ### Screen and controls
 
-- Landscape, 640×360 base resolution. Phone browser first, with on-screen touch controls; keyboard on desktop
+- Landscape, 648×360 base resolution. Phone browser first, with on-screen touch controls; keyboard on desktop
 - **Keyboard:** ←/→ or A/D to move; Space, ↑ or W to jump; E to use
 - **Overlay:** the touch buttons show by default. Settings hides them, and hidden buttons still work
 - **Touch buttons** (right thumb): Use above, Jump below. Each is labelled with its name, reads clearly as a button and stands out against any floor, while hiding little of the play area. A button animates subtly when pressed
@@ -52,7 +52,7 @@ A landscape, left-to-right platformer: a duck falls out of her apartment at the 
 
 - **Duck:** 2 tiles wide and 3 tall
 - **Reaches:** floors are built to the duck's reaches, measured in tiles from the top of the ground she leaves to the top of the ledge she lands on. A short hop rises 2 tiles; a full jump rises 6; a full jump with flutter crosses a 12-tile gap at the same height. A ledge at a reach is always makeable, and one tile beyond it never is
-- **Tiles:** floors are built on a grid of 12 px tiles. The screen is 30 rows tall, and floors scroll sideways, so columns are counted per floor, not per screen. Every solid, ledge, hazard and exit sits on whole tiles and spans whole tiles
+- **Tiles:** floors are built on a grid of 12 px tiles, so the screen is 54 columns by 30 rows. Every solid, ledge, hazard and exit sits on whole tiles and spans whole tiles
 
 ### The duck
 
