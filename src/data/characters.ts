@@ -82,12 +82,37 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 4,
     rows: 2,
   },
-  // A fire escape's ladder between its landings, and the railing standing on each landing.
+  // A fire escape's ladder between its landings, one piece per spacing in rows (8 for the plain
+  // one), and the railing standing on each landing.
   "fire-escape-ladder": {
     archetype: "scenery",
     art: "fire-escape-ladder",
     cols: 2,
     rows: 8,
+  },
+  "fire-escape-ladder-4": {
+    archetype: "scenery",
+    art: "fire-escape-ladder-4",
+    cols: 2,
+    rows: 4,
+  },
+  "fire-escape-ladder-5": {
+    archetype: "scenery",
+    art: "fire-escape-ladder-5",
+    cols: 2,
+    rows: 5,
+  },
+  "fire-escape-ladder-6": {
+    archetype: "scenery",
+    art: "fire-escape-ladder-6",
+    cols: 2,
+    rows: 6,
+  },
+  "fire-escape-ladder-7": {
+    archetype: "scenery",
+    art: "fire-escape-ladder-7",
+    cols: 2,
+    rows: 7,
   },
   // A fire escape's landing: one-way, on a walk-up.
   "fire-escape-landing": {
