@@ -7,13 +7,13 @@ Format: `- [status] **Idea**: short description · notes`. Statuses: **floated**
 ## Story
 
 - [floated] **Humans**: people the duck meets along the way · focus on animals for now
-- [floated] **Owner at the top**: her owner waits for her at the top, or calls · a possible ending
+- [floated] **Owner at home**: her owner waits for her at home, or calls · a possible ending
 
 ## Cut
 
 - [cut] **Back button and timed dialogue**: going back a dialogue screen, or advancing on a timer · a tap or keypress moves forward only
+- [cut] **Climbing a hotel**: she climbs a hotel floor by floor to get home · she travels zone to zone across a map
 - [cut] **Combat**: the duck attacks or stomps · the challenge is platforming, hazards and choices
 - [cut] **Fixed movement control**: a joystick in the lower left whose halves also act as buttons · a touch anywhere sets the neutral point
 - [cut] **Flutter on a hold or its own button**: flutter only when chosen · every jump flutters
-- [cut] **Front door to walk through**: an open front door with the lobby seen through it · Use at the door enters the hotel after a fade
-- [cut] **Historical and futuristic floors**: floors themed on a past or future era · floors are everyday places in the building
+- [cut] **Historical and futuristic zones**: zones themed on a past or future era · zones are modern-day places

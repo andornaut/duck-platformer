@@ -6,21 +6,20 @@ The rulebook: every rule the game is built to. What's left to build and tune is 
 
 ## Pitch
 
-A landscape platformer: a duck falls out of her room at the top of a New York hotel, flutters safely down to the street, and climbs back up through the hotel, one floor at a time, to get home.
+A landscape platformer: a lost duck travels zone to zone across a map to get home. Every path starts and ends the same way, and the story changes with the path she takes.
 
 ## Setting
 
 - **Characters:** the duck is the one the player controls: a small, round, cream duck with tiny wings and feet, an orange bill and a dot eye. Her full design is in the [art plan](../art/README.md). Animals talk, and most interactions are with animals. PLACEHOLDER: whether there are humans (see [`ideas.md`](ideas.md))
-- **Ferret:** the villain, who schemes against the duck's climb: a champagne (cream-coloured) ferret, about twice the duck's height, standing upright, with a tall plum stovepipe hat and a red bow tie. Its full design is in the [art plan](../art/README.md)
-- **Hotel:** the building is a hotel in New York City. Each floor of it is one level
-- **Levels:** level 1 is the ground floor: the street outside, then the lobby. Each later level is one everyday place in the hotel, such as a restaurant, pool or spa, and the whole level stays in that place. PLACEHOLDER: the later levels and their order
+- **Ferret:** the villain, who schemes against the duck's journey home: a champagne (cream-coloured) ferret, about twice the duck's height, standing upright, with a tall plum stovepipe hat and a red bow tie. Its full design is in the [art plan](../art/README.md)
 - **World:** the modern day, mixing fantasy and reality
+- **Zones:** each zone is one place, indoors, outdoors or a hybrid of both. Zone 1 is a New York street. PLACEHOLDER: the later zones, the beginning and where home is
 
 ## Core loop
 
-1. **A level:** travel through one floor of the hotel, mostly left to right and bottom to top: platforming, talking with animals in rooms, and making choices that change the route.
-2. **Up a level:** clearing a level takes the duck up to the next floor. PLACEHOLDER: how she gets up.
-3. **The top:** on the top level she outwits the ferret, and gets home. PLACEHOLDER: the rest of the ending.
+1. **A zone:** travel through one place, mostly left to right and bottom to top: platforming, talking with animals in rooms, and making choices that change the route.
+2. **The map:** clearing a zone opens the map, which moves her on to the next zone. At a fork she picks one path.
+3. **Home:** every path ends the same way: she outwits the ferret and gets home. PLACEHOLDER: the rest of the ending.
 
 ## Voice
 
@@ -40,7 +39,7 @@ A landscape platformer: a duck falls out of her room at the top of a New York ho
 - **Overlay:** the touch buttons show by default. Settings hides them, and hidden buttons still work
 - **Touch buttons** (right thumb): Use above, Jump below. Each is labelled with its name, reads clearly as a button and stands out against any background, while hiding little of the play area. A button animates subtly when pressed
 - **Touch movement:** a touch anywhere except on a button or other interactive element sets the neutral point where it lands. Dragging left or right from it past a small dead zone moves the duck that way at full speed; back inside the dead zone, she stops. Releasing ends the movement. Nothing marks the neutral point
-- **Use:** opens a door, to a room or into the hotel. PLACEHOLDER: what else it acts on
+- **Use:** opens a door, to a room or another area. PLACEHOLDER: what else it acts on
 
 ### Interface
 
@@ -52,8 +51,8 @@ A landscape platformer: a duck falls out of her room at the top of a New York ho
 ### Grid
 
 - **Duck:** 2 tiles wide and 3 tall
-- **Reaches:** levels are built to the duck's reaches, measured in tiles from the top of the ground she leaves to the top of the ledge she lands on. A short hop rises 3 tiles; a full jump rises 8; a full running jump with flutter crosses a 22-tile gap at the same height. A ledge at a reach is always makeable, and one tile beyond it never is
-- **Tiles:** levels are built on a grid of 12 px tiles, so the screen is 60 columns by 30 rows. Every solid, ledge, hazard and exit sits on whole tiles and spans whole tiles
+- **Reaches:** zones are built to the duck's reaches, measured in tiles from the top of the ground she leaves to the top of the ledge she lands on. A short hop rises 3 tiles; a full jump rises 8; a full running jump with flutter crosses a 22-tile gap at the same height. A ledge at a reach is always makeable, and one tile beyond it never is
+- **Tiles:** zones are built on a grid of 12 px tiles, so the screen is 60 columns by 30 rows. Every solid, ledge, hazard and exit sits on whole tiles and spans whole tiles
 
 ### The duck
 
@@ -62,33 +61,39 @@ A landscape platformer: a duck falls out of her room at the top of a New York ho
 - **Movement:** she walks left and right and jumps. She is quick and responsive: about 0.1 s to reach full speed or stop, on the ground and in the air. Her speeds, jump, flutter and timing values are in `src/data/duck.ts`, tuned to the reaches under Grid
 - **Short hop:** releasing Jump while she rises cuts the jump short, so precise short hops stay possible
 
-### Levels
+### Map
 
-- **Areas:** a level can have more than one area, joined by doors. Use at a door fades to the other area
+- **Forks:** at a fork she picks one of two or three paths. Paths split and rejoin, and every path reaches the same ending
+- **No backtracking:** she only moves forward on the map, and never returns to a zone she has left
+- **V1:** one path is built. Its forks still show, with the unbuilt paths greyed out and not selectable
+
+### Zones
+
+- **Areas:** a zone can have more than one area, joined by doors. Use at a door fades to the other area
 - **Challenge:** platforming, hazards and choices. There is no combat
-- **Checkpoint:** the start of a level is its only checkpoint. Falling or touching a hazard restarts the level from its start
-- **Exit:** Use at the level's exit, such as the lobby's stairwell, clears the level
-- **No backtracking:** once she leaves a level, she never returns to it
+- **Checkpoint:** the start of a zone is its only checkpoint. Falling or touching a hazard restarts the zone from its start
+- **Exit:** Use at the zone's exit clears the zone
+- **Kinds:** indoor, outdoor, or a hybrid with both
 - **Scale:** outdoors, the scenery is drawn at a quarter of indoor scale; the duck, the tiles and the reaches stay the same everywhere
-- **Shape:** a level is 2 screens (60 tiles) tall and as wide as it needs, and scrolls sideways and up. To a small duck the hotel's ceilings are high: a door is 15 tiles tall, half the screen
+- **Shape:** a zone is 2 screens (60 tiles) tall and as wide as it needs, and scrolls sideways and up. Indoors, to a small duck the ceilings are high: a door is 15 tiles tall, half the screen
 
 ### Objects
 
-Everything in a level except its terrain is placed in data, in three layers.
+Everything in a zone except its terrain is placed in data, in three layers.
 
 - **Archetypes:** a behaviour: collision (none, solid, one-way ledge, hazard or Use), movement, reaction, interaction (such as talking on Use or a quip on approach) and default tuning
 - **Characters:** who something is: one archetype plus tuning overrides, its art and animations, hit box, size, its dialogue and quip lines, and quirks. No character inherits from another. Props (platforms, hazards, doors, exits and backdrops) are characters with art but no voice
-- **Instances:** one placement in a level: a character, a position, size and phase, last-word overrides, its own lines or dialogue scene, door targets, and flags for carried choices
+- **Instances:** one placement in a zone: a character, a position, size and phase, last-word overrides, its own lines or dialogue scene, door targets, and flags for carried choices
 - **Movement:** an algorithm (static, linear, ease, hop or wander), a direction, a distance, a speed, a pause at each end, and a random variance that rolls fresh on every attempt
 - **Overrides:** flow one way: an instance overrides its character, which overrides its archetype. Everything resolves and is checked when the game loads
 - **Reaction:** none, avoiding the duck, or approaching her, within a range
 
-### Level 1
+### Zone 1
 
-- **Entrance:** the hotel door is seen only from the street. Use at the door enters the hotel after a quick fade, into the lobby, a separate indoor scene
-- **Length:** 10 screens (600 tiles): 4 of street (240), then 6 of lobby (360)
-- **Lobby:** PLACEHOLDER: what happens there
-- **Street:** a day-time New York street past the hotel's ground-floor shops: a café, a florist, a gift shop, a makeup store, a pet shop and two restaurants. Its hazards are open cellar hatches in the sidewalk, a frog courier riding a delivery bike back and forth along it, and the ferret's first trap, a giant snap trap set near the hotel door with a quip. PLACEHOLDER: pigeons that flee, a dog that approaches, and pedestrians walking past
+- **Exit:** PLACEHOLDER: what the exit at the street's end is
+- **Kind:** outdoor
+- **Length:** 4 screens (240 tiles)
+- **Street:** a day-time New York street past a row of shops: a café, a florist, a gift shop, a makeup store, a pet shop and two restaurants. Its hazards are open cellar hatches in the sidewalk, a frog courier riding a delivery bike back and forth along it, and the ferret's first trap, a giant snap trap with a quip. Pigeons in flocks flee from her, a pug approaches her, and pedestrians walk past
 
 ### Rooms
 
@@ -99,7 +104,7 @@ Everything in a level except its terrain is placed in data, in three layers.
 
 - **Box:** a fixed box along the bottom, not a speech bubble, for a conversation between two characters, sometimes three. It shows the speaker's 64 px portrait with a name tab, and one paragraph of at most 3 lines. A paragraph that runs to a 4th line is reworded
 - **Forward:** a tap or keypress moves to the next box. There is no back and no timer
-- **Restarts:** after a level restart, the level's dialogue plays again
+- **Restarts:** after a zone restart, the zone's dialogue plays again
 - **Skip:** every dialogue has a skip button at the top right that skips the conversation. Skip runs ahead to the next choice and stops there; once it is answered, Skip works again
 
 ### Quips
@@ -109,15 +114,15 @@ Everything in a level except its terrain is placed in data, in three layers.
 
 ### The ferret
 
-- **Appearances:** dialogue scenes in some levels, quips during play, and hazards it sets in levels
+- **Appearances:** dialogue scenes in some zones, quips during play, and hazards it sets in zones
 - **Calling card:** every trap it sets carries a badge of its stovepipe hat and bow tie
 - **Ending:** the ferret is outwitted, never fought: the carried choices set up how the final scene goes
 
 ### Choices
 
 - **Effect:** a choice changes where the duck goes, what she does and what she sees
-- **Kinds:** dialogue answers, as two or three answer buttons in a row above the dialogue box, and route forks in the level
-- **Reach:** most choices affect only the current level. A few flagged choices carry on to later levels or the ending, where they set up how she outwits the ferret
+- **Kinds:** dialogue answers, as two or three answer buttons in a row above the dialogue box, route forks in a zone, and forks on the map
+- **Reach:** most choices affect only the current zone. A few flagged choices carry on to later zones or the ending, where they set up how she outwits the ferret
 
 ### Settings
 
