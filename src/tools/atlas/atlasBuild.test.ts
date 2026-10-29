@@ -2,14 +2,15 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { itemAt } from "@andornaut/game-kit/arrays";
+import { decodePng } from "@andornaut/game-kit/art/png";
+import type { RgbaImage } from "@andornaut/game-kit/art/rgbaImage";
 import { describe, expect, it } from "vitest";
 
 import { BASE_FRAME } from "../../assets/atlasManifest";
 import { TILE } from "../../data/screen";
 import { ART_MANIFEST_FILE, ART_PATH, type ArtManifest } from "../../view/aseprite";
-import { buildAtlas, decodePng } from "./atlasBuild";
+import { buildAtlas } from "./atlasBuild";
 import { EXTRUDE } from "./atlasLayout";
-import type { RgbaImage } from "./atlasPixels";
 
 const ART_DIR = join(import.meta.dirname, "../../../public", ART_PATH);
 const readArt = async (path: string) => new Uint8Array(await readFile(join(ART_DIR, path)));

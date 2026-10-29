@@ -1,17 +1,12 @@
 import { itemAt } from "@andornaut/game-kit/arrays";
 import type { AsepriteSheet } from "@andornaut/game-kit/art/aseprite";
-import { PNG } from "pngjs";
+import { decodePng } from "@andornaut/game-kit/art/png";
+import { blankImage, blitExtruded, type RgbaImage } from "@andornaut/game-kit/art/rgbaImage";
 
 import { type AtlasFrame, type AtlasTexture, BASE_FRAME } from "../../assets/atlasManifest";
 import { TILE } from "../../data/screen";
 import type { ArtManifest } from "../../view/aseprite";
 import { EXTRUDE, layoutAtlas } from "./atlasLayout";
-import { blankImage, blitExtruded, type RgbaImage } from "./atlasPixels";
-
-export function decodePng(bytes: Uint8Array): RgbaImage {
-  const { data, height, width } = PNG.sync.read(Buffer.from(bytes));
-  return { data: new Uint8Array(data), height, width };
-}
 
 // A PNG of art's, with its frames' rects in it and, for a sprite, its tags.
 interface Source {
@@ -112,7 +107,11 @@ export async function buildAtlas(
     if (source === undefined) {
       throw new Error(`No art for ${key}`);
     }
-    blitExtruded(source.image, EXTRUDE, itemAt(pages, page), { x, y });
+    const { height, width } = source.image;
+    blitExtruded(source.image, { height, width, x: 0, y: 0 }, EXTRUDE, itemAt(pages, page), {
+      x,
+      y,
+    });
     const frames = source.frames.map((frame) => ({ ...frame, x: frame.x + x, y: frame.y + y }));
     return source.tags === undefined
       ? { frames, key, page }
