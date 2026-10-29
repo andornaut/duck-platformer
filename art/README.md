@@ -225,41 +225,48 @@ The hotel, in New York. Floor 1 starts outside on a day street of brick and brow
 - One-way awnings and the canopy sit 6 tiles above the sidewalk (row 20, y 240), a full jump, under the shop signs and over the hotel door.
 - Backdrops are modular: a repeating sky and far skyline (water towers, a glass tower), one repeating facade per building type (one-storey brick, walk-up, brownstone, hotel), facade pieces (a fire escape, the hotel's crest and banners, its tall lobby windows), one storefront per shop, and street furniture placed singly (a cab, a hot-dog cart, a subway railing, a street tree, a walk signal, the doorman's podium, the canopy's poles). A cross street is a gap with no facade, where the skyline shows over the far avenue.
 - Signs are icons, never text: a cup, a flower, a gift box, a lipstick, a paw, a fork and knife, a noodle bowl, and the hotel's crest.
-- Lobby tiles (`tiles-lobby`) and backdrops: cream marble floor, a one-way marble shelf, a green marble column and the stairwell exit as a 3x4 piece. They are due to be redrawn at indoor scale.
+- The lobby is a boutique at indoor scale: wood-panelled walls, a sofa, a reception desk, a tall bookcase, plants, pendant lamps and a tall window. A door is 180px (15 tiles) and the level is 720px (60 tiles) tall, so the camera scrolls up through it; the lobby floor line is y 672 (row 56).
+- Lobby contrast: the walls are dark wood, and every walkable top (the floor and each one-way ledge) carries the same 2px cream lip under a 1px plum edge, so the standable edges are the brightest lines in the room in greyscale, and the cream duck stays the focal point.
+- Lobby tiles (`tiles-lobby`): a wood floor (tops with a 2px board end every 24px, ends, face), one-way balcony, shelf, cushion and desk ledges, a solid wood post 2 tiles wide, and the stairwell exit to the next floor as a 7x15 Use-zone piece (84x180) with a white up-arrow on a green sign. The inside of the front door is a backdrop, since a level is never revisited.
+- Lobby pieces line up with the reaches (a hop rises 3 tiles, a full jump 8): the sofa's seat and back are 3 and 6 tiles up, the desk top 8, and the bookcase boards 8, 16, 24 and 32.
 
-| Backdrop                | Size    | Bottom y | Repeat |
-| ----------------------- | ------- | -------- | ------ |
-| street-sky              | 48x312  | 312      | x      |
-| street-skyline          | 336x272 | 312      | x      |
-| facade-one-storey       | 48x192  | 312      | x      |
-| facade-walkup           | 48x312  | 312      | x      |
-| facade-brownstone       | 48x312  | 312      | x      |
-| facade-hotel            | 48x312  | 312      | x      |
-| fire-escape             | 196x185 | 185      | none   |
-| hotel-crest             | 98x44   | 190      | none   |
-| hotel-window            | 32x152  | 304      | none   |
-| storefront-cafe         | 84x120  | 312      | none   |
-| storefront-florist      | 84x120  | 312      | none   |
-| storefront-gift-shop    | 96x120  | 312      | none   |
-| storefront-makeup-store | 96x120  | 312      | none   |
-| storefront-pet-shop     | 108x120 | 312      | none   |
-| storefront-diner        | 108x120 | 312      | none   |
-| storefront-noodle-bar   | 120x120 | 312      | none   |
-| cab                     | 96x40   | 312      | none   |
-| hot-dog-cart            | 40x70   | 312      | none   |
-| subway-railing          | 72x62   | 312      | none   |
-| street-tree             | 64x136  | 312      | none   |
-| walk-signal             | 12x82   | 312      | none   |
-| doorman-podium          | 18x24   | 312      | none   |
-| canopy-poles            | 60x60   | 312      | none   |
-| cross-street            | 120x26  | 312      | none   |
-| lobby-wall              | 48x312  | 312      | x      |
-| lobby-pilaster          | 24x192  | 240      | none   |
-| lobby-window            | 72x144  | 216      | none   |
-| lobby-mailboxes         | 108x84  | 228      | none   |
-| lobby-plant             | 36x72   | 312      | none   |
+| Backdrop                | Size    | Bottom y           | Repeat |
+| ----------------------- | ------- | ------------------ | ------ |
+| street-sky              | 48x312  | 312                | x      |
+| street-skyline          | 336x272 | 312                | x      |
+| facade-one-storey       | 48x192  | 312                | x      |
+| facade-walkup           | 48x312  | 312                | x      |
+| facade-brownstone       | 48x312  | 312                | x      |
+| facade-hotel            | 48x312  | 312                | x      |
+| fire-escape             | 196x185 | 185                | none   |
+| hotel-crest             | 98x44   | 190                | none   |
+| hotel-window            | 32x152  | 304                | none   |
+| storefront-cafe         | 84x120  | 312                | none   |
+| storefront-florist      | 84x120  | 312                | none   |
+| storefront-gift-shop    | 96x120  | 312                | none   |
+| storefront-makeup-store | 96x120  | 312                | none   |
+| storefront-pet-shop     | 108x120 | 312                | none   |
+| storefront-diner        | 108x120 | 312                | none   |
+| storefront-noodle-bar   | 120x120 | 312                | none   |
+| cab                     | 96x40   | 312                | none   |
+| hot-dog-cart            | 40x70   | 312                | none   |
+| subway-railing          | 72x62   | 312                | none   |
+| street-tree             | 64x136  | 312                | none   |
+| walk-signal             | 12x82   | 312                | none   |
+| doorman-podium          | 18x24   | 312                | none   |
+| canopy-poles            | 60x60   | 312                | none   |
+| cross-street            | 120x26  | 312                | none   |
+| lobby-wall              | 48x720  | 720                | x      |
+| lobby-balustrade        | 48x36   | balcony floor line | x      |
+| lobby-bookcase          | 84x384  | 672                | none   |
+| lobby-sofa              | 120x72  | 672                | none   |
+| lobby-desk              | 120x96  | 672                | none   |
+| lobby-plant             | 48x120  | 672                | none   |
+| lobby-lamp              | 48x192  | 220                | none   |
+| lobby-window            | 96x240  | 552                | none   |
+| lobby-front-door        | 156x180 | 672                | none   |
 
-Below the floor line the game shows ink.
+Below the floor line (y 312 outdoors, y 672 in the lobby) the game shows ink.
 
 ## Remaining for the first build
 

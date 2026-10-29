@@ -280,48 +280,84 @@
       "repeat": "none"
     },
     {
-      "key": "lobby-mailboxes",
-      "png": "backdrops/lobby-mailboxes.png",
-      "width": 108,
-      "height": 84,
+      "key": "lobby-balustrade",
+      "png": "backdrops/lobby-balustrade.png",
+      "width": 48,
+      "height": 36,
       "anchor": "bottom-left",
-      "y": 228,
+      "y": 288,
+      "repeat": "x"
+    },
+    {
+      "key": "lobby-bookcase",
+      "png": "backdrops/lobby-bookcase.png",
+      "width": 84,
+      "height": 384,
+      "anchor": "bottom-left",
+      "y": 672,
       "repeat": "none"
     },
     {
-      "key": "lobby-pilaster",
-      "png": "backdrops/lobby-pilaster.png",
-      "width": 24,
+      "key": "lobby-desk",
+      "png": "backdrops/lobby-desk.png",
+      "width": 120,
+      "height": 96,
+      "anchor": "bottom-left",
+      "y": 672,
+      "repeat": "none"
+    },
+    {
+      "key": "lobby-front-door",
+      "png": "backdrops/lobby-front-door.png",
+      "width": 156,
+      "height": 180,
+      "anchor": "bottom-left",
+      "y": 672,
+      "repeat": "none"
+    },
+    {
+      "key": "lobby-lamp",
+      "png": "backdrops/lobby-lamp.png",
+      "width": 48,
       "height": 192,
       "anchor": "bottom-left",
-      "y": 240,
+      "y": 220,
       "repeat": "none"
     },
     {
       "key": "lobby-plant",
       "png": "backdrops/lobby-plant.png",
-      "width": 36,
+      "width": 48,
+      "height": 120,
+      "anchor": "bottom-left",
+      "y": 672,
+      "repeat": "none"
+    },
+    {
+      "key": "lobby-sofa",
+      "png": "backdrops/lobby-sofa.png",
+      "width": 120,
       "height": 72,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
       "repeat": "none"
     },
     {
       "key": "lobby-wall",
       "png": "backdrops/lobby-wall.png",
       "width": 48,
-      "height": 312,
+      "height": 720,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 720,
       "repeat": "x"
     },
     {
       "key": "lobby-window",
       "png": "backdrops/lobby-window.png",
-      "width": 72,
-      "height": 144,
+      "width": 96,
+      "height": 240,
       "anchor": "bottom-left",
-      "y": 216,
+      "y": 552,
       "repeat": "none"
     },
     {

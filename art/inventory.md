@@ -56,10 +56,10 @@ Plain PNGs and one ICO from `art/tools/icons.py`, not manifest entries.
 
 12x12 tiles in rows of 8, from `art/tools/floor1.py`. One-way ledges are named `one-way-*`; doorways (`door-*`, `exit-*`) have no collision.
 
-| Key          | Type                                                                               | Size           | Pieces     |
-| ------------ | ---------------------------------------------------------------------------------- | -------------- | ---------- |
-| tiles-lobby  | tileset: marble floor, one-way ledge, green marble column, stairwell exit          | 33 tiles, 12px | exit (3x4) |
-| tiles-street | tileset: sidewalk, kerb, road, one-way awning, one-way canopy, planter, hotel door | 35 tiles, 12px | door (3x4) |
+| Key          | Type                                                                                     | Size            | Pieces      |
+| ------------ | ---------------------------------------------------------------------------------------- | --------------- | ----------- |
+| tiles-lobby  | tileset: wood floor, one-way balcony, shelf, cushion and desk, wood post, stairwell exit | 130 tiles, 12px | exit (7x15) |
+| tiles-street | tileset: sidewalk, kerb, road, one-way awning, one-way canopy, planter, hotel door       | 35 tiles, 12px  | door (3x4)  |
 
 ## Backdrops
 
@@ -79,11 +79,15 @@ Pieces placed from level data by their bottom-left corner at the bottom y given,
 | hot-dog-cart            | street furniture                         | 40x70   | 312, none        |
 | hotel-crest             | facade piece, banners and crest          | 98x44   | 190, none        |
 | hotel-window            | facade piece, tall lobby window          | 32x152  | 304, none        |
-| lobby-mailboxes         | lobby prop                               | 108x84  | 228, none        |
-| lobby-pilaster          | lobby prop                               | 24x192  | 240, none        |
-| lobby-plant             | lobby prop                               | 36x72   | 312, none        |
-| lobby-wall              | lobby wall, cornice, wainscot            | 48x312  | 312, x           |
-| lobby-window            | lobby prop                               | 72x144  | 216, none        |
+| lobby-balustrade        | lobby, balcony railing                   | 48x36   | balcony line, x  |
+| lobby-bookcase          | lobby, tall bookcase                     | 84x384  | 672, none        |
+| lobby-desk              | lobby, reception desk                    | 120x96  | 672, none        |
+| lobby-front-door        | lobby, inside of the front door          | 156x180 | 672, none        |
+| lobby-lamp              | lobby, pendant lamp, lit bulb            | 48x192  | 220, none        |
+| lobby-plant             | lobby, potted plant                      | 48x120  | 672, none        |
+| lobby-sofa              | lobby, sofa                              | 120x72  | 672, none        |
+| lobby-wall              | lobby wall, wood panelling               | 48x720  | 720, x           |
+| lobby-window            | lobby, tall window                       | 96x240  | 552, none        |
 | storefront-cafe         | storefront, cup sign                     | 84x120  | 312, none        |
 | storefront-diner        | storefront, fork-and-knife sign          | 108x120 | 312, none        |
 | storefront-florist      | storefront, flower sign                  | 84x120  | 312, none        |

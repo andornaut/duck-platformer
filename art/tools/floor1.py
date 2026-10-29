@@ -5,9 +5,9 @@ tilesets and modular backdrop pieces that the game places from level data. Nothi
 Usage:
   floor1.py build             write public/art/tilesets/<key>.png + .json and public/art/backdrops/<key>.png, and
                               list them in the manifest under "tilesets" and "backdrops"
-  floor1.py preview OUT.png   an example 2-screen street ending at the hotel door, composed from the pieces at
-                              648x360 per screen with the duck, the ferret and the touch buttons, above both
-                              tilesets at 4x
+  floor1.py preview OUT.png   an example 2-screen street ending at the hotel door (720x360 per screen) above an
+                              example lobby (720x720, two screens tall) and both tilesets at 4x, composed from the
+                              pieces with the duck, the ferret and the touch buttons
 
 Run from the repository root.
 
@@ -45,17 +45,20 @@ tiles-street
 - door (piece, 3x4 tiles, 36x48): the hotel's front door, a pair of lit amber glass doors in a tan frame. Tiles
   door-0 to door-11 in row order. Use at the door enters the lobby, a separate scene, after a fade.
 
-tiles-lobby (cream marble, the revised lobby)
-- floor-top, floor-top-vein, floor-top-joint (a 2px joint at the right edge), floor-top-left, floor-top-right,
-  floor-face, floor-face-left, floor-face-right. Lay floor-top, floor-top-vein, floor-top, floor-top-joint
-  repeating: a 48px slab with one vein.
-- one-way-ledge-left, one-way-ledge, one-way-ledge-right: a marble shelf, a 7px slab with brackets under the end
-  tiles.
-- column-cap-left/right, column-left/right, column-vein-left/right, column-base-left/right,
-  column-lintel-left/right: green marble, 2 tiles wide, darker than the duck. Alternate column and column-vein
-  rows.
-- exit (piece, 3x4 tiles, 36x48): the stairwell, an opening with steps rising to the right and a white up-arrow
-  on a green sign in its lintel. Tiles exit-0 to exit-11 in row order.
+tiles-lobby (the boutique lobby: wood, books and plants, at indoor scale)
+- Every walkable top, the floor and each one-way ledge, has the same 2px cream lip under a 1px plum edge, so the
+  standable edges are the brightest lines in the room, in colour and in greyscale.
+- floor-top, floor-top-joint (a 2px board end at the right edge; alternate them, 24px rhythm), floor-top-left,
+  floor-top-right, floor-face, floor-face-left, floor-face-right: brown boards over a dark-brown face. The lobby
+  floor line is y 672 (row 56) in a level 720px (60 tiles) tall.
+- One-way ledges, each a 7px slab (left, middle, right): one-way-balcony-* (the mezzanine's front edge),
+  one-way-shelf-* (bookcase boards, with brackets on the end tiles), one-way-cushion-* (the sofa's seat and back),
+  one-way-desk-* (the reception desk's top).
+- post-cap-left/right, post-left/right, post-base-left/right: a wood post 2 tiles wide, solid, for the room's
+  ends.
+- exit (piece, 7x15 tiles, 84x180, a door at indoor scale): the stairwell to the next floor, an opening with
+  stairs rising to the right under a white up-arrow on a green sign. Tiles exit-0 to exit-104 in row order; a
+  Use zone, no collision.
 
 Backdrops
 - One PNG per piece in public/art/backdrops/<key>.png, drawn behind the play layer, lower in contrast and
@@ -79,8 +82,12 @@ Backdrops
 - Street furniture (none, y 312): cab 96x40, hot-dog-cart 40x70, subway-railing 72x62, street-tree 64x136,
   walk-signal 12x82, doorman-podium 18x24, canopy-poles 60x60 (under the canopy's end tiles), cross-street
   120x26 (the far avenue between two kerbs; place no facade over a cross street so the skyline shows).
-- Lobby (unchanged; redone with the lobby): lobby-wall 48x312 (y 312, x), lobby-pilaster 24x192 (y 240),
-  lobby-window 72x144 (y 216), lobby-mailboxes 108x84 (y 228), lobby-plant 36x72 (y 312).
+- Lobby (indoor scale; the lobby floor line is y 672): lobby-wall 48x720 (y 720, x: wood panelling, cornice,
+  wainscot), lobby-balustrade 48x36 (y at the balcony's floor line, x), lobby-bookcase 84x384 (y 672; boards 8,
+  16, 24 and 32 tiles up, under one-way-shelf rows 7 wide), lobby-sofa 120x72 (y 672; cushions 3 and 6 tiles up,
+  under one-way-cushion rows 8 wide from x+12), lobby-desk 120x96 (y 672; its top 8 tiles up, under one-way-desk
+  10 wide), lobby-plant 48x120 (y 672), lobby-lamp 48x192 (y 220, hung from the ceiling), lobby-window 96x240
+  (y 552), lobby-front-door 156x180 (y 672: the inside of the front door, where she arrives; never a way back).
 """
 
 import json
@@ -93,7 +100,7 @@ from pixel import Grid, darker, rgb  # noqa: E402
 
 T = 12
 COLUMNS = 8
-W, H = 648, 360
+W, H = 720, 360
 FY = 312                       # the sidewalk and lobby floor line
 TILESETS = "public/art/tilesets"
 BACKDROPS = "public/art/backdrops"
@@ -260,91 +267,94 @@ def street_tiles():
 
 # ---------------------------------------------------------------- lobby tiles
 
-LE = "dbrown"
+# The boutique lobby: wood walls a step darker than everything she stands on. Every walkable top, the floor and
+# each one-way ledge, carries the same 2px cream lip under a 1px plum edge, so in greyscale the standable edges
+# are the brightest lines in the room. Indoor scale: a door is 180px (15 tiles).
+LE = "plum"
+LOBBY_H = 720                  # a level is 2 screens (60 tiles) tall
+LOBBY_FY = 672                 # the lobby floor line (tile row 56)
 
 
-def floor(kind, mark=""):
+def floor(kind, joint=False):
+    """Wood floor: a cream lip, brown boards with a 2px dark-brown board end every 24px, a dark-brown face."""
     g = Grid(T, T)
     if "t" in kind:
-        surface(g, LE, "white", "cream", "tan")
-        if mark == "joint":
-            R(g, (T - 2, 3, 2, 7, "tan"))
-        elif mark == "vein":
-            R(g, (2, 5, 3, 2, "tan"), (5, 7, 3, 2, "tan"))
-        ends(g, kind, LE, "white", "tan", 1)
-        if "r" in kind:
-            R(g, (T - 3, 1, 2, 2, "cream"))
-        return g
-    R(g, (0, 0, T, T, "brown"))
-    return ends(g, kind, LE, "tan", "dbrown")
+        surface(g, LE, "cream", "brown", "dbrown")
+        if joint:
+            R(g, (T - 2, 3, 2, 7, "dbrown"))
+        return ends(g, kind, LE, "cream", "dbrown", 1)
+    R(g, (0, 0, T, T, "dbrown"))
+    return ends(g, kind, LE, "brown", "plum")
 
 
-def column(kind, vein=False):
-    """Green marble: forest with a dgreen lit band, a teal shade, 2px dgreen veins; tan marble cap, base and
-    lintel."""
+# one-way ledge styles: lip, top, face, bracket (None: no brackets)
+LEDGES = {
+    "balcony": ("cream", "tan", "brown", None),        # the mezzanine floor's front edge
+    "shelf": ("cream", "tan", "brown", "dbrown"),      # bookcase and wall shelves
+    "cushion": ("cream", "mauve", "purple", None),     # the sofa's seat and back
+    "desk": ("cream", "tan", "dbrown", None),          # the reception desk's top
+}
+
+
+def ledge(style, kind):
+    lip, top, face, bracket = LEDGES[style]
+    g = R(Grid(T, T), (0, 0, T, 1, LE), (0, 1, T, 2, lip), (0, 3, T, 2, top), (0, 5, T, 1, face), (0, 6, T, 1, LE))
+    if kind == "l":
+        R(g, (0, 0, 1, 7, None), (1, 1, 1, 5, LE))
+    if kind == "r":
+        R(g, (T - 1, 0, 1, 7, None), (T - 2, 1, 1, 5, LE))
+    if bracket and kind in "lr":
+        bx = 4 if kind == "l" else T - 6
+        R(g, (bx, 7, 2, 4, bracket), (bx, 11, 2, 1, LE))
+    return g
+
+
+def post(kind):
+    """A wood post, 2 tiles wide: brown with a tan lit band and a dark-brown shade; cream-capped cap and base."""
     left = kind.endswith("l")
-    g = R(Grid(T, T), (0, 0, T, T, "forest"))
+    g = R(Grid(T, T), (0, 0, T, T, "brown"))
     if left:
-        R(g, (0, 0, 1, T, "ink"), (1, 0, 2, T, "dgreen"))
-        if vein:
-            R(g, (5, 3, 3, 2, "dgreen"), (8, 5, 3, 2, "dgreen"))
+        R(g, (0, 0, 1, T, LE), (1, 0, 2, T, "tan"))
     else:
-        R(g, (T - 3, 0, 2, T, "teal"), (T - 1, 0, 1, T, "ink"))
-        if vein:
-            R(g, (1, 6, 3, 2, "dgreen"), (4, 8, 3, 2, "dgreen"))
+        R(g, (T - 3, 0, 2, T, "dbrown"), (T - 1, 0, 1, T, LE))
     if kind.startswith("cap"):
         R(g, (0, 0, T, 1, LE), (0, 1, T, 2, "cream"), (0, 3, T, 3, "tan"), (0, 6, T, 1, LE))
     if kind.startswith("base"):
         R(g, (0, 4, T, 1, LE), (0, 5, T, 2, "cream"), (0, 7, T, 5, "tan"))
-    if kind.startswith("lintel"):
-        R(g, (0, 6, T, 1, LE), (0, 7, T, 2, "cream"), (0, 9, T, 2, "tan"), (0, T - 1, T, 1, LE))
-    if kind.startswith(("cap", "base", "lintel")):
+    if kind.startswith(("cap", "base")):
         R(g, (0, 0, 1, T, LE) if left else (T - 1, 0, 1, T, LE))
     return g
 
 
 def stairwell():
-    """The exit, 36x48: a tan marble frame (12px lintel holding the sign, 4px jambs) round a dark stairwell 26x36
-    whose steps rise to the right, and a white up-arrow on dark green."""
-    g = Grid(36, 48)
-    R(g, (0, 0, 36, 48, LE), (1, 1, 34, 47, "tan"), (1, 1, 34, 2, "cream"), (1, 1, 2, 47, "cream"),
-      (32, 3, 2, 45, "brown"), (4, 11, 28, 37, LE), (5, 12, 26, 36, "navy"))
-    for i in range(4):
-        sx, sy = 7 + i * 6, 41 - i * 7
-        R(g, (sx, sy, 31 - sx, 48 - sy, "dslate"), (sx, sy, 31 - sx, 2, "slate"))
-    R(g, (5, 12, 26, 3, "ink"), (10, 1, 16, 10, "forest"), (11, 2, 14, 8, "dgreen"))
-    for k, (x, w) in enumerate(((17, 2), (16, 4), (15, 6), (14, 8))):
-        R(g, (x, 3 + k, w, 1, "white"))
-    R(g, (17, 7, 2, 2, "white"))
+    """The exit to the next floor, 84x180 (a door at indoor scale): a tan frame round an opening with stairs
+    rising to the right, and a white up-arrow on a green sign over it."""
+    g = R(Grid(84, 180), (0, 0, 84, 180, LE), (2, 2, 80, 178, "tan"), (2, 2, 4, 178, "cream"),
+          (76, 6, 4, 174, "brown"), (22, 6, 40, 24, "forest"), (24, 8, 36, 20, "dgreen"),
+          (10, 36, 64, 144, "ink"), (12, 38, 60, 142, "navy"))
+    for k in range(6):
+        R(g, (41 - k * 2, 11 + k * 2, 2 + k * 4, 2, "white"))
+    R(g, (39, 23, 6, 4, "white"))
+    for i in range(6):
+        sx, sy = 12 + i * 10, 166 - i * 22
+        R(g, (sx, sy, 72 - sx, 180 - sy, "dslate"), (sx, sy, 72 - sx, 4, "slate"))
+    R(g, (12, 38, 60, 8, "ink"))
     return g
 
 
 def lobby_tiles():
     tiles = [
-        ("floor-top", floor("t")), ("floor-top-vein", floor("t", "vein")), ("floor-top-joint", floor("t", "joint")),
+        ("floor-top", floor("t")), ("floor-top-joint", floor("t", True)),
         ("floor-top-left", floor("tl")), ("floor-top-right", floor("tr")),
         ("floor-face", floor("")), ("floor-face-left", floor("l")), ("floor-face-right", floor("r")),
-        ("one-way-ledge-left", shelf("l", LE, "white", "cream", "tan", "brown", "dbrown")),
-        ("one-way-ledge", shelf("m", LE, "white", "cream", "tan", "brown", "dbrown")),
-        ("one-way-ledge-right", shelf("r", LE, "white", "cream", "tan", "brown", "dbrown")),
-        ("column-cap-left", column("cap-l")), ("column-cap-right", column("cap-r")),
-        ("column-left", column("l")), ("column-right", column("r")),
-        ("column-vein-left", column("l", True)), ("column-vein-right", column("r", True)),
-        ("column-base-left", column("base-l")), ("column-base-right", column("base-r")),
-        ("column-lintel-left", column("lintel-l")), ("column-lintel-right", column("lintel-r")),
     ]
-    exit_g = stairwell()
-    names = []
-    for j in range(4):
-        row = []
-        for i in range(3):
-            g = Grid(T, T)
-            g.px = [r[i * T:(i + 1) * T] for r in exit_g.px[j * T:(j + 1) * T]]
-            name = f"exit-{j * 3 + i}"
-            tiles.append((name, g))
-            row.append(name)
-        names.append(row)
-    return tiles, {"exit": names}
+    for style in LEDGES:
+        tiles += [(f"one-way-{style}-left", ledge(style, "l")), (f"one-way-{style}", ledge(style, "m")),
+                  (f"one-way-{style}-right", ledge(style, "r"))]
+    tiles += [("post-cap-left", post("cap-l")), ("post-cap-right", post("cap-r")), ("post-left", post("l")),
+              ("post-right", post("r")), ("post-base-left", post("base-l")), ("post-base-right", post("base-r"))]
+    exit_tiles, exit_rows = cut(stairwell(), "exit")
+    return tiles + exit_tiles, {"exit": exit_rows}
 
 
 TILESET_DEFS = (("tiles-street", street_tiles), ("tiles-lobby", lobby_tiles))
@@ -563,36 +573,90 @@ def cross_street():
 
 
 def lobby_wall():
-    """48x312: the dslate wall, a navy cornice at y 44, a navy wainscot from y 240 with a 2px slate rail."""
-    return R(Grid(48, 312), (0, 0, 48, 312, "dslate"), (0, 44, 48, 4, "navy"), (0, 240, 48, 72, "navy"),
-             (0, 238, 48, 2, "slate"))
-
-
-def lobby_pilaster():
-    return R(Grid(24, 192), (0, 0, 24, 192, "navy"))
-
-
-def lobby_window():
-    """72x144: a tall night window, panes one step from the wall."""
-    g = R(Grid(72, 144), (0, 0, 72, 144, "navy"))
-    for x, y, h in ((4, 4, 64), (38, 4, 64), (4, 72, 68), (38, 72, 68)):
-        R(g, (x, y, 30, h, "dslate"))
+    """48x720, repeat x, bottom at y 720: dark-brown wood panelling with 2px plum grooves every 24px, a plum and
+    ink ceiling cornice, a plum wainscot from y 588 under a 2px brown rail. Below the floor line it is covered by
+    the floor tiles."""
+    g = R(Grid(48, LOBBY_H), (0, 0, 48, LOBBY_H, "dbrown"), (0, 0, 48, 20, "plum"), (0, 20, 48, 4, "ink"))
+    for x in (10, 34):
+        R(g, (x, 24, 2, 564, "plum"))
+    R(g, (0, 588, 48, 84, "plum"), (0, 586, 48, 2, "brown"))
     return g
 
 
-def lobby_mailboxes():
-    g = R(Grid(108, 84), (0, 0, 108, 84, "navy"))
-    for j in range(4):
-        for i in range(5):
-            R(g, (4 + i * 21, 4 + j * 20, 16, 16, "dslate"), (8 + i * 21, 9 + j * 20, 8, 2, "navy"))
+def lobby_bookcase():
+    """84x384 (7x32 tiles), bottom at y 672: a tall bookcase, a brown frame round a plum back, one step from the
+    wall. Its boards sit 8, 16, 24 and 32 tiles above the floor, where one-way-shelf tiles go (7 wide); muted books
+    stand on each board."""
+    g = R(Grid(84, 384), (0, 0, 84, 384, "brown"), (4, 4, 76, 380, "plum"))
+    for k in range(4):
+        R(g, (0, 384 - 96 * (k + 1), 84, 7, "brown"))  # the boards
+    for k, base in enumerate((384, 288, 192, 96)):    # books standing on the floor and each lower board
+        for i, bx in enumerate(range(8, 76, 6)):      # 4px spines, stepped heights, muted colours
+            hgt = (34, 40, 28, 44, 36, 30, 42, 26, 38, 32, 44)[i % 11]
+            c = ("teal", "dbrown", "forest", "navy", "purple", "dbrown")[(i + k) % 6]
+            R(g, (bx, base - hgt, 4, hgt, c))
+    return g
+
+
+def lobby_sofa():
+    """120x72 (10x6 tiles), bottom at y 672: a purple sofa. Its seat top is 3 tiles up (a hop) and its back 6;
+    lay one-way-cushion tiles on both, 8 wide over the cushions (x 12 to 108), inside the 1-tile arms."""
+    g = R(Grid(120, 72), (12, 0, 96, 64, "purple"), (59, 6, 2, 30, "plum"), (12, 36, 96, 2, "plum"),
+          (12, 60, 96, 4, "plum"), (0, 24, 12, 40, "purple"), (108, 24, 12, 40, "purple"),
+          (0, 24, 12, 4, "mauve"), (108, 24, 12, 4, "mauve"), (10, 24, 2, 40, "plum"), (108, 24, 2, 40, "plum"),
+          (12, 64, 8, 8, "plum"), (100, 64, 8, 8, "plum"))
     return g
 
 
 def lobby_plant():
-    g = R(Grid(36, 72), (6, 48, 26, 24, "plum"), (4, 44, 30, 4, darker("purple")))
-    for x, y, w, h, c in ((0, 12, 16, 12, "forest"), (16, 0, 16, 14, "teal"), (10, 18, 22, 26, "teal"),
-                          (4, 26, 12, 16, "forest"), (22, 14, 14, 16, "forest")):
+    """48x120, bottom at y 672: a big leafy plant in a dark pot."""
+    g = R(Grid(48, 120), (8, 84, 32, 36, "plum"), (6, 80, 36, 6, "dbrown"))
+    for x, y, w, h, c in ((0, 24, 20, 30, "forest"), (18, 0, 22, 34, "dgreen"), (6, 40, 36, 44, "forest"),
+                          (26, 30, 22, 28, "teal"), (4, 58, 16, 20, "teal")):
         R(g, (x, y, w, h, c))
+    return g
+
+
+def lobby_lamp():
+    """48x192, bottom at y 220: a pendant lamp on a cord from the ceiling, a tan drum shade with its bulb lit
+    (white core, cream ring). No glow is baked in: lights are data."""
+    return R(Grid(48, 192), (23, 0, 2, 166, "ink"), (4, 166, 40, 20, "tan"), (4, 166, 40, 2, "cream"),
+             (4, 184, 40, 2, "brown"), (18, 186, 12, 6, "cream"), (20, 186, 8, 4, "white"))
+
+
+def lobby_window():
+    """96x240, bottom at y 552: a tall window onto the bright day, plum frame and bars."""
+    g = R(Grid(96, 240), (0, 0, 96, 240, "plum"), (4, 4, 88, 232, "blue"), (46, 4, 4, 232, "plum"),
+          (4, 118, 88, 4, "plum"), (10, 10, 6, 60, "sky"), (56, 10, 6, 40, "sky"))
+    return g
+
+
+def lobby_desk():
+    """120x96 (10x8 tiles), bottom at y 672: the reception desk, dark-brown with plum panels. Its top is 8 tiles
+    up, a full jump; lay one-way-desk tiles (10 wide) on it."""
+    g = R(Grid(120, 96), (0, 0, 120, 96, "dbrown"), (0, 90, 120, 6, "plum"))
+    for x in (8, 46, 84):
+        R(g, (x, 12, 28, 70, "plum"))
+    return g
+
+
+def lobby_front_door():
+    """156x180, bottom at y 672: the inside of the hotel's front door, where she arrives from the street. Not a
+    way back (a level is never revisited): a tan frame, a transom, two glass doors onto the bright street."""
+    g = R(Grid(156, 180), (0, 0, 156, 180, LE), (2, 2, 152, 178, "brown"), (2, 2, 152, 4, "tan"),
+          (12, 12, 132, 168, "ink"), (14, 14, 128, 34, "blue"), (76, 14, 4, 34, "brown"), (12, 48, 132, 4, "brown"),
+          (76, 52, 4, 128, "brown"), (12, 166, 132, 14, "plum"))
+    for x in (14, 80):
+        R(g, (x, 54, 62, 112, "blue"), (x + 6, 60, 8, 70, "sky"), (x + 18, 60, 4, 40, "sky"), (x, 54, 62, 3, "brown"),
+          (x + (52 if x == 14 else 4), 110, 6, 22, "dbrown"))
+    return g
+
+
+def lobby_balustrade():
+    """48x36, repeat x, bottom at the mezzanine's floor line: brown balusters every 12px under a brown rail."""
+    g = R(Grid(48, 36), (0, 0, 48, 4, "brown"))
+    for x in (4, 16, 28, 40):
+        R(g, (x, 4, 4, 32, "brown"))
     return g
 
 
@@ -613,11 +677,15 @@ BACKDROP_DEFS = {
     "doorman-podium": (doorman_podium, FY, "none"),
     "canopy-poles": (canopy_poles, FY, "none"),
     "cross-street": (cross_street, FY, "none"),
-    "lobby-wall": (lobby_wall, FY, "x"),
-    "lobby-pilaster": (lobby_pilaster, 240, "none"),
-    "lobby-window": (lobby_window, 216, "none"),
-    "lobby-mailboxes": (lobby_mailboxes, 228, "none"),
-    "lobby-plant": (lobby_plant, FY, "none"),
+    "lobby-wall": (lobby_wall, LOBBY_H, "x"),
+    "lobby-balustrade": (lobby_balustrade, 288, "x"),
+    "lobby-bookcase": (lobby_bookcase, LOBBY_FY, "none"),
+    "lobby-sofa": (lobby_sofa, LOBBY_FY, "none"),
+    "lobby-desk": (lobby_desk, LOBBY_FY, "none"),
+    "lobby-plant": (lobby_plant, LOBBY_FY, "none"),
+    "lobby-lamp": (lobby_lamp, 220, "none"),
+    "lobby-window": (lobby_window, 552, "none"),
+    "lobby-front-door": (lobby_front_door, LOBBY_FY, "none"),
 }
 
 
@@ -779,8 +847,68 @@ def example_strip(chars=True, hud=True):
         use = Image.open(f"{SPRITES}/ui-touch-use.png").convert("RGBA").crop((0, 0, 51, 51))
         jump = Image.open(f"{SPRITES}/ui-touch-jump.png").convert("RGBA").crop((0, 0, 57, 57))
         for s in range(2):
-            im.alpha_composite(use, (s * W + 519, 219))
-            im.alpha_composite(jump, (s * W + 576, 288))
+            im.alpha_composite(use, (s * W + 591, 219))
+            im.alpha_composite(jump, (s * W + 648, 288))
+    return im.convert("RGB")
+
+
+# One example lobby for the preview only, 720x720 (60x60 tiles, two screens tall), built to the reaches: a hop
+# rises 3 tiles, a full jump 8, a flutter crosses a gap of 20. One-way rows: (style, row, first col, width).
+LOBBY_EXAMPLE = dict(
+    ledges=[("cushion", 53, 15, 8), ("cushion", 50, 15, 8), ("desk", 48, 26, 10), ("shelf", 48, 40, 7),
+            ("shelf", 40, 40, 7), ("shelf", 32, 40, 7), ("shelf", 24, 40, 7), ("balcony", 24, 0, 20)],
+    exit=(4, 9), post=58,
+    runs=[("lobby-wall", 0, 720), ("lobby-balustrade", 0, 240)],
+    pieces=[("lobby-front-door", 12), ("lobby-sofa", 168), ("lobby-desk", 312), ("lobby-bookcase", 480),
+            ("lobby-window", 576), ("lobby-plant", 640), ("lobby-lamp", 288), ("lobby-lamp", 384)],
+    ys={"lobby-balustrade": 288},
+)
+
+
+def lobby_example(chars=True, hud=True):
+    from PIL import Image
+
+    E = LOBBY_EXAMPLE
+    tiles = {name: frame_image(g.px) for name, g in lobby_tiles()[0]}
+    pieces = {k: frame_image(fn().px) for k, (fn, _, _) in BACKDROP_DEFS.items() if k.startswith("lobby-")}
+    ys = {k: E["ys"].get(k, y) for k, (_, y, _) in BACKDROP_DEFS.items()}
+    im = Image.new("RGBA", (720, LOBBY_H), rgb("ink") + (255,))
+    for key, x0, x1 in E["runs"]:
+        p = pieces[key]
+        for x in range(x0, x1, p.width):
+            q = p.crop((0, 0, min(p.width, x1 - x), p.height))
+            im.alpha_composite(q, (x, ys[key] - q.height))
+    for key, x in E["pieces"]:
+        p = pieces[key]
+        im.alpha_composite(p, (x, ys[key] - p.height))
+    ground = LOBBY_FY // T
+    for r in range(ground, LOBBY_H // T):
+        for c in range(60):
+            im.alpha_composite(tiles["floor-top-joint" if c % 2 else "floor-top"] if r == ground else
+                               tiles["floor-face"], (c * T, r * T))
+    for style, row, c0, w in E["ledges"]:
+        for c in range(c0, c0 + w):
+            k = "-left" if c == c0 else "-right" if c == c0 + w - 1 else ""
+            im.alpha_composite(tiles[f"one-way-{style}{k}"], (c * T, row * T))
+    pc = E["post"]
+    for r in range(ground):
+        for c, side in ((pc, "left"), (pc + 1, "right")):
+            im.alpha_composite(tiles[f"post-{'base-' if r == ground - 1 else ''}{side}"], (c * T, r * T))
+    ec, er = E["exit"]
+    for j in range(15):
+        for i in range(7):
+            im.alpha_composite(tiles[f"exit-{j * 7 + i}"], ((ec + i) * T, (er + j) * T))
+    if chars:
+        duck = Image.open(f"{SPRITES}/duck.png").convert("RGBA").crop((0, 0, 48, 42))
+        im.alpha_composite(duck, (150 - 24, LOBBY_FY - 42))
+        ferret = Image.open(f"{SPRITES}/ferret.png").convert("RGBA").crop((0, 0, 64, 80))
+        im.alpha_composite(ferret, (200 - 32, 24 * T - 80))
+    if hud:
+        use = Image.open(f"{SPRITES}/ui-touch-use.png").convert("RGBA").crop((0, 0, 51, 51))
+        jump = Image.open(f"{SPRITES}/ui-touch-jump.png").convert("RGBA").crop((0, 0, 57, 57))
+        for top in (0, 360):
+            im.alpha_composite(use, (591, top + 219))
+            im.alpha_composite(jump, (648, top + 288))
     return im.convert("RGB")
 
 
@@ -795,13 +923,17 @@ def preview(out):
         bg = Image.new("RGBA", ts.size, rgb("dslate") + (255,))
         bg.alpha_composite(ts)
         sheets.append(bg.convert("RGB").resize((ts.width * 4, ts.height * 4), Image.NEAREST))
+    lobby = lobby_example()
     gap = 16
-    sheet = Image.new("RGB", (strip.width, strip.height + gap + max(s.height for s in sheets)), rgb("ink"))
+    low = strip.height + gap
+    sheet = Image.new("RGB", (strip.width, low + max(lobby.height, sum(s.height + gap for s in sheets))),
+                      rgb("ink"))
     sheet.paste(strip, (0, 0))
-    x = 0
+    sheet.paste(lobby, (0, low))
+    y = low
     for s in sheets:
-        sheet.paste(s, (x, strip.height + gap))
-        x += s.width + gap
+        sheet.paste(s, (lobby.width + gap, y))
+        y += s.height + gap
     sheet.save(out)
 
 
