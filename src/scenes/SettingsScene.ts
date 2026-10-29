@@ -13,7 +13,7 @@ import { type GameObjects, type Input, Scene } from "phaser";
 import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
 import { CARD_TEXT_SCALE } from "../layout/pauseCard";
-import { SETTINGS_CARD, STEPS_CARD } from "../layout/settingsCard";
+import { focusRingAround, SETTINGS_CARD, STEPS_CARD } from "../layout/settingsCard";
 import { settingsKeyAction, stepFocus } from "../pause/settingsInput";
 import { installOffer } from "../pwa/installOffer";
 import { touchControlsShown } from "../settings/touchControls";
@@ -31,13 +31,6 @@ const STEPS_GLYPHS: Readonly<Record<MenuInstallBrowser, string>> = {
   ios: "icon-ios-share",
 };
 
-// PLACEHOLDER: art has not drawn a focus ring; a 2px white outline round the focused control.
-const FOCUS_RING = { colour: "white", width: 2 } as const;
-
-// PLACEHOLDER: font-body has no middle dot, which the build label puts between its version and
-// commit, so a hyphen stands in for it until art adds the glyph.
-const CARD_BUILD_LABEL = BUILD_LABEL.replace("·", "-");
-
 // The settings card, which PauseScene opens in its card's place over the same dim: the Touch
 // controls row, the Install row while the game can be installed, and the build label. A row acts
 // when a press lands on it and lifts on it; the close X, back, Escape and P close the card, back
@@ -50,7 +43,8 @@ export class SettingsScene extends Scene {
   private checkbox!: GameObjects.Sprite;
   private closeX!: GameObjects.Sprite;
   private focus: Target | undefined;
-  private focusRing!: GameObjects.Graphics;
+  // Art's focus ring round the focused control, while the keyboard has moved the focus.
+  private focusRing: GameObjects.NineSlice | undefined;
   // The Install button's face, normal and pressed.
   private installButton: Readonly<Record<"normal" | "pressed", GameObjects.NineSlice>> | undefined;
   private installButtonLabel: GameObjects.BitmapText | undefined;
@@ -71,7 +65,7 @@ export class SettingsScene extends Scene {
     this.pressed = undefined;
     this.steps = undefined;
     this.card = this.drawCard(offersInstall(installOffer().state()));
-    this.focusRing = this.add.graphics();
+    this.focusRing = undefined;
     this.render();
     this.watchPresses();
     // The Install row comes and goes as the game becomes installable or installed.
@@ -225,8 +219,8 @@ export class SettingsScene extends Scene {
     const label = addCardText(
       this,
       BODY_FONT,
-      { x: buildLabel.centreX - Math.floor(this.inkWidth(CARD_BUILD_LABEL) / 2), y: labelY },
-      CARD_BUILD_LABEL,
+      { x: buildLabel.centreX - Math.floor(this.inkWidth(BUILD_LABEL) / 2), y: labelY },
+      BUILD_LABEL,
       this.colour("tan"),
     );
     objects.push(label);
@@ -258,20 +252,20 @@ export class SettingsScene extends Scene {
   }
 
   private drawFocus(): void {
-    this.focusRing.clear();
-    const hit =
-      this.steps === undefined && this.focus !== undefined ? this.hitOf(this.focus) : undefined;
-    if (hit !== undefined) {
-      const half = FOCUS_RING.width / 2;
-      this.focusRing
-        .lineStyle(FOCUS_RING.width, this.colour(FOCUS_RING.colour))
-        .strokeRect(
-          hit.x + half,
-          hit.y + half,
-          hit.width - FOCUS_RING.width,
-          hit.height - FOCUS_RING.width,
-        );
+    this.focusRing?.destroy();
+    this.focusRing =
+      this.steps === undefined && this.focus !== undefined
+        ? addSlice(this, "ui-focus", focusRingAround(this.focusedRect(this.focus)))
+        : undefined;
+  }
+
+  // What the focus ring surrounds: a row, or the close X itself.
+  private focusedRect(target: Target): Rect {
+    if (target === "close") {
+      const { x, y } = SETTINGS_CARD.close.at;
+      return { height: this.closeX.height, width: this.closeX.width, x, y };
     }
+    return this.hitOf(target);
   }
 
   private hitOf(target: Target): Rect {

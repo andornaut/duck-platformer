@@ -44,3 +44,16 @@ export const STEPS_CARD = {
   ],
   title: { x: 190, y: 93 } satisfies Point,
 } as const;
+
+// Art's keyboard focus ring, a 9-slice drawn this far outside the focused row, button or close X
+// on every side.
+const FOCUS_OUTSET = 4;
+
+export function focusRingAround({ height, width, x, y }: Rect): Rect {
+  return {
+    height: height + 2 * FOCUS_OUTSET,
+    width: width + 2 * FOCUS_OUTSET,
+    x: x - FOCUS_OUTSET,
+    y: y - FOCUS_OUTSET,
+  };
+}

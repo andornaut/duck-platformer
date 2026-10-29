@@ -1,3 +1,4 @@
+import { BUILD_LABEL } from "@andornaut/game-kit/build/buildLabel";
 import { containsPoint, rectsOverlap } from "@andornaut/game-kit/rect";
 import { inkWidth, parseBitmapFont } from "@andornaut/game-kit/text/bitmapFont";
 import { bitmapMeasure, fittingText } from "@andornaut/game-kit/text/textFit";
@@ -15,7 +16,7 @@ import { SCREEN } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { Point, Rect } from "../data/types";
 import { CARD_TEXT_SCALE, PAUSE_BUTTON, PAUSE_CARD } from "./pauseCard";
-import { SETTINGS_CARD, STEPS_CARD } from "./settingsCard";
+import { focusRingAround, SETTINGS_CARD, STEPS_CARD } from "./settingsCard";
 
 // A touch target is at least this many base pixels on each side (art/README.md, UI).
 const MIN_TARGET = 44;
@@ -179,5 +180,24 @@ describe("settings words", () => {
       lines: true,
       wide: true,
     });
+  });
+
+  it("has a glyph for every character of the build label, which fits across the card", () => {
+    const { buildLabel, card, title } = SETTINGS_CARD;
+    const half = inkWidth(FONT, CARD_TEXT_SCALE, BUILD_LABEL) / 2;
+    const margin = title.x - card.x;
+    expect({
+      fits:
+        buildLabel.centreX - half >= card.x + margin &&
+        buildLabel.centreX + half <= card.x + card.width - margin,
+      missing: [...BUILD_LABEL].filter((char) => !FONT.glyphs.has(char)),
+    }).toEqual({ fits: true, missing: [] });
+  });
+
+  it.each([
+    ["touch controls row", SETTINGS_CARD.touchControls.row],
+    ["install row", SETTINGS_CARD.install.row],
+  ])("rings the %s inside the screen", (_, row) => {
+    expect(inside(SCREEN_RECT, focusRingAround(row))).toBe(true);
   });
 });
