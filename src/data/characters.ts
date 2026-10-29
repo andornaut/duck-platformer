@@ -183,11 +183,12 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 3,
     rows: 2,
   },
-  // PLACEHOLDER: a boat on the pond, a moving platform whose motion each placement sets, until art
-  // draws it.
+  // A boat on the pond, a moving platform whose motion each placement sets. Its deck is the top of
+  // the sprite; the hull below dips into the water.
   "park-boat": {
+    animations: { idle: "idle", move: "idle", react: "idle", talk: "idle" },
     archetype: "platform",
-    art: "placeholder-park-boat",
+    art: "park-boat",
     cols: 6,
     rows: 1,
   },
@@ -217,10 +218,11 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 20,
     rows: 10,
   },
-  // PLACEHOLDER: the park gate, the zone's exit, until art draws it.
+  // The park gate, the zone's exit: a wrought-iron arch she uses to leave.
   "park-gate": {
+    animations: { idle: "idle", move: "idle", react: "idle", talk: "idle" },
     archetype: "exit",
-    art: "placeholder-park-gate",
+    art: "park-gate",
     cols: 3,
     rows: 5,
   },
