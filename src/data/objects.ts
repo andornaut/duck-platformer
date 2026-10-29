@@ -139,7 +139,6 @@ export const OBJECT_TYPES: Readonly<Record<string, ObjectType>> = {
   "storefront-pet-shop": fixed("storefront-pet-shop", "none", 9, 10),
   "street-tree": fixed("street-tree", "none", 5, 11),
   "subway-railing": fixed("subway-railing", "none", 6, 5),
-  "walk-signal": fixed("walk-signal", "none", 1, 7),
   // PLACEHOLDER: the test levels' objects, drawn as flat rectangles: exits and a door (Use
   // zones), hazards, moving platforms whose motion each placement sets, a wandering cart and a
   // pigeon that hops about and flies from her.
@@ -147,7 +146,14 @@ export const OBJECT_TYPES: Readonly<Record<string, ObjectType>> = {
     art: "test-cart",
     collision: "hazard",
     cols: 3,
-    motion: { ...STATIC_MOTION, algorithm: "wander", distance: 30, pause: 0.5, speed: 5, variance: 0.3 },
+    motion: {
+      ...STATIC_MOTION,
+      algorithm: "wander",
+      distance: 30,
+      pause: 0.5,
+      speed: 5,
+      variance: 0.3,
+    },
     reaction: NO_REACTION,
     rows: 2,
   },
@@ -199,4 +205,5 @@ export const OBJECT_TYPES: Readonly<Record<string, ObjectType>> = {
     reaction: { kind: "avoid", range: 8, speed: 10 },
     rows: 2,
   },
+  "walk-signal": fixed("walk-signal", "none", 1, 7),
 };
