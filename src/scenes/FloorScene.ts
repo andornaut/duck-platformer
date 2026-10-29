@@ -18,6 +18,7 @@ import {
   touchIntent,
   touchRoleAt,
 } from "../input/intent";
+import { gamePoint } from "../input/screenPoint";
 import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
 import { type FloorState, startFloor, stepFloor } from "../rules/floor";
 import { floorLayout } from "../rules/tiles";
@@ -191,23 +192,47 @@ export class FloorScene extends Scene {
   }
 
   // A touch takes the role it starts with and keeps it, wherever it moves, until it lifts. A new
-  // touch goes last in heldTouches, so the latest move touch is the last.
+  // touch goes last in heldTouches, so the latest move touch is the last. Touches anywhere on the
+  // page count, the letterbox bars beside the canvas included (gamePoint puts them on the game's
+  // nearest edge), except on a link or button such as the nav bar's.
   private watchTouches(): void {
-    this.input.on("pointerdown", (pointer: Input.Pointer) => {
-      if (pointer.wasTouch) {
-        const role = touchRoleAt({ x: pointer.x, y: pointer.y });
-        this.heldTouches.set(pointer.id, { role, startX: pointer.x, x: pointer.x });
+    const toGame = (event: PointerEvent) => {
+      const canvas = this.game.canvas.getBoundingClientRect();
+      return gamePoint(canvas, SCREEN, { x: event.clientX, y: event.clientY });
+    };
+    const down = (event: PointerEvent) => {
+      const target = event.target instanceof Element ? event.target : null;
+      if (event.pointerType !== "touch" || target?.closest("a, button") != null) {
+        return;
       }
-    });
-    this.input.on("pointermove", (pointer: Input.Pointer) => {
-      const touch = this.heldTouches.get(pointer.id);
+      const point = toGame(event);
+      this.heldTouches.set(event.pointerId, {
+        role: touchRoleAt(point),
+        startX: point.x,
+        x: point.x,
+      });
+    };
+    const move = (event: PointerEvent) => {
+      const touch = this.heldTouches.get(event.pointerId);
       if (touch) {
-        this.heldTouches.set(pointer.id, { ...touch, x: pointer.x });
+        this.heldTouches.set(event.pointerId, { ...touch, x: toGame(event).x });
+      }
+    };
+    const release = (event: PointerEvent) => this.heldTouches.delete(event.pointerId);
+    const listeners = [
+      ["pointerdown", down],
+      ["pointermove", move],
+      ["pointerup", release],
+      ["pointercancel", release],
+    ] as const;
+    for (const [type, listener] of listeners) {
+      window.addEventListener(type, listener);
+    }
+    this.events.once("shutdown", () => {
+      for (const [type, listener] of listeners) {
+        window.removeEventListener(type, listener);
       }
     });
-    const release = (pointer: Input.Pointer) => this.heldTouches.delete(pointer.id);
-    this.input.on("pointerup", release);
-    this.input.on("pointerupoutside", release);
   }
 
   // The buttons show only on a touch screen. A pressed button plays its press tag, then holds
