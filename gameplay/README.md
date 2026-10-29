@@ -44,5 +44,6 @@ Open questions:
 - **Confirm, keyboard has no overlay:** assumed, the touch control overlay shows only with touch
 - **Confirm, restarts reset choices:** assumed, a floor restart also resets the choices made on that floor
 - **Ending:** the rest of the ending, beyond outwitting the ferret
-- **Floors:** the list and order of floor themes
+- **First floor:** the street's length and hazards, and what happens in the lobby
+- **Floors:** the list and order of the later floor themes
 - **Use:** what it acts on (assumed: talking to animals, and doors and objects at route forks)

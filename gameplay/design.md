@@ -12,7 +12,7 @@ A landscape, left-to-right platformer: a duck falls out of her apartment at the 
 
 - **Characters:** the duck is the one the player controls: a small, round, cream duck with tiny wings and feet, an orange bill and a dot eye. Her full design is in the [art plan](../art/README.md). Animals talk, and most interactions are with animals. PLACEHOLDER: whether there are humans (see [`ideas.md`](ideas.md))
 - **Ferret:** the villain, who schemes against the duck's climb: a brown ferret, about twice the duck's height, standing upright, with a dark eye mask, a tall plum stovepipe hat and a red bow tie. Its full design is in the [art plan](../art/README.md)
-- **Floors:** each floor is one everyday place in the building, such as a restaurant, pool or spa, and the whole floor stays in that place. PLACEHOLDER: the floors and their order
+- **Floors:** a floor is a level. The first floor starts outside, along the street past the shops on the building's ground floor (a café, a florist, a gift shop, a makeup store, a pet shop and other restaurants), then goes in through the open front door to the lobby. Each later floor is one everyday place in the building, such as a restaurant, pool or spa, and the whole floor stays in that place. PLACEHOLDER: the later floors and their order
 - **World:** the modern day, mixing fantasy and reality
 
 ## Core loop
