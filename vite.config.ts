@@ -21,7 +21,14 @@ const KIT_ALIAS = { "@andornaut/game-kit": repoPath("vendor/game-kit/src") };
 // Vite bundles this file without its own resolve.alias, so the repository's code, which imports
 // the kit by its alias, loads through a module runner given the alias.
 const {
-  module: { gitHead, precachePlugin, securityHeadersPlugin, shortCommit },
+  module: {
+    PHASER_ENTRY_ID,
+    gitHead,
+    phaserBuildPlugin,
+    precachePlugin,
+    securityHeadersPlugin,
+    shortCommit,
+  },
 } = await runnerImport<typeof ConfigModules>(repoPath("src/tools/viteConfigModules.ts"), {
   configFile: false,
   resolve: { alias: KIT_ALIAS },
@@ -40,10 +47,24 @@ export default defineConfig({
         main: repoPath("pages/index.html"),
         play: repoPath("pages/play/index.html"),
       },
+      // Phaser and phaserBuildPlugin's entry go in their own chunk, so a game code change keeps
+      // its hashed file name and a new service worker's precache gets it from the browser's HTTP
+      // cache.
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: "phaser",
+              test: (id: string) =>
+                id === PHASER_ENTRY_ID || /[\\/]node_modules[\\/]phaser[\\/]/.test(id),
+            },
+          ],
+        },
+      },
     },
-    // Phaser alone is about 1.4 MB minified, so the 500 kB default always warns.
-    // Set just above it so that growth in game code still warns.
-    chunkSizeWarningLimit: 1600,
+    // The Phaser chunk alone is about 1 MB minified, so the 500 kB default always warns.
+    // Set just above it so that growth in Phaser or game code still warns.
+    chunkSizeWarningLimit: 1100,
   },
   // The container name the Playwright MCP reaches the dev or preview server by,
   // over the playwright-mcp Docker network. Vite rejects any other Host header.
@@ -56,9 +77,12 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(packageVersion),
     __COMMIT__: JSON.stringify(shortCommit(() => gitHead(repoPath(".")), process.env)),
   },
+  // phaserBuildPlugin, in a build only, bundles Phaser from its source without the namespaces the
+  // game does not use and without the Canvas renderer.
   // precachePlugin writes /sw.js, the service worker that precaches the game for offline play.
   // securityHeadersPlugin writes /_headers, the response headers with each page's CSP.
   plugins: [
+    phaserBuildPlugin(),
     precachePlugin("play/index.html", repoPath("src/pwa/serviceWorker.ts")),
     securityHeadersPlugin(),
   ],

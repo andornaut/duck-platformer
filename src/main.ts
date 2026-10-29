@@ -3,7 +3,7 @@ import "./crash/install";
 import "./main.css";
 
 import { BUILD_LABEL } from "@andornaut/game-kit/build/buildLabel";
-import { AUTO, Game, Scale } from "phaser";
+import { Game, Scale, WEBGL } from "phaser";
 
 // eslint-disable-next-line no-duplicate-imports -- the side-effect import above runs it first.
 import { CRASH_SCREEN } from "./crash/install";
@@ -30,7 +30,8 @@ function startGame(): void {
     scale: { autoCenter: Scale.CENTER_BOTH, mode: Scale.FIT },
     // Later scenes draw over earlier ones: the pause card over the level.
     scene: [BootScene, LevelScene, PauseScene],
-    type: AUTO,
+    // WebGL only: the build's Phaser has no Canvas renderer (src/tools/phaserBuild.ts).
+    type: WEBGL,
     width: SCREEN.width,
   });
   // Phaser measures #game on window resizes only, but its size also changes without one: an
@@ -40,10 +41,7 @@ function startGame(): void {
   if (parent !== null) {
     new ResizeObserver(() => game.scale.refresh()).observe(parent);
   }
-  CRASH_SCREEN.stopGameOnCrash(() => {
-    game.pause();
-    game.sound.pauseAll();
-  });
+  CRASH_SCREEN.stopGameOnCrash(() => game.pause());
   // The game pauses while main.css shows the turn-sideways notice over it, and the update toast
   // waits until the notice is gone.
   const portrait = window.matchMedia("(orientation: portrait) and (pointer: coarse)");
