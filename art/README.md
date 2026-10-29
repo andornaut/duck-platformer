@@ -1,6 +1,6 @@
 # Art
 
-The art plan and pipeline for Duck Platformer. Art owns `art/` and PLACEHOLDER: the served art directory.
+The art plan and pipeline for Duck Platformer. Art owns `art/` and the served art directory, `public/art/`.
 
 ## Direction
 
@@ -50,11 +50,11 @@ In order:
 
 - All art is drawn by Python scripts, never by hand in an editor: `art/tools/<set>.py`, each with `build` and `preview OUT.png` commands.
 - A shared module holds the grid (rect, ellipse, line, cel shading, outline pass), the palette with ramp names, and the export.
-- A build writes the Aseprite sources (`art/<set>/<key>.aseprite`) and exports them as PNG plus JSON, with Aseprite tags for animations. PLACEHOLDER: the export paths under the served art directory.
+- A build writes the Aseprite sources (`art/<set>/<key>.aseprite`) and exports them as PNG plus JSON, with Aseprite tags for animations, to `public/art/sprites/<key>.png` and `.json`.
 - Change the script, never the `.aseprite`: a build overwrites it.
 - Each script's docstring is its spec: every asset's size, tags, frame timings and placement.
 - `art/inventory.md` lists every asset (key, type, size, tags).
-- Art reads game layout and data from the generated export files the game writes, never from `src/`. Art writes the shared data files the game reads (`lights.json`, `palette.json`). PLACEHOLDER: the export directory.
+- Art reads game layout and data from the generated export files the game writes, never from `src/`. The export files are in `shared/export/`. Art writes the shared data files the game reads (`lights.json`, `palette.json`).
 - Keys are kebab-case, named after what the player sees. Internal names match displayed names.
 - Checks run in a container: the art manifest, art tests that assert every key the game uses exists with its tags, and prettier on the docs. PLACEHOLDER: the image and command.
 
@@ -138,6 +138,6 @@ In order:
 
 ## Remaining for the first build
 
-- PLACEHOLDER: the game details from the user, then the base resolution, palette, frame sizes and served art directory.
+- The user's picks from the mocks: base resolution, palette, frame sizes, the duck, the dialogue box, quips, the touch overlay and settings.
 - The shared drawing module and the first `art/tools/<set>.py`.
 - `art/inventory.md`.
