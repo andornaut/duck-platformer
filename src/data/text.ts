@@ -21,6 +21,7 @@ export const TEXT: GameText = {
     },
   },
   pause: {
+    home: "Return home",
     quit: "Quit",
     resume: "Resume",
     settings: "Settings",
@@ -39,5 +40,10 @@ export const TEXT: GameText = {
     shown: "Shown",
     title: "Settings",
     touchControls: "Touch controls",
+  },
+  start: {
+    exit: "Exit",
+    settings: "Settings",
+    start: "Start",
   },
 };

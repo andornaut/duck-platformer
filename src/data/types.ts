@@ -65,12 +65,19 @@ export interface GameText {
     readonly reload: string;
     readonly title: string;
   };
-  // The pause card: its title, the Settings and Quit rows, and Resume.
+  // The pause card: its title, the Settings, Return home and Quit rows, and Resume.
   readonly pause: {
+    readonly home: string;
     readonly quit: string;
     readonly resume: string;
     readonly settings: string;
     readonly title: string;
+  };
+  // The start screen: its Start button, and the nav bar's Settings and Exit buttons.
+  readonly start: {
+    readonly exit: string;
+    readonly settings: string;
+    readonly start: string;
   };
   // The settings card: its title, the Touch controls row and its two states, the Install row and
   // its button, and the install steps card: its title and, for each browser that installs only
