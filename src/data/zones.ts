@@ -47,6 +47,8 @@ export const TEST_ZONES: readonly ZonePlan[] = [
       main: {
         cols: 210,
         entries: { start: { col: 3, row: 56 } },
+        // She can't jump past the narrow landing.
+        noCross: [{ from: { col: 98, row: 52 }, to: { col: 130, row: 52 } }],
         objects: [
           // Hazard strips on the ground under gaps of 8 and 16.
           { character: "test-hazard", col: 18, cols: 8, row: 55, rows: 1 },
@@ -97,8 +99,13 @@ export const TEST_ZONES: readonly ZonePlan[] = [
   {
     areas: {
       main: {
-        cols: 126,
+        cols: 128,
         entries: { start: { col: 3, row: 56 } },
+        // Neither gap a horizontal mover crosses can be jumped without it.
+        noCross: [
+          { from: { col: 25, row: 42 }, to: { col: 58, row: 42 } },
+          { from: { col: 76, row: 26 }, to: { col: 117, row: 26 } },
+        ],
         objects: [
           // A vertical mover lifts her 14, from the ground to a ledge.
           {
@@ -131,17 +138,18 @@ export const TEST_ZONES: readonly ZonePlan[] = [
             row: 42,
             rows: 1,
           },
-          // A horizontal mover level with the ledges across a gap of 26, to the exit.
+          // A horizontal mover level with the ledges across a gap of 28, to the exit. Its near end
+          // is 4 from the ledge, so she jumps on rather than walking off onto it.
           {
             character: "test-mover",
-            col: 84,
+            col: 86,
             cols: 6,
             overrides: { motion: { direction: "right", distance: 16, pause: 1, speed: 4 } },
             phase: 0,
             row: 26,
             rows: 1,
           },
-          { character: "test-exit", col: 120, cols: 2, row: 22, rows: 4 },
+          { character: "test-exit", col: 122, cols: 2, row: 22, rows: 4 },
         ],
         rows: 60,
         solids: [
@@ -149,7 +157,7 @@ export const TEST_ZONES: readonly ZonePlan[] = [
           { col: 20, cols: 10, row: 42, rows: 18 },
           { col: 54, cols: 10, row: 42, rows: 18 },
           { col: 72, cols: 10, row: 26, rows: 34 },
-          { col: 108, cols: 18, row: 26, rows: 34 },
+          { col: 110, cols: 18, row: 26, rows: 34 },
         ],
       },
     },
@@ -163,6 +171,14 @@ export const TEST_ZONES: readonly ZonePlan[] = [
       main: {
         cols: 138,
         entries: { start: { col: 3, row: 56 } },
+        // Each transfer can't be skipped: the first lift to the second (marked by where their
+        // tracks start), the ledge to the second horizontal mover, and the first horizontal mover
+        // to the exit ledge.
+        noCross: [
+          { from: { col: 15, row: 56 }, to: { col: 45, row: 42 } },
+          { from: { col: 60, row: 16 }, to: { col: 95, row: 12 } },
+          { from: { col: 71, row: 16 }, to: { col: 125, row: 12 } },
+        ],
         objects: [
           // Vertical to horizontal: the lift pauses at its top as the horizontal mover, 2 higher and
           // 4 across, pauses at its near end. The lifts either side are 26 apart.

@@ -129,6 +129,14 @@ export const ZONE_1: ZonePlan = {
         { character: "canopy", col: 218, cols: 12, row: 44 },
         { character: "exit-door", col: 222, row: 46 },
       ],
+      // The roofs the detour doesn't reach: the second walk-up's and the last brownstone's
+      // cornices, and the top of the wall at the street's left edge. The first brownstone's
+      // cornice is in reach, by a drop off the climbed walk-up's roof.
+      outOfReach: [
+        { col: 170, row: 5 },
+        { col: 215, row: 20 },
+        { col: 0, row: 0 },
+      ],
       rows: 60,
       solids: [
         // A wall at the street's left edge, above the sidewalk.
