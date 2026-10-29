@@ -246,10 +246,15 @@ export interface TerrainRect extends TileRect {
 // entries are named points where she arrives: she stands on the top edge of row `row`, her
 // collision box centred on the grid line at the left edge of column `col`. tileset: the art
 // tileset its terrain and tile objects are drawn from; without one, both are flat rectangles.
+// noCross and outOfReach name surfaces by a spot on each, given as an entry is: noCross pairs a
+// spot with one she must never reach from it in one move (a jump, or a walk off an edge), and
+// outOfReach marks surfaces she must never reach from the start.
 export interface AreaPlan {
   readonly cols: number;
   readonly entries: Readonly<Record<string, TilePoint>>;
+  readonly noCross?: readonly { readonly from: TilePoint; readonly to: TilePoint }[];
   readonly objects: readonly Instance[];
+  readonly outOfReach?: readonly TilePoint[];
   readonly rows: number;
   readonly solids: readonly TerrainRect[];
   readonly tileset?: string;
