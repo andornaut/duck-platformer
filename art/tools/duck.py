@@ -5,16 +5,16 @@ Usage, from the repository root:
   python3 -I art/tools/duck.py preview OUT.png  contact sheet of every frame on slate, tan and cream
 
 Design: a wide, round cream blob of a duck with a small round head set into the top of her body at the front,
-a square ink dot eye, a short plain orange bill, a flat tan wing patch and tiny orange stub feet. Cel shading:
-a tan crescent on the lower right and a white rim on the upper left. Dark-slate outline. Facing right (the game
-mirrors her). No bow.
+a square ink dot eye, a short plain orange bill, a flat tan wing patch and tiny orange stub feet. Her back
+slopes down to a short tail tip at the rear. Cel shading: a tan crescent on the lower right and a white rim on
+the upper left. Dark-slate outline. Facing right (the game mirrors her). No bow.
 
 duck, 48x42. Collision body 24x36 (2x3 tiles of 12px), anchored bottom-centre: the frame's bottom edge sits on
 the body's bottom edge, and her body-centre x, 24 (the frame's centre line, between columns 23 and 24), sits on
 the body's centre, so mirroring her does not move it. Feet on rows 39 and 40, the outline on row 41. The 24x36
-body covers columns 12 to 35 and rows 6 to 41. At rest her back overhangs it 5px on the left and her head and
-bill 10px on the right, and she stops 2px below its top. The raised wing overhangs up to 9px on the left and
-5px above (flutter 0); the land squash widens her back to 9px on the left.
+body covers columns 12 to 35 and rows 6 to 41. At rest her back and tail overhang it 8px on the left and her
+head and bill 10px on the right, and she stops 2px below its top. The raised wing overhangs up to 5px above
+(flutter 0); the jump crouch and land squash push her tail out to 11 and 12px on the left.
 
 | Tag     | Frame | ms  | Pose                                                         | Lift | Body w x h | Shadow w |
 | ------- | ----- | --- | ------------------------------------------------------------ | ---- | ---------- | -------- |
@@ -57,8 +57,9 @@ SRC = "art/duck"
 W, H = 48, 42
 BOX_W, BOX_H = 24, 36  # collision body
 C = W / 2  # body centre x: the frame's centre line
-BRX, BRY, POWER = 16.4, 13.0, 2.6  # body superellipse at rest
+BRX, BRY, POWER = 16.4, 13.0, 2.35  # body superellipse at rest
 HEAD_R = 9.2  # head radius
+REAR_DROP = 6  # how far the back's top edge drops at the tail end, in px
 HEAD_X, HEAD_UP = 0.43, 0.62  # head centre: right of the body centre and above it, in body radii
 BODY_BOTTOM = H - 3  # the body's bottom edge at rest; the feet fill the two rows under it
 BASE, SHADE, LIGHT = "cream", "tan", "white"
@@ -84,6 +85,17 @@ def in_ell(cx, cy, rx, ry, ang=0.0):
         dx, dy = x + 0.5 - cx, y + 0.5 - cy
         u, v = dx * ca + dy * sa, -dx * sa + dy * ca
         return (u / rx) ** 2 + (v / ry) ** 2 <= 1
+    return f
+
+
+def in_body(cx, cy, rx, ry, drop):
+    """Her body: the superellipse with its upper back pressed down, so the back line slopes down to the tail.
+    The top edge at the far back sits drop px lower, easing to nothing at the body's centre line."""
+    def f(x, y):
+        px = x + 0.5
+        if px < cx and y + 0.5 < cy:
+            y = y - drop * ((cx - px) / rx) ** 1.5
+        return (abs(px - cx) / rx) ** POWER + (abs(y + 0.5 - cy) / ry) ** POWER <= 1
     return f
 
 
@@ -117,7 +129,9 @@ def draw(lift=0, bw=BRX, bh=BRY, wing=("fold", 0), feet=((-5, 0), (2, 0))):
 
     if feet != "tucked":
         foot(0)
-    cel(g, in_blob(C, bcy, bw, bh), BASE, SHADE, LIGHT, 3, 1)
+    # a short tail tip at the lowered rear, its root under the body
+    cel(g, in_ell(C - bw + 1, bcy - 1, 4.4, 2.2, -0.45), BASE, SHADE, None, 1, 1)
+    cel(g, in_body(C, bcy, bw, bh, REAR_DROP), BASE, SHADE, LIGHT, 3, 1)
     if feet == "tucked":
         for dx in (-5, 2):
             g.rect(int(C + dx), bottom, 4, 1, "orange")
@@ -176,7 +190,7 @@ def portrait(expr):
     """64x64: her head and the top of her body facing right, cut off by the bottom edge."""
     g = Grid(64, 64)
     hcx, hcy, hr = 30.0, 28.0, 19.0
-    cel(g, in_blob(24, 64, 34, 22), BASE, SHADE, LIGHT, 4, 1)  # the top of her body, the head set into it
+    cel(g, in_blob(24, 64, 34, 22, 2.6), BASE, SHADE, LIGHT, 4, 1)  # the top of her body, the head set into it
     flat(g, in_ell(14, 56, 13, 5.5, -0.25), WING)
     cel(g, in_ell(hcx, hcy, hr, hr), BASE, SHADE, LIGHT, 4, 1)
     by = int(hcy + 1) + (2 if expr == "worried" else 0)
