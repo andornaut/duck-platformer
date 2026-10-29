@@ -30,11 +30,18 @@ function startGame(): void {
     game.pause();
     game.sound.pauseAll();
   });
-  // The game pauses while public/site.css shows the turn-sideways notice over it.
+  // The game pauses while main.css shows the turn-sideways notice over it.
   const portrait = window.matchMedia("(orientation: portrait) and (pointer: coarse)");
   const followOrientation = () => (portrait.matches ? game.pause() : game.resume());
   portrait.addEventListener("change", followOrientation);
   followOrientation();
 }
+
+// Asks for landscape, on the game page only. Browsers allow the lock only in fullscreen or an
+// installed app and reject it elsewhere, which needs no handling: the turn-sideways notice
+// covers portrait. TypeScript's DOM library leaves lock out.
+(screen.orientation as ScreenOrientation & { lock?: (orientation: string) => Promise<void> })
+  .lock?.("landscape")
+  .catch(() => undefined);
 
 void setupOfflinePlay().then(startGame);

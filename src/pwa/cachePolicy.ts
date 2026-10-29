@@ -8,5 +8,5 @@ import type { CachePolicy } from "@andornaut/game-kit/pwa/cachePolicy";
 export const CACHE_POLICY: CachePolicy = {
   cacheNamePrefix: "duck-",
   hashedAssetPrefix: "/assets/",
-  revalidatedUrls: ["/manifest.webmanifest", "/nav.css", "/nav.js", "/site.css", "/site.js"],
+  revalidatedUrls: ["/manifest.webmanifest", "/nav.css", "/nav.js", "/site.css"],
 };

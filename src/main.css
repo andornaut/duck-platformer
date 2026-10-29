@@ -22,6 +22,48 @@ body {
     env(safe-area-inset-left, 0px);
 }
 
+/* The turn-sideways notice covers the game page, nav bar included, while a touch screen is in
+   portrait. src/main.ts pauses the game under the same media query. Colours from art's palette. */
+.turn-sideways {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  background: #181425;
+  color: #ead4aa;
+  font:
+    600 20px/1.3 system-ui,
+    sans-serif;
+  text-align: center;
+}
+
+@media (orientation: portrait) and (pointer: coarse) {
+  .turn-sideways {
+    display: flex;
+  }
+}
+
+.turn-sideways p {
+  margin: 0;
+}
+
+.turn-sideways-phone {
+  width: 80px;
+  height: 48px;
+  fill: #feae34;
+  shape-rendering: crispEdges;
+}
+
+.turn-sideways-phone .turn-sideways-screen {
+  fill: #3e2731;
+}
+
 /* The update notice, over the top of the game below the nav bar: src/pwa shows it when a newer
    version is ready. Colours from art's palette. */
 .update-toast {

@@ -3,7 +3,6 @@
   "short_name": "Duck Platformer",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "landscape",
   "background_color": "#181425",
   "theme_color": "#181425",
   "icons": [
