@@ -80,47 +80,56 @@ Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with 
 
 12x12 tiles in rows of 8, from `art/tools/floor1.py`. One-way ledges are named `one-way-*`; doorways (`door-*`, `exit-*`) and pits (`pit-*`) have no collision.
 
-| Key          | Type                                                                                             | Size            | Pieces      |
-| ------------ | ------------------------------------------------------------------------------------------------ | --------------- | ----------- |
-| tiles-lobby  | tileset: wood floor, one-way balcony, shelf, cushion and desk, wood post, stairwell exit         | 130 tiles, 12px | exit (7x15) |
-| tiles-street | tileset: sidewalk, kerb, road, one-way awning, one-way canopy, planter, hotel door, cellar hatch | 42 tiles, 12px  | door (3x4)  |
+| Key          | Type                                                                                                                                                       | Size            | Pieces      |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | ----------- |
+| tiles-lobby  | tileset (kept for a later indoor zone): wood floor, one-way balcony, shelf, cushion and desk, wood post, stairwell exit                                    | 130 tiles, 12px | exit (7x15) |
+| tiles-street | tileset: sidewalk, kerb, road, one-way awning, one-way canopy, planter, door, cellar hatch, one-way fire-escape landing, sill, cornice and water-tower top | 54 tiles, 12px  | door (3x4)  |
 
 ## Backdrops
 
-Pieces placed from level data by their bottom-left corner at the bottom y given, from `art/tools/floor1.py`.
+Pieces placed from level data by their bottom-left corner at the bottom y given, from `art/tools/floor1.py` (Zone 1: New York street, 720px tall, sidewalk line y 672).
 
-| Key                     | Type                                     | Size    | Bottom y, repeat |
-| ----------------------- | ---------------------------------------- | ------- | ---------------- |
-| cab                     | street furniture, yellow cab             | 96x40   | 312, none        |
-| canopy-poles            | street furniture, under the hotel canopy | 60x60   | 312, none        |
-| cross-street            | far avenue down a cross street           | 120x26  | 312, none        |
-| doorman-podium          | street furniture                         | 18x24   | 312, none        |
-| facade-brownstone       | building facade, brownstone              | 48x312  | 312, x           |
-| facade-hotel            | building facade, the hotel               | 48x312  | 312, x           |
-| facade-one-storey       | building facade, one-storey brick        | 48x192  | 312, x           |
-| facade-walkup           | building facade, brick walk-up           | 48x312  | 312, x           |
-| fire-escape             | facade piece, walk-up                    | 196x185 | 185, none        |
-| hot-dog-cart            | street furniture                         | 40x70   | 312, none        |
-| hotel-crest             | facade piece, banners and crest          | 98x44   | 190, none        |
-| hotel-window            | facade piece, tall lobby window          | 32x152  | 304, none        |
-| lobby-balustrade        | lobby, balcony railing                   | 48x36   | balcony line, x  |
-| lobby-bookcase          | lobby, tall bookcase                     | 84x384  | 672, none        |
-| lobby-desk              | lobby, reception desk                    | 120x96  | 672, none        |
-| lobby-front-door        | lobby, inside of the front door          | 156x180 | 672, none        |
-| lobby-lamp              | lobby, pendant lamp, lit bulb            | 48x192  | 220, none        |
-| lobby-plant             | lobby, potted plant                      | 48x120  | 672, none        |
-| lobby-sofa              | lobby, sofa                              | 120x72  | 672, none        |
-| lobby-wall              | lobby wall, wood panelling               | 48x720  | 720, x           |
-| lobby-window            | lobby, tall window                       | 96x240  | 552, none        |
-| storefront-cafe         | storefront, cup sign                     | 84x120  | 312, none        |
-| storefront-diner        | storefront, fork-and-knife sign          | 108x120 | 312, none        |
-| storefront-florist      | storefront, flower sign                  | 84x120  | 312, none        |
-| storefront-gift-shop    | storefront, gift sign                    | 96x120  | 312, none        |
-| storefront-makeup-store | storefront, lipstick sign                | 96x120  | 312, none        |
-| storefront-noodle-bar   | storefront, noodle-bowl sign             | 120x120 | 312, none        |
-| storefront-pet-shop     | storefront, paw sign                     | 108x120 | 312, none        |
-| street-sky              | day sky                                  | 48x312  | 312, x           |
-| street-skyline          | far skyline, water towers, glass tower   | 336x272 | 312, x           |
-| street-tree             | street furniture                         | 64x136  | 312, none        |
-| subway-railing          | street furniture                         | 72x62   | 312, none        |
-| walk-signal             | street furniture                         | 12x82   | 312, none        |
+| Key                     | Type                                                                 | Size    | Bottom y, repeat |
+| ----------------------- | -------------------------------------------------------------------- | ------- | ---------------- |
+| cab                     | street furniture, yellow cab                                         | 96x40   | 672, none        |
+| canopy-poles            | street furniture, under the canopy                                   | 60x60   | 672, none        |
+| cross-street            | far avenue down a cross street                                       | 120x26  | 672, none        |
+| doorman-podium          | street furniture                                                     | 18x24   | 672, none        |
+| facade-brownstone       | building facade, brownstone                                          | 48x312  | 672, x           |
+| facade-brownstone-upper | building facade, a brownstone's upper storey                         | 48x180  | 360, x           |
+| facade-hotel            | building facade, tall dark stone (generic until the exit is decided) | 48x312  | 672, x           |
+| facade-hotel-upper      | building facade, the tall stone building's upper storey              | 48x180  | 360, x           |
+| facade-one-storey       | building facade, one-storey brick                                    | 48x192  | 672, x           |
+| facade-walkup           | building facade, brick walk-up                                       | 48x312  | 672, x           |
+| facade-walkup-upper     | building facade, a walk-up's upper storey                            | 48x180  | 360, x           |
+| fire-escape             | facade piece, walk-up                                                | 196x185 | 545, none        |
+| fire-escape-ladder      | climbing, fire-escape ladder between landings                        | 24x96   | 468, none        |
+| fire-escape-railing     | climbing, fire-escape railing on a landing                           | 48x24   | 468, x           |
+| hot-dog-cart            | street furniture                                                     | 40x70   | 672, none        |
+| hotel-crest             | facade piece, banners and crest (generic)                            | 98x44   | 550, none        |
+| hotel-window            | facade piece, tall window (generic)                                  | 32x152  | 664, none        |
+| lobby-balustrade        | lobby (later indoor zone), balcony railing                           | 48x36   | balcony line, x  |
+| lobby-bookcase          | lobby (later indoor zone), tall bookcase                             | 84x384  | 672, none        |
+| lobby-desk              | lobby (later indoor zone), reception desk                            | 120x96  | 672, none        |
+| lobby-front-door        | lobby (later indoor zone), inside of the front door                  | 156x180 | 672, none        |
+| lobby-lamp              | lobby (later indoor zone), pendant lamp, lit bulb                    | 48x192  | 220, none        |
+| lobby-plant             | lobby (later indoor zone), potted plant                              | 48x120  | 672, none        |
+| lobby-sofa              | lobby (later indoor zone), sofa                                      | 120x72  | 672, none        |
+| lobby-wall              | lobby wall (later indoor zone), wood panelling                       | 48x720  | 720, x           |
+| lobby-window            | lobby (later indoor zone), tall window                               | 96x240  | 552, none        |
+| roofline-brownstone     | roofline, brownstone                                                 | 48x48   | 180, x           |
+| roofline-hotel          | roofline, tall stone building                                        | 48x48   | 180, x           |
+| roofline-walkup         | roofline, walk-up                                                    | 48x48   | 180, x           |
+| storefront-cafe         | storefront, cup sign                                                 | 84x120  | 672, none        |
+| storefront-diner        | storefront, fork-and-knife sign                                      | 108x120 | 672, none        |
+| storefront-florist      | storefront, flower sign                                              | 84x120  | 672, none        |
+| storefront-gift-shop    | storefront, gift sign                                                | 96x120  | 672, none        |
+| storefront-makeup-store | storefront, lipstick sign                                            | 96x120  | 672, none        |
+| storefront-noodle-bar   | storefront, noodle-bowl sign                                         | 120x120 | 672, none        |
+| storefront-pet-shop     | storefront, paw sign                                                 | 108x120 | 672, none        |
+| street-sky              | day sky, both screens                                                | 48x672  | 672, x           |
+| street-skyline          | far skyline, water towers, two towers                                | 336x600 | 672, x           |
+| street-tree             | street furniture                                                     | 64x136  | 672, none        |
+| subway-railing          | street furniture                                                     | 72x62   | 672, none        |
+| walk-signal             | street furniture                                                     | 12x82   | 672, none        |
+| water-tower             | climbing, water tower (top one-way tiles)                            | 48x84   | 132, none        |

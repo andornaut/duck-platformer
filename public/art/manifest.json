@@ -287,7 +287,7 @@
       "width": 96,
       "height": 40,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
       "repeat": "none"
     },
     {
@@ -296,7 +296,7 @@
       "width": 60,
       "height": 60,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
       "repeat": "none"
     },
     {
@@ -305,7 +305,7 @@
       "width": 120,
       "height": 26,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
       "repeat": "none"
     },
     {
@@ -314,7 +314,7 @@
       "width": 18,
       "height": 24,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
       "repeat": "none"
     },
     {
@@ -323,7 +323,16 @@
       "width": 48,
       "height": 312,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
+      "repeat": "x"
+    },
+    {
+      "key": "facade-brownstone-upper",
+      "png": "backdrops/facade-brownstone-upper.png",
+      "width": 48,
+      "height": 180,
+      "anchor": "bottom-left",
+      "y": 360,
       "repeat": "x"
     },
     {
@@ -332,7 +341,16 @@
       "width": 48,
       "height": 312,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
+      "repeat": "x"
+    },
+    {
+      "key": "facade-hotel-upper",
+      "png": "backdrops/facade-hotel-upper.png",
+      "width": 48,
+      "height": 180,
+      "anchor": "bottom-left",
+      "y": 360,
       "repeat": "x"
     },
     {
@@ -341,7 +359,7 @@
       "width": 48,
       "height": 192,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
       "repeat": "x"
     },
     {
@@ -350,7 +368,16 @@
       "width": 48,
       "height": 312,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
+      "repeat": "x"
+    },
+    {
+      "key": "facade-walkup-upper",
+      "png": "backdrops/facade-walkup-upper.png",
+      "width": 48,
+      "height": 180,
+      "anchor": "bottom-left",
+      "y": 360,
       "repeat": "x"
     },
     {
@@ -359,8 +386,26 @@
       "width": 196,
       "height": 185,
       "anchor": "bottom-left",
-      "y": 185,
+      "y": 545,
       "repeat": "none"
+    },
+    {
+      "key": "fire-escape-ladder",
+      "png": "backdrops/fire-escape-ladder.png",
+      "width": 24,
+      "height": 96,
+      "anchor": "bottom-left",
+      "y": 468,
+      "repeat": "none"
+    },
+    {
+      "key": "fire-escape-railing",
+      "png": "backdrops/fire-escape-railing.png",
+      "width": 48,
+      "height": 24,
+      "anchor": "bottom-left",
+      "y": 468,
+      "repeat": "x"
     },
     {
       "key": "hot-dog-cart",
@@ -368,7 +413,7 @@
       "width": 40,
       "height": 70,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
       "repeat": "none"
     },
     {
@@ -377,7 +422,7 @@
       "width": 98,
       "height": 44,
       "anchor": "bottom-left",
-      "y": 190,
+      "y": 550,
       "repeat": "none"
     },
     {
@@ -386,7 +431,7 @@
       "width": 32,
       "height": 152,
       "anchor": "bottom-left",
-      "y": 304,
+      "y": 664,
       "repeat": "none"
     },
     {
@@ -471,12 +516,39 @@
       "repeat": "none"
     },
     {
+      "key": "roofline-brownstone",
+      "png": "backdrops/roofline-brownstone.png",
+      "width": 48,
+      "height": 48,
+      "anchor": "bottom-left",
+      "y": 180,
+      "repeat": "x"
+    },
+    {
+      "key": "roofline-hotel",
+      "png": "backdrops/roofline-hotel.png",
+      "width": 48,
+      "height": 48,
+      "anchor": "bottom-left",
+      "y": 180,
+      "repeat": "x"
+    },
+    {
+      "key": "roofline-walkup",
+      "png": "backdrops/roofline-walkup.png",
+      "width": 48,
+      "height": 48,
+      "anchor": "bottom-left",
+      "y": 180,
+      "repeat": "x"
+    },
+    {
       "key": "storefront-cafe",
       "png": "backdrops/storefront-cafe.png",
       "width": 84,
       "height": 120,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
       "repeat": "none"
     },
     {
@@ -485,7 +557,7 @@
       "width": 108,
       "height": 120,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
       "repeat": "none"
     },
     {
@@ -494,7 +566,7 @@
       "width": 84,
       "height": 120,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
       "repeat": "none"
     },
     {
@@ -503,7 +575,7 @@
       "width": 96,
       "height": 120,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
       "repeat": "none"
     },
     {
@@ -512,7 +584,7 @@
       "width": 96,
       "height": 120,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
       "repeat": "none"
     },
     {
@@ -521,7 +593,7 @@
       "width": 120,
       "height": 120,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
       "repeat": "none"
     },
     {
@@ -530,25 +602,25 @@
       "width": 108,
       "height": 120,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
       "repeat": "none"
     },
     {
       "key": "street-sky",
       "png": "backdrops/street-sky.png",
       "width": 48,
-      "height": 312,
+      "height": 672,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
       "repeat": "x"
     },
     {
       "key": "street-skyline",
       "png": "backdrops/street-skyline.png",
       "width": 336,
-      "height": 272,
+      "height": 600,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
       "repeat": "x"
     },
     {
@@ -557,7 +629,7 @@
       "width": 64,
       "height": 136,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
       "repeat": "none"
     },
     {
@@ -566,7 +638,7 @@
       "width": 72,
       "height": 62,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
       "repeat": "none"
     },
     {
@@ -575,7 +647,16 @@
       "width": 12,
       "height": 82,
       "anchor": "bottom-left",
-      "y": 312,
+      "y": 672,
+      "repeat": "none"
+    },
+    {
+      "key": "water-tower",
+      "png": "backdrops/water-tower.png",
+      "width": 48,
+      "height": 84,
+      "anchor": "bottom-left",
+      "y": 132,
       "repeat": "none"
     }
   ],
