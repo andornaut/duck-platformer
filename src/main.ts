@@ -8,13 +8,13 @@ import { AUTO, Game, Scale } from "phaser";
 // eslint-disable-next-line no-duplicate-imports -- the side-effect import above runs it first.
 import { CRASH_SCREEN } from "./crash/install";
 import { SCREEN } from "./data/screen";
-import { setupOfflinePlay } from "./pwa";
+import { setupPhoneApp } from "./pwa";
 import { BootScene } from "./scenes/BootScene";
 import { LevelScene } from "./scenes/LevelScene";
 
 // Scale.FIT: the base resolution stretches by whatever amount fills #game, keeping its aspect
 // ratio, with bars on the other axis. pixelArt keeps the stretch nearest-neighbour. The game
-// boots once a fresh load has checked for a newer version (setupOfflinePlay).
+// boots once a fresh load has checked for a newer version (setupPhoneApp).
 function startGame(): void {
   const game = new Game({
     height: SCREEN.height,
@@ -63,4 +63,4 @@ if (buildLabel !== null) {
   .lock?.("landscape")
   .catch(() => undefined);
 
-void setupOfflinePlay().then(startGame);
+void setupPhoneApp().then(startGame);
