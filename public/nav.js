@@ -1,9 +1,10 @@
-// The site navigation bar: Home and Play. A page loads it with <link rel="stylesheet"
-// href="/nav.css"> and <script src="/nav.js" defer></script> in its head and adds nothing else.
-// The page links the stylesheet, rather than this script injecting it, so the bar's style blocks
-// the first paint. On /play/ the bar is a narrow column on the left, so the game keeps the height. On /play/ in
-// the installed app (fullscreen or standalone display mode, or iOS's navigator.standalone) there
-// is no bar, so no link leaves the app and the game takes the full height.
+// The site navigation bar: Home and Play, and on /play/ art's icon logo above them, linking
+// home. A page loads it with <link rel="stylesheet" href="/nav.css"> and
+// <script src="/nav.js" defer></script> in its head and adds nothing else. The page links the
+// stylesheet, rather than this script injecting it, so the bar's style blocks the first paint. On
+// /play/ the bar is a narrow column on the left, so the game keeps the height. On /play/ in the
+// installed app (fullscreen or standalone display mode, or iOS's navigator.standalone) there is
+// no bar, so no link leaves the app and the game takes the full height.
 (() => {
   "use strict";
   // Cloudflare serves /x.html as /x and /dir/index.html as /dir/, so compare without either.
@@ -25,6 +26,20 @@
     li.append(a);
     return li;
   };
+  if (here === "/play") {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.className = "site-logo";
+    a.href = "/";
+    const img = document.createElement("img");
+    img.src = "/art/logo-icon.png";
+    img.alt = "Duck Platformer";
+    img.width = 53;
+    img.height = 41;
+    a.append(img);
+    li.append(a);
+    ul.append(li);
+  }
   ul.append(item("Home", "/"), item("Play", "/play/"));
 
   const installed = matchMedia("(display-mode: fullscreen), (display-mode: standalone)");

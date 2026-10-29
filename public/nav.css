@@ -79,3 +79,8 @@
 .site-nav.slim a:focus-visible {
   outline-offset: -2px;
 }
+/* Art's icon logo at the column's top, at 1x: art/README.md, Logo. */
+.site-logo img {
+  display: block;
+  image-rendering: pixelated;
+}
