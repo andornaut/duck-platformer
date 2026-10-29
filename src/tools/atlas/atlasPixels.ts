@@ -1,12 +1,8 @@
 import { clampIndex } from "@andornaut/game-kit/arrays";
+import type { RgbaImage } from "@andornaut/game-kit/art/webp";
 import type { Point } from "@andornaut/game-kit/rect";
 
-// Pixels as RGBA bytes, row by row from the top-left.
-export interface RgbaImage {
-  readonly data: Uint8Array;
-  readonly height: number;
-  readonly width: number;
-}
+export type { RgbaImage };
 
 export function blankImage(width: number, height: number): RgbaImage {
   return { data: new Uint8Array(width * height * 4), height, width };

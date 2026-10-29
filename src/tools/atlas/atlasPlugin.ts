@@ -1,10 +1,10 @@
+import { encodeLosslessWebp } from "@andornaut/game-kit/art/webp";
 import type { Plugin } from "vite";
 
 import type { AtlasManifest } from "../../assets/atlasManifest";
 import { ART_MANIFEST_FILE, ART_PATH, type ArtManifest } from "../../view/aseprite";
 import { buildAtlas } from "./atlasBuild";
 import { atlasPageFileName } from "./hashedArt";
-import { encodeWebp } from "./webp";
 
 // The module whose default export is the build's AtlasManifest, or null on the dev server.
 export const ATLAS_MODULE = "virtual:atlas-manifest";
@@ -39,7 +39,7 @@ export function atlasPlugin(): Plugin & { api: AtlasPluginApi } {
       manifest = {
         pages: await Promise.all(
           pages.map(async (image, page) => {
-            const source = await encodeWebp(image);
+            const source = await encodeLosslessWebp(image);
             const fileName = atlasPageFileName(page, "webp", source);
             this.emitFile({ fileName, source, type: "asset" });
             logger.info(`atlas: ${fileName} ${image.width}x${image.height}, ${source.length} B`);
