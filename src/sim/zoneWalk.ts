@@ -7,6 +7,7 @@ import type {
   TilePoint,
   ZoneLayout,
 } from "../data/types";
+import { startDuck, stepDuck } from "../rules/duck";
 import { STEP_SECONDS } from "../rules/step";
 import {
   areaOf,
@@ -68,6 +69,8 @@ const OWN_BUCKETS = [-3, -2, -1, 1, 2, 3];
 // area's moving things (at most MAX_CYCLE seconds), every half second.
 const WAIT_STEP = Math.round(0.5 / STEP_SECONDS);
 const MAX_CYCLE = 16;
+// Slack on how far the walk looks for a move, in px.
+const MARGIN = 24;
 
 const isStill = (object: ObjectLayout) =>
   object.motion.algorithm === "static" && object.reaction.kind === "none";
@@ -461,19 +464,29 @@ function waitStates(
 }
 
 // How far she might go in one move, in px: up to rise, and along x when the landing is drop
-// below the takeoff (negative for one above), carried by a platform at up to carry px/s.
+// below the takeoff (negative for one above), carried by a platform at up to carry px/s. From a
+// full jump played on the rules: its height, and how long she is in the air coming back down to
+// where she took off; a lower landing adds the fall at the flutter speed, and the time to reach
+// it. MARGIN on each, for rounding.
 function moveBounds(tuning: DuckTuning, carry: number) {
-  const { flutterFallSpeed, gravity, jumpHoldTime, jumpSpeed, walkSpeed } = tuning;
-  const rise = jumpSpeed * jumpHoldTime + (jumpSpeed * jumpSpeed) / (2 * gravity);
-  const across = (drop: number) => {
-    const air =
-      jumpHoldTime +
-      jumpSpeed / gravity +
-      (rise + Math.max(0, drop)) / flutterFallSpeed +
-      flutterFallSpeed / gravity;
-    return (walkSpeed + carry) * (air + tuning.coyoteTime) + 2 * BUCKET;
-  };
-  return { across, rise: rise + 2 * BUCKET };
+  const ground = { height: 1, width: 1e6, x: -5e5, y: 0 };
+  let duck = startDuck(tuning, { x: 0, y: 0 });
+  let rise = 0;
+  let air = 0;
+  for (let step = 0; step < AIR_STEPS; step++) {
+    duck = stepDuck(tuning, [ground], [], STEP_SECONDS, { jumpHeld: true, move: 0 }, duck);
+    rise = Math.max(rise, -(duck.y + tuning.height));
+    air = (step + 1) * STEP_SECONDS;
+    if (step > 0 && duck.grounded) {
+      break;
+    }
+  }
+  const { coyoteTime, flutterFallSpeed, gravity, walkSpeed } = tuning;
+  const across = (drop: number) =>
+    (walkSpeed + carry) *
+      (air + coyoteTime + Math.max(0, drop) / flutterFallSpeed + flutterFallSpeed / gravity) +
+    MARGIN;
+  return { across, rise: rise + MARGIN };
 }
 
 // The steps a moving thing takes to go round its track once, at most MAX_CYCLE.
@@ -593,17 +606,19 @@ function targetsFrom(
   carry: number,
 ): { others: Target[]; own: Target[] } {
   const bounds = moveBounds(tuning, carry);
-  const lo = here.left + (from.bucket - 1) * BUCKET;
-  const hi = here.left + (from.bucket + 2) * BUCKET;
+  // A moving surface can take her anywhere along its track before she goes.
+  const own = sweptSpan(layout, from.surface);
+  const lo = from.surface.mover === undefined ? here.left + (from.bucket - 1) * BUCKET : own.left;
+  const hi = from.surface.mover === undefined ? here.left + (from.bucket + 2) * BUCKET : own.right;
   const others = surfaces
     .filter((surface) => surface.area === here.area && surface.key !== here.key)
     .filter((surface) => {
       const span = sweptSpan(layout, surface);
       const dx = Math.max(0, span.left - hi, lo - span.right);
-      return here.y - span.bottom <= bounds.rise && dx <= bounds.across(span.bottom - here.y);
+      return own.top - span.bottom <= bounds.rise && dx <= bounds.across(span.bottom - own.top);
     })
     .map((surface) => ({ key: surface.key, left: surface.left, right: surface.right, surface }));
-  const own = OWN_BUCKETS.map((offset) => from.bucket + offset)
+  const stretches = OWN_BUCKETS.map((offset) => from.bucket + offset)
     .filter((bucket) => bucket >= 0 && here.left + bucket * BUCKET < here.right)
     .map((bucket) => ({
       key: `${from.surface.key}#${bucket}`,
@@ -611,7 +626,7 @@ function targetsFrom(
       right: Math.min(here.right, here.left + (bucket + 1) * BUCKET),
       surface: from.surface,
     }));
-  return { others, own };
+  return { others, own: stretches };
 }
 
 // Walks the zone from its start on the real rules. From each spot she comes to stand on, it
