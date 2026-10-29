@@ -1,6 +1,9 @@
 import { containsPoint, rectsOverlap } from "@andornaut/game-kit/rect";
 import { describe, expect, it } from "vitest";
 
+import checkboxSheet from "../../public/art/sprites/ui-checkbox.json";
+import pauseSheet from "../../public/art/sprites/ui-pause.json";
+import quitSheet from "../../public/art/sprites/ui-quit.json";
 import { SCREEN } from "../data/screen";
 import type { Rect } from "../data/types";
 import { PAUSE_BUTTON, PAUSE_CARD } from "./pauseCard";
@@ -50,7 +53,13 @@ describe("pause card layout", () => {
     expect(overlapping).toEqual([]);
   });
 
-  it("draws the pause button inside its hit area", () => {
-    expect(inside(PAUSE_BUTTON.hit, PAUSE_BUTTON.face)).toBe(true);
+  // Each sprite's frame, at its point, lies inside the area that presses it.
+  it.each([
+    ["checkbox", checkboxSheet, PAUSE_CARD.touchControls.checkbox, PAUSE_CARD.touchControls.row],
+    ["pause button", pauseSheet, PAUSE_BUTTON.at, PAUSE_BUTTON.hit],
+    ["quit icon", quitSheet, PAUSE_CARD.quit.icon, PAUSE_CARD.quit.row],
+  ] as const)("draws the %s inside its hit area", (_, sheet, at, hit) => {
+    const { h: height, w: width } = Object.values(sheet.frames)[0]?.frame ?? { h: 0, w: 0 };
+    expect(inside(hit, { height, width, ...at })).toBe(true);
   });
 });

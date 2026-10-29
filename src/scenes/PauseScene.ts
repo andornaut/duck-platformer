@@ -28,20 +28,23 @@ const DIM_TEXTURES = { hidden: "pause-dim-hidden", shown: "pause-dim-shown" } as
 
 type Control = "close" | "pauseButton" | "quit" | "resume" | "touchControls";
 
-// The pause card over the dimmed level, and the pause button that opens it. It runs beside the
-// level from the start. Opening the card pauses the level and lets the screen sleep; Resume, the
-// close X, back, Escape and P close it. The Touch controls row shows or hides the touch buttons,
-// and Quit leaves the game (leaveGame).
+// The pause card over the dimmed level, and the pause button that opens it, which shows on a
+// touch screen only. It runs beside the level from the start. Opening the card pauses the level
+// and lets the screen sleep; Resume, the close X, back, Escape and P close it. The Touch controls
+// row shows or hides the touch buttons, and Quit leaves the game (leaveGame).
 export class PauseScene extends Scene {
   private card!: GameObjects.Container;
   private checkbox!: GameObjects.Sprite;
   private closeX!: GameObjects.Sprite;
   private colours: Readonly<Record<string, string>> = {};
   private dim!: GameObjects.Image;
-  private pauseButton!: GameObjects.Graphics;
+  private pauseButton!: GameObjects.Sprite;
   // The control a press landed on, which acts if the press lifts on it too.
   private pressed: Control | undefined;
+  private quitIcon!: GameObjects.Sprite;
+  private quitLabel!: GameObjects.BitmapText;
   private resume!: GameObjects.Sprite;
+  private resumeLabel!: GameObjects.BitmapText;
   private state: "closed" | "open" | "opening" = "closed";
   private stateText!: GameObjects.BitmapText;
 
@@ -51,7 +54,9 @@ export class PauseScene extends Scene {
 
   create(): void {
     this.colours = this.palette().colours;
-    this.pauseButton = this.drawPauseButton();
+    this.pauseButton = this.add
+      .sprite(PAUSE_BUTTON.at.x, PAUSE_BUTTON.at.y, "ui-pause")
+      .setOrigin(0);
     this.dim = this.add.image(0, 0, "__DEFAULT").setOrigin(0);
     this.card = this.drawCard();
     this.showCard(false);
@@ -135,7 +140,7 @@ export class PauseScene extends Scene {
   private showCard(open: boolean): void {
     this.card.setVisible(open);
     this.dim.setVisible(open);
-    this.pauseButton.setVisible(!open);
+    this.pauseButton.setVisible(!open && window.matchMedia("(pointer: coarse)").matches);
   }
 
   // The canvas as rendered at the end of the next frame, redrawn two steps down each colour's
@@ -162,30 +167,6 @@ export class PauseScene extends Scene {
     });
   }
 
-  // PLACEHOLDER: art has no pause button yet. A navy face in a cream ring with an ink edge, as
-  // the touch buttons are, holding two cream bars.
-  private drawPauseButton(): GameObjects.Graphics {
-    const { face } = PAUSE_BUTTON;
-    const graphics = this.add.graphics();
-    const fill = (colour: string, rect: Rect) => {
-      graphics.fillStyle(this.colour(colour)).fillRect(rect.x, rect.y, rect.width, rect.height);
-    };
-    const inset = (amount: number): Rect => ({
-      height: face.height - 2 * amount,
-      width: face.width - 2 * amount,
-      x: face.x + amount,
-      y: face.y + amount,
-    });
-    fill("ink", face);
-    fill("cream", inset(1));
-    fill("navy", inset(3));
-    const bar = { height: 12, width: 4 };
-    const top = face.y + (face.height - bar.height) / 2;
-    fill("cream", { ...bar, x: face.x + 9, y: top });
-    fill("cream", { ...bar, x: face.x + face.width - 9 - bar.width, y: top });
-    return graphics;
-  }
-
   private drawCard(): GameObjects.Container {
     const { card, close, quit, resume, title, touchControls } = PAUSE_CARD;
     const words = TEXT.pause;
@@ -202,8 +183,9 @@ export class PauseScene extends Scene {
         cream,
       ),
       this.slice("ui-settings-row", quit.row),
-      this.text(BODY_FONT, quit.label.x, quit.label.y, words.quit, cream),
     ];
+    this.quitIcon = this.add.sprite(quit.icon.x, quit.icon.y, "ui-quit").setOrigin(0);
+    this.quitLabel = this.text(BODY_FONT, quit.label.x, quit.label.y, words.quit, cream);
     this.closeX = this.add.sprite(close.at.x, close.at.y, "ui-close").setOrigin(0);
     this.checkbox = this.add
       .sprite(touchControls.checkbox.x, touchControls.checkbox.y, "ui-checkbox")
@@ -216,7 +198,7 @@ export class PauseScene extends Scene {
       this.colour("lgrey"),
     );
     this.resume = this.add.sprite(resume.hit.x, resume.hit.y, "ui-resume").setOrigin(0);
-    const resumeLabel = this.text(
+    this.resumeLabel = this.text(
       TITLE_FONT,
       resume.label.x,
       resume.label.y,
@@ -228,17 +210,30 @@ export class PauseScene extends Scene {
       ...objects,
       this.closeX,
       this.checkbox,
+      this.quitIcon,
+      this.quitLabel,
       this.stateText,
       this.resume,
-      resumeLabel,
+      this.resumeLabel,
     ]);
   }
 
-  // A pressed button shows its pressed tag until the press lifts.
+  // A pressed control shows its pressed look until the press lifts: the pause button plays its
+  // press tag, then holds, as the touch buttons do; Quit's label turns white and Resume's sinks.
   private setPressed(control: Control | undefined): void {
     this.pressed = control;
+    const { label, pressedLabel } = PAUSE_CARD.resume;
     this.closeX.play(animKey("ui-close", control === "close" ? "pressed" : "normal"));
+    this.quitIcon.play(animKey("ui-quit", control === "quit" ? "pressed" : "normal"));
+    this.quitLabel.setTint(this.colour(control === "quit" ? "white" : "cream"));
     this.resume.play(animKey("ui-resume", control === "resume" ? "pressed" : "normal"));
+    this.resumeLabel.setY(control === "resume" ? pressedLabel.y : label.y);
+    this.pauseButton.chain();
+    if (control === "pauseButton") {
+      this.pauseButton.play(animKey("ui-pause", "press")).chain(animKey("ui-pause", "held"));
+    } else {
+      this.pauseButton.play(animKey("ui-pause", "rest"));
+    }
   }
 
   private controlAt(pointer: Input.Pointer): Control | undefined {
@@ -250,7 +245,9 @@ export class PauseScene extends Scene {
             ["quit", PAUSE_CARD.quit.row],
             ["resume", PAUSE_CARD.resume.hit],
           ]
-        : [["pauseButton", PAUSE_BUTTON.hit]];
+        : this.pauseButton.visible
+          ? [["pauseButton", PAUSE_BUTTON.hit]]
+          : [];
     return hits.find(([, hit]) => containsPoint(hit, pointer.x, pointer.y))?.[0];
   }
 
