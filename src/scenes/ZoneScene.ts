@@ -57,6 +57,7 @@ import { STEP_MS, STEP_SECONDS } from "../rules/step";
 import { zoneLayout } from "../rules/tiles";
 import { areaOf, enterArea, startZone, stepZone, type ZoneState } from "../rules/zone";
 import { nextZoneIndex, startZoneIndex } from "../rules/zoneChain";
+import { saveClearedZone, saveZoneStart } from "../save";
 import { touchControlsShown } from "../settings/touchControls";
 import { ART_MANIFEST_KEY, artHitboxes, type ArtManifest } from "../view/aseprite";
 import { cameraScroll } from "../view/camera";
@@ -219,6 +220,7 @@ export class ZoneScene extends Scene {
       this.loadZone(this.zoneIndex);
     } else {
       this.loadPlan(zoneAt(node));
+      saveZoneStart(this.mapRoute ?? []);
     }
 
     const font = phaserBitmapFont(this.cache.bitmapFont.get(LABEL_FONT).data as PhaserFontData);
@@ -288,6 +290,7 @@ export class ZoneScene extends Scene {
       this.duckPose = stepPose(this.landMs, STEP_MS, before, this.zone.duck, this.duckPose);
       // Clearing a zone goes to the map, or without one, the next zone in the chain.
       if (this.zone.cleared && this.mapRoute !== undefined) {
+        saveClearedZone(this.mapRoute);
         this.scene.start("map", { played: true, route: this.mapRoute });
         return;
       }

@@ -15,6 +15,7 @@ import {
 import { startBackAction } from "../pause/cardInput";
 import { focusKeyAction, stepFocus } from "../pause/focusInput";
 import { exitShown, PHONE_EVENTS } from "../pwa";
+import { savedProgress } from "../save";
 import { setTouchControlsShown } from "../settings/touchControls";
 import { dimColour } from "../view/dim";
 import {
@@ -45,7 +46,8 @@ interface IconButton {
   readonly layout: IconButtonLayout;
 }
 
-// The screen the game opens on: the Start button, which goes to the map, under a nav bar with
+// The screen the game opens on: the Start button, which goes to the map (Continue, which resumes
+// the saved progress, once there is some), under a nav bar with
 // Settings and Exit at its right end. Settings opens the settings card over this screen, which
 // passes it the keys and back until it closes. Exit, and back with no card open, leave the game
 // (the kit's exitApp). An installed app whose window the game cannot close shows no Exit
@@ -118,10 +120,16 @@ export class StartScene extends Scene implements SettingsOpener {
       ...(exit === undefined ? [] : [["exit", this.iconButton(exit, "ui-quit")] as const]),
     ]);
     this.startButton = this.add.sprite(start.button.x, start.button.y, "ui-start").setOrigin(0);
-    this.startLabel = addButtonLabel(this, start.button, start.labelY, TEXT.start.start, {
-      colour: this.colour("ink"),
-      marked: true,
-    });
+    this.startLabel = addButtonLabel(
+      this,
+      start.button,
+      start.labelY,
+      savedProgress().at === "beginning" ? TEXT.start.start : TEXT.start.continue,
+      {
+        colour: this.colour("ink"),
+        marked: true,
+      },
+    );
   }
 
   // Shows the dimmed street, reading it back first if no visit has yet. Nothing of this scene is
@@ -249,13 +257,26 @@ export class StartScene extends Scene implements SettingsOpener {
 
   private act(control: Control): void {
     if (control === "start") {
-      this.scene.start(MAP);
+      this.resume();
     } else if (control === "settings") {
       this.settingsOpen = true;
       this.drawFocus();
       this.scene.launch(SETTINGS, { opener: this.scene.key } satisfies SettingsData);
     } else {
       exitApp(browserExitPage());
+    }
+  }
+
+  // Start plays from the beginning, on the map. Continue resumes the saved progress: at the
+  // start of the zone she was in, or on the map where she stood after clearing one.
+  private resume(): void {
+    const progress = savedProgress();
+    if (progress.at === "zone") {
+      this.scene.start(ZONE, { route: progress.route } satisfies ZoneData);
+    } else if (progress.at === "map") {
+      this.scene.start(MAP, { played: true, route: progress.route });
+    } else {
+      this.scene.start(MAP);
     }
   }
 

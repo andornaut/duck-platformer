@@ -8,6 +8,7 @@ import { Scene } from "phaser";
 
 import { TILE } from "../data/screen";
 import { launchReady } from "../pwa";
+import { loadProgress } from "../save";
 import { ART_MANIFEST_FILE, ART_MANIFEST_KEY, ART_PATH, type ArtManifest } from "../view/aseprite";
 import { addAtlasArt, ATLAS, queueAtlasFonts, queueAtlasPages } from "./atlasArt";
 
@@ -76,13 +77,18 @@ export class BootScene extends Scene {
         });
       }
     }
-    // The zone shows once a version about to be replaced by a newer one has had its chance to
-    // reload first, so it never draws the old zone.
-    // The start screen comes first, unless ?zone=<n> plays the zones straight through.
-    void launchReady().then(() => {
-      this.scene.launch("pause");
-      this.scene.start(new URLSearchParams(window.location.search).has("zone") ? "zone" : "start");
-    });
+    // The zone shows, and the save is read, once a version about to be replaced by a newer one
+    // has had its chance to reload first, so it never draws the old zone or reads the save with
+    // the old format. The start screen comes first, unless ?zone=<n> plays the zones straight
+    // through.
+    void launchReady()
+      .then(loadProgress)
+      .then(() => {
+        this.scene.launch("pause");
+        this.scene.start(
+          new URLSearchParams(window.location.search).has("zone") ? "zone" : "start",
+        );
+      });
   }
 
   private manifest(): ArtManifest {
