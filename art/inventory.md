@@ -33,10 +33,11 @@ Plain PNGs and one ICO from `art/tools/icons.py`, not manifest entries.
 
 Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with their sizes.
 
-| Key      | Type                   | Size    | Path                      |
-| -------- | ---------------------- | ------- | ------------------------- |
-| logo     | title-screen logo      | 360x193 | `public/art/logo.png`     |
-| logo-nav | nav-bar logo, one line | 214x30  | `public/art/logo-nav.png` |
+| Key       | Type                                             | Size    | Path                       |
+| --------- | ------------------------------------------------ | ------- | -------------------------- |
+| logo      | title-screen logo                                | 360x193 | `public/art/logo.png`      |
+| logo-icon | nav-column logo: the D and the duck, no wordmark | 43x75   | `public/art/logo-icon.png` |
+| logo-nav  | nav-bar logo, one line                           | 214x30  | `public/art/logo-nav.png`  |
 
 ## Sprites
 

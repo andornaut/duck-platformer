@@ -7,10 +7,11 @@ Usage, from the repository root:
 Plain PNGs on a transparent ground, every pixel fully opaque or fully transparent, listed in the manifest under
 "images" as {"key", "png", "width", "height"}:
 
-| Key      | Path                     | Use                     |
-| -------- | ------------------------ | ----------------------- |
-| logo     | public/art/logo.png      | the title screen        |
-| logo-nav | public/art/logo-nav.png  | the site's nav bar      |
+| Key       | Path                     | Use                                          |
+| --------- | ------------------------ | -------------------------------------------- |
+| logo      | public/art/logo.png      | the title screen                             |
+| logo-nav  | public/art/logo-nav.png  | the site's nav bar                           |
+| logo-icon | public/art/logo-icon.png | the /play/ page's nav column: the D and her  |
 
 The wordmark is WORDMARK: the first word large, the rest small below it (one line in the nav logo). Its letters
 come from GLYPHS, a 5x7 pixel alphabet drawn at a block size, made bold, with rounded outer corners, a 1px
@@ -30,7 +31,7 @@ import pixel  # noqa: E402
 from pixel import K, Grid  # noqa: E402
 
 WORDMARK = ("DUCK", "PLATFORMER")
-OUT = {"logo": "public/art/logo.png", "logo-nav": "public/art/logo-nav.png"}
+OUT = {"logo": "public/art/logo.png", "logo-nav": "public/art/logo-nav.png", "logo-icon": "public/art/logo-icon.png"}
 
 GLYPHS = {
     "A": [".###.", "#...#", "#...#", "#####", "#...#", "#...#", "#...#"],
@@ -51,6 +52,8 @@ GLYPHS = {
 BIG = dict(b=13, fill="sky", light="cyan", shade="blue")  # the first word
 SMALL = dict(b=6, fill="cream", light="white", shade="tan", shadow="blue")  # the rest, below it
 NAV = dict(b=2, fill="sky", light="cyan", shade="blue")
+ICON = dict(b=7, fill="sky", light="cyan", shade="blue")  # the first word's first letter alone
+ICON_PEEK = 20  # rows of the 1x duck that show above the icon's letter
 PEEK = 50  # rows of the 2x duck that show above the big letters
 
 
@@ -182,8 +185,29 @@ def logo_nav():
     return c.crop(c.getbbox())
 
 
+def logo_icon():
+    """The first letter of the wordmark alone, with her head and back over its top edge."""
+    from PIL import Image
+
+    frames = {n: fs for n, fs, _ in D.duck_tags()}
+    d = image(frames["idle"][0])
+    d = d.crop(d.getbbox())
+    w = word(WORDMARK[0][0], **ICON)
+    c = Image.new("RGBA", (max(d.width, w.width) + 8, ICON_PEEK + w.height + 4), (0, 0, 0, 0))
+    wx = (c.width - w.width) // 2
+    # her cut-off underside stays inside the letter's width, where the letter covers it
+    c.alpha_composite(d.crop((0, 0, d.width, ICON_PEEK)), (wx + max(1, (w.width - d.width) // 2), 0))
+    c.alpha_composite(w, (wx, ICON_PEEK))
+    # close her cut-off underside with ink where the letter's rounded corners leave it open
+    ink = pixel.rgb("ink") + (255,)
+    for x in range(c.width):
+        if c.getpixel((x, ICON_PEEK - 1))[3] and not c.getpixel((x, ICON_PEEK))[3]:
+            c.putpixel((x, ICON_PEEK), ink)
+    return c.crop(c.getbbox())
+
+
 def images():
-    return {"logo": logo(), "logo-nav": logo_nav()}
+    return {"logo": logo(), "logo-nav": logo_nav(), "logo-icon": logo_icon()}
 
 
 def build():

@@ -545,6 +545,12 @@
       "height": 193
     },
     {
+      "key": "logo-icon",
+      "png": "logo-icon.png",
+      "width": 43,
+      "height": 75
+    },
+    {
       "key": "logo-nav",
       "png": "logo-nav.png",
       "width": 214,
