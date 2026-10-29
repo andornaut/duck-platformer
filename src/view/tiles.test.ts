@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { TerrainRect } from "../data/types";
 import {
   drawsFrom,
+  loadedTileset,
   lookTiles,
   objectTiles,
   type PlacedTile,
@@ -155,5 +156,23 @@ describe("drawsFrom", () => {
     ["placeholder-dog", false],
   ])("says the tileset draws %s: %s", (art, draws) => {
     expect(drawsFrom(TILESET, art)).toBe(draws);
+  });
+});
+
+describe("loadedTileset", () => {
+  const sheet = (tileSize: number): Tileset => ({ columns: 1, pieces: {}, tileSize, tiles: {} });
+  const loaded: Readonly<Record<string, Tileset>> = { big: sheet(16), street: sheet(12) };
+  const lookup = (key: string) => loaded[key];
+
+  it.each([
+    ["one that loaded", "street", loaded.street],
+    ["none for an area without one, which draws flat", undefined, undefined],
+    ["none for one art does not have yet, which draws flat", "placeholder-park", undefined],
+  ])("gives %s", (_, key, tileset) => {
+    expect(loadedTileset(12, lookup, key)).toBe(tileset);
+  });
+
+  it("refuses one whose tiles are another size", () => {
+    expect(() => loadedTileset(12, lookup, "big")).toThrow(/not 12 px/);
   });
 });

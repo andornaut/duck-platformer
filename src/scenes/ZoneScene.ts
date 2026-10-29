@@ -65,7 +65,7 @@ import { cameraScroll } from "../view/camera";
 import { characterState, nextQuirkAt } from "../view/character";
 import { duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
 import { type ArtKind, artKind, artOffset } from "../view/objectArt";
-import { objectTiles, terrainTiles, type Tileset } from "../view/tiles";
+import { loadedTileset, objectTiles, terrainTiles, type Tileset } from "../view/tiles";
 import {
   buttonHeld,
   centredAt,
@@ -380,8 +380,13 @@ export class ZoneScene extends Scene {
     this.areaShown = this.zone.area;
     this.attemptShown = this.zone.attempt;
     this.cameras.main.setBounds(0, 0, area.width, area.height);
-    this.cameras.main.setBackgroundColor(area.tileset ? INK : BACKGROUND);
-    const tileset = area.tileset ? this.tileset(area.tileset) : undefined;
+    // A tileset art does not have yet draws flat, like an area without one.
+    const tileset = loadedTileset(
+      TILE,
+      (key) => this.cache.json.get(key) as Tileset | undefined,
+      area.tileset,
+    );
+    this.cameras.main.setBackgroundColor(tileset ? INK : BACKGROUND);
     const flat = this.areaArt.clear().setDepth(DEPTHS.terrain);
     this.terrainMap?.destroy();
     this.terrainMap = undefined;
@@ -534,14 +539,6 @@ export class ZoneScene extends Scene {
     if (tag !== undefined) {
       show(sprite, tag);
     }
-  }
-
-  private tileset(key: string): Tileset {
-    const tileset = this.cache.json.get(key) as Tileset | undefined;
-    if (!tileset || tileset.tileSize !== TILE) {
-      throw new Error(`Tileset ${key} is missing or not ${TILE} px a tile`);
-    }
-    return tileset;
   }
 
   private sheet(key: string): ReadonlyMap<string, readonly AnimationFrame[]> {

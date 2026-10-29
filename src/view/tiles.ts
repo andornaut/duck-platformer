@@ -9,6 +9,20 @@ export interface Tileset {
   readonly tiles: Readonly<Record<string, number>>;
 }
 
+// The tileset key names, as lookup finds what loaded: undefined for an area without one, or one
+// art does not have yet, which then draws flat. Throws for one whose tiles are not tile px.
+export function loadedTileset(
+  tile: number,
+  lookup: (key: string) => Tileset | undefined,
+  key: string | undefined,
+): Tileset | undefined {
+  const tileset = key === undefined ? undefined : lookup(key);
+  if (tileset && tileset.tileSize !== tile) {
+    throw new Error(`Tileset ${key} is not ${tile} px a tile`);
+  }
+  return tileset;
+}
+
 // A tile to draw at a column and row, by its index in the sheet.
 export interface PlacedTile {
   readonly col: number;
