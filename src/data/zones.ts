@@ -8,17 +8,16 @@ import { ZONE_1 } from "./zone1";
 // Rises and gaps are in tiles, from the top of the ground she leaves to the top of the ledge she
 // lands on. Every mover's path is 2 tiles from every solid and every other mover's path, so a
 // mover never meets her box where she stands at an edge. Every gap she must not jump, a mover's
-// gaps among them, is 32 or more across: the running jump's reach is 29, and a jump pressed in
-// coyote time after she runs off the edge crosses 31. A mover's speed she keeps on leaving it is
-// counted too.
+// gaps among them, is 32 or more across, past the running jump's reach of 31, counting the speed
+// she keeps from a mover she leaves.
 export const TEST_ZONES: readonly ZonePlan[] = [
   // Ledges.
   {
     areas: {
       main: {
-        cols: 147,
+        cols: 149,
         entries: { start: { col: 3, row: 56 } },
-        objects: [{ character: "test-exit", col: 141, cols: 2, row: 18, rows: 4 }],
+        objects: [{ character: "test-exit", col: 143, cols: 2, row: 18, rows: 4 }],
         rows: 60,
         solids: [
           // Hop steps: up 2, then up 3 (the hop's reach).
@@ -28,14 +27,14 @@ export const TEST_ZONES: readonly ZonePlan[] = [
           // Full jump steps: up 5, then up 8 (the jump's reach).
           { col: 24, cols: 6, row: 46, rows: 14 },
           { col: 30, cols: 10, row: 38, rows: 22 },
-          // Gaps at the same height: 6, 14, then 29.
+          // Gaps at the same height: 6, 14, then 31.
           { col: 46, cols: 10, row: 38, rows: 22 },
           { col: 70, cols: 10, row: 38, rows: 22 },
-          // GAP_LIMIT: a gap of 29, the running jump's reach.
-          { col: 109, cols: 10, row: 38, rows: 22 },
+          // GAP_LIMIT: a gap of 31, the running jump's reach.
+          { col: 111, cols: 10, row: 38, rows: 22 },
           // Climb to the upper screen: two full jumps of 8.
-          { col: 119, cols: 6, row: 30, rows: 30 },
-          { col: 125, cols: 22, row: 22, rows: 38 },
+          { col: 121, cols: 6, row: 30, rows: 30 },
+          { col: 127, cols: 22, row: 22, rows: 38 },
         ],
       },
     },
