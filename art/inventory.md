@@ -1,6 +1,6 @@
 # Art inventory
 
-Every served art asset. Sizes are in base pixels at 648x360. Tags are in frame order. A nine-slice lists its margins as left, top, right, bottom.
+Every served art asset. Sizes are in base pixels at 720x360. Tags are in frame order. A nine-slice lists its margins as left, top, right, bottom.
 
 ## Data
 
@@ -37,10 +37,10 @@ Plain PNGs and one ICO from `art/tools/icons.py`, not manifest entries.
 | ferret            | character             | 64x80  | idle, scheme, talk              |
 | portrait-duck     | portrait              | 64x64  | neutral, happy, worried         |
 | portrait-ferret   | portrait              | 64x64  | neutral, smug, annoyed          |
-| ui-answer         | sprite                | 204x36 | normal, selected, pressed       |
+| ui-answer         | sprite                | 208x36 | normal, selected, pressed       |
 | ui-checkbox       | sprite                | 20x20  | off, on                         |
 | ui-close          | sprite                | 24x24  | normal, pressed                 |
-| ui-dialogue-box   | sprite                | 624x96 | rest                            |
+| ui-dialogue-box   | sprite                | 640x96 | rest                            |
 | ui-forward-mark   | sprite                | 10x14  | idle                            |
 | ui-name-tab       | nine-slice (2,2,2,2)  | 12x20  | amber, green, pink, tan         |
 | ui-portrait-frame | sprite                | 68x68  | rest                            |

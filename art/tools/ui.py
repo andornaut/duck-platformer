@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""UI art: the dialogue box, choices, quip strip, touch buttons and settings card, at the 648x360 base resolution.
+"""UI art: the dialogue box, choices, quip strip, touch buttons and settings card, at the 720x360 base resolution.
 
 Usage:
   ui.py build             write art/ui/<key>.aseprite and public/art/sprites/<key>.png + .json, list them in the
@@ -16,27 +16,27 @@ plays once and holds its last frame (the manifest's "once") until the game shows
 loops.
 
 Dialogue
-- ui-dialogue-box, 624x96, at 12,256. Navy, ink border with cut corners, slate rim top-left, dslate bottom-right.
-  Body text cream, origin 100,268, lines every 20.
-- ui-portrait-frame, 68x68, at 20,270. Recessed dslate well; the 64px portrait goes at 22,272.
+- ui-dialogue-box, 640x96, at 40,256. Navy, ink border with cut corners, slate rim top-left, dslate bottom-right.
+  Body text cream, origin 128,268, 504 wide, lines every 20.
+- ui-portrait-frame, 68x68, at 48,270. Recessed dslate well; the 64px portrait goes at 50,272.
 - ui-name-tab, nine-slice 12x20, margins 2,2,2,2; tags amber, green, pink, tan (the fill; one per speaker). Drawn
-  A+12 wide at 96,237, so its bottom row lies on the box's top border. Name ink, origin x+6, y 234.
-- ui-forward-mark, 10x14, at 609,323 (centred in the 592,308,44,44 hit area). Tag idle: the triangle steps right
+  A+12 wide at 124,237, so its bottom row lies on the box's top border. Name ink, origin x+6, y 234.
+- ui-forward-mark, 10x14, at 653,323 (centred in the 636,308,44,44 hit area). Tag idle: the triangle steps right
   0, 2, 3, 2px over 1800, 80, 160, 80ms. Reduced motion shows frame 0.
-- ui-skip, 78x20, at 562,8 (hit 562,8,78,44). Tags normal, pressed (dslate, rim inverted), disabled (flat, no
-  rim, the double chevron becomes a bar). Label SKIP origin 571,5: cream, or grey when disabled.
-- ui-answer, 204x36, hit 204x44 from row top y 192, so the art sits at y 196. Three at x 12, 222, 432; two at
-  x 117, 327. Tags normal (dslate), selected (cream with an ink cursor), pressed (tan with the cursor). Text origin
-  x+19, y 205, at most 162 wide: cream when normal, ink otherwise.
+- ui-skip, 78x20, at 634,8 (hit 634,8,78,44). Tags normal, pressed (dslate, rim inverted), disabled (flat, no
+  rim, the double chevron becomes a bar). Label SKIP origin 643,5: cream, or grey when disabled.
+- ui-answer, 208x36, hit 208x44 from row top y 192, so the art sits at y 196, 8 apart. Three at x 40, 256, 472
+  (spanning the box); two at x 148, 364. Tags normal (dslate), selected (cream with an ink cursor), pressed (tan
+  with the cursor). Text origin x+19, y 205, at most 166 wide: cream when normal, ink otherwise.
 
 Quip
 - ui-quip-strip, nine-slice 12x24, margins 2,2,2,2. Drawn An+Ab+24 wide (An the name, Ab the line), at most 452,
-  centred on x 324 at y 8 (within 102..554). Name in font-title in the speaker's tab colour, origin x+9, y 7;
+  centred on x 360 at y 8 (within 138..590). Name in font-title in the speaker's tab colour, origin x+9, y 7;
   line cream in font-body, origin x+15+An, y 11.
 
 Touch controls (two round buttons for the right thumb; movement has no art)
-- ui-touch-use, 51x51, centre pixel 25,25: top-left 519,219 for the centre 544,244 (hit 496,200,152,80).
-- ui-touch-jump, 57x57, centre pixel 28,28: top-left 576,288 for the centre 604,316 (hit 496,280,152,80).
+- ui-touch-use, 51x51, centre pixel 25,25: top-left 591,219 for the centre 616,244 (hit 568,200,152,80).
+- ui-touch-jump, 57x57, centre pixel 28,28: top-left 648,288 for the centre 676,316 (hit 568,280,152,80).
 - Each is an opaque disc: an ink edge, a 2px cream ring and a navy face, 49px across for Use and 55px for Jump,
   with its icon above the centre: three dots (19x5) on Use with their top 9px above the centre, a caret (17x9) on
   Jump with its top 12px above. Tags rest (100ms); press, once (frame 0 the ring turns white and thickens to 3px,
@@ -44,18 +44,18 @@ Touch controls (two round buttons for the right thumb; movement has no art)
   press frame 1, 100ms).
 - Label "Use" or "Jump" in font-body at 2x, never baked in: centred on the button's centre x (origin x = centre x
   minus half the label's visible width, rounded down), origin y = centre y - 3, so the capitals sit on rows
-  centre+1 to centre+10. Use: origin 532,241; Jump: origin 587,313. Cream at rest, white while pressed or held.
+  centre+1 to centre+10. Use: origin 604,241; Jump: origin 659,313. Cream at rest, white while pressed or held.
 
 Settings (a pause card over the game dimmed two ramp steps)
 - ui-settings-card, nine-slice 16x48, margins 2,38,2,2: a cream border with cut corners, an ink header 36 high and
-  a navy body. Drawn 368x184 at 140,88. Title SETTINGS cream, origin 154,93.
-- ui-close, 24x24, at 474,94 (hit 464,88,44,44). Tags normal (cream X), pressed (white X on dslate).
-- ui-settings-row, nine-slice 12x48, margins 2,2,2,2, dslate. Drawn 352x48 at 148,136; the whole row is the hit
-  area. Label "Touch controls" cream, origin 192,151; state Shown or Hidden cream, its last glyph ending at x 488
-  (origin 490-A).
-- ui-checkbox, 20x20, at 160,150. Tags off (empty box), on (a green tick).
-- ui-resume, 160x44, at 244,212 (the hit area). Tags normal, pressed (the face sinks 2px into its lip). A play
-  triangle is drawn in; label Resume ink, origin 303,223, or 303,225 when pressed.
+  a navy body. Drawn 368x184 at 176,88. Title SETTINGS cream, origin 190,93.
+- ui-close, 24x24, at 510,94 (hit 500,88,44,44). Tags normal (cream X), pressed (white X on dslate).
+- ui-settings-row, nine-slice 12x48, margins 2,2,2,2, dslate. Drawn 352x48 at 184,136; the whole row is the hit
+  area. Label "Touch controls" cream, origin 228,151; state Shown or Hidden cream, its last glyph ending at x 524
+  (origin 526-A).
+- ui-checkbox, 20x20, at 196,150. Tags off (empty box), on (a green tick).
+- ui-resume, 160x44, at 280,212 (the hit area). Tags normal, pressed (the face sinks 2px into its lip). A play
+  triangle is drawn in; label Resume ink, origin 339,223, or 339,225 when pressed.
 """
 
 import os
@@ -108,8 +108,8 @@ def tri_right(g, x, y, h, c):
 # ---------------------------------------------------------------- dialogue
 
 def dialogue_box():
-    g = Grid(624, 96)
-    panel(g, 0, 0, 624, 96, "navy")
+    g = Grid(640, 96)
+    panel(g, 0, 0, 640, 96, "navy")
     return g.px
 
 
@@ -153,14 +153,14 @@ def skip(state):
 
 
 def answer(state):
-    """204x36. Text from x 19; the cursor at 7..13."""
-    g = Grid(204, 36)
+    """208x36. Text from x 19; the cursor at 7..13."""
+    g = Grid(208, 36)
     if state == "normal":
-        panel(g, 0, 0, 204, 36, "dslate", rim=("slate", "navy"))
+        panel(g, 0, 0, 208, 36, "dslate", rim=("slate", "navy"))
     else:
         fill = "cream" if state == "selected" else "tan"
         rim = ("white", "tan") if state == "selected" else ("brown", "cream")
-        panel(g, 0, 0, 204, 36, fill, rim=rim)
+        panel(g, 0, 0, 208, 36, fill, rim=rim)
         tri_right(g, 7, 11, 14, "ink")
     return g.px
 

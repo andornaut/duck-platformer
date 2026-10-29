@@ -1,26 +1,26 @@
 { "frames": {
    "ui-answer 0.aseprite": {
-    "frame": { "x": 0, "y": 0, "w": 204, "h": 36 },
+    "frame": { "x": 0, "y": 0, "w": 208, "h": 36 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 204, "h": 36 },
-    "sourceSize": { "w": 204, "h": 36 },
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 208, "h": 36 },
+    "sourceSize": { "w": 208, "h": 36 },
     "duration": 100
    },
    "ui-answer 1.aseprite": {
-    "frame": { "x": 204, "y": 0, "w": 204, "h": 36 },
+    "frame": { "x": 208, "y": 0, "w": 208, "h": 36 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 204, "h": 36 },
-    "sourceSize": { "w": 204, "h": 36 },
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 208, "h": 36 },
+    "sourceSize": { "w": 208, "h": 36 },
     "duration": 100
    },
    "ui-answer 2.aseprite": {
-    "frame": { "x": 408, "y": 0, "w": 204, "h": 36 },
+    "frame": { "x": 416, "y": 0, "w": 208, "h": 36 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 204, "h": 36 },
-    "sourceSize": { "w": 204, "h": 36 },
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 208, "h": 36 },
+    "sourceSize": { "w": 208, "h": 36 },
     "duration": 100
    }
  },
@@ -29,7 +29,7 @@
   "version": "1.2.30-x64",
   "image": "ui-answer.png",
   "format": "RGBA8888",
-  "size": { "w": 612, "h": 36 },
+  "size": { "w": 624, "h": 36 },
   "scale": "1",
   "frameTags": [
    { "name": "normal", "from": 0, "to": 0, "direction": "forward" },
