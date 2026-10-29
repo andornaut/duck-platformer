@@ -4,13 +4,14 @@ Usage, from the repository root:
   python3 -I art/tools/ferret.py build            write art/ferret/<key>.aseprite and public/art/sprites/<key>.png + .json
   python3 -I art/tools/ferret.py preview OUT.png  contact sheet of every frame on slate, tan and cream
 
-Design: a chibi sable ferret, a talking villain, sly and smug in a charming, cartoon way. It stands up on
-its short hind legs, slim and erect: a gentle S from the haunch up a long neck to a small wedge head with
-a narrow, pointed snout, and a long tail curling out behind along the ground. Facing left (the game
-mirrors it). Brown fur with a tan light rim and dark-brown cel crescents, a cream belly, muzzle and cheek,
-and a dark-brown mask through a half-lidded side-eye (cream sclera, the pupil at the front) under a
-level plum brow. A smirk curls up the cheek. Small round ear with a cream centre. Dark-brown arms and
-feet, tan paws. A tall, narrow plum stovepipe hat with a dark-brown rim light and a red band; nothing
+Design: a chibi sable ferret, a talking villain, cute with a touch of slyness. It stands erect on its
+short hind legs, leaning slightly forward, the front of its body one smooth line from the neck down to
+the hips over a full, round chest; a long neck, a small wedge head with a narrow, pointed snout, and a
+long tail curling out behind along the ground. Facing left (the game mirrors it). Brown fur with a tan
+light rim and dark-brown cel crescents, a cream belly, muzzle and round cheek with a hint of tan blush,
+and a dark-brown mask around a soft, round dark eye (a cream catchlight, the lid lowered a little)
+under a small plum brow. A small smile. Small round ear with a cream centre. Dark-brown arms and feet,
+tan paws. A tall, narrow plum stovepipe hat with a dark-brown rim light and a red band; nothing
 touches it. A red bow tie under the jaw. Red is the one accent. Ink outline; internal edges two ramp
 steps darker than the part in front.
 
@@ -22,9 +23,9 @@ and the frame's, between columns 31 and 32), sits on the box centre, so mirrorin
 
 | Tag    | Frame | ms  | Pose                                                                       | Lift |
 | ------ | ----- | --- | -------------------------------------------------------------------------- | ---- |
-| idle   | 0     | 400 | rest: paws curled at the chest, half-lidded side-eye, closed smirk         | 0    |
+| idle   | 0     | 400 | rest: paws curled at the chest, soft round eye, small smile                | 0    |
 | idle   | 1     | 400 | breath: body, head and hat 1px up, feet and tail planted                   | 1    |
-| scheme | 0     | 160 | paws steepled under the chin, fingertips together, smug squint, wide smirk | 0    |
+| scheme | 0     | 160 | paws steepled under the chin, fingertips together, eye a pleased arc       | 0    |
 | scheme | 1     | 160 | the tap: the near paw 1px down and forward, apart from the far paw         | 0    |
 | talk   | 0     | 150 | rest, mouth closed                                                         | 0    |
 | talk   | 1     | 150 | mouth open, head and hat 1px up                                            | 0    |
@@ -33,9 +34,9 @@ Lift is how far the body sits above its rest row, in pixels. Every tag loops (ON
 
 portrait-ferret, 64x64: its wedge head and long neck facing right towards the text (as portrait-duck),
 cut off by the frame's bottom edge, with one ink outer line on a transparent ground (the dialogue box's
-68x68 frame supplies the backing). Tags: neutral (half-lidded side-eye, closed smirk), smug (a content
-squint, the smirk curling higher), annoyed (the brow dipped towards the snout, the eye open, the mouth
-turned down: mildly put out). One frame each.
+68x68 frame supplies the backing). Tags: neutral (soft round eye, small smile), smug (the eye a pleased
+arc, small smile), annoyed (a mild pout: the brow dipped towards the snout, the mouth turned down). One
+frame each.
 """
 
 import math
@@ -62,12 +63,13 @@ BAND = "red"
 BOW = ("red", "dred")
 HAT_SIZE = (9, 16, 16)  # crown width, crown height, brim width: a stovepipe, no flare
 HAT_TILT = -0.05  # radians; negative raises the back of the brim
-# The spine: hips at HIP, rising to TOP through a gentle S that bulges S_PX back, forward, back.
+# The spine: a straight line from the hips at HIP up to TOP, leaning LEAN px forward at the top, so the
+# front of the body runs as one smooth line from neck to hips.
 HIP = (32, 70)
-TOP = 33
-S_PX = 3.5
-RADII = (7, 5.5, 4.5, 3.4, 3.4)  # tube radius at each spine point, hips to neck
-HEAD = (10.5, 8.5, 7.5)  # cranium radii and snout length
+TOP = 34
+LEAN = 3
+RADII = (8, 8, 7.6, 5.6, 4.2)  # tube radius at each spine point, hips to neck: a full, round chest
+HEAD = (11, 9, 7.5)  # cranium radii and snout length
 
 
 # ---------------------------------------------------------------------------------------------- shapes
@@ -252,35 +254,36 @@ def bow_tie(pen, kx, ky, k=1.0):
     return lay
 
 
-# Eye bitmaps, facing left (the front is column 0): k ink, w sclera, p pupil, b brow. Sly, not cross:
-# the brow is level and lifted clear of the lid, and the squint is a content one.
+# Eye bitmaps, facing left (the front is column 0): k ink, c catchlight, b brow. Round and soft, with a
+# flat top (a lowered lid) for a touch of slyness; "pleased" is a closed, upturned arc, "pout" dips the
+# brow towards the snout.
 EYES = {
-    "half": ["..bbbb..",
-             "........",
-             "..kkkkk.",
-             ".kkkkkkk",
-             "kppwwwwk",
-             "kppwwwk.",
-             ".kkkkk.."],
-    "squint": [".bbbb...",
-               "........",
-               "........",
-               "..kkkkk.",
-               ".kkkkkkk",
-               "kppwwwk.",
-               ".kkkk..."],
-    "glare": ["....bbb.",
-              ".bbb....",
-              "..kkkkk.",
-              ".kkkkkkk",
-              "kppwwwwk",
-              "kppwwwk.",
-              ".kkkkk.."],
+    "soft": ["..bbb..",
+             ".......",
+             ".kkkkk.",
+             "kcckkkk",
+             "kcckkkk",
+             ".kkkkk.",
+             "..kkk.."],
+    "pleased": ["..bbb..",
+                ".......",
+                ".......",
+                "..kkk..",
+                ".kk.kk.",
+                "kk...kk",
+                "......."],
+    "pout": ["....bb.",
+             "..bb...",
+             ".kkkkk.",
+             "kcckkkk",
+             "kcckkkk",
+             ".kkkkk.",
+             "..kkk.."],
 }
 
 
 def eye(pen, ex, ey, kind, k=1):
-    col = dict(k=INK, w="cream", p=INK, b=BROW)
+    col = dict(k=INK, c="cream", b=BROW)
     lay = {}
     for j, row in enumerate(EYES[kind]):
         for i, ch in enumerate(row):
@@ -292,23 +295,21 @@ def eye(pen, ex, ey, kind, k=1):
 
 
 def mouth(pen, sx, sy, kind, n):
-    """The mouth under the snout, from its front (sx) back towards the cheek; n is the straight run.
-    smirk: curls up at the cheek. grin: a longer, higher curl. open: a small open mouth. frown: turns
-    down at the cheek."""
+    """A small mouth under the snout, from just behind its tip (sx) back n px. smile: turns up at the back.
+    open: a small open mouth. pout: turns down at the back."""
     pts = [(sx + i, sy) for i in range(n)]
-    if kind == "smirk":
-        pts += [(sx + n, sy - 1), (sx + n + 1, sy - 2)]
-    elif kind == "grin":
-        pts += [(sx + n, sy), (sx + n + 1, sy - 1), (sx + n + 2, sy - 2), (sx + n + 2, sy - 3)]
-    elif kind == "frown":
+    if kind == "smile":
+        pts += [(sx + n, sy - 1)]
+    elif kind == "pout":
         pts += [(sx + n, sy + 1)]
     lay = {pen.px(x, y): INK for x, y in pts}
     if kind == "open":
-        lay.update({pen.px(sx + n, sy - 1): INK, pen.px(sx + n + 1, sy - 2): INK})
-        lay[pen.px(sx + 1, sy + 1)] = INK
-        lay[pen.px(sx + n - 1, sy + 1)] = INK
-        for i in range(2, n - 1):
+        lay[pen.px(sx + n, sy - 1)] = INK
+        for i in range(1, n):
             lay[pen.px(sx + i, sy + 1)] = NOSE
+        lay[pen.px(sx, sy + 1)] = INK
+        lay[pen.px(sx + n, sy + 1)] = INK
+        for i in range(1, n):
             lay[pen.px(sx + i, sy + 2)] = INK
     return lay
 
@@ -327,6 +328,8 @@ def head(f, pen, hx, hy, rx, ry, L, eye_kind, mouth_kind, k=1):
     muzzle = pen.poly([(tipx + 0.5 * k, tipy + 0.1 * k), (hx - rx * 0.3, hy + ry * 0.05), (hx + rx * 0.25, hy + ry * 0.45),
                        (hx + rx * 0.1, hy + ry * 0.9), (tipx + 3 * k, tipy + 3 * k)]) & hm
     f.add(cel(muzzle, FACE[0], None, FACE[1]))
+    cheek = pen.ell(hx - rx * 0.1, hy + ry * 0.4, rx * 0.5, ry * 0.42) & hm  # a round cream cheek
+    f.add(cel(cheek, FACE[0], None, FACE[1]))
     ex, ey = hx - rx * 0.6, hy - ry * 0.05
     band = pen.poly([(tipx + L * 0.45, tipy - 2 * k), (ex - 2 * k, ey - 3 * k), (ex + 7 * k, ey - 3.5 * k),
                      (ex + 9 * k, ey + 1 * k), (ex + 5 * k, ey + 4 * k), (tipx + L * 0.5, tipy + 0.2 * k)])
@@ -336,7 +339,11 @@ def head(f, pen, hx, hy, rx, ry, L, eye_kind, mouth_kind, k=1):
         f.px[pen.px(x, y)] = NOSE
     f.add(eye(pen, round(ex - 3 * k), round(ey - 3.5 * k), eye_kind, k=k))
     # the mouth line runs just inside the lower edge of the narrow snout
-    f.add(mouth(pen, nx + 1, round(tipy + 0.6 * k), mouth_kind, n=round(L * 0.75 * k) + (1 if k == 1 else 0)))
+    f.add(mouth(pen, nx + 2 * k, round(tipy + 0.6 * k), mouth_kind, n=round(L * 0.4 * k)))
+    bx, by = round(hx - rx * 0.05), round(hy + ry * 0.42)  # a hint of blush on the cheek
+    for j in range(k + 1 if k > 1 else 1):
+        for i in range(3 * k):
+            f.px[pen.px(bx + i, by + j)] = FACE[1]
 
 
 # ---------------------------------------------------------------------------------------------- sprite
@@ -344,11 +351,10 @@ def head(f, pen, hx, hy, rx, ry, L, eye_kind, mouth_kind, k=1):
 def spine(lift=0):
     hx, hy = HIP
     ys = [hy + (TOP - hy) * i / 4 for i in range(5)]
-    xo = [0, S_PX, -S_PX, 0.6 * S_PX, -0.5 * S_PX]
-    return [(hx + xo[i], ys[i] - lift) for i in range(5)]
+    return [(hx - LEAN * i / 4, ys[i] - lift) for i in range(5)]
 
 
-def draw(lift=0, head_dy=0, paws="curled", eye_kind="half", mouth_kind="smirk"):
+def draw(lift=0, head_dy=0, paws="curled", eye_kind="soft", mouth_kind="smile"):
     """One 64x80 frame, facing left.
 
     lift: body, head and hat this many px up, feet and tail planted. head_dy: extra head and hat offset
@@ -408,8 +414,7 @@ def draw(lift=0, head_dy=0, paws="curled", eye_kind="half", mouth_kind="smirk"):
 def ferret_tags():
     return [
         ("idle", [draw(), draw(lift=1)], 400),
-        ("scheme", [draw(paws="steeple", eye_kind="squint", mouth_kind="grin"),
-                    draw(paws="tap", eye_kind="squint", mouth_kind="grin")], 160),
+        ("scheme", [draw(paws="steeple", eye_kind="pleased"), draw(paws="tap", eye_kind="pleased")], 160),
         ("talk", [draw(), draw(head_dy=-1, mouth_kind="open")], 150),
     ]
 
@@ -428,8 +433,8 @@ def portrait(expr):
     k = 1.65
     hx, hy = 40, 40
     f.add(bow_tie(pen, 39, 55, k=1.3), line=True)
-    head(f, pen, hx, hy, rx * k, ry * k, L * k * 0.9, dict(neutral="half", smug="squint", annoyed="glare")[expr],
-         dict(neutral="smirk", smug="grin", annoyed="frown")[expr], k=2)
+    head(f, pen, hx, hy, rx * k, ry * k, L * k * 0.9, dict(neutral="soft", smug="pleased", annoyed="pout")[expr],
+         dict(neutral="smile", smug="smile", annoyed="pout")[expr], k=2)
     hk = min(1.6, (hy - ry * k + 1.5 - 1) / (HAT_SIZE[1] + 3))  # as large as fits above the head
     crown, brim = hat(pen, hx + 1, hy - ry * k + 1.5, k=hk)
     f.add(crown, line=True, line_c=INK)

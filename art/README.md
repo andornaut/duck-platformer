@@ -122,10 +122,10 @@ The protagonist is a cute, chibi, cream-coloured female duck, drawn facing right
 
 ## The ferret
 
-The villain is a chibi sable ferret in a stovepipe hat and bow tie, a talking animal that schemes against the duck's climb: in dialogue, in quips and through the hazards it sets. It is sly and smug in a charming, cartoon way (a half-lidded side-eye, a smirk, steepled paws), never scary or cross, and is never fought. `art/tools/ferret.py` draws it; its docstring gives every frame's pose and timing.
+The villain is a chibi sable ferret in a stovepipe hat and bow tie, a talking animal that schemes against the duck's climb: in dialogue, in quips and through the hazards it sets. It is cute with a touch of slyness (soft round eyes, a small smile, steepled paws), never scary or cross, and is never fought. `art/tools/ferret.py` draws it; its docstring gives every frame's pose and timing.
 
-- Stance: slim and erect on short hind legs, a gentle S from the haunch up a long neck to a small wedge head with a narrow, pointed snout, and a long tail curling out behind along the ground. The S and the long neck are what keep it from reading as a dog.
-- Fur: brown with a tan light rim and dark-brown cel crescents; a cream belly, muzzle and cheek; a dark-brown mask through a half-lidded side-eye (cream sclera, the pupil at the front) under a level plum brow.
+- Stance: erect on short hind legs, leaning slightly forward, the front of the body one smooth line from the neck to the hips over a full, round chest, with no S wave. A long neck, a small wedge head with a narrow, pointed snout and a long tail curling out behind along the ground keep it from reading as a dog.
+- Fur: brown with a tan light rim and dark-brown cel crescents; a cream belly, muzzle and round cheek with a hint of tan blush; a dark-brown mask around a soft, round dark eye with a cream catchlight, under a small plum brow.
 - Hat: a tall, narrow plum stovepipe with a dark-brown rim light and a red band. Nothing touches it.
 - Colour: tan, brown, dark brown, plum and cream, with red (the band and bow tie) as the one accent. Ink outline; internal edges two ramp steps darker than the part in front.
 - Frame 64x80, facing left (mirrored for right), feet on rows 76 to 78 and the outline on row 79.
