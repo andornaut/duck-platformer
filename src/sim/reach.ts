@@ -123,8 +123,8 @@ function course(
 ): Course {
   switch (reach) {
     case "hop":
-      // The longest press shorter than the tap window: every such press hops alike.
-      return ledgeCourse(tuning, tile, tiles, Math.ceil(tuning.jumpTapWindow / STEP_SECONDS) - 1);
+      // The shortest press: the smallest jump she can make.
+      return ledgeCourse(tuning, tile, tiles, 1);
     case "jump":
       return ledgeCourse(tuning, tile, tiles, MAX_STEPS);
     case "gap":
