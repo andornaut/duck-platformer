@@ -16,9 +16,9 @@ import {
   isFirefoxAndroidApp,
 } from "@andornaut/game-kit/pwa/backNavigation";
 import { pageRunsAsApp } from "@andornaut/game-kit/pwa/installFlow";
+import { browserOfflinePage, startOfflinePlay } from "@andornaut/game-kit/pwa/offlinePlay";
 import { serviceWorkerUrl } from "@andornaut/game-kit/pwa/serviceWorkerUrl";
 import { requestPersistentStorage } from "@andornaut/game-kit/pwa/storagePersistence";
-import { createUpdateFlow, registerWhenDue } from "@andornaut/game-kit/pwa/updateReady";
 import { createScreenWakeLock, type ScreenWakeLock } from "@andornaut/game-kit/pwa/wakeLock";
 
 import { dispatchPhoneEvent, PHONE_EVENTS } from "./events";
@@ -35,8 +35,6 @@ const UPDATE_READY_ID = "update-ready";
 // and installed, so it reloads into that version before the zone draws; the game loads
 // meanwhile.
 const BOOT_WAIT_MS = 4000;
-// Input that counts as the player interacting, after which the page never reloads on its own.
-const INTERACTION_EVENTS = ["keydown", "pointerdown"] as const;
 
 let backGuard: BackGuard | undefined;
 let home: HomeScreen | undefined;
@@ -49,41 +47,26 @@ let screenWakeLock: ScreenWakeLock | undefined;
 // while the game loads; a first visit registers once the zone shows, so the precache does not
 // compete with the game's own downloads (registerWhenDue).
 function setupOfflinePlay(): void {
-  if (!import.meta.env.PROD || !("serviceWorker" in navigator)) {
+  const page = import.meta.env.PROD ? browserOfflinePage() : undefined;
+  if (page === undefined) {
     return;
   }
-  const container = navigator.serviceWorker;
   const toast = document.getElementById(UPDATE_READY_ID);
-  const flow = createUpdateFlow(
-    container,
-    () => Date.now(),
-    () => navigator.onLine,
-    () => window.location.reload(),
-    (visible) => {
-      if (toast) {
-        toast.hidden = !visible;
-      }
+  const play = startOfflinePlay(
+    {
+      bootWaitMs: BOOT_WAIT_MS,
+      onUpdateShown: (visible) => {
+        if (toast) {
+          toast.hidden = !visible;
+        }
+      },
+      serviceWorkerUrl: serviceWorkerUrl(SERVICE_WORKER_URL, undefined),
     },
+    page,
   );
-  toast?.querySelector("button")?.addEventListener("click", () => flow.accept());
-  for (const type of INTERACTION_EVENTS) {
-    window.addEventListener(type, () => flow.noteInteraction(), { capture: true, passive: true });
-  }
-  const followVisibility = () => flow.setVisible(document.visibilityState === "visible");
-  document.addEventListener("visibilitychange", followVisibility);
-  // A page restored from the back-forward cache comes back into view with no visibilitychange.
-  window.addEventListener("pageshow", followVisibility);
-  setTimeout(() => flow.endBootWait(), BOOT_WAIT_MS);
-  const onHome = registerWhenDue(container, flow, () =>
-    container
-      .register(serviceWorkerUrl(SERVICE_WORKER_URL, undefined), { scope: "/" })
-      .catch((error: unknown) => {
-        console.warn("Service worker registration failed; the game will not work offline.", error);
-        throw error;
-      }),
-  );
-  home = trackHomeScreen(onHome);
-  ready = flow.bootable;
+  toast?.querySelector("button")?.addEventListener("click", () => play.flow.accept());
+  home = trackHomeScreen(play.setOnHome);
+  ready = play.bootable;
 }
 
 // Sets up offline play and the phone app's behaviour. The game is constructed at once and waits
