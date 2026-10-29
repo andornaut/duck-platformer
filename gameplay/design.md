@@ -78,6 +78,8 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 - **Checkpoint:** the start of a zone is its only checkpoint. Falling or touching a hazard restarts the zone from its start
 - **Exit:** Use at the zone's exit clears the zone
 - **Kinds:** indoor, outdoor, or a hybrid with both
+- **Layout:** zone 1 is hand-built as the tutorial. Every later zone is assembled from hand-built chunks, each a screen or two wide: a fixed start chunk, a seeded run of chunks whose entry and exit heights match, then a fixed finish chunk. Every chunk, and many seeded assemblies, pass the zone reach test. PLACEHOLDER: the chunk format, difficulty scale and themes
+- **Reroll:** the layout changes on each new lap. Restarts and Continue keep it, since the seed is saved
 - **Scale:** outdoors, the scenery is drawn at a quarter of indoor scale; the duck, the tiles and the reaches stay the same everywhere
 - **Shape:** a zone is 2 screens (60 tiles) tall and as wide as it needs, and scrolls sideways and up. Indoors, to a small duck the ceilings are high: a door is 15 tiles tall, half the screen
 
