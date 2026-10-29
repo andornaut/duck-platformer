@@ -52,7 +52,7 @@ A landscape, left-to-right platformer: a duck falls out of her apartment at the 
 
 - **Duck:** 2 tiles wide and 3 tall
 - **Reaches:** floors are built to the duck's reaches, measured in tiles from the top of the ground she leaves to the top of the ledge she lands on. A short hop rises 2 tiles; a full jump rises 6; a full jump with flutter crosses a 12-tile gap at the same height. A ledge at a reach is always makeable, and one tile beyond it never is
-- **Tiles:** floors are built on a grid of 10 px tiles, so the screen is 64 columns by 36 rows. Every solid, ledge, hazard and exit sits on whole tiles and spans whole tiles
+- **Tiles:** floors are built on a grid of 12 px tiles. The screen is 30 rows tall, and floors scroll sideways, so columns are counted per floor, not per screen. Every solid, ledge, hazard and exit sits on whole tiles and spans whole tiles
 
 ### The duck
 
