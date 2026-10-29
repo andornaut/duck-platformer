@@ -60,7 +60,8 @@ BOX_W, BOX_H = 24, 36  # collision body
 C = W / 2  # body centre x: the frame's centre line
 BRX, BRY, POWER = 16.4, 13.0, 2.15  # body superellipse at rest
 HEAD_R = 9.2  # head radius
-NAPE_DROP = 6  # how far the body's top dips at the nape, below the back of her head, in px
+NAPE_DROP = 3  # how far the body's top dips at the nape, below the back of her head, in px
+BACK_FLAT = 2  # how far the middle of her back is pressed down, to soften its hump, in px
 HEAD_X, HEAD_UP = 0.43, 0.62  # head centre: right of the body centre and above it, in body radii
 BODY_BOTTOM = H - 3  # the body's bottom edge at rest; the feet fill the two rows under it
 BASE, SHADE, LIGHT = "cream", "tan", "white"
@@ -89,15 +90,19 @@ def in_ell(cx, cy, rx, ry, ang=0.0):
     return f
 
 
-def in_body(cx, cy, rx, ry, nape_x, drop):
+def in_body(cx, cy, rx, ry, nape_x, drop, flat):
     """Her body: the superellipse with its top pressed down drop px at the nape (nape_x, where her back meets
-    the back of her head), easing to nothing over 0.55 of the body's radius either side. It leaves a dip
-    between her back and her head, so the head sits up above the back line."""
+    the back of her head), easing to nothing over 0.55 of the body's radius either side, so the head sits up
+    above the back line; and pressed down flat px over the middle of her back, between the nape and the tail,
+    so the back line is gentle rather than humped."""
+    def ease(d, width):
+        w = max(0.0, 1 - abs(d) / width)
+        return w * w * (3 - 2 * w)
+
     def f(x, y):
         px = x + 0.5
         if y + 0.5 < cy:
-            w = max(0.0, 1 - abs(px - nape_x) / (rx * 0.55))
-            y = y - drop * w * w * (3 - 2 * w)
+            y = y - drop * ease(px - nape_x, rx * 0.55) - flat * ease(px - (cx - rx * 0.4), rx * 0.6)
         return (abs(px - cx) / rx) ** POWER + (abs(y + 0.5 - cy) / ry) ** POWER <= 1
     return f
 
@@ -134,7 +139,7 @@ def draw(lift=0, bw=BRX, bh=BRY, wing=("fold", 0), feet=((-5, 0), (2, 0))):
         foot(0)
     # a short tail tip at the lowered rear, its root under the body
     cel(g, in_ell(C - bw + 1, bcy - 1, 4.4, 2.2, -0.45), BASE, SHADE, None, 1, 1)
-    cel(g, in_body(C, bcy, bw, bh, hcx - HEAD_R * 0.7, NAPE_DROP), BASE, SHADE, LIGHT, 3, 1)
+    cel(g, in_body(C, bcy, bw, bh, hcx - HEAD_R * 0.7, NAPE_DROP, BACK_FLAT), BASE, SHADE, LIGHT, 3, 1)
     if feet == "tucked":
         for dx in (-5, 2):
             g.rect(int(C + dx), bottom, 4, 1, "orange")
