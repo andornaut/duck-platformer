@@ -97,12 +97,12 @@ export const TEST_ZONES: readonly ZonePlan[] = [
   {
     areas: {
       main: {
-        cols: 128,
+        cols: 132,
         entries: { start: { col: 3, row: 56 } },
         // Neither gap a horizontal mover crosses can be jumped without it.
         noCross: [
-          { from: { col: 25, row: 42 }, to: { col: 58, row: 42 } },
-          { from: { col: 76, row: 26 }, to: { col: 117, row: 26 } },
+          { from: { col: 25, row: 42 }, to: { col: 62, row: 42 } },
+          { from: { col: 80, row: 26 }, to: { col: 121, row: 26 } },
         ],
         objects: [
           // A vertical mover lifts her 14, from the ground to a ledge.
@@ -115,8 +115,10 @@ export const TEST_ZONES: readonly ZonePlan[] = [
             row: 56,
             rows: 1,
           },
-          // A horizontal mover 4 above the ledges across a gap of 24: she can jump up onto it only
-          // while it is near.
+          // A horizontal mover 4 above the ledges across a gap of 28: she can jump up onto it only
+          // while it is near. The far ledge is 6 past its track's end: a mover running into her
+          // side while she stands still in the air puts her on its far side, and from there she
+          // must not reach the ledge.
           {
             character: "test-mover",
             col: 34,
@@ -129,7 +131,7 @@ export const TEST_ZONES: readonly ZonePlan[] = [
           // A vertical mover lifts her 16, into the upper screen.
           {
             character: "test-mover",
-            col: 66,
+            col: 70,
             cols: 4,
             overrides: { motion: { direction: "up", distance: 16, pause: 1, speed: 4 } },
             phase: 0,
@@ -140,22 +142,22 @@ export const TEST_ZONES: readonly ZonePlan[] = [
           // is 4 from the ledge, so she jumps on rather than walking off onto it.
           {
             character: "test-mover",
-            col: 86,
+            col: 90,
             cols: 6,
             overrides: { motion: { direction: "right", distance: 16, pause: 1, speed: 4 } },
             phase: 0,
             row: 26,
             rows: 1,
           },
-          { character: "test-exit", col: 122, cols: 2, row: 22, rows: 4 },
+          { character: "test-exit", col: 126, cols: 2, row: 22, rows: 4 },
         ],
         rows: 60,
         solids: [
           { col: 0, cols: 12, row: 56, rows: 4 },
           { col: 20, cols: 10, row: 42, rows: 18 },
-          { col: 54, cols: 10, row: 42, rows: 18 },
-          { col: 72, cols: 10, row: 26, rows: 34 },
-          { col: 110, cols: 18, row: 26, rows: 34 },
+          { col: 58, cols: 10, row: 42, rows: 18 },
+          { col: 76, cols: 10, row: 26, rows: 34 },
+          { col: 114, cols: 18, row: 26, rows: 34 },
         ],
       },
     },
