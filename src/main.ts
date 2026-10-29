@@ -11,6 +11,7 @@ import { SCREEN } from "./data/screen";
 import { setupPhoneApp } from "./pwa";
 import { BootScene } from "./scenes/BootScene";
 import { LevelScene } from "./scenes/LevelScene";
+import { PauseScene } from "./scenes/PauseScene";
 
 // Scale.FIT: the base resolution stretches by whatever amount fills #game, keeping its aspect
 // ratio, with bars on the other axis. pixelArt keeps the stretch nearest-neighbour. The game
@@ -26,7 +27,8 @@ function startGame(): void {
     // waiting on the page compositor, and the high-performance GPU where there is a choice.
     render: { antialias: false, desynchronized: true, powerPreference: "high-performance" },
     scale: { autoCenter: Scale.CENTER_BOTH, mode: Scale.FIT },
-    scene: [BootScene, LevelScene],
+    // Later scenes draw over earlier ones: the pause card over the level.
+    scene: [BootScene, LevelScene, PauseScene],
     type: AUTO,
     width: SCREEN.width,
   });

@@ -13,6 +13,13 @@ export interface ArtManifest {
     // The tags that play once and hold their last frame. Every other tag loops.
     readonly once: readonly string[];
     readonly png: string;
+    // A 9-slice sprite's fixed edges, in pixels; its middle stretches.
+    readonly slice?: {
+      readonly bottom: number;
+      readonly left: number;
+      readonly right: number;
+      readonly top: number;
+    };
   }[];
 }
 

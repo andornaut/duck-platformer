@@ -13,7 +13,8 @@ import {
 const MANIFEST = "manifest";
 
 // First scene to run. Loads everything art's manifest lists, makes an animation of every sprite
-// tag, looping unless the manifest lists it as played once, then starts the test level.
+// tag, looping unless the manifest lists it as played once, then starts the test level and the
+// pause scene beside it.
 export class BootScene extends Scene {
   constructor() {
     super("boot");
@@ -47,6 +48,7 @@ export class BootScene extends Scene {
         });
       }
     }
+    this.scene.launch("pause");
     this.scene.start("level");
   }
 

@@ -1,4 +1,5 @@
 import { frameSteps, startStepClock, type StepClock } from "@andornaut/game-kit/clock/fixedStep";
+import { containsPoint } from "@andornaut/game-kit/rect";
 import {
   phaserBitmapFont,
   type PhaserFontData,
@@ -19,12 +20,14 @@ import {
   touchRoleAt,
 } from "../input/intent";
 import { gamePoint } from "../input/screenPoint";
+import { PAUSE_BUTTON } from "../layout/pauseCard";
 import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
 import { type LevelState, startLevel, stepLevel } from "../rules/level";
 import { nextLevelIndex, startLevelIndex } from "../rules/levelChain";
 import { moverAt } from "../rules/movers";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
 import { levelLayout } from "../rules/tiles";
+import { touchControlsShown } from "../settings/touchControls";
 import { animKey, type AsepriteSheet, sheetTags, type TagFrame, tagMs } from "../view/aseprite";
 import { duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
 import {
@@ -131,6 +134,21 @@ export class LevelScene extends Scene {
     }
     this.watchKeys();
     this.watchTouches();
+    // Paused under the pause card: keys and time while it was open count for nothing.
+    this.events.on("resume", () => {
+      this.clock = startStepClock;
+      this.heldKeys.clear();
+    });
+  }
+
+  // Shows or hides the touch buttons now, for the pause card to show the level behind it as the
+  // setting changes. They show only on a touch screen.
+  showTouchControls(shown: boolean): void {
+    const visible = shown && window.matchMedia("(pointer: coarse)").matches;
+    for (const [control, sprite] of this.controls) {
+      sprite.setVisible(visible);
+      this.labels.get(control)?.setVisible(visible);
+    }
   }
 
   override update(time: number): void {
@@ -239,7 +257,8 @@ export class LevelScene extends Scene {
   // A touch takes the role it starts with and keeps it, wherever it moves, until it lifts. A new
   // touch goes last in heldTouches, so the latest move touch is the last. Touches anywhere on the
   // page count, the letterbox bars beside the canvas included (gamePoint puts them on the game's
-  // nearest edge), except on the nav bar or a link or button.
+  // nearest edge), except on the nav bar or a link or button, on the pause button, or while the
+  // pause card is open.
   private watchTouches(): void {
     const toGame = (event: PointerEvent) => {
       const canvas = this.game.canvas.getBoundingClientRect();
@@ -251,6 +270,9 @@ export class LevelScene extends Scene {
         return;
       }
       const point = toGame(event);
+      if (!this.scene.isActive() || containsPoint(PAUSE_BUTTON.hit, point.x, point.y)) {
+        return;
+      }
       this.heldTouches.set(event.pointerId, {
         role: touchRoleAt(point),
         startX: point.x,
@@ -280,10 +302,11 @@ export class LevelScene extends Scene {
     });
   }
 
-  // The buttons show only on a touch screen. A pressed button plays its press tag, then holds
-  // until release, its label white until then. Nothing marks where a move touch started.
+  // The buttons show only on a touch screen, with the Touch controls setting on. A pressed
+  // button plays its press tag, then holds until release, its label white until then. Nothing
+  // marks where a move touch started.
   private drawControls(nowMs: number, touches: readonly HeldTouch[]): void {
-    const shown = window.matchMedia("(pointer: coarse)").matches;
+    const shown = window.matchMedia("(pointer: coarse)").matches && touchControlsShown();
     for (const [control, sprite] of this.controls) {
       sprite.setVisible(shown);
       const since = trackPress(nowMs, buttonHeld(control, touches), this.presses.get(control));
