@@ -33,7 +33,8 @@ columns 31 and 32, the frame's centre), sits on the box centre, so mirroring her
 Lift is how far the body's bottom edge sits above its rest row, in pixels. Body w x h is the body's
 ellipse; its area (the volume) stays within 2% of the rest pose. Shadow w is for a ground shadow the
 game may draw under her: the land contact frame's is the largest. flutter and jump 1 are airborne,
-so their shadow is the game's to place. After land, play idle.
+so their shadow is the game's to place. jump and land play once and hold their last frame (the manifest's
+"once"); every other tag loops. After land, play idle.
 
 portrait-duck, 64x64: her head and shoulders, facing right towards the text, cut off by the frame's
 bottom edge, on a transparent ground (the dialogue box's 68x68 frame supplies the backing).
@@ -299,10 +300,14 @@ def portrait_tags():
     return [(e, [portrait(e)], 1000) for e in ("neutral", "happy", "worried")]
 
 
+# Tags that play once and hold their last frame; every other tag loops.
+ONCE = {"duck": ("jump", "land")}
+
+
 def sprites():
     yield "duck", duck_tags()
     yield "portrait-duck", portrait_tags()
 
 
 if __name__ == "__main__":
-    pixel.main(sys.argv, sprites, SRC, __doc__)
+    pixel.main(sys.argv, sprites, SRC, __doc__, once=ONCE)

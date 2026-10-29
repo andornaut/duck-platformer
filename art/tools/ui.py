@@ -11,7 +11,9 @@ origin below is a BitmapText's top-left at scale 2, and A is the text's advance 
 doubled). Positions are in base pixels, top-left of the frame, matching the layout in art/README.md.
 
 Nine-slice textures carry their margins (left, top, right, bottom) as an Aseprite slice named after the key and as
-"slice" in the manifest entry. Single-state art has one tag, "rest", at 100ms.
+"slice" in the manifest entry. Single-state art has one tag, "rest", at 100ms. The touch rings' press tags
+(press, press-left, press-right) play once and hold their last frame (the manifest's "once") until the game
+shows the held tag; every other tag loops.
 
 Dialogue
 - ui-dialogue-box, 624x96, at 8,256. Navy, ink border with cut corners, slate rim top-left, dslate bottom-right.
@@ -402,6 +404,14 @@ SLICES = {
 }
 
 
+# Tags that play once and hold their last frame; every other tag loops.
+ONCE = {
+    "ui-touch-interact": ("press",),
+    "ui-touch-jump": ("press",),
+    "ui-touch-move": ("press-left", "press-right"),
+}
+
+
 def sprites():
     one = lambda frame, tag="rest": [(tag, [frame], 100)]  # noqa: E731
     yield "ui-answer", [(s, [answer(s)], 100) for s in ("normal", "selected", "pressed")]
@@ -423,4 +433,4 @@ def sprites():
 
 
 if __name__ == "__main__":
-    pixel.main(sys.argv, sprites, SRC, __doc__, slices=SLICES)
+    pixel.main(sys.argv, sprites, SRC, __doc__, slices=SLICES, once=ONCE)

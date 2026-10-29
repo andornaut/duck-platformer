@@ -218,15 +218,21 @@ def _lua(tags, out, key, margins=None):
                       out=out)
 
 
-def build(sprites, src_dir, slices=None):
+def build(sprites, src_dir, slices=None, once=None):
     """Write src_dir/<key>.aseprite for every sprite, export it to public/art/sprites/<key>.png + .json
     with its tags, and list it in the manifest. sprites is a list of (key, tags), tags a list of
     (tag, frames, ms). slices maps a key to its nine-slice margins (left, top, right, bottom): the export
-    carries them as an Aseprite slice named after the key, and the manifest entry as "slice"."""
-    slices = slices or {}
+    carries them as an Aseprite slice named after the key, and the manifest entry as "slice". once maps a
+    key to the tags that play once and hold their last frame; every other tag loops. Every manifest entry
+    carries "once", in frame order, [] when nothing plays once."""
+    slices, once = slices or {}, once or {}
+    sprites = list(sprites)
+    for key, tags in sprites:
+        unknown = set(once.get(key, ())) - {t for t, _, _ in tags}
+        assert not unknown, f"{key}: once names tags it does not have: {sorted(unknown)}"
     os.makedirs(src_dir, exist_ok=True)
     os.makedirs(SPRITES, exist_ok=True)
-    built = []
+    built = {}
     for key, tags in sprites:
         src = f"{src_dir}/{key}.aseprite"
         with tempfile.NamedTemporaryFile("w", suffix=".lua", delete=False) as f:
@@ -236,14 +242,15 @@ def build(sprites, src_dir, slices=None):
         subprocess.run(["aseprite", "-b", src, "--sheet", f"{SPRITES}/{key}.png", "--data", f"{SPRITES}/{key}.json",
                         "--format", "json-hash", "--list-tags"] + (["--list-slices"] if key in slices else []),
                        check=True, stdout=subprocess.DEVNULL)
-        built.append(key)
+        built[key] = [t for t, _, _ in tags if t in once.get(key, ())]
     manifest = {}
     if os.path.exists(MANIFEST):
         with open(MANIFEST) as f:
             manifest = json.load(f)
     entries = {s["key"]: s for s in manifest.get("sprites", [])}
     for key in built:
-        entries[key] = {"key": key, "png": f"sprites/{key}.png", "json": f"sprites/{key}.json"}
+        entries[key] = {"key": key, "png": f"sprites/{key}.png", "json": f"sprites/{key}.json",
+                        "once": built[key]}
         if key in slices:
             entries[key]["slice"] = dict(zip(("left", "top", "right", "bottom"), slices[key]))
     manifest["sprites"] = sorted(entries.values(), key=lambda s: s["key"])
@@ -253,11 +260,12 @@ def build(sprites, src_dir, slices=None):
     print("built", ", ".join(built))
 
 
-def main(argv, sprites, src_dir, doc, grounds=("5a6988", "e4a672", "ead4aa"), slices=None):
-    """The command line every art script shares: `build`, or `preview OUT.png`."""
+def main(argv, sprites, src_dir, doc, grounds=("5a6988", "e4a672", "ead4aa"), slices=None, once=None):
+    """The command line every art script shares: `build`, or `preview OUT.png`. A script declares the tags that
+    play once as a ONCE dict beside its sprites() and passes it here."""
     if len(argv) == 3 and argv[1] == "preview":
         preview(list(sprites()), argv[2], grounds)
     elif len(argv) == 2 and argv[1] == "build":
-        build(list(sprites()), src_dir, slices)
+        build(list(sprites()), src_dir, slices, once)
     else:
         sys.exit(doc)

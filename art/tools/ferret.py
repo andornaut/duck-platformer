@@ -36,7 +36,8 @@ between columns 31 and 32), sits on the box centre, so mirroring it does not mov
 | tip-hat | 3     | 100 | hat back down, paw at the brim                                         | 0    |
 
 Lift is how far the body sits above its rest row, in pixels; the feet stay planted. scheme loops while
-the ferret schemes; tip-hat plays once, then idle.
+the ferret schemes; tip-hat plays once and holds its last frame (the manifest's "once"), then idle. Every
+other tag loops.
 
 portrait-ferret, 64x64: its head and shoulders facing right towards the text (as portrait-duck), cut off
 by the frame's bottom edge, with one ink outer line on a transparent ground (the dialogue box's 68x68
@@ -434,10 +435,14 @@ def portrait_tags():
     return [(e, [portrait(e)], 1000) for e in ("neutral", "smug", "annoyed")]
 
 
+# Tags that play once and hold their last frame; every other tag loops.
+ONCE = {"ferret": ("tip-hat",)}
+
+
 def sprites():
     yield "ferret", ferret_tags()
     yield "portrait-ferret", portrait_tags()
 
 
 if __name__ == "__main__":
-    pixel.main(sys.argv, sprites, SRC, __doc__)
+    pixel.main(sys.argv, sprites, SRC, __doc__, once=ONCE)

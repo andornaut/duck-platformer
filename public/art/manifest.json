@@ -15,52 +15,67 @@
     {
       "key": "duck",
       "png": "sprites/duck.png",
-      "json": "sprites/duck.json"
+      "json": "sprites/duck.json",
+      "once": [
+        "jump",
+        "land"
+      ]
     },
     {
       "key": "ferret",
       "png": "sprites/ferret.png",
-      "json": "sprites/ferret.json"
+      "json": "sprites/ferret.json",
+      "once": [
+        "tip-hat"
+      ]
     },
     {
       "key": "portrait-duck",
       "png": "sprites/portrait-duck.png",
-      "json": "sprites/portrait-duck.json"
+      "json": "sprites/portrait-duck.json",
+      "once": []
     },
     {
       "key": "portrait-ferret",
       "png": "sprites/portrait-ferret.png",
-      "json": "sprites/portrait-ferret.json"
+      "json": "sprites/portrait-ferret.json",
+      "once": []
     },
     {
       "key": "ui-answer",
       "png": "sprites/ui-answer.png",
-      "json": "sprites/ui-answer.json"
+      "json": "sprites/ui-answer.json",
+      "once": []
     },
     {
       "key": "ui-checkbox",
       "png": "sprites/ui-checkbox.png",
-      "json": "sprites/ui-checkbox.json"
+      "json": "sprites/ui-checkbox.json",
+      "once": []
     },
     {
       "key": "ui-close",
       "png": "sprites/ui-close.png",
-      "json": "sprites/ui-close.json"
+      "json": "sprites/ui-close.json",
+      "once": []
     },
     {
       "key": "ui-dialogue-box",
       "png": "sprites/ui-dialogue-box.png",
-      "json": "sprites/ui-dialogue-box.json"
+      "json": "sprites/ui-dialogue-box.json",
+      "once": []
     },
     {
       "key": "ui-forward-mark",
       "png": "sprites/ui-forward-mark.png",
-      "json": "sprites/ui-forward-mark.json"
+      "json": "sprites/ui-forward-mark.json",
+      "once": []
     },
     {
       "key": "ui-name-tab",
       "png": "sprites/ui-name-tab.png",
       "json": "sprites/ui-name-tab.json",
+      "once": [],
       "slice": {
         "left": 2,
         "top": 2,
@@ -71,12 +86,14 @@
     {
       "key": "ui-portrait-frame",
       "png": "sprites/ui-portrait-frame.png",
-      "json": "sprites/ui-portrait-frame.json"
+      "json": "sprites/ui-portrait-frame.json",
+      "once": []
     },
     {
       "key": "ui-quip-strip",
       "png": "sprites/ui-quip-strip.png",
       "json": "sprites/ui-quip-strip.json",
+      "once": [],
       "slice": {
         "left": 2,
         "top": 2,
@@ -87,12 +104,14 @@
     {
       "key": "ui-resume",
       "png": "sprites/ui-resume.png",
-      "json": "sprites/ui-resume.json"
+      "json": "sprites/ui-resume.json",
+      "once": []
     },
     {
       "key": "ui-settings-card",
       "png": "sprites/ui-settings-card.png",
       "json": "sprites/ui-settings-card.json",
+      "once": [],
       "slice": {
         "left": 2,
         "top": 38,
@@ -104,6 +123,7 @@
       "key": "ui-settings-row",
       "png": "sprites/ui-settings-row.png",
       "json": "sprites/ui-settings-row.json",
+      "once": [],
       "slice": {
         "left": 2,
         "top": 2,
@@ -114,27 +134,39 @@
     {
       "key": "ui-skip",
       "png": "sprites/ui-skip.png",
-      "json": "sprites/ui-skip.json"
+      "json": "sprites/ui-skip.json",
+      "once": []
     },
     {
       "key": "ui-touch-interact",
       "png": "sprites/ui-touch-interact.png",
-      "json": "sprites/ui-touch-interact.json"
+      "json": "sprites/ui-touch-interact.json",
+      "once": [
+        "press"
+      ]
     },
     {
       "key": "ui-touch-jump",
       "png": "sprites/ui-touch-jump.png",
-      "json": "sprites/ui-touch-jump.json"
+      "json": "sprites/ui-touch-jump.json",
+      "once": [
+        "press"
+      ]
     },
     {
       "key": "ui-touch-knob",
       "png": "sprites/ui-touch-knob.png",
-      "json": "sprites/ui-touch-knob.json"
+      "json": "sprites/ui-touch-knob.json",
+      "once": []
     },
     {
       "key": "ui-touch-move",
       "png": "sprites/ui-touch-move.png",
-      "json": "sprites/ui-touch-move.json"
+      "json": "sprites/ui-touch-move.json",
+      "once": [
+        "press-left",
+        "press-right"
+      ]
     }
   ],
   "data": [
