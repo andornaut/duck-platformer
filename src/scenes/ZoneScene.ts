@@ -1,6 +1,13 @@
 import { frameSteps, startStepClock, type StepClock } from "@andornaut/game-kit/clock/fixedStep";
+import {
+  clientPoint,
+  listenPagePresses,
+  onPageControl,
+  type PagePointerEvent,
+  type PagePress,
+} from "@andornaut/game-kit/input/pagePresses";
 import { type Random, randomStream } from "@andornaut/game-kit/random";
-import { containsPoint } from "@andornaut/game-kit/rect";
+import { clampInto, containsPoint } from "@andornaut/game-kit/rect";
 import {
   phaserBitmapFont,
   type PhaserFontData,
@@ -35,7 +42,7 @@ import {
   touchIntent,
   touchRoleAt,
 } from "../input/intent";
-import { gamePoint, gameScaledPoint } from "../input/screenPoint";
+import { gameScaledPoint } from "../input/screenPoint";
 import { PAUSE_BUTTON } from "../layout/pauseCard";
 import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
 import { nodeOf } from "../rules/map";
@@ -523,54 +530,50 @@ export class ZoneScene extends Scene {
   // touch goes last in heldTouches, so the latest move touch is the last. Touches anywhere on the
   // page count, the letterbox bars and safe-area margins beside the canvas included, except on
   // the nav bar or a link or button, on the pause button, or while the pause card is open. A
-  // touch's role is read where it starts on the game's nearest edge (gamePoint), and a move
+  // touch's role is read where it starts on the game's nearest edge pixel (clampInto), and a move
   // touch's travel unclamped (gameScaledPoint), so a drag within the bars still moves her. Both
   // read through the page frame's turn (pageFrameTurn). Only a touch on the canvas can be on the
   // pause button: one in the bar beside it lands on the game's edge, inside the button's hit
   // area, and moves her.
   private watchTouches(): void {
-    const client = (event: PointerEvent) => ({ x: event.clientX, y: event.clientY });
-    const canvasRect = () => this.game.canvas.getBoundingClientRect();
-    const down = (event: PointerEvent) => {
-      const target = event.target instanceof Element ? event.target : null;
-      if (event.pointerType !== "touch" || target?.closest("a, button, nav") != null) {
-        return;
+    const unclamped = (event: PagePointerEvent) =>
+      gameScaledPoint(
+        pageFrameTurn(),
+        this.game.canvas.getBoundingClientRect(),
+        SCREEN,
+        clientPoint(event),
+      );
+    const onGame = (event: PagePointerEvent) =>
+      clampInto({ ...SCREEN, x: 0, y: 0 }, unclamped(event));
+    const accepts = (event: PagePointerEvent) => {
+      if (event.pointerType !== "touch" || onPageControl(event.target) || !this.scene.isActive()) {
+        return false;
       }
-      const point = gamePoint(pageFrameTurn(), canvasRect(), SCREEN, client(event));
-      const { x } = gameScaledPoint(pageFrameTurn(), canvasRect(), SCREEN, client(event));
-      const onPauseButton =
-        event.target === this.game.canvas && containsPoint(PAUSE_BUTTON.hit, point.x, point.y);
-      if (!this.scene.isActive() || onPauseButton) {
-        return;
-      }
-      this.heldTouches.set(event.pointerId, {
-        role: touchRoleAt(point),
-        startX: x,
-        x,
-      });
+      const point = onGame(event);
+      return !(
+        event.target === this.game.canvas && containsPoint(PAUSE_BUTTON.hit, point.x, point.y)
+      );
     };
-    const move = (event: PointerEvent) => {
-      const touch = this.heldTouches.get(event.pointerId);
-      if (touch) {
-        const { x } = gameScaledPoint(pageFrameTurn(), canvasRect(), SCREEN, client(event));
-        this.heldTouches.set(event.pointerId, { ...touch, x });
-      }
-    };
-    const release = (event: PointerEvent) => this.heldTouches.delete(event.pointerId);
-    const listeners = [
-      ["pointerdown", down],
-      ["pointermove", move],
-      ["pointerup", release],
-      ["pointercancel", release],
-    ] as const;
-    for (const [type, listener] of listeners) {
-      window.addEventListener(type, listener);
-    }
-    this.events.once("shutdown", () => {
-      for (const [type, listener] of listeners) {
-        window.removeEventListener(type, listener);
-      }
-    });
+    const release = ({ pointerId }: PagePress) => this.heldTouches.delete(pointerId);
+    const stopListening = listenPagePresses(
+      accepts,
+      {
+        cancel: release,
+        down: ({ pointerId }, event) => {
+          const { x } = unclamped(event);
+          this.heldTouches.set(pointerId, { role: touchRoleAt(onGame(event)), startX: x, x });
+        },
+        move: ({ pointerId }, event) => {
+          const touch = this.heldTouches.get(pointerId);
+          if (touch) {
+            this.heldTouches.set(pointerId, { ...touch, x: unclamped(event).x });
+          }
+        },
+        up: release,
+      },
+      window,
+    );
+    this.events.once("shutdown", stopListening);
   }
 
   // The buttons show only on a touch screen, with the Touch controls setting on. A pressed

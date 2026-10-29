@@ -1,6 +1,7 @@
+import { clampInto } from "@andornaut/game-kit/rect";
 import { describe, expect, it } from "vitest";
 
-import { type FrameTurn, gamePoint, gameScaledPoint } from "./screenPoint";
+import { type FrameTurn, gameScaledPoint } from "./screenPoint";
 
 // A 648x360 game drawn at 720x400 (10/9 scale) with 140 px bars either side, unturned; turned,
 // the same canvas on its side, its bounding rect 400 wide and 720 tall with 140 px bars above and
@@ -11,7 +12,7 @@ const CANVAS: Record<FrameTurn, { height: number; width: number; x: number; y: n
   90: { height: 720, width: 400, x: 0, y: 140 },
 };
 
-describe("gamePoint", () => {
+describe("gameScaledPoint through clampInto", () => {
   it.each<[string, FrameTurn, { x: number; y: number }, { x: number; y: number }]>([
     ["the canvas's top-left", 0, { x: 140, y: 0 }, { x: 0, y: 0 }],
     ["mid-canvas", 0, { x: 500, y: 200 }, { x: 324, y: 180 }],
@@ -25,8 +26,9 @@ describe("gamePoint", () => {
     ["the game's bottom-right, turned", 90, { x: 0, y: 860 }, { x: 647, y: 359 }],
     ["the bar above the game's left edge, turned", 90, { x: 200, y: 20 }, { x: 0, y: 180 }],
     ["the bar below the game's right edge, turned", 90, { x: 100, y: 990 }, { x: 647, y: 270 }],
-  ])("maps %s", (_, turn, client, game) => {
-    expect(gamePoint(turn, CANVAS[turn], GAME, client)).toEqual(game);
+  ])("maps %s onto the game's nearest pixel", (_, turn, client, game) => {
+    const point = gameScaledPoint(turn, CANVAS[turn], GAME, client);
+    expect(clampInto({ ...GAME, x: 0, y: 0 }, point)).toEqual(game);
   });
 });
 

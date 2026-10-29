@@ -24,11 +24,3 @@ export function gameScaledPoint(turn: FrameTurn, canvas: Rect, game: Size, clien
     y: ((client.y - canvas.y) * game.height) / canvas.height,
   };
 }
-
-// The same point on the game's nearest edge pixel when it is off the canvas: 0 to size - 1 on
-// each axis, so it can fall in a hit area that reaches the game's edge.
-export function gamePoint(turn: FrameTurn, canvas: Rect, game: Size, client: Point): Point {
-  const clamp = (value: number, size: number) => Math.min(size - 1, Math.max(0, value));
-  const point = gameScaledPoint(turn, canvas, game, client);
-  return { x: clamp(point.x, game.width), y: clamp(point.y, game.height) };
-}
