@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { ART_PATH, type ArtManifest } from "../view/aseprite";
 import { ART_MANIFEST_URL, artUrls } from "./precacheArt";
 
-const EMPTY: ArtManifest = { data: [], fonts: [], sprites: [] };
+const EMPTY: ArtManifest = { backdrops: [], data: [], fonts: [], sprites: [], tilesets: [] };
 
 describe("artUrls", () => {
   it.each([
@@ -19,6 +19,19 @@ describe("artUrls", () => {
       ["f/b.png", "f/b.fnt"],
     ],
     ["a data file", { ...EMPTY, data: [{ json: "c.json", key: "c" }] }, ["c.json"]],
+    [
+      "a tileset",
+      { ...EMPTY, tilesets: [{ json: "t/d.json", key: "d", png: "t/d.png" }] },
+      ["t/d.png", "t/d.json"],
+    ],
+    [
+      "a backdrop",
+      {
+        ...EMPTY,
+        backdrops: [{ height: 9, key: "e", png: "b/e.png", repeat: "x", width: 4, y: 9 } as const],
+      },
+      ["b/e.png"],
+    ],
   ])("lists the manifest and %s", (_, manifest, files) => {
     expect(artUrls(manifest)).toEqual([ART_MANIFEST_URL, ...files.map((file) => ART_PATH + file)]);
   });

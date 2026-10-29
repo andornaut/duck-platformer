@@ -150,15 +150,25 @@ export interface PlacedObject {
   readonly type: string;
 }
 
+// A run of terrain. In an area with a tileset, look names the family of the tileset's tiles it is
+// drawn with: "sidewalk" or "floor" (a top row, alternating with a joint every other column, over
+// a face), "road" (a top over road, with a kerb on the terrain beside it) or "post" (2 wide: a
+// cap, a shaft and a base). Without a tileset it is a flat rectangle and has no look.
+export interface TerrainRect extends TileRect {
+  readonly look?: string;
+}
+
 // One area of a level: cols x rows tiles (rows is 60, two screens). solids are the terrain.
 // entries are named points where she arrives: she stands on the top edge of row `row`, her
-// collision box centred on the grid line at the left edge of column `col`.
+// collision box centred on the grid line at the left edge of column `col`. tileset: the art
+// tileset its terrain and tile objects are drawn from; without one, both are flat rectangles.
 export interface AreaPlan {
   readonly cols: number;
   readonly entries: Readonly<Record<string, TilePoint>>;
   readonly objects: readonly PlacedObject[];
   readonly rows: number;
-  readonly solids: readonly TileRect[];
+  readonly solids: readonly TerrainRect[];
+  readonly tileset?: string;
 }
 
 // A level: its areas by name, and where she starts, its only checkpoint: a fall or a hazard
@@ -193,13 +203,23 @@ export interface ObjectLayout {
   readonly width: number;
 }
 
-// An area in base pixels. Falling below its height restarts the level.
+// An area in base pixels. Falling below its height restarts the level. terrain and tileset are
+// its plan's, in tiles, for drawing.
 export interface AreaLayout {
   readonly entries: Readonly<Record<string, Point>>;
   readonly height: number;
   readonly objects: readonly ObjectLayout[];
   readonly solids: readonly Rect[];
+  readonly terrain: readonly TerrainRect[];
+  readonly tileset: string | undefined;
   readonly width: number;
+}
+
+// A sprite's hit box in its frame, with the frame's size: the game draws the frame centred on
+// its object's rectangle along x and standing on its bottom edge.
+export interface ArtHitbox {
+  readonly frame: Size;
+  readonly hitbox: Rect;
 }
 
 export interface LevelLayout {

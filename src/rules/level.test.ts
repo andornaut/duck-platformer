@@ -50,6 +50,8 @@ function area(objects: readonly ObjectLayout[], fields: Partial<AreaLayout> = {}
     height: 360,
     objects,
     solids: [GROUND],
+    terrain: [],
+    tileset: undefined,
     width: 1100,
     ...fields,
   };

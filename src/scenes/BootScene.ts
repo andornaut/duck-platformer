@@ -1,5 +1,6 @@
 import { Scene } from "phaser";
 
+import { TILE } from "../data/screen";
 import {
   animKey,
   ART_MANIFEST_FILE,
@@ -32,6 +33,13 @@ export class BootScene extends Scene {
       }
       for (const { json, key } of manifest.data) {
         this.load.json(key, json);
+      }
+      for (const { json, key, png } of manifest.tilesets) {
+        this.load.json(key, json);
+        this.load.spritesheet(key, png, { frameHeight: TILE, frameWidth: TILE });
+      }
+      for (const { key, png } of manifest.backdrops) {
+        this.load.image(key, png);
       }
     });
   }

@@ -76,9 +76,17 @@ describe("artHitboxes", () => {
     [
       "a sprite with one",
       [sprite, { ...sprite, hitbox: { height: 30, width: 48, x: 6, y: 6 }, key: "trap" }],
-      { trap: { height: 30, width: 48, x: 6, y: 6 } },
+      { trap: { frame: { height: 26, width: 50 }, hitbox: { height: 30, width: 48, x: 6, y: 6 } } },
     ],
   ])("reads the hit boxes of %s", (_, sprites, hitboxes) => {
-    expect(artHitboxes({ data: [], fonts: [], sprites })).toEqual(hitboxes);
+    expect(
+      artHitboxes(() => ({ height: 26, width: 50 }), {
+        backdrops: [],
+        data: [],
+        fonts: [],
+        sprites,
+        tilesets: [],
+      }),
+    ).toEqual(hitboxes);
   });
 });

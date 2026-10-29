@@ -1,0 +1,159 @@
+import { describe, expect, it } from "vitest";
+
+import type { TerrainRect } from "../data/types";
+import {
+  drawsFrom,
+  lookTiles,
+  objectTiles,
+  type PlacedTile,
+  terrainTiles,
+  type Tileset,
+} from "./tiles";
+
+const NAMES = [
+  ...lookTiles("sidewalk"),
+  ...lookTiles("road"),
+  ...lookTiles("post"),
+  "one-way-awning",
+  "one-way-awning-left",
+  "one-way-awning-right",
+  "planter",
+  "planter-left",
+  "planter-right",
+  "planter-top",
+  "planter-top-left",
+  "planter-top-right",
+  "pit-opening",
+  "hatch-left",
+  "pit-leaf-left",
+  "pit-leaf-left-top",
+];
+const TILESET: Tileset = {
+  columns: 8,
+  pieces: {
+    door: [
+      [90, 91],
+      [92, 93],
+    ],
+  },
+  tileSize: 12,
+  tiles: Object.fromEntries(NAMES.map((name, index) => [name, index])),
+};
+const nameOf = Object.fromEntries(NAMES.map((name, index) => [index, name]));
+// Each placed tile as "col,row name", in row order.
+const named = (tiles: PlacedTile[]) =>
+  tiles.map(({ col, index, row }) => `${col},${row} ${nameOf[index] ?? index}`);
+
+describe("terrainTiles", () => {
+  it.each([
+    [
+      "a run of sidewalk with open ends, joints every other column",
+      [{ col: 1, cols: 4, look: "sidewalk", row: 1, rows: 2 }],
+      [
+        "1,1 sidewalk-top-left",
+        "2,1 sidewalk-top",
+        "3,1 sidewalk-top-joint",
+        "4,1 sidewalk-top-right",
+        "1,2 sidewalk-face-left",
+        "2,2 sidewalk-face",
+        "3,2 sidewalk-face",
+        "4,2 sidewalk-face-right",
+      ],
+    ],
+    [
+      "sidewalk meeting a road one lower, with kerbs",
+      [
+        { col: 0, cols: 2, look: "sidewalk", row: 0, rows: 2 },
+        { col: 2, cols: 2, look: "road", row: 1, rows: 1 },
+        { col: 4, cols: 2, look: "sidewalk", row: 0, rows: 2 },
+      ],
+      [
+        "0,0 sidewalk-top",
+        "1,0 kerb-right",
+        "4,0 kerb-left",
+        "5,0 sidewalk-top-joint",
+        "0,1 sidewalk-face",
+        "1,1 sidewalk-face",
+        "2,1 road-top",
+        "3,1 road-top",
+        "4,1 sidewalk-face",
+        "5,1 sidewalk-face",
+      ],
+    ],
+    [
+      "a post",
+      [{ col: 0, cols: 2, look: "post", row: 0, rows: 3 }],
+      [
+        "0,0 post-cap-left",
+        "1,0 post-cap-right",
+        "0,1 post-left",
+        "1,1 post-right",
+        "0,2 post-base-left",
+        "1,2 post-base-right",
+      ],
+    ],
+    ["terrain with no look", [{ col: 0, cols: 2, row: 0, rows: 1 }], []],
+  ] as [string, TerrainRect[], string[]][])("draws %s", (_, solids, tiles) => {
+    expect(named(terrainTiles(TILESET, 6, 3, solids))).toEqual(tiles);
+  });
+
+  it("refuses a look the tileset has no tiles for", () => {
+    expect(() =>
+      terrainTiles(TILESET, 2, 1, [{ col: 0, cols: 2, look: "floor", row: 0, rows: 1 }]),
+    ).toThrow("floor-top");
+  });
+});
+
+describe("objectTiles", () => {
+  it.each([
+    ["a piece whole", "door", 2, 2, ["0,0 90", "1,0 91", "0,1 92", "1,1 93"]],
+    [
+      "an awning across its width",
+      "one-way-awning",
+      4,
+      1,
+      [
+        "0,0 one-way-awning-left",
+        "1,0 one-way-awning",
+        "2,0 one-way-awning",
+        "3,0 one-way-awning-right",
+      ],
+    ],
+    [
+      "a planter with its top row",
+      "planter",
+      3,
+      2,
+      [
+        "0,0 planter-top-left",
+        "1,0 planter-top",
+        "2,0 planter-top-right",
+        "0,1 planter-left",
+        "1,1 planter",
+        "2,1 planter-right",
+      ],
+    ],
+    [
+      "a hatch edge under its leaf",
+      "hatch-left",
+      1,
+      3,
+      ["0,0 pit-leaf-left-top", "0,1 pit-leaf-left", "0,2 hatch-left"],
+    ],
+    ["a plain tile repeated", "pit-opening", 2, 1, ["0,0 pit-opening", "1,0 pit-opening"]],
+    ["a one-wide run as its middle tile", "one-way-awning", 1, 1, ["0,0 one-way-awning"]],
+  ])("draws %s", (_, art, cols, rows, tiles) => {
+    expect(named(objectTiles(TILESET, art, cols, rows))).toEqual(tiles);
+  });
+});
+
+describe("drawsFrom", () => {
+  it.each([
+    ["door", true],
+    ["planter", true],
+    ["storefront-cafe", false],
+    ["placeholder-dog", false],
+  ])("says the tileset draws %s: %s", (art, draws) => {
+    expect(drawsFrom(TILESET, art)).toBe(draws);
+  });
+});

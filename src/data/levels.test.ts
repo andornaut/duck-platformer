@@ -1,9 +1,19 @@
 import { describe, expect, it } from "vitest";
 
+import lobbyTiles from "../../public/art/tilesets/tiles-lobby.json";
+import streetTiles from "../../public/art/tilesets/tiles-street.json";
+import { lookTiles, type Tileset } from "../view/tiles";
+import { LEVEL_1 } from "./level1";
 import { TEST_LEVELS } from "./levels";
 import { OBJECT_TYPES } from "./objects";
 import { SCREEN, TILE } from "./screen";
 import type { AreaPlan, TileRect } from "./types";
+
+const TILESETS: Readonly<Record<string, Tileset>> = {
+  "tiles-lobby": lobbyTiles,
+  "tiles-street": streetTiles,
+};
+const LEVELS = [LEVEL_1, ...TEST_LEVELS];
 
 const inside = (area: AreaPlan, rect: TileRect) =>
   rect.col >= 0 &&
@@ -11,11 +21,11 @@ const inside = (area: AreaPlan, rect: TileRect) =>
   rect.col + rect.cols <= area.cols &&
   rect.row + rect.rows <= area.rows;
 
-const areas = TEST_LEVELS.flatMap((level, index) =>
+const areas = LEVELS.flatMap((level, index) =>
   Object.entries(level.areas).map(([name, area]) => [`${index + 1} ${name}`, level, area] as const),
 );
 
-describe("TEST_LEVELS", () => {
+describe("the levels", () => {
   it.each(areas)(
     "area %s is two screens tall, its terrain and objects inside it",
     (_, __, area) => {
@@ -43,7 +53,26 @@ describe("TEST_LEVELS", () => {
     }
   });
 
-  it.each(TEST_LEVELS.map((level, index) => [index + 1, level] as const))(
+  it.each(areas)(
+    "area %s draws from a tileset art has, with a look for each terrain run",
+    (_, __, area) => {
+      const tileset = area.tileset === undefined ? undefined : TILESETS[area.tileset];
+      if (area.tileset !== undefined) {
+        expect(tileset, area.tileset).toBeDefined();
+      }
+      for (const solid of area.solids) {
+        if (!tileset) {
+          expect(solid.look, JSON.stringify(solid)).toBeUndefined();
+          continue;
+        }
+        expect(solid.look, JSON.stringify(solid)).toBeDefined();
+        const missing = lookTiles(solid.look ?? "").filter((name) => !(name in tileset.tiles));
+        expect(missing, `${solid.look} in ${area.tileset}`).toEqual([]);
+      }
+    },
+  );
+
+  it.each(LEVELS.map((level, index) => [index + 1, level] as const))(
     "level %i starts at an entry that exists and has an exit",
     (_, level) => {
       expect(level.areas[level.start.area]?.entries[level.start.entry]).toBeDefined();

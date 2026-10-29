@@ -56,7 +56,7 @@ describe("levelLayout", () => {
   const layout = levelLayout(
     10,
     { lift: LIFT },
-    { lift: { height: 6, width: 30, x: 5, y: 2 } },
+    { lift: { frame: { height: 10, width: 40 }, hitbox: { height: 6, width: 30, x: 5, y: 2 } } },
     PLAN,
   );
   const yard = layout.areas.yard;
@@ -79,6 +79,11 @@ describe("levelLayout", () => {
     ["a phase, 0 when unset", [yard?.objects[0]?.phase, yard?.objects[1]?.phase], [0, 0.5]],
     ["a door's link", yard?.objects[1]?.to, { area: "yard", entry: "gate" }],
     ["its art's hit box", yard?.objects[0]?.hitbox, { height: 6, width: 30, x: 5, y: 2 }],
+    [
+      "its art's hit box, the frame centred on a wider placement",
+      yard?.objects[1]?.hitbox,
+      { height: 6, width: 30, x: 25, y: 2 },
+    ],
     ["the start", layout.start, { area: "yard", entry: "gate" }],
   ])("converts %s", (_, converted, expected) => {
     expect(converted).toEqual(expected);

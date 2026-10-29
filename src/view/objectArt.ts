@@ -1,0 +1,31 @@
+import type { Point, Size } from "../data/types";
+import type { ArtManifest } from "./aseprite";
+import { drawsFrom, type Tileset } from "./tiles";
+
+// How an object's art is drawn: tiles from its area's tileset; a backdrop piece, placed once or
+// repeated across the object's width; an animated sprite; or a flat placeholder rectangle, for
+// art named placeholder-* or art the game does not have.
+export type ArtKind = "backdrop" | "placeholder" | "repeated-backdrop" | "sprite" | "tiles";
+
+export function artKind(manifest: ArtManifest, tileset: Tileset | undefined, art: string): ArtKind {
+  if (art.startsWith("placeholder-")) {
+    return "placeholder";
+  }
+  if (tileset && drawsFrom(tileset, art)) {
+    return "tiles";
+  }
+  const backdrop = manifest.backdrops.find(({ key }) => key === art);
+  if (backdrop) {
+    return backdrop.repeat === "x" ? "repeated-backdrop" : "backdrop";
+  }
+  return manifest.sprites.some(({ key }) => key === art) ? "sprite" : "placeholder";
+}
+
+// Where art of a size is drawn for an object's rectangle, as an offset from its top-left corner:
+// standing on its bottom edge, centred along x for a sprite and from its left edge for a backdrop.
+export function artOffset(kind: ArtKind, rect: Size, art: Size): Point {
+  return {
+    x: kind === "sprite" ? Math.round((rect.width - art.width) / 2) : 0,
+    y: rect.height - art.height,
+  };
+}

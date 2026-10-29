@@ -4,15 +4,24 @@ import {
   phaserBitmapFont,
   type PhaserFontData,
 } from "@andornaut/game-kit/text/phaser/phaserBitmapFont";
-import { type GameObjects, Input, Scene } from "phaser";
+import { type GameObjects, Input, Scene, type Tilemaps } from "phaser";
 
 import { DUCK } from "../data/duck";
+import { LEVEL_1 } from "../data/level1";
 import { TEST_LEVELS } from "../data/levels";
 import { OBJECT_TYPES } from "../data/objects";
 import { SCREEN, TILE } from "../data/screen";
 import { TEXT } from "../data/text";
 import { TOUCH } from "../data/touch";
-import type { AreaLink, Collision, LevelLayout, Rect } from "../data/types";
+import type {
+  AreaLayout,
+  AreaLink,
+  ArtHitbox,
+  Collision,
+  LevelLayout,
+  ObjectLayout,
+  Point,
+} from "../data/types";
 import {
   combineIntents,
   type HeldTouch,
@@ -39,6 +48,8 @@ import {
   tagMs,
 } from "../view/aseprite";
 import { duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
+import { type ArtKind, artKind, artOffset } from "../view/objectArt";
+import { objectTiles, terrainTiles, type Tileset } from "../view/tiles";
 import {
   buttonHeld,
   centredAt,
@@ -48,12 +59,16 @@ import {
   trackPress,
 } from "../view/touchControls";
 
+// The levels in play order, looping: level 1, then the test levels.
+const LEVELS = [LEVEL_1, ...TEST_LEVELS];
+
 // After a stall, run at most this much time at once rather than lurching ahead.
 const MAX_FRAME_MS = 250;
 
-// PLACEHOLDER: flat colours until art's tiles and sprites land: the terrain, and each object by
-// its collision.
+// PLACEHOLDER: flat colours where an area or object has no art: the ground, the terrain, and
+// each object by its collision. An area drawn from a tileset shows ink below its terrain.
 const BACKGROUND = 0x262b44;
+const INK = 0x181425;
 const TERRAIN = 0x8b9bb4;
 const OBJECT_COLOURS: Readonly<Record<Collision, number>> = {
   hazard: 0xe43b44,
@@ -71,9 +86,26 @@ const CONTROL_SPRITES: Readonly<Record<TouchControl, string>> = {
   use: "ui-touch-use",
 };
 const LABEL_FONT = "font-body";
-// Drawn above the area and its objects, which are added whenever an area is drawn.
+// Back to front: repeated backdrops, placed backdrops, the terrain, objects, her, and the touch
+// controls. An area's art is added whenever it is drawn.
+const DEPTHS: Readonly<Record<ArtKind | "terrain", number>> = {
+  backdrop: -3,
+  placeholder: 0,
+  "repeated-backdrop": -4,
+  sprite: 0,
+  terrain: -2,
+  tiles: -1,
+};
 const DUCK_DEPTH = 1;
 const OVERLAY_DEPTH = 2;
+
+// Everything drawn for one object, placed at its top-left corner plus offset. A sprite faces the
+// way it last moved.
+interface ObjectArt {
+  readonly item: GameObjects.Components.Transform & GameObjects.GameObject;
+  readonly offset: Point;
+  readonly sprite: GameObjects.Sprite | undefined;
+}
 const PALETTE = "palette";
 
 // Starts a sprite's tag, unless it already shows it, playing or finished on its last frame.
@@ -99,15 +131,17 @@ export class LevelScene extends Scene {
   private readonly heldTouches = new Map<number, HeldTouch>();
   private landMs = 0;
   private layout!: LevelLayout;
-  private levelIndex = startLevelIndex(window.location.search, TEST_LEVELS.length);
+  private levelIndex = startLevelIndex(window.location.search, LEVELS.length);
   private areaArt!: GameObjects.Graphics;
   // The hit boxes art's sprites declare, by art key.
-  private hitboxes: Readonly<Record<string, Rect>> = {};
+  private hitboxes: Readonly<Record<string, ArtHitbox>> = {};
+  private manifest!: ArtManifest;
   // The area drawn, and a rectangle for each of its objects.
   private areaShown = "";
   // Play holds still while a door fades.
   private fading = false;
-  private objectArt: GameObjects.Rectangle[] = [];
+  private objectArt: ObjectArt[] = [];
+  private terrainMap: Tilemaps.Tilemap | undefined;
   // When each held button's press began.
   private readonly presses = new Map<TouchControl, number>();
   private readonly tags = new Map<string, ReadonlyMap<string, readonly TagFrame[]>>();
@@ -121,14 +155,12 @@ export class LevelScene extends Scene {
     this.cameras.main.setRoundPixels(true);
     this.areaArt = this.add.graphics();
 
-    for (const key of [DUCK_SPRITE, ...Object.values(CONTROL_SPRITES)]) {
-      this.tags.set(key, sheetTags(this.cache.json.get(key) as AsepriteSheet));
-    }
     this.landMs = tagMs(this.sheet(DUCK_SPRITE), "land");
 
     this.duck = this.add.sprite(0, 0, DUCK_SPRITE).setOrigin(0).setDepth(DUCK_DEPTH);
     this.cameras.main.startFollow(this.focus, true);
-    this.hitboxes = artHitboxes(this.cache.json.get(ART_MANIFEST_KEY) as ArtManifest);
+    this.manifest = this.cache.json.get(ART_MANIFEST_KEY) as ArtManifest;
+    this.hitboxes = artHitboxes((key) => this.textures.getFrame(key), this.manifest);
     this.loadLevel(this.levelIndex);
 
     const font = phaserBitmapFont(this.cache.bitmapFont.get(LABEL_FONT).data as PhaserFontData);
@@ -186,9 +218,9 @@ export class LevelScene extends Scene {
         this.level,
       );
       this.duckPose = stepPose(this.landMs, STEP_MS, before, this.level.duck, this.duckPose);
-      // PLACEHOLDER: what clearing a level leads to. For now the next test level starts.
+      // PLACEHOLDER: what clearing a level leads to. For now the next level starts.
       if (this.level.cleared) {
-        this.loadLevel(nextLevelIndex(this.levelIndex, TEST_LEVELS.length));
+        this.loadLevel(nextLevelIndex(this.levelIndex, LEVELS.length));
       } else if (this.level.using) {
         this.goThrough(this.level.using);
       }
@@ -201,10 +233,10 @@ export class LevelScene extends Scene {
     this.drawControls(time, touches);
   }
 
-  // Starts the test level at index from its start. Each load draws a fresh seed, so the random
+  // Starts the level at index from its start. Each load draws a fresh seed, so the random
   // motion differs from one play to the next; ?seed=<n> fixes it.
   private loadLevel(index: number): void {
-    const plan = TEST_LEVELS[index];
+    const plan = LEVELS[index];
     if (!plan) {
       throw new Error(`No level ${index + 1}`);
     }
@@ -233,36 +265,132 @@ export class LevelScene extends Scene {
     });
   }
 
-  // Draws the area she is in, in flat colours, with the camera kept inside it.
+  // Draws the area she is in, with the camera kept inside it: its terrain from its tileset, or
+  // flat where it has none, and each object's art.
   private drawArea(): void {
     const area = areaOf(this.layout, this.level.area);
     this.areaShown = this.level.area;
     this.cameras.main.setBounds(0, 0, area.width, area.height);
-    const art = this.areaArt.clear().fillStyle(TERRAIN);
-    for (const rect of area.solids) {
-      art.fillRect(rect.x, rect.y, rect.width, rect.height);
+    this.cameras.main.setBackgroundColor(area.tileset ? INK : BACKGROUND);
+    const tileset = area.tileset ? this.tileset(area.tileset) : undefined;
+    const flat = this.areaArt.clear().setDepth(DEPTHS.terrain);
+    this.terrainMap?.destroy();
+    this.terrainMap = undefined;
+    if (area.tileset && tileset) {
+      this.terrainMap = this.drawTerrain(area.tileset, tileset, area);
+    } else {
+      flat.fillStyle(TERRAIN);
+      for (const rect of area.solids) {
+        flat.fillRect(rect.x, rect.y, rect.width, rect.height);
+      }
     }
-    for (const rectangle of this.objectArt) {
-      rectangle.destroy();
+    for (const { item } of this.objectArt) {
+      item.destroy();
     }
-    this.objectArt = area.objects.map((object) =>
-      this.add
-        .rectangle(0, 0, object.width, object.height, OBJECT_COLOURS[object.collision])
-        .setOrigin(0),
-    );
+    this.objectArt = area.objects.map((object) => this.drawObject(area.tileset, tileset, object));
   }
 
-  // Each object where the rules put it, in whole pixels.
+  private drawTerrain(key: string, tileset: Tileset, area: AreaLayout): Tilemaps.Tilemap {
+    const map = this.make.tilemap({
+      height: area.height / TILE,
+      tileHeight: TILE,
+      tileWidth: TILE,
+      width: area.width / TILE,
+    });
+    const sheet = map.addTilesetImage(key, key, TILE, TILE, 0, 0);
+    const layer = sheet && map.createBlankLayer("terrain", sheet, 0, 0);
+    if (!layer) {
+      throw new Error(`No tilemap layer for ${key}`);
+    }
+    layer.setDepth(DEPTHS.terrain);
+    for (const { col, index, row } of terrainTiles(tileset, map.width, map.height, area.terrain)) {
+      layer.putTileAt(index, col, row);
+    }
+    return map;
+  }
+
+  private drawObject(
+    key: string | undefined,
+    tileset: Tileset | undefined,
+    object: ObjectLayout,
+  ): ObjectArt {
+    const kind = artKind(this.manifest, tileset, object.art);
+    const rect = { height: object.height, width: object.width };
+    switch (kind) {
+      case "tiles": {
+        const images = objectTiles(
+          tileset as Tileset,
+          object.art,
+          rect.width / TILE,
+          rect.height / TILE,
+        ).map(({ col, index, row }) =>
+          this.add.image(col * TILE, row * TILE, key as string, index).setOrigin(0),
+        );
+        const item = this.add.container(0, 0, images).setDepth(DEPTHS.tiles);
+        return { item, offset: { x: 0, y: 0 }, sprite: undefined };
+      }
+      case "backdrop": {
+        const item = this.add.image(0, 0, object.art).setOrigin(0).setDepth(DEPTHS.backdrop);
+        return { item, offset: artOffset(kind, rect, item), sprite: undefined };
+      }
+      case "repeated-backdrop": {
+        const height = this.textures.getFrame(object.art).height;
+        const item = this.add
+          .tileSprite(0, 0, rect.width, height, object.art)
+          .setOrigin(0)
+          .setDepth(DEPTHS["repeated-backdrop"]);
+        return {
+          item,
+          offset: artOffset(kind, rect, { height, width: rect.width }),
+          sprite: undefined,
+        };
+      }
+      case "sprite": {
+        const sprite = this.add.sprite(0, 0, object.art).setOrigin(0).setDepth(DEPTHS.sprite);
+        const [tag] = this.sheet(object.art).keys();
+        if (tag !== undefined) {
+          show(sprite, tag);
+        }
+        return { item: sprite, offset: artOffset(kind, rect, sprite.frame), sprite };
+      }
+      default: {
+        const item = this.add
+          .rectangle(0, 0, rect.width, rect.height, OBJECT_COLOURS[object.collision])
+          .setOrigin(0)
+          .setDepth(DEPTHS.placeholder);
+        return { item, offset: { x: 0, y: 0 }, sprite: undefined };
+      }
+    }
+  }
+
+  // Each object where the rules put it, in whole pixels, a sprite facing the way it moved.
   private drawObjects(): void {
     this.level.objects.forEach((at, index) => {
-      this.objectArt[index]?.setPosition(Math.round(at.x), Math.round(at.y));
+      const art = this.objectArt[index];
+      if (!art) {
+        return;
+      }
+      const x = Math.round(at.x + art.offset.x);
+      if (art.sprite && x !== art.item.x) {
+        art.sprite.setFlipX(x < art.item.x);
+      }
+      art.item.setPosition(x, Math.round(at.y + art.offset.y));
     });
   }
 
+  private tileset(key: string): Tileset {
+    const tileset = this.cache.json.get(key) as Tileset | undefined;
+    if (!tileset || tileset.tileSize !== TILE) {
+      throw new Error(`Tileset ${key} is missing or not ${TILE} px a tile`);
+    }
+    return tileset;
+  }
+
   private sheet(key: string): ReadonlyMap<string, readonly TagFrame[]> {
-    const tags = this.tags.get(key);
+    let tags = this.tags.get(key);
     if (!tags) {
-      throw new Error(`No sprite ${key}`);
+      tags = sheetTags(this.cache.json.get(key) as AsepriteSheet);
+      this.tags.set(key, tags);
     }
     return tags;
   }

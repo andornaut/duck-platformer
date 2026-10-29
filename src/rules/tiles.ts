@@ -1,6 +1,7 @@
 import type {
   AreaLayout,
   AreaPlan,
+  ArtHitbox,
   LevelLayout,
   LevelPlan,
   Motion,
@@ -31,7 +32,7 @@ function tilePoint(tile: number, point: TilePoint): Point {
 export function objectLayout(
   tile: number,
   types: Readonly<Record<string, ObjectType>>,
-  hitboxes: Readonly<Record<string, Rect>>,
+  hitboxes: Readonly<Record<string, ArtHitbox>>,
   placed: PlacedObject,
 ): ObjectLayout {
   const type = types[placed.type];
@@ -40,11 +41,18 @@ export function objectLayout(
   }
   const motion: Motion = { ...type.motion, ...placed.overrides?.motion };
   const reaction: Reaction = { ...type.reaction, ...placed.overrides?.reaction };
+  const width = (placed.cols ?? type.cols) * tile;
+  const height = (placed.rows ?? type.rows) * tile;
+  const art = hitboxes[type.art];
   return {
     art: type.art,
     collision: type.collision,
-    height: (placed.rows ?? type.rows) * tile,
-    hitbox: hitboxes[type.art],
+    height,
+    hitbox: art && {
+      ...art.hitbox,
+      x: art.hitbox.x + (width - art.frame.width) / 2,
+      y: art.hitbox.y + height - art.frame.height,
+    },
     motion: {
       ...motion,
       distance: motion.distance * tile,
@@ -55,14 +63,14 @@ export function objectLayout(
     phase: placed.phase ?? 0,
     reaction: { ...reaction, range: reaction.range * tile, speed: reaction.speed * tile },
     to: placed.to,
-    width: (placed.cols ?? type.cols) * tile,
+    width,
   };
 }
 
 export function areaLayout(
   tile: number,
   types: Readonly<Record<string, ObjectType>>,
-  hitboxes: Readonly<Record<string, Rect>>,
+  hitboxes: Readonly<Record<string, ArtHitbox>>,
   area: AreaPlan,
 ): AreaLayout {
   return {
@@ -72,6 +80,8 @@ export function areaLayout(
     height: area.rows * tile,
     objects: area.objects.map((placed) => objectLayout(tile, types, hitboxes, placed)),
     solids: area.solids.map((rect) => tileRect(tile, rect)),
+    terrain: area.solids,
+    tileset: area.tileset,
     width: area.cols * tile,
   };
 }
@@ -81,7 +91,7 @@ export function areaLayout(
 export function levelLayout(
   tile: number,
   types: Readonly<Record<string, ObjectType>>,
-  hitboxes: Readonly<Record<string, Rect>>,
+  hitboxes: Readonly<Record<string, ArtHitbox>>,
   plan: LevelPlan,
 ): LevelLayout {
   return {

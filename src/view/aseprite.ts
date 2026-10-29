@@ -1,4 +1,4 @@
-import type { Rect } from "../data/types";
+import type { ArtHitbox, Rect, Size } from "../data/types";
 
 // Art's sprites, as public/art/manifest.json lists them and Aseprite exports them.
 
@@ -8,7 +8,18 @@ export const ART_MANIFEST_FILE = "manifest.json";
 // The manifest's key in the loader's JSON cache.
 export const ART_MANIFEST_KEY = "manifest";
 
+// A backdrop piece: its bottom edge sits at world y, and repeat "x" tiles it across a run.
+export interface ArtBackdrop {
+  readonly height: number;
+  readonly key: string;
+  readonly png: string;
+  readonly repeat: "none" | "x";
+  readonly width: number;
+  readonly y: number;
+}
+
 export interface ArtManifest {
+  readonly backdrops: readonly ArtBackdrop[];
   readonly data: readonly { readonly json: string; readonly key: string }[];
   readonly fonts: readonly { readonly fnt: string; readonly key: string; readonly png: string }[];
   readonly sprites: readonly {
@@ -26,6 +37,11 @@ export interface ArtManifest {
       readonly right: number;
       readonly top: number;
     };
+  }[];
+  readonly tilesets: readonly {
+    readonly json: string;
+    readonly key: string;
+    readonly png: string;
   }[];
 }
 
@@ -83,9 +99,14 @@ export function animKey(sprite: string, tag: string): string {
   return `${sprite}:${tag}`;
 }
 
-// The hit boxes the manifest's sprites declare, by sprite key.
-export function artHitboxes(manifest: ArtManifest): Readonly<Record<string, Rect>> {
+// The hit boxes the manifest's sprites declare, by sprite key, each with its sprite's frame size.
+export function artHitboxes(
+  frameOf: (key: string) => Size,
+  manifest: ArtManifest,
+): Readonly<Record<string, ArtHitbox>> {
   return Object.fromEntries(
-    manifest.sprites.flatMap(({ hitbox, key }) => (hitbox ? [[key, hitbox] as const] : [])),
+    manifest.sprites.flatMap(({ hitbox, key }) =>
+      hitbox ? [[key, { frame: frameOf(key), hitbox }] as const] : [],
+    ),
   );
 }
