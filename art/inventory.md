@@ -88,27 +88,27 @@ Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with 
 
 ## Backdrops
 
-Pieces placed from level data by their bottom-left corner at the bottom y given, from `art/tools/floor1.py` (Zone 1: New York street, 720px tall, sidewalk line y 672).
+Pieces placed from level data by their bottom-left corner at the bottom y given, from `art/tools/floor1.py` (Zone 1: New York street, 720px tall, sidewalk top y 600, row 50).
 
 | Key                     | Type                                                                 | Size    | Bottom y, repeat |
 | ----------------------- | -------------------------------------------------------------------- | ------- | ---------------- |
-| cab                     | street furniture, yellow cab                                         | 96x40   | 672, none        |
-| canopy-poles            | street furniture, under the canopy                                   | 60x60   | 672, none        |
-| cross-street            | far avenue down a cross street                                       | 120x26  | 672, none        |
-| doorman-podium          | street furniture                                                     | 18x24   | 672, none        |
-| facade-brownstone       | building facade, brownstone                                          | 48x312  | 672, x           |
-| facade-brownstone-upper | building facade, a brownstone's upper storey                         | 48x180  | 360, x           |
-| facade-hotel            | building facade, tall dark stone (generic until the exit is decided) | 48x312  | 672, x           |
-| facade-hotel-upper      | building facade, the tall stone building's upper storey              | 48x180  | 360, x           |
-| facade-one-storey       | building facade, one-storey brick                                    | 48x192  | 672, x           |
-| facade-walkup           | building facade, brick walk-up                                       | 48x312  | 672, x           |
-| facade-walkup-upper     | building facade, a walk-up's upper storey                            | 48x180  | 360, x           |
-| fire-escape             | facade piece, walk-up                                                | 196x185 | 545, none        |
-| fire-escape-ladder      | climbing, fire-escape ladder between landings                        | 24x96   | 468, none        |
-| fire-escape-railing     | climbing, fire-escape railing on a landing                           | 48x24   | 468, x           |
-| hot-dog-cart            | street furniture                                                     | 40x70   | 672, none        |
-| hotel-crest             | facade piece, banners and crest (generic)                            | 98x44   | 550, none        |
-| hotel-window            | facade piece, tall window (generic)                                  | 32x152  | 664, none        |
+| cab                     | street furniture, yellow cab                                         | 96x40   | 600, none        |
+| canopy-poles            | street furniture, under the canopy                                   | 60x60   | 600, none        |
+| cross-street            | far avenue down a cross street                                       | 120x26  | 600, none        |
+| doorman-podium          | street furniture                                                     | 18x24   | 600, none        |
+| facade-brownstone       | building facade, brownstone                                          | 48x312  | 600, x           |
+| facade-brownstone-upper | building facade, a brownstone's upper storey                         | 48x180  | 288, x           |
+| facade-hotel            | building facade, tall dark stone (generic until the exit is decided) | 48x312  | 600, x           |
+| facade-hotel-upper      | building facade, the tall stone building's upper storey              | 48x180  | 288, x           |
+| facade-one-storey       | building facade, one-storey brick                                    | 48x192  | 600, x           |
+| facade-walkup           | building facade, brick walk-up                                       | 48x312  | 600, x           |
+| facade-walkup-upper     | building facade, a walk-up's upper storey                            | 48x180  | 288, x           |
+| fire-escape             | facade piece, walk-up                                                | 196x185 | 473, none        |
+| fire-escape-ladder      | climbing, fire-escape ladder between landings                        | 24x96   | 432, none        |
+| fire-escape-railing     | climbing, fire-escape railing on a landing                           | 48x24   | 432, x           |
+| hot-dog-cart            | street furniture                                                     | 40x70   | 600, none        |
+| hotel-crest             | facade piece, banners and crest (generic)                            | 98x44   | 478, none        |
+| hotel-window            | facade piece, tall window (generic)                                  | 32x152  | 592, none        |
 | lobby-balustrade        | lobby (later indoor zone), balcony railing                           | 48x36   | balcony line, x  |
 | lobby-bookcase          | lobby (later indoor zone), tall bookcase                             | 84x384  | 672, none        |
 | lobby-desk              | lobby (later indoor zone), reception desk                            | 120x96  | 672, none        |
@@ -118,19 +118,19 @@ Pieces placed from level data by their bottom-left corner at the bottom y given,
 | lobby-sofa              | lobby (later indoor zone), sofa                                      | 120x72  | 672, none        |
 | lobby-wall              | lobby wall (later indoor zone), wood panelling                       | 48x720  | 720, x           |
 | lobby-window            | lobby (later indoor zone), tall window                               | 96x240  | 552, none        |
-| roofline-brownstone     | roofline, brownstone                                                 | 48x48   | 180, x           |
-| roofline-hotel          | roofline, tall stone building                                        | 48x48   | 180, x           |
-| roofline-walkup         | roofline, walk-up                                                    | 48x48   | 180, x           |
-| storefront-cafe         | storefront, cup sign                                                 | 84x120  | 672, none        |
-| storefront-diner        | storefront, fork-and-knife sign                                      | 108x120 | 672, none        |
-| storefront-florist      | storefront, flower sign                                              | 84x120  | 672, none        |
-| storefront-gift-shop    | storefront, gift sign                                                | 96x120  | 672, none        |
-| storefront-makeup-store | storefront, lipstick sign                                            | 96x120  | 672, none        |
-| storefront-noodle-bar   | storefront, noodle-bowl sign                                         | 120x120 | 672, none        |
-| storefront-pet-shop     | storefront, paw sign                                                 | 108x120 | 672, none        |
-| street-sky              | day sky, both screens                                                | 48x672  | 672, x           |
-| street-skyline          | far skyline, water towers, two towers                                | 336x600 | 672, x           |
-| street-tree             | street furniture                                                     | 64x136  | 672, none        |
-| subway-railing          | street furniture                                                     | 72x62   | 672, none        |
-| walk-signal             | street furniture                                                     | 12x82   | 672, none        |
-| water-tower             | climbing, water tower (top one-way tiles)                            | 48x84   | 132, none        |
+| roofline-brownstone     | roofline, brownstone                                                 | 48x48   | 108, x           |
+| roofline-hotel          | roofline, tall stone building                                        | 48x48   | 108, x           |
+| roofline-walkup         | roofline, walk-up                                                    | 48x48   | 108, x           |
+| storefront-cafe         | storefront, cup sign                                                 | 84x120  | 600, none        |
+| storefront-diner        | storefront, fork-and-knife sign                                      | 108x120 | 600, none        |
+| storefront-florist      | storefront, flower sign                                              | 84x120  | 600, none        |
+| storefront-gift-shop    | storefront, gift sign                                                | 96x120  | 600, none        |
+| storefront-makeup-store | storefront, lipstick sign                                            | 96x120  | 600, none        |
+| storefront-noodle-bar   | storefront, noodle-bowl sign                                         | 120x120 | 600, none        |
+| storefront-pet-shop     | storefront, paw sign                                                 | 108x120 | 600, none        |
+| street-sky              | day sky, both screens                                                | 48x600  | 600, x           |
+| street-skyline          | far skyline, water towers, two towers                                | 336x600 | 600, x           |
+| street-tree             | street furniture                                                     | 64x136  | 600, none        |
+| subway-railing          | street furniture                                                     | 72x62   | 600, none        |
+| walk-signal             | street furniture                                                     | 12x82   | 600, none        |
+| water-tower             | climbing, water tower (top one-way tiles)                            | 48x84   | 240, none        |

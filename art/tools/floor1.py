@@ -15,8 +15,9 @@ Run from the repository root.
 Scale
 - Outdoors the world is drawn as if zoomed out 4x while the duck and the 12px tiles keep their size: a storey is
   180px and a door is about 45px, so the duck (42px) stands almost as tall as a street door. The street is 720px
-  (60 tiles) tall: the sidewalk's top is y 672 (row 56), the ground storey runs from y 492 to it, and storeys stack
-  every 180px above. Indoors (the lobby) is a separate scene at full scale, also 720px tall, its floor at y 672.
+  (60 tiles) tall: the sidewalk's top is y 600 (row 50) with 10 rows of sidewalk and road below it, the ground
+  storey runs from y 420 to it, and storeys stack every 180px above (a three-storey walk-up's roof is at y 60,
+  row 5). Indoors (the lobby) is a separate scene at full scale, also 720px tall, its floor at y 672.
 
 Tilesets
 - A tileset is one PNG of 12x12 tiles in rows of COLUMNS (8), no spacing or margin, transparent where a tile has no
@@ -86,28 +87,30 @@ Backdrops
      "repeat": "x" | "none"}
   The piece's bottom-left corner sits at world y (its bottom edge), at an x the level data chooses. "repeat": "x"
   tiles it horizontally across a run; "none" places it once. Street y values are in the two-screen frame (the
-  sidewalk's top at y 672); below it the game shows ink. Draw order, back to front: sky, skyline, facades and
+  sidewalk's top at y 600, row 50); the sidewalk and road tiles fill rows 50 to 59 below it. Draw order, back to front: sky, skyline, facades and
   their upper storeys and rooflines, facade pieces, storefronts, street furniture, then the play layer.
-- Sky and skyline (repeat x): street-sky 48x672 (y 672); street-skyline 336x600 (y 672): far blue buildings and
+- Sky and skyline (repeat x): street-sky 48x600 (y 600); street-skyline 336x600 (y 600): far blue buildings and
   water towers, seen above one-storey buildings and down cross streets, and two towers that rise above the near
   roofs in the upper screen.
-- Facades (repeat x, one per building type; a run per building): facade-one-storey 48x192 (y 672, a parapet 192
-  up), facade-walkup 48x312, facade-brownstone 48x312, facade-hotel 48x312 (y 672 each). Each shows the 180px
-  ground storey with a band over the shopfronts and the next storey's windows above, up to y 360.
+- Facades (repeat x, one per building type; a run per building): facade-one-storey 48x192 (y 600, a parapet 192
+  up), facade-walkup 48x312, facade-brownstone 48x312, facade-hotel 48x312 (y 600 each). Each shows the 180px
+  ground storey with a band over the shopfronts and the next storey's windows above, up to y 288.
 - Upper storeys and rooflines (repeat x): facade-walkup-upper, facade-brownstone-upper, facade-hotel-upper, each
-  48x180, stack above the facade piece every 180px (bottoms at y 360, then 180, ...) with no seam;
+  48x180, stack above the facade piece every 180px (bottoms at y 288, then 108) with no seam;
   roofline-walkup, roofline-brownstone, roofline-hotel, each 48x48, cap the topmost piece (bottom at its top), so
-  the roof is 48px above it (y 312 on a facade piece, y 132 on one upper storey). Lay one-way-cornice along it.
-- Facade pieces (none): fire-escape 196x185 (y 545, on a walk-up), hotel-crest 98x44 (y 550, over the door: two
-  banners and the crest), hotel-window 32x152 (y 664, a tall window). The tall dark stone building and these
+  the roof is 48px above it (y 240, row 20, on a facade piece; y 60, row 5, on one upper storey, the tallest that
+  fits). Lay one-way-cornice along it. A water tower (its tank top 6 tiles above its roof) fits on a two-storey roof
+  (tank top row 14), not on a three-storey one.
+- Facade pieces (none): fire-escape 196x185 (y 473, on a walk-up), hotel-crest 98x44 (y 478, over the door: two
+  banners and the crest), hotel-window 32x152 (y 592, a tall window). The tall dark stone building and these
   pieces are generic until the exit is decided.
 - Climbing (backdrop, no collision): fire-escape-railing 48x24 (repeat x, its bottom on a landing's top),
   fire-escape-ladder 24x96 (none, 2x8 tiles, its bottom on the lower landing's top), water-tower 48x84 (none,
   4x7 tiles, its bottom on a roof; one-way-tank tiles on its second tile row).
-- Storefronts (none), each 120 tall (y 672), a whole number of tiles wide, with a sign icon (never text), a tall
+- Storefronts (none), each 120 tall (y 600), a whole number of tiles wide, with a sign icon (never text), a tall
   display window and a 46px door: storefront-cafe 84, storefront-florist 84, storefront-gift-shop 96,
   storefront-makeup-store 96, storefront-pet-shop 108, storefront-diner 108, storefront-noodle-bar 120.
-- Street furniture (none, y 672): cab 96x40, hot-dog-cart 40x70, subway-railing 72x62, street-tree 64x136,
+- Street furniture (none, y 600): cab 96x40, hot-dog-cart 40x70, subway-railing 72x62, street-tree 64x136,
   walk-signal 12x82, doorman-podium 18x24, canopy-poles 60x60 (under the canopy's end tiles), cross-street
   120x26 (the far avenue between two kerbs; place no facade over a cross street so the skyline shows).
 - Lobby (kept for a later indoor zone; indoor scale, the floor line is y 672): lobby-wall 48x720 (y 720, x: wood panelling, cornice,
@@ -130,7 +133,7 @@ T = 12
 COLUMNS = 8
 W, H = 720, 360
 FY = 312                       # the sidewalk line inside a one-screen street piece (facades, storefronts)
-STREET_FY = 672                # the street's sidewalk line: the street is 720px (60 tiles) tall
+STREET_FY = 600                # the street's sidewalk top (row 50): the street is 720px (60 tiles) tall, ground below
 TILESETS = "public/art/tilesets"
 BACKDROPS = "public/art/backdrops"
 SPRITES = "public/art/sprites"
@@ -565,7 +568,7 @@ def icon(g, kind, x, y, c):
 
 
 def street_sky():
-    """48x672, repeat x: the day sky behind the whole two-screen street."""
+    """48x600, repeat x: the day sky behind the whole street above the sidewalk."""
     return R(Grid(48, STREET_FY), (0, 0, 48, STREET_FY, "sky"))
 
 
@@ -614,7 +617,7 @@ def facade(kind):
 
 
 def fire_escape():
-    """196x185, bottom at y 545: an ink platform and railing under the second-storey windows, a stair up out of
+    """196x185, bottom at y 473: an ink platform and railing under the second-storey windows, a stair up out of
     the screen and a drop ladder hanging towards the sidewalk."""
     g = Grid(196, 185)
     R(g, (0, 112, 196, 3, "ink"), (0, 92, 196, 2, "ink"))
@@ -629,7 +632,7 @@ def fire_escape():
 
 
 def hotel_crest():
-    """98x44, bottom at y 550: two banners on short poles either side of a navy plaque with the hotel's crest."""
+    """98x44, bottom at y 478: two banners on short poles either side of a navy plaque with the hotel's crest."""
     g = Grid(98, 44)
     for x, c in ((4, "navy"), (82, "dgreen")):
         R(g, (x - 4, 0, 20, 2, "ink"), (x, 2, 12, 34, c), (x + 2, 36, 8, 4, c), (x, 2, 12, 2, "cream"))
@@ -639,7 +642,7 @@ def hotel_crest():
 
 
 def hotel_window():
-    """32x152, bottom at y 664: a tall ground-storey window."""
+    """32x152, bottom at y 592: a tall ground-storey window."""
     return R(Grid(32, 152), (0, 0, 32, 152, "navy"), (3, 3, 26, 146, "ink"), (3, 48, 26, 2, "navy"),
              (6, 8, 4, 30, "dslate"))
 
@@ -865,9 +868,9 @@ BACKDROP_DEFS = {
     "street-sky": (street_sky, STREET_FY, "x"),
     "street-skyline": (street_skyline, STREET_FY, "x"),
     **{f"facade-{k}": ((lambda k=k: facade(k)), STREET_FY, "x") for k in BUILDINGS},
-    "fire-escape": (fire_escape, 545, "none"),
-    "hotel-crest": (hotel_crest, 550, "none"),
-    "hotel-window": (hotel_window, 664, "none"),
+    "fire-escape": (fire_escape, 473, "none"),
+    "hotel-crest": (hotel_crest, 478, "none"),
+    "hotel-window": (hotel_window, 592, "none"),
     **{f"storefront-{k}": ((lambda k=k: storefront(k)), STREET_FY, "none") for k in SHOPS},
     "cab": (cab, STREET_FY, "none"),
     "hot-dog-cart": (hot_dog_cart, STREET_FY, "none"),
@@ -877,11 +880,11 @@ BACKDROP_DEFS = {
     "doorman-podium": (doorman_podium, STREET_FY, "none"),
     "canopy-poles": (canopy_poles, STREET_FY, "none"),
     "cross-street": (cross_street, STREET_FY, "none"),
-    **{f"facade-{k}-upper": ((lambda k=k: facade_upper(k)), 360, "x") for k in ("walkup", "brownstone", "hotel")},
-    **{f"roofline-{k}": ((lambda k=k: roofline(k)), 180, "x") for k in ("walkup", "brownstone", "hotel")},
-    "fire-escape-railing": (fire_escape_railing, 468, "x"),
-    "fire-escape-ladder": (fire_escape_ladder, 468, "none"),
-    "water-tower": (water_tower, 132, "none"),
+    **{f"facade-{k}-upper": ((lambda k=k: facade_upper(k)), 288, "x") for k in ("walkup", "brownstone", "hotel")},
+    **{f"roofline-{k}": ((lambda k=k: roofline(k)), 108, "x") for k in ("walkup", "brownstone", "hotel")},
+    "fire-escape-railing": (fire_escape_railing, 432, "x"),
+    "fire-escape-ladder": (fire_escape_ladder, 432, "none"),
+    "water-tower": (water_tower, 240, "none"),
     "lobby-wall": (lobby_wall, LOBBY_H, "x"),
     "lobby-balustrade": (lobby_balustrade, 288, "x"),
     "lobby-bookcase": (lobby_bookcase, LOBBY_FY, "none"),
@@ -940,24 +943,24 @@ def build():
 # ---------------------------------------------------------------- preview: example layouts
 
 # One example street for the preview only: a 720x720 column (60x60 tiles, two screens tall) with the sidewalk along
-# the bottom (its top at row 56, y 672) and a climb to the roof, built to the reaches (a hop rises 3 tiles, a full
+# the bottom (its top at row 50, y 600, ground below) and a climb to the roof, built to the reaches (a hop rises 3 tiles, a full
 # jump 8). Backdrop runs are (key, x0, x1, bottom y); pieces (key, x, bottom y); one-way rows (tile, row, first
 # col, width).
 STREET_EXAMPLE = dict(
     runs=[("street-sky", 0, 720, STREET_FY), ("street-skyline", 0, 720, STREET_FY),
-          ("facade-walkup", 0, 288, STREET_FY), ("facade-walkup-upper", 0, 288, 360),
-          ("roofline-walkup", 0, 288, 180),
-          ("facade-brownstone", 288, 528, STREET_FY), ("roofline-brownstone", 288, 528, 360),
+          ("facade-walkup", 0, 288, STREET_FY), ("facade-walkup-upper", 0, 288, 288),
+          ("roofline-walkup", 0, 288, 108),
+          ("facade-brownstone", 288, 528, STREET_FY), ("roofline-brownstone", 288, 528, 288),
           ("facade-one-storey", 528, 720, STREET_FY),
-          ("fire-escape-railing", 72, 216, 468), ("fire-escape-railing", 72, 216, 372),
-          ("fire-escape-railing", 72, 216, 288), ("fire-escape-railing", 72, 216, 192)],
+          ("fire-escape-railing", 72, 216, 432), ("fire-escape-railing", 72, 216, 336),
+          ("fire-escape-railing", 72, 216, 240), ("fire-escape-railing", 72, 216, 156)],
     pieces=[("storefront-pet-shop", 12, STREET_FY), ("storefront-makeup-store", 156, STREET_FY),
             ("storefront-gift-shop", 300, STREET_FY), ("storefront-diner", 408, STREET_FY),
-            ("storefront-cafe", 588, STREET_FY), ("fire-escape-ladder", 192, 468), ("fire-escape-ladder", 192, 372),
-            ("fire-escape-ladder", 192, 288), ("water-tower", 24, 132), ("street-tree", 456, STREET_FY)],
-    ledges=[("awning", 47, 24, 6), ("fire-escape", 39, 6, 12), ("fire-escape", 31, 6, 12),
-            ("fire-escape", 24, 6, 12), ("fire-escape", 16, 6, 12), ("cornice", 11, 0, 24), ("tank", 5, 2, 4),
-            ("sill", 39, 29, 3), ("sill", 39, 37, 3), ("cornice", 26, 24, 20)],
+            ("storefront-cafe", 588, STREET_FY), ("fire-escape-ladder", 192, 432), ("fire-escape-ladder", 192, 336),
+            ("fire-escape-ladder", 192, 240), ("water-tower", 456, 240), ("street-tree", 456, STREET_FY)],
+    ledges=[("awning", 44, 24, 6), ("fire-escape", 36, 6, 12), ("fire-escape", 28, 6, 12),
+            ("fire-escape", 20, 6, 12), ("fire-escape", 13, 6, 12), ("cornice", 5, 0, 24), ("tank", 14, 38, 4),
+            ("sill", 33, 29, 3), ("sill", 33, 37, 3), ("cornice", 20, 24, 20)],
     planter=(20, 3),
 )
 
@@ -1023,9 +1026,9 @@ def street_example(chars=True, hud=True):
             im.alpha_composite(tiles[f"one-way-{kind}{side}"], (c * T, row * T))
     if chars:
         duck = Image.open(f"{SPRITES}/duck.png").convert("RGBA").crop((0, 0, 48, 42))
-        im.alpha_composite(duck, (150 - 24, 31 * T - 42))
+        im.alpha_composite(duck, (150 - 24, 28 * T - 42))
         ferret = Image.open(f"{SPRITES}/ferret.png").convert("RGBA").crop((0, 0, 64, 80))
-        im.alpha_composite(ferret, (420 - 32, 26 * T - 80))
+        im.alpha_composite(ferret, (360 - 32, 20 * T - 80))
     if hud:
         touch_buttons(im, (0, 360))
     return im.convert("RGB")

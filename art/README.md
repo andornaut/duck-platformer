@@ -293,7 +293,7 @@ The ambient characters of the Zone 1 street, drawn by `art/tools/cast.py`; its d
 A lost duck travels zone to zone across a map with forks. Zone 1 is a New York street on a summer day, brick and brownstone with ground-floor shops, two screens tall: the sidewalk runs along the bottom and she climbs the buildings into the upper screen. Its right end has an exit she takes with Use. `art/tools/floor1.py` draws it; its docstring lists every tile and piece.
 
 - Outdoor scale: the street is drawn as if zoomed out 4x while the duck and the 12px tiles keep their size. A storey is 180px and a door is about 45px, so the duck (42px) stands almost as tall as a street door.
-- The street is 720px (60 tiles) tall: the sidewalk's top is y 672 (row 56), the ground storey runs from y 492 to it, and storeys stack every 180px above. Every street piece's bottom y below is in that frame.
+- The street is 720px (60 tiles) tall: the sidewalk's top is y 600 (row 50), with sidewalk and road filling rows 50 to 59 below it so the camera can hold her feet two thirds down the screen. The ground storey runs from y 420 to the sidewalk, and storeys stack every 180px above: a two-storey roof is at y 240 (row 20) and a three-storey roof at y 60 (row 5), the tallest that fits. A water tower (its tank top 6 tiles above its roof) fits on a two-storey roof, not a three-storey one. Every street piece's bottom y below is in that frame.
 - Street tiles (`tiles-street`): a warm stone sidewalk (tops alternating with a 2px joint every 24px, ends, face), a cream stone kerb where it meets a cross street, the road one tile lower, a green-and-cream one-way shop awning, a forest-green one-way canopy, a 2-tile planter with a hedge top, the cellar hatch and its pit, and the door as a 3x4 piece: a pair of lit amber glass doors, 36x48, the brightest thing at the door.
 - Climbing tiles, appended so every earlier index holds: one-way fire-escape landings (black iron), window sills, a rooftop cornice and a water tower's flat top, each with left, middle and right tiles at any width. Every ledge's top carries the same 2px cream lip under a 1px dark edge, so it reads against any facade in greyscale.
 - Climbing backdrops: an upper storey for each tall facade (48x180, stacking above the facade piece every 180px with no seam), a roofline to cap it (the cornice tiles go along its top), a fire-escape railing to stand on each landing, a ladder between landings, and a water tower whose tank top is 6 tiles above its roof. Gameplay places them at the reaches (a hop rises 3 tiles, a full jump 8); landings can sit a few tiles apart, up to 8.
@@ -303,41 +303,41 @@ A lost duck travels zone to zone across a map with forks. Zone 1 is a New York s
 
 | Backdrop                | Size    | Bottom y | Repeat |
 | ----------------------- | ------- | -------- | ------ |
-| street-sky              | 48x672  | 672      | x      |
-| street-skyline          | 336x600 | 672      | x      |
-| facade-one-storey       | 48x192  | 672      | x      |
-| facade-walkup           | 48x312  | 672      | x      |
-| facade-walkup-upper     | 48x180  | 360      | x      |
-| roofline-walkup         | 48x48   | 180      | x      |
-| facade-brownstone       | 48x312  | 672      | x      |
-| facade-brownstone-upper | 48x180  | 360      | x      |
-| roofline-brownstone     | 48x48   | 180      | x      |
-| facade-hotel            | 48x312  | 672      | x      |
-| facade-hotel-upper      | 48x180  | 360      | x      |
-| roofline-hotel          | 48x48   | 180      | x      |
-| fire-escape             | 196x185 | 545      | none   |
-| fire-escape-railing     | 48x24   | 468      | x      |
-| fire-escape-ladder      | 24x96   | 468      | none   |
-| water-tower             | 48x84   | 132      | none   |
-| hotel-crest             | 98x44   | 550      | none   |
-| hotel-window            | 32x152  | 664      | none   |
-| storefront-cafe         | 84x120  | 672      | none   |
-| storefront-florist      | 84x120  | 672      | none   |
-| storefront-gift-shop    | 96x120  | 672      | none   |
-| storefront-makeup-store | 96x120  | 672      | none   |
-| storefront-pet-shop     | 108x120 | 672      | none   |
-| storefront-diner        | 108x120 | 672      | none   |
-| storefront-noodle-bar   | 120x120 | 672      | none   |
-| cab                     | 96x40   | 672      | none   |
-| hot-dog-cart            | 40x70   | 672      | none   |
-| subway-railing          | 72x62   | 672      | none   |
-| street-tree             | 64x136  | 672      | none   |
-| walk-signal             | 12x82   | 672      | none   |
-| doorman-podium          | 18x24   | 672      | none   |
-| canopy-poles            | 60x60   | 672      | none   |
-| cross-street            | 120x26  | 672      | none   |
+| street-sky              | 48x600  | 600      | x      |
+| street-skyline          | 336x600 | 600      | x      |
+| facade-one-storey       | 48x192  | 600      | x      |
+| facade-walkup           | 48x312  | 600      | x      |
+| facade-walkup-upper     | 48x180  | 288      | x      |
+| roofline-walkup         | 48x48   | 108      | x      |
+| facade-brownstone       | 48x312  | 600      | x      |
+| facade-brownstone-upper | 48x180  | 288      | x      |
+| roofline-brownstone     | 48x48   | 108      | x      |
+| facade-hotel            | 48x312  | 600      | x      |
+| facade-hotel-upper      | 48x180  | 288      | x      |
+| roofline-hotel          | 48x48   | 108      | x      |
+| fire-escape             | 196x185 | 473      | none   |
+| fire-escape-railing     | 48x24   | 432      | x      |
+| fire-escape-ladder      | 24x96   | 432      | none   |
+| water-tower             | 48x84   | 240      | none   |
+| hotel-crest             | 98x44   | 478      | none   |
+| hotel-window            | 32x152  | 592      | none   |
+| storefront-cafe         | 84x120  | 600      | none   |
+| storefront-florist      | 84x120  | 600      | none   |
+| storefront-gift-shop    | 96x120  | 600      | none   |
+| storefront-makeup-store | 96x120  | 600      | none   |
+| storefront-pet-shop     | 108x120 | 600      | none   |
+| storefront-diner        | 108x120 | 600      | none   |
+| storefront-noodle-bar   | 120x120 | 600      | none   |
+| cab                     | 96x40   | 600      | none   |
+| hot-dog-cart            | 40x70   | 600      | none   |
+| subway-railing          | 72x62   | 600      | none   |
+| street-tree             | 64x136  | 600      | none   |
+| walk-signal             | 12x82   | 600      | none   |
+| doorman-podium          | 18x24   | 600      | none   |
+| canopy-poles            | 60x60   | 600      | none   |
+| cross-street            | 120x26  | 600      | none   |
 
-Below the sidewalk line the game shows ink.
+Below the sidewalk's top, the sidewalk and road tiles fill rows 50 to 59.
 
 ### Kept for a later indoor zone: the boutique lobby
 
