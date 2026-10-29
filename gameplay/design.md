@@ -10,7 +10,7 @@ A landscape, left-to-right platformer: a duck falls out of her apartment at the 
 
 ## Setting
 
-- **Characters:** the duck is the one the player controls: a cute, chibi, cream-coloured duck (her head about 1.5× the size of her body) with a pink bow on top of her head. Her full design is in the [art plan](../art/README.md). Animals talk, and most interactions are with animals. PLACEHOLDER: whether there are humans (see [`ideas.md`](ideas.md))
+- **Characters:** the duck is the one the player controls. PLACEHOLDER: her look, which art is redesigning from a simple white duck (a round body, a small head, an orange bill and a dot eye); her design is in the [art plan](../art/README.md). Animals talk, and most interactions are with animals. PLACEHOLDER: whether there are humans (see [`ideas.md`](ideas.md))
 - **Ferret:** the villain, who schemes against the duck's climb: a brown ferret, about twice the duck's height, standing upright, with a dark eye mask, a tall plum stovepipe hat and a red bow tie. Its full design is in the [art plan](../art/README.md)
 - **Floors:** each floor is one everyday place in the building, such as a restaurant, pool or spa, and the whole floor stays in that place. PLACEHOLDER: the floors and their order
 - **World:** the modern day, mixing fantasy and reality
