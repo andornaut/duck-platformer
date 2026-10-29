@@ -60,7 +60,7 @@ In order:
 - `art/tools/icons.py` draws the favicon and app icons, the duck's head on a green disc, as plain PNGs, not sprites or manifest entries: `public/favicon.ico` (16 and 32), `public/art/favicon-16.png` and `public/art/favicon.png`, and in `public/icons/` the 180 apple-touch icon on a green square, the 192 and 512 icons on a green disc with a transparent outside, and a 512 maskable icon with the subject inside the central 80%. The 16 and 32 are drawn natively; the larger icons are 64 and 90 drawings scaled by whole numbers.
 - `art/inventory.md` lists every asset (key, type, size, tags).
 - `art/tools/floor<n>.py` draws one floor's tilesets and backdrop pieces as plain PNGs, not Aseprite sprites, so the game builds each floor from level data instead of a fixed panorama.
-- A tileset is `public/art/tilesets/<key>.png`, 12x12 tiles in rows of 8 with no spacing or margin, plus `<key>.json`: `{"tileSize": 12, "columns": 8, "tiles": {"<name>": <index>}, "pieces": {"<name>": [[<index>, ...], ...]}}`. An index counts row by row. A piece is a multi-tile unit as rows of indices, top row first. A tile named `one-way-*` is a one-way ledge, which stops only a fall onto its top edge; every other tile with art is solid. The manifest lists each under `tilesets` as `{"key", "png", "json"}`.
+- A tileset is `public/art/tilesets/<key>.png`, 12x12 tiles in rows of 8 with no spacing or margin, plus `<key>.json`: `{"tileSize": 12, "columns": 8, "tiles": {"<name>": <index>}, "pieces": {"<name>": [[<index>, ...], ...]}}`. An index counts row by row. A piece is a multi-tile unit as rows of indices, top row first. A tile named `one-way-*` is a one-way ledge, which stops only a fall onto its top edge. A tile named `door-*` or `exit-*` is a doorway with no collision, and the game puts a Use zone over its piece. Every other tile with art is solid. The manifest lists each under `tilesets` as `{"key", "png", "json"}`.
 - A backdrop piece is `public/art/backdrops/<key>.png`, drawn behind the play layer. The manifest lists each under `backdrops` as `{"key", "png", "width", "height", "anchor": "bottom-left", "y", "repeat"}`: its bottom edge sits at world `y`, at an x the level data chooses, and `"repeat": "x"` tiles it across a run while `"none"` places it once.
 - Art reads game layout and data from the generated export files the game writes, never from `src/`. The export files are in `shared/export/`. Art writes the shared data files the game reads (`lights.json`, `palette.json`).
 - Keys are kebab-case, named after what the player sees. Internal names match displayed names.
@@ -218,30 +218,41 @@ A pause card over the game, which is dimmed by stepping every colour two ramp st
 
 ## Floor 1
 
-The street front of the building, then its lobby: a brick high street in the morning, a plain open front door, and a cream marble lobby. `art/tools/floor1.py` draws it; its docstring lists every tile and piece.
+The hotel, in New York. Floor 1 starts outside on a day street of brick and brownstone, with the hotel's ground-floor shops and its neighbours, and ends at the hotel's front door. Use at the door fades to the lobby, a separate indoor scene. `art/tools/floor1.py` draws it; its docstring lists every tile and piece.
 
-- The sidewalk and lobby floor line is y 312 (tile row 26). The road sits one tile lower, behind a cream stone kerb.
-- Street tiles (`tiles-street`): brick sidewalk (tops alternating with a 2px joint every 24px, ends, face), kerb, road, a green-and-cream one-way awning, a 2-tile planter with a hedge top, an iron post 2 tiles tall, and the front wall.
-- Lobby tiles (`tiles-lobby`): cream marble floor (a 48px slab: top, vein, top, joint), its face a step darker, a one-way marble shelf, a green marble column darker than the duck, and the stairwell exit as a 3x4 piece.
-- One-way ledges sit 6 tiles above the floor (row 20, y 240), which is a full jump; awnings fit under the storefront signs there.
-- The entrance: a 4-tile front wall in section from the top of the screen down to row 21, its lintels the door head. Its 2 left columns are `front-wall-*` (street face) and its 2 right columns `column-*` (lobby face). Under it, `entrance-street` and `entrance-lobby` sit side by side, and the street backdrop gives way to the lobby backdrop at the door's centre line, which they cover.
-- Signs are icons, never text: a cup, a flower, a gift box, a lipstick, a paw, a fork and knife, a noodle bowl.
+- Outdoor scale: the street is drawn as if zoomed out 4x while the duck and the 12px tiles keep their size. A storey is 180px (the ground storey runs from y 132 to the sidewalk line, y 312) and a door is about 45px, so the duck (42px) stands almost as tall as a street door.
+- Street tiles (`tiles-street`): a warm stone sidewalk (tops alternating with a 2px joint every 24px, ends, face), a cream stone kerb where it meets a cross street, the road one tile lower, a green-and-cream one-way shop awning, the hotel's one-way forest-green canopy, a 2-tile planter with a hedge top, and the hotel door as a 3x4 piece: a pair of lit amber glass doors, 36x48, the brightest thing at the door.
+- One-way awnings and the canopy sit 6 tiles above the sidewalk (row 20, y 240), a full jump, under the shop signs and over the hotel door.
+- Backdrops are modular: a repeating sky and far skyline (water towers, a glass tower), one repeating facade per building type (one-storey brick, walk-up, brownstone, hotel), facade pieces (a fire escape, the hotel's crest and banners, its tall lobby windows), one storefront per shop, and street furniture placed singly (a cab, a hot-dog cart, a subway railing, a street tree, a walk signal, the doorman's podium, the canopy's poles). A cross street is a gap with no facade, where the skyline shows over the far avenue.
+- Signs are icons, never text: a cup, a flower, a gift box, a lipstick, a paw, a fork and knife, a noodle bowl, and the hotel's crest.
+- Lobby tiles (`tiles-lobby`) and backdrops: cream marble floor, a one-way marble shelf, a green marble column and the stairwell exit as a 3x4 piece. They are due to be redrawn at indoor scale.
 
 | Backdrop                | Size    | Bottom y | Repeat |
 | ----------------------- | ------- | -------- | ------ |
-| street-sky              | 48x48   | 48       | x      |
-| street-facade           | 48x144  | 192      | x      |
-| street-wall             | 12x120  | 312      | x      |
-| street-lamp             | 24x168  | 312      | none   |
-| storefront-cafe         | 144x120 | 312      | none   |
-| storefront-florist      | 144x120 | 312      | none   |
-| storefront-gift-shop    | 144x120 | 312      | none   |
-| storefront-makeup-store | 120x120 | 312      | none   |
-| storefront-pet-shop     | 120x120 | 312      | none   |
-| storefront-diner        | 168x120 | 312      | none   |
-| storefront-noodle-bar   | 144x120 | 312      | none   |
-| entrance-street         | 24x48   | 312      | none   |
-| entrance-lobby          | 24x48   | 312      | none   |
+| street-sky              | 48x312  | 312      | x      |
+| street-skyline          | 336x272 | 312      | x      |
+| facade-one-storey       | 48x192  | 312      | x      |
+| facade-walkup           | 48x312  | 312      | x      |
+| facade-brownstone       | 48x312  | 312      | x      |
+| facade-hotel            | 48x312  | 312      | x      |
+| fire-escape             | 196x185 | 185      | none   |
+| hotel-crest             | 98x44   | 190      | none   |
+| hotel-window            | 32x152  | 304      | none   |
+| storefront-cafe         | 84x120  | 312      | none   |
+| storefront-florist      | 84x120  | 312      | none   |
+| storefront-gift-shop    | 96x120  | 312      | none   |
+| storefront-makeup-store | 96x120  | 312      | none   |
+| storefront-pet-shop     | 108x120 | 312      | none   |
+| storefront-diner        | 108x120 | 312      | none   |
+| storefront-noodle-bar   | 120x120 | 312      | none   |
+| cab                     | 96x40   | 312      | none   |
+| hot-dog-cart            | 40x70   | 312      | none   |
+| subway-railing          | 72x62   | 312      | none   |
+| street-tree             | 64x136  | 312      | none   |
+| walk-signal             | 12x82   | 312      | none   |
+| doorman-podium          | 18x24   | 312      | none   |
+| canopy-poles            | 60x60   | 312      | none   |
+| cross-street            | 120x26  | 312      | none   |
 | lobby-wall              | 48x312  | 312      | x      |
 | lobby-pilaster          | 24x192  | 240      | none   |
 | lobby-window            | 72x144  | 216      | none   |

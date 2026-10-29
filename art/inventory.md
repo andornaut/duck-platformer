@@ -54,34 +54,45 @@ Plain PNGs and one ICO from `art/tools/icons.py`, not manifest entries.
 
 ## Tilesets
 
-12x12 tiles in rows of 8, from `art/tools/floor1.py`. One-way ledges are named `one-way-*`.
+12x12 tiles in rows of 8, from `art/tools/floor1.py`. One-way ledges are named `one-way-*`; doorways (`door-*`, `exit-*`) have no collision.
 
-| Key          | Type                                                                      | Size           | Pieces     |
-| ------------ | ------------------------------------------------------------------------- | -------------- | ---------- |
-| tiles-lobby  | tileset: marble floor, one-way ledge, green marble column, stairwell exit | 33 tiles, 12px | exit (3x4) |
-| tiles-street | tileset: sidewalk, kerb, road, one-way awning, planter, post, front wall  | 26 tiles, 12px |            |
+| Key          | Type                                                                               | Size           | Pieces     |
+| ------------ | ---------------------------------------------------------------------------------- | -------------- | ---------- |
+| tiles-lobby  | tileset: marble floor, one-way ledge, green marble column, stairwell exit          | 33 tiles, 12px | exit (3x4) |
+| tiles-street | tileset: sidewalk, kerb, road, one-way awning, one-way canopy, planter, hotel door | 35 tiles, 12px | door (3x4) |
 
 ## Backdrops
 
 Pieces placed from level data by their bottom-left corner at the bottom y given, from `art/tools/floor1.py`.
 
-| Key                     | Type                            | Size    | Bottom y, repeat |
-| ----------------------- | ------------------------------- | ------- | ---------------- |
-| entrance-lobby          | open front door, lobby side     | 24x48   | 312, none        |
-| entrance-street         | open front door, street side    | 24x48   | 312, none        |
-| lobby-mailboxes         | lobby prop                      | 108x84  | 228, none        |
-| lobby-pilaster          | lobby prop                      | 24x192  | 240, none        |
-| lobby-plant             | lobby prop                      | 36x72   | 312, none        |
-| lobby-wall              | lobby wall, cornice, wainscot   | 48x312  | 312, x           |
-| lobby-window            | lobby prop                      | 72x144  | 216, none        |
-| storefront-cafe         | storefront, cup sign            | 144x120 | 312, none        |
-| storefront-diner        | storefront, fork-and-knife sign | 168x120 | 312, none        |
-| storefront-florist      | storefront, flower sign         | 144x120 | 312, none        |
-| storefront-gift-shop    | storefront, gift sign           | 144x120 | 312, none        |
-| storefront-makeup-store | storefront, lipstick sign       | 120x120 | 312, none        |
-| storefront-noodle-bar   | storefront, noodle-bowl sign    | 144x120 | 312, none        |
-| storefront-pet-shop     | storefront, paw sign            | 120x120 | 312, none        |
-| street-facade           | apartment floors                | 48x144  | 192, x           |
-| street-lamp             | street prop, lit bulb           | 24x168  | 312, none        |
-| street-sky              | morning sky band                | 48x48   | 48, x            |
-| street-wall             | brick between storefronts       | 12x120  | 312, x           |
+| Key                     | Type                                     | Size    | Bottom y, repeat |
+| ----------------------- | ---------------------------------------- | ------- | ---------------- |
+| cab                     | street furniture, yellow cab             | 96x40   | 312, none        |
+| canopy-poles            | street furniture, under the hotel canopy | 60x60   | 312, none        |
+| cross-street            | far avenue down a cross street           | 120x26  | 312, none        |
+| doorman-podium          | street furniture                         | 18x24   | 312, none        |
+| facade-brownstone       | building facade, brownstone              | 48x312  | 312, x           |
+| facade-hotel            | building facade, the hotel               | 48x312  | 312, x           |
+| facade-one-storey       | building facade, one-storey brick        | 48x192  | 312, x           |
+| facade-walkup           | building facade, brick walk-up           | 48x312  | 312, x           |
+| fire-escape             | facade piece, walk-up                    | 196x185 | 185, none        |
+| hot-dog-cart            | street furniture                         | 40x70   | 312, none        |
+| hotel-crest             | facade piece, banners and crest          | 98x44   | 190, none        |
+| hotel-window            | facade piece, tall lobby window          | 32x152  | 304, none        |
+| lobby-mailboxes         | lobby prop                               | 108x84  | 228, none        |
+| lobby-pilaster          | lobby prop                               | 24x192  | 240, none        |
+| lobby-plant             | lobby prop                               | 36x72   | 312, none        |
+| lobby-wall              | lobby wall, cornice, wainscot            | 48x312  | 312, x           |
+| lobby-window            | lobby prop                               | 72x144  | 216, none        |
+| storefront-cafe         | storefront, cup sign                     | 84x120  | 312, none        |
+| storefront-diner        | storefront, fork-and-knife sign          | 108x120 | 312, none        |
+| storefront-florist      | storefront, flower sign                  | 84x120  | 312, none        |
+| storefront-gift-shop    | storefront, gift sign                    | 96x120  | 312, none        |
+| storefront-makeup-store | storefront, lipstick sign                | 96x120  | 312, none        |
+| storefront-noodle-bar   | storefront, noodle-bowl sign             | 120x120 | 312, none        |
+| storefront-pet-shop     | storefront, paw sign                     | 108x120 | 312, none        |
+| street-sky              | day sky                                  | 48x312  | 312, x           |
+| street-skyline          | far skyline, water towers, glass tower   | 336x272 | 312, x           |
+| street-tree             | street furniture                         | 64x136  | 312, none        |
+| subway-railing          | street furniture                         | 72x62   | 312, none        |
+| walk-signal             | street furniture                         | 12x82   | 312, none        |

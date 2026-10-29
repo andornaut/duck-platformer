@@ -1,25 +1,57 @@
 {
   "columns": 8,
-  "pieces": {},
+  "pieces": {
+    "door": [
+      [
+        23,
+        24,
+        25
+      ],
+      [
+        26,
+        27,
+        28
+      ],
+      [
+        29,
+        30,
+        31
+      ],
+      [
+        32,
+        33,
+        34
+      ]
+    ]
+  },
   "tileSize": 12,
   "tiles": {
-    "front-wall-left": 22,
-    "front-wall-lintel-left": 24,
-    "front-wall-lintel-right": 25,
-    "front-wall-right": 23,
+    "door-0": 23,
+    "door-1": 24,
+    "door-10": 33,
+    "door-11": 34,
+    "door-2": 25,
+    "door-3": 26,
+    "door-4": 27,
+    "door-5": 28,
+    "door-6": 29,
+    "door-7": 30,
+    "door-8": 31,
+    "door-9": 32,
     "kerb-left": 4,
     "kerb-right": 5,
     "one-way-awning": 12,
     "one-way-awning-left": 11,
     "one-way-awning-right": 13,
-    "planter": 18,
-    "planter-left": 17,
-    "planter-right": 19,
-    "planter-top": 15,
-    "planter-top-left": 14,
-    "planter-top-right": 16,
-    "post-base": 21,
-    "post-top": 20,
+    "one-way-canopy": 15,
+    "one-way-canopy-left": 14,
+    "one-way-canopy-right": 16,
+    "planter": 21,
+    "planter-left": 20,
+    "planter-right": 22,
+    "planter-top": 18,
+    "planter-top-left": 17,
+    "planter-top-right": 19,
     "road": 10,
     "road-top": 9,
     "sidewalk-face": 6,
