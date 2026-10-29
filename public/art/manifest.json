@@ -18,9 +18,19 @@
       "json": "sprites/duck.json"
     },
     {
+      "key": "ferret",
+      "png": "sprites/ferret.png",
+      "json": "sprites/ferret.json"
+    },
+    {
       "key": "portrait-duck",
       "png": "sprites/portrait-duck.png",
       "json": "sprites/portrait-duck.json"
+    },
+    {
+      "key": "portrait-ferret",
+      "png": "sprites/portrait-ferret.png",
+      "json": "sprites/portrait-ferret.json"
     },
     {
       "key": "ui-answer",

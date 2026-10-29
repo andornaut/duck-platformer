@@ -91,10 +91,12 @@ In order:
 - Feet sit on the frame's bottom rows.
 - Size classes step evenly. Draw each to a target inked area, not just a frame size, so small and large read as distinct steps.
 
-| Sprite        | Frame |
-| ------------- | ----- |
-| Duck          | 64x48 |
-| Duck portrait | 64x64 |
+| Sprite          | Frame |
+| --------------- | ----- |
+| Duck            | 64x48 |
+| Duck portrait   | 64x64 |
+| Ferret          | 64x64 |
+| Ferret portrait | 64x64 |
 
 ### Text
 
@@ -116,6 +118,18 @@ The protagonist is a cute, chibi, cream-coloured female duck, drawn facing right
 - Frame 64x48, feet on rows 44 to 46 and the outline on row 47.
 - Anchor: the frame's bottom edge sits on the collision box's bottom edge, and her body-centre x, 32 (the frame's centre line, between columns 31 and 32), sits on the box centre, so mirroring her does not move it.
 - Portrait: 64x64, her head and shoulders facing right, cut off by the bottom edge, with one ink outer line on a transparent ground. The dialogue box's 68x68 frame supplies the backing.
+
+## The ferret
+
+The villain is a chibi sable ferret in a top hat and bow tie, a talking animal that schemes against the duck's climb: in dialogue, in quips and through the hazards it sets. It is evil in a charming, cartoon way (a smug side-eye, a smirk, rubbed paws), never scary, and is never fought. `art/tools/ferret.py` draws it; its docstring gives every frame's pose and timing.
+
+- Proportions: standing upright, its head is about 1.5x the area of its body. The tail curls up into a twirl behind it.
+- Fur: brown with a tan light rim and dark-brown cel crescents; a cream muzzle, cheek and belly; a dark-brown mask across a narrowed side-eye (cream sclera, the pupil at the front) under a plum brow.
+- Hat: black, with a plum rim light and a red band, tipped forward, its brim overhanging the head on both sides so the two never merge in silhouette.
+- Colour: tan, brown, dark brown, plum and cream, with red (the band and bow tie) as the one accent. Ink outline; internal edges two ramp steps darker than the part in front.
+- Frame 64x64, facing left (mirrored for right), feet on rows 60 to 62 and the outline on row 63.
+- Anchor: the frame's bottom edge sits on the collision box's bottom edge, and its body-centre x, 32 (the frame's centre line, between columns 31 and 32), sits on the box centre, so mirroring it does not move it.
+- Portrait: 64x64, its head and shoulders facing right towards the text, as the duck's does, cut off by the bottom edge, with one ink outer line on a transparent ground.
 
 ## UI
 
@@ -200,4 +214,5 @@ A pause card over the game, which is dimmed by stepping every colour two ramp st
 
 ## Remaining for the first build
 
-- The ferret's sprite and dialogue portrait.
+- The look of the hazards the ferret sets, distinct from each floor's own hazards.
+- The floors: one everyday place per floor.
