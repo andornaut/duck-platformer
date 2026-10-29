@@ -605,8 +605,10 @@ def subway_railing():
 
 
 def street_tree():
-    """64x136: a round forest-green crown on a thin trunk, dim so it stays behind play."""
-    g = R(Grid(64, 136), (30, 56, 4, 80, "dbrown"))
+    """64x136: a round forest-green crown on a trunk 8px wide: an ink edge each side, a 2px tan lit band on the
+    left and a brown body, so the trunk holds at least 4:1 (its lit band) against every facade and the sky."""
+    g = R(Grid(64, 136), (28, 56, 8, 80, "ink"), (29, 56, 2, 80, "tan"), (31, 56, 3, 80, "brown"),
+          (34, 56, 1, 80, "dbrown"))
     g.ell(32, 32, 32, 32, "forest")
     g.ell(16, 16, 14, 12, "dgreen")
     return g
