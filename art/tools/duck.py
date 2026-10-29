@@ -5,7 +5,7 @@ Usage, from the repository root:
   python3 -I art/tools/duck.py preview OUT.png  contact sheet of every frame on slate, tan and cream
 
 Design: a chibi cream duck, head about 1.5x the area of her body, facing right (the game mirrors her).
-Long flat orange bill with a rust mouth line and nostril. Plain tan comma wing with a dark-brown line,
+Short, round orange bill with a rust mouth line. Plain tan comma wing with a dark-brown line,
 round nub tail, tiny orange stub feet with no legs, tucked under the belly in the air. A pink two-loop bow
 tilted along the back of the crown. Cream body with tan cel shading and a white rim light; ink outline.
 
@@ -15,18 +15,18 @@ columns 31 and 32, the frame's centre), sits on the box centre, so mirroring her
 
 | Tag     | Frame | ms  | Pose                                                        | Lift | Body w x h | Shadow w |
 | ------- | ----- | --- | ----------------------------------------------------------- | ---- | ---------- | -------- |
-| idle    | 0     | 400 | rest                                                        | 0    | 24 x 17    | 24       |
-| idle    | 1     | 400 | breath: body and head 1px up, feet planted                  | 1    | 24 x 17    | 24       |
-| walk    | 0     | 130 | near foot forward and 2px up, far foot back                 | 0    | 24 x 17    | 24       |
-| walk    | 1     | 130 | passing: feet together, body 1px up                         | 1    | 24 x 17    | 22       |
-| walk    | 2     | 130 | far foot forward and 2px up (behind the body), near back    | 0    | 24 x 17    | 24       |
-| walk    | 3     | 130 | passing                                                     | 1    | 24 x 17    | 22       |
+| idle    | 0     | 400 | rest                                                        | 0    | 25 x 16    | 24       |
+| idle    | 1     | 400 | breath: body and head 1px up, feet planted                  | 1    | 25 x 16    | 24       |
+| walk    | 0     | 130 | near foot forward and 2px up, far foot back                 | 0    | 25 x 16    | 24       |
+| walk    | 1     | 130 | passing: feet together, body 1px up                         | 1    | 25 x 16    | 22       |
+| walk    | 2     | 130 | far foot forward and 2px up (behind the body), near back    | 0    | 25 x 16    | 24       |
+| walk    | 3     | 130 | passing                                                     | 1    | 25 x 16    | 22       |
 | jump    | 0     | 80  | crouch: squash, head 2px down                               | 0    | 29 x 14    | 28       |
 | jump    | 1     | 100 | lift: stretch, 3px up, feet hanging, wing half raised       | 3    | 21 x 20    | 18       |
-| flutter | 0     | 100 | wing up (the signature pose)                                | 3    | 24 x 17    | 16       |
-| flutter | 1     | 100 | wing back                                                   | 3    | 24 x 17    | 16       |
-| flutter | 2     | 100 | wing level: the downstroke lifts the body 1px               | 4    | 24 x 17    | 16       |
-| flutter | 3     | 100 | wing back                                                   | 3    | 24 x 17    | 16       |
+| flutter | 0     | 100 | wing up (the signature pose)                                | 3    | 25 x 16    | 16       |
+| flutter | 1     | 100 | wing back                                                   | 3    | 25 x 16    | 16       |
+| flutter | 2     | 100 | wing level: the downstroke lifts the body 1px               | 4    | 25 x 16    | 16       |
+| flutter | 3     | 100 | wing back                                                   | 3    | 25 x 16    | 16       |
 | land    | 0     | 100 | contact: squash, feet planted wide                          | 0    | 30 x 14    | 30       |
 | land    | 1     | 80  | recover: half squash                                        | 0    | 27 x 15    | 26       |
 
@@ -54,7 +54,9 @@ SRC = "art/duck"
 W, H = 64, 48
 GY = H - 1  # the outline row under the feet
 BCX = 32.0  # body centre x: the frame's centre line
-BRX, BRY = 12.0, 8.6  # body ellipse at rest
+BRX, BRY = 12.6, 8.2  # body ellipse at rest: round and low under the head
+BODY_POWER = 2.2  # the body's superellipse power: lower is rounder
+HEAD_SET = 0.66  # how far the head sits above the body's top, in head radii: lower is squatter
 HRX, HRY = 13.0, 12.0  # head ellipse
 BODY_BOTTOM = 44  # the body's bottom edge at rest; the feet fill rows 44 to 46
 CREAM, SHADE, LIGHT = "cream", "tan", "white"
@@ -149,21 +151,19 @@ def foot(g, cx, cy):
     g.ell(cx, cy, 3.2, 1.6, "orange", "rust")
 
 
-def draw(lift=0, bw=BRX, bh=BRY, wing=("fold", 0), feet=((-4, 0), (4, 0)), far_behind=True, head_dy=0,
-         bill="long"):
+def draw(lift=0, bw=BRX, bh=BRY, wing=("fold", 0), feet=((-4, 0), (4, 0)), far_behind=True, head_dy=0):
     """One 64x48 frame.
 
     lift: body bottom edge this many px above its rest row. bw, bh: body ellipse radii. wing: ("fold", dy)
     or ("raise", degrees), the raised wing's direction in screen degrees (180 straight back, above 180
     up and back). feet: ((dx, up), (dx, up)) for the far and near foot, relative to the body centre, or
-    "tucked". head_dy: extra head offset (positive is down). bill: "long" (V1's) or "spatula" (O4's, for
-    the comparison sheet only).
+    "tucked". head_dy: extra head offset (positive is down).
     """
     g = Grid(W, H)
     bottom = BODY_BOTTOM - lift
     bcx, bcy = BCX, bottom - bh
     hcx = bcx + BRX * 0.45
-    hcy = bcy - bh * 0.35 - HRY * 0.72 + head_dy
+    hcy = bcy - bh * 0.35 - HRY * HEAD_SET + head_dy
     tx = bcx - bw
 
     def feet_at(which):
@@ -177,7 +177,7 @@ def draw(lift=0, bw=BRX, bh=BRY, wing=("fold", 0), feet=((-4, 0), (4, 0)), far_b
         feet_at(0)
     cel(g, in_ell(tx + 1, bcy - 3, 4.6, 3.6), CREAM, SHADE, None, 2, 1)
     # body; a raised wing goes on before the head so its root sits behind the head
-    cel(g, in_blob(bcx, bcy, bw, bh), CREAM, SHADE, LIGHT, 3, 1)
+    cel(g, in_blob(bcx, bcy, bw, bh, BODY_POWER), CREAM, SHADE, LIGHT, 3, 1)
     if not far_behind:
         feet_at(0)
     feet_at(1)
@@ -198,17 +198,8 @@ def draw(lift=0, bw=BRX, bh=BRY, wing=("fold", 0), feet=((-4, 0), (4, 0)), far_b
         patch(g, m, WING, WING_LINE)
     # bill, eye, catchlight, blush
     bx, by = hcx + HRX - 1, hcy + HRY * 0.28
-    if bill == "long":
-        g.blob(bx + 6, by, 7.4, 3.6, "orange")
-        g.rect(int(bx), int(by + 2), 13, 1, "rust")  # mouth line
-        g.rect(int(bx + 8), int(by - 2), 2, 1, "rust")  # nostril
-    else:
-        m = m_poly(g, [(bx - 1, by - 2.5), (bx + 6, by - 2.5), (bx + 10, by - 4), (bx + 13, by - 3.5),
-                       (bx + 14, by - 1), (bx + 13.5, by + 2.5), (bx + 11, by + 3.5), (bx + 6, by + 2.5),
-                       (bx - 1, by + 2.5)])
-        for x, y in m:
-            g.p(x, y, "orange")
-        g.rect(int(bx), int(by + 1), 12, 1, "rust")
+    g.ell(bx + 4.2, by, 5.0, 3.8, "orange")
+    g.rect(int(bx + 1), int(by + 1), 8, 1, "rust")  # mouth line
     ex, ey = int(hcx + HRX * 0.3), int(hcy - HRY * 0.3)
     g.rect(ex, ey, 4, 6, INK)
     g.rect(ex, ey, 2, 2, "white")
@@ -264,18 +255,14 @@ def portrait(expr):
     cel(g, in_blob(25, 63, 21, 13), CREAM, SHADE, LIGHT, 4, 1)
     patch(g, m_ell(g, 16, 61, 10, 5.5), WING, WING_LINE)
     cel(g, in_ell(hcx, hcy, hrx, hry), CREAM, SHADE, LIGHT, 4, 1)
-    # bill: V1's long flat bill, scaled up, with its mouth line and nostril
+    # bill: the short, round bill, scaled up, with its mouth line
     bx, by = hcx + hrx - 4, hcy + 6
-    g.blob(bx + 8, by, 10.5, 5.2, "orange")
+    g.ell(bx + 5.5, by, 7.6, 5.6, "orange")
+    g.rect(int(bx), int(by + 1), 12, 1, "rust")
     if expr == "happy":  # the mouth line turns up at the corner
-        g.rect(int(bx) - 1, int(by + 2), 18, 1, "rust")
-        g.rect(int(bx) - 3, int(by + 1), 2, 1, "rust")
+        g.rect(int(bx) - 2, int(by), 2, 1, "rust")
     elif expr == "worried":  # the mouth line turns down at the corner
-        g.rect(int(bx) - 1, int(by + 2), 18, 1, "rust")
-        g.rect(int(bx) - 3, int(by + 3), 2, 1, "rust")
-    else:
-        g.rect(int(bx) - 1, int(by + 2), 18, 1, "rust")
-    g.rect(int(bx + 11), int(by - 3), 3, 1, "rust")  # nostril
+        g.rect(int(bx) - 2, int(by + 2), 2, 1, "rust")
     # eye
     ex, ey = 33, 22
     if expr == "happy":  # closed, a smile arc

@@ -111,9 +111,9 @@ In order:
 
 The protagonist is a cute, chibi, cream-coloured female duck, drawn facing right and mirrored for left. `art/tools/duck.py` draws her; its docstring gives every frame's pose, timing and squash and stretch table.
 
-- Proportions: her head is about 1.5x the area of her body.
+- Proportions: her head is about 1.5x the area of her body, set low on a round, squat body.
 - Bow: a pink two-loop bow on top of her head, tilted along the back of the crown so one loop overhangs the back of her head. Two level loops on a round head read as ears in silhouette.
-- Bill: long, flat and orange, with a rust mouth line and nostril.
+- Bill: short, round and orange, with a rust mouth line.
 - Body: cream, with tan cel crescents and a white rim light. The wing is a plain tan comma with a dark-brown line, the tail a round nub, and the feet tiny orange stubs with no legs.
 - Every jump flutters (a slow, steerable fall), so the flutter is her signature: the wing raised up and back with a clear gap from the head, the body 3px higher, and the feet tucked under her belly.
 - Frame 64x48, feet on rows 44 to 46 and the outline on row 47.
