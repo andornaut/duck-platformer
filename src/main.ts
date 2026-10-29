@@ -17,6 +17,7 @@ import { BootScene } from "./scenes/BootScene";
 import { MapScene } from "./scenes/MapScene";
 import { PauseScene } from "./scenes/PauseScene";
 import { SettingsScene } from "./scenes/SettingsScene";
+import { StartScene } from "./scenes/StartScene";
 import { ZoneScene } from "./scenes/ZoneScene";
 
 // On a touch screen in portrait, src/main.css turns the page frame 90 degrees clockwise, so the
@@ -71,7 +72,7 @@ function startGame(): void {
     scale: { autoCenter: Scale.NO_CENTER, mode: Scale.FIT },
     // Later scenes draw over earlier ones: the pause card over the zone, the settings card over
     // the pause card's dim.
-    scene: [BootScene, MapScene, ZoneScene, PauseScene, SettingsScene],
+    scene: [BootScene, StartScene, MapScene, ZoneScene, PauseScene, SettingsScene],
     // WebGL only: the build's Phaser has no Canvas renderer (src/tools/phaserBuild.ts).
     type: WEBGL,
     width: SCREEN.width,

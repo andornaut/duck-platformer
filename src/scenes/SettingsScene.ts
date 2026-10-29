@@ -18,9 +18,19 @@ import { settingsKeyAction, stepFocus } from "../pause/settingsInput";
 import { installOffer } from "../pwa/installOffer";
 import { touchControlsShown } from "../settings/touchControls";
 import { addCardText, addSlice, BODY_FONT, paletteColour, TITLE_FONT } from "./cardParts";
-import type { PauseScene } from "./PauseScene";
 
-const PAUSE = "pause";
+// The scene that opens the settings card, the pause card's or the start screen's: it shows the
+// Touch controls setting as it changes, and shows again when the card closes. It passes the card
+// its keys and back while the card shows.
+export interface SettingsOpener {
+  setTouchControls(shown: boolean): void;
+  settingsClosed(): void;
+}
+
+// What the opener launches the card with: its own scene key.
+export interface SettingsData {
+  readonly opener: string;
+}
 
 // The settings card's controls, in the order the keyboard's focus moves through them.
 type Target = "close" | "install" | "touchControls";
@@ -31,13 +41,14 @@ const STEPS_GLYPHS: Readonly<Record<MenuInstallBrowser, string>> = {
   ios: "icon-ios-share",
 };
 
-// The settings card, which PauseScene opens in its card's place over the same dim: the Touch
-// controls row, the Install row while the game can be installed, and the build label. A row acts
-// when a press lands on it and lifts on it; the close X, back, Escape and P close the card, back
-// to the pause card. Install shows the browser's install prompt or, for a browser that installs
-// only from its own menu, the install steps card in the settings card's place, which the same
-// controls close. Up and Down move the keyboard's focus through the controls; Enter and Space
-// press the focused one. PauseScene passes this scene its keys and back.
+// The settings card, which the pause card opens in its place over the same dim, or the start
+// screen over itself: the Touch controls row, the Install row while the game can be installed,
+// and the build label. A row acts when a press lands on it and lifts on it; the close X, back,
+// Escape and P close the card, back to the scene that opened it. Install shows the browser's
+// install prompt or, for a browser that installs only from its own menu, the install steps card
+// in the settings card's place, which the same controls close. Up and Down move the keyboard's
+// focus through the controls; Enter and Space press the focused one. The opener passes this
+// scene its keys and back.
 export class SettingsScene extends Scene {
   private card!: GameObjects.Container;
   private checkbox!: GameObjects.Sprite;
@@ -49,6 +60,7 @@ export class SettingsScene extends Scene {
   private installButton: Readonly<Record<"normal" | "pressed", GameObjects.NineSlice>> | undefined;
   private installButtonLabel: GameObjects.BitmapText | undefined;
   private installLabel: GameObjects.BitmapText | undefined;
+  private opener = "";
   // The control a press landed on, which acts if the press lifts on it too.
   private pressed: Target | undefined;
   private stateText!: GameObjects.BitmapText;
@@ -60,6 +72,10 @@ export class SettingsScene extends Scene {
     super("settings");
   }
 
+  init(data: SettingsData): void {
+    this.opener = data.opener;
+  }
+
   create(): void {
     this.focus = undefined;
     this.pressed = undefined;
@@ -69,11 +85,13 @@ export class SettingsScene extends Scene {
     this.render();
     this.watchPresses();
     // The Install row comes and goes as the game becomes installable or installed.
-    const stopWatching = installOffer().onChange(() => this.scene.restart());
+    const stopWatching = installOffer().onChange(() =>
+      this.scene.restart({ opener: this.opener } satisfies SettingsData),
+    );
     this.events.once("shutdown", stopWatching);
   }
 
-  // A key PauseScene passes on while the card shows.
+  // A key the opener passes on while the card shows.
   key(event: KeyboardEvent): void {
     const action = settingsKeyAction(event.key, event.repeat);
     if (action === "close") {
@@ -102,7 +120,11 @@ export class SettingsScene extends Scene {
 
   private close(): void {
     this.scene.stop();
-    (this.scene.get(PAUSE) as PauseScene).settingsClosed();
+    this.openerScene().settingsClosed();
+  }
+
+  private openerScene(): SettingsOpener {
+    return this.scene.get(this.opener) as Scene & SettingsOpener;
   }
 
   private targets(): Target[] {
@@ -115,7 +137,7 @@ export class SettingsScene extends Scene {
     if (target === "close") {
       this.close();
     } else if (target === "touchControls") {
-      (this.scene.get(PAUSE) as PauseScene).setTouchControls(!touchControlsShown());
+      this.openerScene().setTouchControls(!touchControlsShown());
       this.render();
     } else {
       this.install();

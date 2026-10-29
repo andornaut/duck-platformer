@@ -71,10 +71,10 @@ export class BootScene extends Scene {
     }
     // The zone shows once a version about to be replaced by a newer one has had its chance to
     // reload first, so it never draws the old zone.
-    // The map comes first, unless ?zone=<n> plays the zones straight through.
+    // The start screen comes first, unless ?zone=<n> plays the zones straight through.
     void launchReady().then(() => {
       this.scene.launch("pause");
-      this.scene.start(new URLSearchParams(window.location.search).has("zone") ? "zone" : "map");
+      this.scene.start(new URLSearchParams(window.location.search).has("zone") ? "zone" : "start");
     });
   }
 

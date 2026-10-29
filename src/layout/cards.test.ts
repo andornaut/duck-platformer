@@ -30,7 +30,7 @@ const CARDS: [string, Rect, [string, Rect][]][] = [
     PAUSE_CARD.card,
     [
       ["close", PAUSE_CARD.close.hit],
-      ["quit row", PAUSE_CARD.quit.row],
+      ["return home row", PAUSE_CARD.home.row],
       ["resume", PAUSE_CARD.resume.hit],
       ["settings row", PAUSE_CARD.settings.row],
     ],
@@ -101,7 +101,7 @@ describe("card layouts", () => {
   // Each sprite's frame, at its point, lies inside the area that presses it.
   it.each([
     ["pause button", pauseSheet, PAUSE_BUTTON.at, PAUSE_BUTTON.hit],
-    ["quit icon", quitSheet, PAUSE_CARD.quit.icon, PAUSE_CARD.quit.row],
+    ["return home icon", quitSheet, PAUSE_CARD.home.icon, PAUSE_CARD.home.row],
     ["settings icon", settingsSheet, PAUSE_CARD.settings.icon, PAUSE_CARD.settings.row],
     [
       "checkbox",

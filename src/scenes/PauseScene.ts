@@ -8,36 +8,37 @@ import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
 import { PAUSE_BUTTON, PAUSE_CARD } from "../layout/pauseCard";
 import { type CardAction, cardBackAction, cardKeyAction } from "../pause/cardInput";
-import { coverZone, leaveGame, PHONE_EVENTS, startWakeLock, stopWakeLock, zoneShown } from "../pwa";
+import { coverZone, PHONE_EVENTS, startWakeLock, stopWakeLock, zoneShown } from "../pwa";
 import { setTouchControlsShown, touchControlsShown } from "../settings/touchControls";
 import { dimColour, type Palette } from "../view/dim";
 import { addCardText, addSlice, BODY_FONT, palette, paletteColour, TITLE_FONT } from "./cardParts";
-import type { SettingsScene } from "./SettingsScene";
+import type { SettingsData, SettingsOpener, SettingsScene } from "./SettingsScene";
 import type { ZoneScene } from "./ZoneScene";
 
 const ZONE = "zone";
 const SETTINGS = "settings";
+const START = "start";
 // The dimmed zone, with the touch buttons hidden and shown, so the settings card's Touch
 // controls row updates the view behind the card as it changes.
 const DIM_TEXTURES = { hidden: "pause-dim-hidden", shown: "pause-dim-shown" } as const;
 
-type Control = "close" | "pauseButton" | "quit" | "resume" | "settings";
+type Control = "close" | "home" | "pauseButton" | "resume" | "settings";
 
 // The pause card over the dimmed zone, and the pause button that opens it, which shows on a
 // touch screen while a zone plays, never on the map. It runs beside the zone from the start.
 // Opening the card pauses the zone and lets the screen sleep; Resume, the close X, back, Escape
 // and P close it. The Settings row opens SettingsScene's card over the same dim in the pause
-// card's place, and passes it the keys and back until it closes; Quit leaves the game
-// (leaveGame).
-export class PauseScene extends Scene {
+// card's place, and passes it the keys and back until it closes; Return home ends the zone for
+// the start screen.
+export class PauseScene extends Scene implements SettingsOpener {
   private card!: GameObjects.Container;
   private closeX!: GameObjects.Sprite;
   private dim!: GameObjects.Image;
   private pauseButton!: GameObjects.Sprite;
   // The control a press landed on, which acts if the press lifts on it too.
   private pressed: Control | undefined;
-  private quitIcon!: GameObjects.Sprite;
-  private quitLabel!: GameObjects.BitmapText;
+  private homeIcon!: GameObjects.Sprite;
+  private homeLabel!: GameObjects.BitmapText;
   private resume!: GameObjects.Sprite;
   private resumeLabel!: GameObjects.BitmapText;
   private settingsLabel!: GameObjects.BitmapText;
@@ -114,10 +115,14 @@ export class PauseScene extends Scene {
     coverZone("pauseCard", false);
   }
 
-  // Closed first, so a page kept for back-forward caching comes back to the game in play.
-  private quit(): void {
-    this.close();
-    leaveGame();
+  // Ends the zone and shows the start screen, this scene staying beside it for the next zone.
+  private returnHome(): void {
+    this.state = "closed";
+    this.showCard(false);
+    this.scene.stop(ZONE);
+    this.scene.launch(START);
+    startWakeLock();
+    coverZone("pauseCard", false);
   }
 
   // Saves the Touch controls setting and shows it in the zone and the dim behind the cards.
@@ -131,7 +136,7 @@ export class PauseScene extends Scene {
   private openSettings(): void {
     this.state = "settings";
     this.card.setVisible(false);
-    this.scene.launch(SETTINGS);
+    this.scene.launch(SETTINGS, { opener: this.scene.key } satisfies SettingsData);
   }
 
   // The settings card has closed: the pause card shows again.
@@ -179,7 +184,7 @@ export class PauseScene extends Scene {
   }
 
   private drawCard(): GameObjects.Container {
-    const { card, close, quit, resume, settings, title } = PAUSE_CARD;
+    const { card, close, home, resume, settings, title } = PAUSE_CARD;
     const words = TEXT.pause;
     const cream = this.colour("cream");
     const objects: GameObjects.GameObject[] = [
@@ -187,7 +192,7 @@ export class PauseScene extends Scene {
       this.text(TITLE_FONT, title.x, title.y, words.title, cream),
       this.slice("ui-settings-row", settings.row),
       this.add.image(settings.icon.x, settings.icon.y, "icon-settings").setOrigin(0),
-      this.slice("ui-settings-row", quit.row),
+      this.slice("ui-settings-row", home.row),
     ];
     this.settingsLabel = this.text(
       BODY_FONT,
@@ -196,8 +201,9 @@ export class PauseScene extends Scene {
       words.settings,
       cream,
     );
-    this.quitIcon = this.add.sprite(quit.icon.x, quit.icon.y, "ui-quit").setOrigin(0);
-    this.quitLabel = this.text(BODY_FONT, quit.label.x, quit.label.y, words.quit, cream);
+    // PLACEHOLDER: ui-quit stands in for art's home icon.
+    this.homeIcon = this.add.sprite(home.icon.x, home.icon.y, "ui-quit").setOrigin(0);
+    this.homeLabel = this.text(BODY_FONT, home.label.x, home.label.y, words.home, cream);
     this.closeX = this.add.sprite(close.at.x, close.at.y, "ui-close").setOrigin(0);
     this.resume = this.add.sprite(resume.hit.x, resume.hit.y, "ui-resume").setOrigin(0);
     this.resumeLabel = this.text(
@@ -212,22 +218,22 @@ export class PauseScene extends Scene {
       ...objects,
       this.closeX,
       this.settingsLabel,
-      this.quitIcon,
-      this.quitLabel,
+      this.homeIcon,
+      this.homeLabel,
       this.resume,
       this.resumeLabel,
     ]);
   }
 
   // A pressed control shows its pressed look until the press lifts: the pause button plays its
-  // press tag, then holds, as the touch buttons do; the Settings and Quit labels turn white and
+  // press tag, then holds, as the touch buttons do; the Settings and Return home labels turn white and
   // Resume's sinks.
   private setPressed(control: Control | undefined): void {
     this.pressed = control;
     const { label, pressedLabel } = PAUSE_CARD.resume;
     this.closeX.play(animationKey("ui-close", control === "close" ? "pressed" : "normal"));
-    this.quitIcon.play(animationKey("ui-quit", control === "quit" ? "pressed" : "normal"));
-    this.quitLabel.setTint(this.colour(control === "quit" ? "white" : "cream"));
+    this.homeIcon.play(animationKey("ui-quit", control === "home" ? "pressed" : "normal"));
+    this.homeLabel.setTint(this.colour(control === "home" ? "white" : "cream"));
     this.settingsLabel.setTint(this.colour(control === "settings" ? "white" : "cream"));
     this.resume.play(animationKey("ui-resume", control === "resume" ? "pressed" : "normal"));
     this.resumeLabel.setY(control === "resume" ? pressedLabel.y : label.y);
@@ -247,7 +253,7 @@ export class PauseScene extends Scene {
         ? [
             ["close", PAUSE_CARD.close.hit],
             ["settings", PAUSE_CARD.settings.row],
-            ["quit", PAUSE_CARD.quit.row],
+            ["home", PAUSE_CARD.home.row],
             ["resume", PAUSE_CARD.resume.hit],
           ]
         : this.pauseButton.visible
@@ -269,8 +275,8 @@ export class PauseScene extends Scene {
       }
       const actions: Record<Control, () => void> = {
         close: () => this.close(),
+        home: () => this.returnHome(),
         pauseButton: () => void this.open(),
-        quit: () => this.quit(),
         resume: () => this.close(),
         settings: () => this.openSettings(),
       };

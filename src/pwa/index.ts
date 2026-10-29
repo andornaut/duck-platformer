@@ -10,7 +10,6 @@
 // only its first screen and any save wait for the check (launchReady).
 import {
   backCloseWatcher,
-  type BackGuard,
   browserCloseWatcher,
   guardBackNavigation,
   isFirefoxAndroidApp,
@@ -36,7 +35,6 @@ const UPDATE_READY_ID = "update-ready";
 // meanwhile.
 const BOOT_WAIT_MS = 4000;
 
-let backGuard: BackGuard | undefined;
 let home: HomeScreen | undefined;
 // Resolves once the game may show its first screen and write a save (UpdateFlow.bootable).
 let ready: Promise<void> = Promise.resolve();
@@ -82,7 +80,7 @@ export function setupPhoneApp(): void {
   // Firefox for Android's installed app keeps its own back.
   // WORKAROUND: https://bugzilla.mozilla.org/show_bug.cgi?id=2079243 (see isFirefoxAndroidApp).
   if (!isFirefoxAndroidApp(navigator.userAgent, (query) => matchMedia(query).matches)) {
-    backGuard = guardBackNavigation(
+    guardBackNavigation(
       {
         onBack: () => dispatchPhoneEvent(window, PHONE_EVENTS.backPressed),
         stateKey: BACK_GUARD_KEY,
@@ -115,11 +113,6 @@ export function zoneShown(): void {
 // Something covers the zone, so the update toast waits until it is gone.
 export function coverZone(what: HomeCover, covering: boolean): void {
   home?.cover(what, covering);
-}
-
-// Closes the game's window, or leaves the game for the previous page (BackGuard.leave).
-export function leaveGame(): void {
-  backGuard?.leave();
 }
 
 // Keep the screen on while the game is visible: during play.

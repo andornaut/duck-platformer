@@ -22,7 +22,6 @@ export const TEXT: GameText = {
   },
   pause: {
     home: "Return home",
-    quit: "Quit",
     resume: "Resume",
     settings: "Settings",
     title: "Paused",
