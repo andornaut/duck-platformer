@@ -59,10 +59,10 @@ const RUN_UP = 36;
 const FOOTING = 16;
 const AIR_STEPS = Math.round(5 / STEP_SECONDS);
 const WALK_STEPS = Math.round(8 / STEP_SECONDS);
-// Where she presses Jump before the edge she runs off, and before a target's near side, in px
-// back along her run; and the nearby buckets of her own surface she aims for.
+// Where she presses Jump before the edge she runs off, in px back along her run, besides every
+// TAKEOFF_STEP px along her surface; and the nearby buckets of her own surface she aims for.
 const EDGE_TAKEOFFS = [4, 12, 36, 72, 120];
-const NEAR_TAKEOFFS = [-12, 0, 12, 36, 72, 120];
+const TAKEOFF_STEP = 12;
 const OWN_BUCKETS = [-3, -2, -1, 1, 2, 3];
 // Waits before a try, in steps, where something moves near it: through the longest cycle of the
 // area's moving things (at most MAX_CYCLE seconds), every half second.
@@ -253,13 +253,15 @@ interface Target {
 // One try, as input for each step. dir: the way she runs. pre: where her trailing side goes
 // before she runs. takeoff: where her trailing side is when she presses Jump; or, with late, she
 // runs on until she leaves the ground and presses late steps after. hold: the steps she holds
-// Jump, 0 for none. target: the stretch she steers to land on. pre and takeoff are from the left
+// Jump, 0 for none. rise: the steps after the press she goes straight up before she steers.
+// target: the stretch she steers to land on. pre and takeoff are from the left
 // of the surface she starts on, wherever a moving one has got to.
 interface Try {
   readonly dir: -1 | 1;
   readonly hold: number;
   readonly late: number | undefined;
   readonly pre: number;
+  readonly rise: number;
   readonly takeoff: number;
   readonly target: Target;
 }
@@ -346,7 +348,7 @@ function play(
   // The press, then steering onto the target until she lands.
   let left = !run.zone.duck.grounded;
   for (let i = 0; i < AIR_STEPS; i++) {
-    const move = steer(tuning, layout, attempt.target, run.zone);
+    const move = i < attempt.rise ? 0 : steer(tuning, layout, attempt.target, run.zone);
     if (!run.step({ jumpHeld: i < attempt.hold, move, useHeld: false })) {
       return missed();
     }
@@ -488,9 +490,9 @@ function movingThings(area: AreaLayout): { count: number; moving: ObjectLayout[]
   return { count: Math.floor(Math.max(0, ...moving.map(cycleSteps)) / WAIT_STEP) + 1, moving };
 }
 
-// The tries from a spot toward a target: from each way she can run at it, off the edge she runs
-// from (before it, and in coyote time after it) and below the target's near side, each held and
-// tapped, and off an edge with no press at all where the target is lower.
+// The tries from a spot toward a target: from each way she can run at it, pressing Jump at every
+// tile along her surface, just before the edge she runs off and in coyote time after it, each
+// held and tapped, and off an edge with no press at all where the target is lower.
 function triesToward(tuning: DuckTuning, from: Spot, here: Surface, target: Target): Try[] {
   const { width } = tuning;
   const lo = here.left + from.bucket * BUCKET - BUCKET;
@@ -504,14 +506,20 @@ function triesToward(tuning: DuckTuning, from: Spot, here: Surface, target: Targ
         ? [-1]
         : [1, -1];
   const below = target.surface.y > here.y;
-  const window = Math.ceil(tuning.coyoteTime / STEP_SECONDS);
-  const lates = [...new Set([0, 3, 6, 9, window - 2, window - 1, window, window + 1])].filter(
+  const coyote = Math.ceil(tuning.coyoteTime / STEP_SECONDS);
+  const lates = [...new Set([0, 3, 6, 9, coyote - 2, coyote - 1, coyote, coyote + 1])].filter(
     (late) => late >= 0,
   );
-  const holds = [AIR_STEPS, 1];
+  // Held, tapped, and held going straight up through the tap window first, to clear something
+  // close by that the hop alone does not.
+  const tapSteps = Math.round(tuning.jumpTapWindow / STEP_SECONDS);
+  const presses = [
+    { hold: AIR_STEPS, rise: 0 },
+    { hold: 1, rise: 0 },
+    { hold: AIR_STEPS, rise: tapSteps },
+  ];
   return dirs.flatMap((dir) => {
     const edge = dir > 0 ? here.right : here.left;
-    const near = dir > 0 ? target.left : target.right;
     const inReach = (x: number) => {
       const leading = x + dir * width;
       return Math.max(x, leading) > lo && Math.min(x, leading) < hi;
@@ -524,15 +532,16 @@ function triesToward(tuning: DuckTuning, from: Spot, here: Surface, target: Targ
     const maxCentre = Math.max(here.right - FOOTING, middle);
     const preFor = (x: number) =>
       Math.min(Math.max(x - dir * RUN_UP + half, minCentre), maxCentre) - half;
-    // Below a moving target's near side is nowhere in particular: a standing jump from her
-    // surface's middle stands in, the waits lining it up.
-    const belowNear = moving
-      ? [middle - half]
-      : NEAR_TAKEOFFS.map((back) => near - dir * back - (dir > 0 ? width : -width));
-    const before = [...EDGE_TAKEOFFS.map((back) => edge - dir * back), ...belowNear].filter(
+    // Along her surface, her centre every TAKEOFF_STEP px from its left.
+    const along = Array.from(
+      { length: Math.floor((here.right - here.left) / TAKEOFF_STEP) + 1 },
+      (_, i) => here.left + i * TAKEOFF_STEP - half,
+    );
+    const before = [...EDGE_TAKEOFFS.map((back) => edge - dir * back), ...along].filter(
       (x) => inReach(x) && dir * (x - edge) < 0,
     );
-    const relative = (attempt: Omit<Try, "target" | "dir">): Try => ({
+    const relative = (attempt: Omit<Try, "dir" | "rise" | "target"> & { rise?: number }): Try => ({
+      rise: 0,
       ...attempt,
       dir,
       pre: attempt.pre - here.left,
@@ -540,12 +549,12 @@ function triesToward(tuning: DuckTuning, from: Spot, here: Surface, target: Targ
       target,
     });
     const pressed = before.flatMap((x) =>
-      holds.map((hold) => relative({ hold, late: undefined, pre: preFor(x), takeoff: x })),
+      presses.map((press) => relative({ ...press, late: undefined, pre: preFor(x), takeoff: x })),
     );
     const offEdge = inReach(edge)
       ? [
           ...lates.flatMap((late) =>
-            holds.map((hold) => relative({ hold, late, pre: preFor(edge), takeoff: edge })),
+            presses.map((press) => relative({ ...press, late, pre: preFor(edge), takeoff: edge })),
           ),
           ...(below ? [relative({ hold: 0, late: 0, pre: preFor(edge), takeoff: edge })] : []),
         ]
