@@ -68,6 +68,24 @@
       "once": []
     },
     {
+      "key": "icon-exit",
+      "png": "sprites/icon-exit.png",
+      "json": "sprites/icon-exit.json",
+      "once": []
+    },
+    {
+      "key": "icon-home",
+      "png": "sprites/icon-home.png",
+      "json": "sprites/icon-home.json",
+      "once": []
+    },
+    {
+      "key": "icon-home-nav",
+      "png": "sprites/icon-home-nav.png",
+      "json": "sprites/icon-home-nav.json",
+      "once": []
+    },
+    {
       "key": "icon-install",
       "png": "sprites/icon-install.png",
       "json": "sprites/icon-install.json",
@@ -83,6 +101,12 @@
       "key": "icon-settings",
       "png": "sprites/icon-settings.png",
       "json": "sprites/icon-settings.json",
+      "once": []
+    },
+    {
+      "key": "icon-settings-nav",
+      "png": "sprites/icon-settings-nav.png",
+      "json": "sprites/icon-settings-nav.json",
       "once": []
     },
     {
@@ -250,6 +274,12 @@
       "once": []
     },
     {
+      "key": "ui-icon-button",
+      "png": "sprites/ui-icon-button.png",
+      "json": "sprites/ui-icon-button.json",
+      "once": []
+    },
+    {
       "key": "ui-name-tab",
       "png": "sprites/ui-name-tab.png",
       "json": "sprites/ui-name-tab.json",
@@ -262,12 +292,30 @@
       }
     },
     {
+      "key": "ui-nav-bar",
+      "png": "sprites/ui-nav-bar.png",
+      "json": "sprites/ui-nav-bar.json",
+      "once": [],
+      "slice": {
+        "left": 1,
+        "top": 1,
+        "right": 1,
+        "bottom": 3
+      }
+    },
+    {
       "key": "ui-pause",
       "png": "sprites/ui-pause.png",
       "json": "sprites/ui-pause.json",
       "once": [
         "press"
       ]
+    },
+    {
+      "key": "ui-play-mark",
+      "png": "sprites/ui-play-mark.png",
+      "json": "sprites/ui-play-mark.json",
+      "once": []
     },
     {
       "key": "ui-portrait-frame",
@@ -327,6 +375,12 @@
       "key": "ui-skip",
       "png": "sprites/ui-skip.png",
       "json": "sprites/ui-skip.json",
+      "once": []
+    },
+    {
+      "key": "ui-start",
+      "png": "sprites/ui-start.png",
+      "json": "sprites/ui-start.json",
       "once": []
     },
     {

@@ -49,9 +49,13 @@ Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with 
 | ferret-trap-snap    | hazard, hit box 4,14,42,12                          | 50x26  | set, snap (once)                  |
 | frog-courier        | hazard, hit box 6,6,48,30                           | 60x36  | ride, idle                        |
 | icon-browser-menu   | sprite                                              | 16x16  | rest                              |
+| icon-exit           | sprite                                              | 16x16  | rest                              |
+| icon-home           | sprite                                              | 16x16  | rest                              |
+| icon-home-nav       | sprite                                              | 20x20  | rest                              |
 | icon-install        | sprite                                              | 16x16  | rest                              |
 | icon-ios-share      | sprite                                              | 16x16  | rest                              |
 | icon-settings       | sprite                                              | 16x16  | rest                              |
+| icon-settings-nav   | sprite                                              | 20x20  | rest                              |
 | icon-touch-controls | sprite                                              | 16x16  | rest                              |
 | map-compass         | map pen mark, tan                                   | 25x33  | rest                              |
 | map-duck            | map marker, the duck at half size                   | 26x22  | idle                              |
@@ -76,8 +80,11 @@ Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with 
 | ui-fork-choice      | sprite                                              | 160x36 | normal, selected, pressed         |
 | ui-focus            | nine-slice (4,4,4,4)                                | 16x16  | rest                              |
 | ui-forward-mark     | sprite                                              | 10x14  | idle                              |
+| ui-icon-button      | sprite                                              | 36x36  | normal, pressed                   |
 | ui-name-tab         | nine-slice (2,2,2,2)                                | 12x20  | amber, green, pink, tan           |
+| ui-nav-bar          | nine-slice (1,1,1,3)                                | 12x48  | rest                              |
 | ui-pause            | sprite                                              | 35x35  | rest, press, held                 |
+| ui-play-mark        | sprite                                              | 5x10   | rest                              |
 | ui-portrait-frame   | sprite                                              | 68x68  | rest                              |
 | ui-quit             | sprite                                              | 20x20  | normal, pressed                   |
 | ui-quip-strip       | nine-slice (2,2,2,2)                                | 12x24  | rest                              |
@@ -85,6 +92,7 @@ Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with 
 | ui-settings-card    | nine-slice (2,38,2,2)                               | 16x48  | rest                              |
 | ui-settings-row     | nine-slice (2,2,2,2)                                | 12x48  | rest                              |
 | ui-skip             | sprite                                              | 78x20  | normal, pressed, disabled         |
+| ui-start            | sprite                                              | 192x52 | normal, pressed                   |
 | ui-touch-jump       | sprite                                              | 75x75  | rest, press, held                 |
 | ui-touch-use        | sprite                                              | 67x67  | rest, press, held                 |
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""UI art: the dialogue box, choices, quip strip, touch buttons and settings card, at the 720x360 base resolution.
+"""UI art: the dialogue box, choices, quip strip, touch buttons, start screen and cards, at the 720x360 base resolution.
 
 Usage:
   ui.py build             write art/ui/<key>.aseprite and public/art/sprites/<key>.png + .json, list them in the
@@ -53,37 +53,62 @@ Touch controls (two round buttons for the right thumb and a pause button at the 
   centre+12), origin 650,306. Cream at rest, white while pressed or held. Label room, the widest ink that keeps
   2px of face on each side when pressed: Use 45, Jump 53.
 
+Button labels
+- Every button's label is font-body at 2x, mixed case ("Start", "Resume", "Continue", "Install"), set by the game.
+  It is centred on the button: origin x = the button's centre x - floor(ink width / 2), where the ink width is the
+  label's visible width (advance - 2). Start, Resume and Continue lead with ui-play-mark: the mark, a 6px gap and
+  the label's ink are centred as one group by the same rule, the mark at the group's x and the label's origin 11 to
+  its right. Origin y is fixed per button, below; the label and the mark sink 2px while pressed.
+- ui-play-mark, 5x10, one tag, rest: the ink play triangle, its top 4 rows below the label's origin y.
+
+Start screen (720x360, over the street)
+- ui-nav-bar, nine-slice 12x48, margins 1,1,1,3: a navy band ending in a slate line over an ink line, drawn
+  720x48 at 0,0.
+- ui-icon-button, 36x36, tags normal and pressed (the face sinks 2px): an ink line with cut corners, a dslate face
+  with a slate top highlight on a navy lip. Its 20x20 icon goes at button + (8,6), or (8,8) pressed. With Exit:
+  Settings at 632,6 (hit 628,2,44,44, icon 640,12) and Exit at 676,6 (hit 672,2,44,44, icon 684,12). Without Exit
+  (Firefox for Android's installed app): Settings at 676,6 (hit 672,2,44,44, icon 684,12).
+- Nav icons, 20x20: icon-settings-nav (the cog), ui-quit's normal frame (Exit: the doorway and arrow) and
+  icon-home-nav (the house).
+- ui-start, 192x52, tags normal and pressed: Resume's green button, larger. With the logo (public/art/logo.png at
+  180,60) Start sits at 264,268; without it at 264,178. Label origin y = Start's y + 15, ui-play-mark's top y + 19:
+  "Start" puts the triangle at x 338 and the label at 349.
+
 Pause card, settings card and install steps card (each over the game dimmed two ramp steps, one at a time)
 - ui-settings-card, nine-slice 16x48, margins 2,38,2,2: a cream border with cut corners, an ink header 36 high and
   a navy body. Every card is drawn 368 wide at 176,88; title cream in font-title, origin 190,93.
 - ui-close, 24x24, at 510,94 (hit 500,88,44,44) on every card. Tags normal (cream X), pressed (white X on dslate).
 - ui-settings-row, nine-slice 12x48, margins 2,2,2,2, dslate, drawn 352x48 at x 184; each row is its own hit area.
   A row's 16x16 icon sits at 198,y+16 and its label (font-body, cream, white while pressed) at origin 228,y+15.
-- Pause card, 368x236, title "Paused". Rows: Settings at y 136 (icon-settings), Quit at y 188 (ui-quit, 20x20
-  at 196,202). Resume below.
+- Pause card, 368x236, title "Paused". Rows: Settings at y 136 (icon-settings), Return home at y 188
+  (icon-home). Resume below.
 - Settings card, title "Settings": 368x184 with the Install row, 368x132 without it. Rows: Touch controls at y 136
   (icon-touch-controls; ui-checkbox at 504,150; state Shown or Hidden cream, its last glyph ending at x 494, origin
-  496-A); Install at y 188, only while the app is installable (icon-install; ui-button drawn 72x28 at 452,198, label
-  ink, origin x 452 + (72 - ink width) / 2, y 201, or 203 when pressed; room 56). The build label, tan in
-  font-body (for example "v0.0.1 · dev"), is centred on x 360 with its origin 28 above the card's foot: y 244,
-  or 192 without Install.
+  496-A); Install at y 188, only while the app is installable (icon-install; ui-button drawn 72x28 at 452,198,
+  centred on x 488, label ink, origin y 201; room 56). The build label, tan in font-body (for example
+  "v0.0.1 · dev"), is centred on x 360 with its origin 28 above the card's foot: y 244, or 192 without Install.
 - Install steps card, 368x160, title "Install". Two steps, each a 16x16 glyph and up to two lines of cream
   font-body at a 20px pitch, room 296: step 1's glyph (icon-ios-share on iOS, icon-browser-menu where the browser
   installs from its menu) at 198,145, text origin 228,144; step 2's glyph (icon-install) at 198,197, text origin
   228,196.
 - ui-focus, nine-slice 16x16, margins 4,4,4,4: the keyboard focus ring, a 2px yellow band between 1px ink lines with
-  cut corners. Draw it at (x-4, y-4, w+8, h+8) round the focused element: a row (360x56), the Install button
-  (80x36), Resume (168x52), an answer (216x44) or the close X's 24x24 mark (32x32). One tag, rest.
+  cut corners. Draw it at (x-4, y-4, w+8, h+8) round the focused element's hit area or face: a row (360x56, the
+  Install row included), Resume (168x52), Start (200x60), an answer (216x44), a nav button (44x44) or the close
+  X's 24x24 mark (32x32). One tag, rest.
 - ui-checkbox, 20x20. Tags off (empty box), on (a green tick).
-- ui-quit, 20x20: a doorway with an arrow leaving it. Tags normal (cream), pressed (white, the arrow 2px further
-  out).
+- ui-quit, 20x20: the doorway with an arrow leaving it, the nav's Exit icon. Tags normal (cream), pressed (white,
+  the arrow 2px further out).
 - ui-button, nine-slice 16x28, margins 2,4,2,6: the secondary button, an ink line, a cream face with a white top
   highlight and a tan lip 4px deep. Tags normal, pressed (the face sinks 2px, so its label moves down 2).
-- icon-settings (a cog), icon-touch-controls (a round touch button with the Jump caret), icon-install (an arrow
-  down into a tray), icon-ios-share (Safari's Share button) and icon-browser-menu (three stacked dots): 16x16, flat
-  cream in 2px strokes, one tag, rest.
+- 16x16 row icons, one tag, rest: icon-settings (a cog: four 4x2 teeth on the axes and four 2x2 on the diagonals
+  round a ring with a round hole), icon-home (dog-walker's solid house: a 1:1 pitched roof, a chimney on the right
+  slope and a door gap, cream with tan on its lower-right edges), icon-exit (ui-quit's doorway and arrow, 12 rows
+  tall), icon-touch-controls (a round touch button with the Jump caret), icon-install (an arrow down into a tray),
+  icon-ios-share (Safari's Share button) and icon-browser-menu (three stacked dots). All but icon-home are flat
+  cream in 2px strokes.
 - ui-resume, 160x44, at 280,264 on the pause card (the hit area). Tags normal, pressed (the face sinks 2px into its
-  lip). A play triangle is drawn in; label Resume ink, origin 339,275, or 339,277 when pressed.
+  lip). Label origin y 275 (277 pressed), ui-play-mark's top y 279: "Resume" puts the triangle at x 329 and the label
+  at 340.
 """
 
 import math
@@ -271,12 +296,12 @@ def checkbox(on):
 
 
 def resume(state):
-    """160x44: an ink border, a green face and a dark green lip 4px deep; pressed, the face sinks 2px into it."""
+    """160x44: an ink border, a green face and a dark green lip 4px deep; pressed, the face sinks 2px into it. No
+    triangle or label is drawn in: the game draws ui-play-mark and the label, centred as one group."""
     top = 0 if state == "normal" else 2
     g = Grid(160, 44)
     panel(g, 0, top, 160, 44 - top, "dgreen", rim=None)
     g.rect(1, top + 1, 158, 38, "green")
-    tri_right(g, 48, top + 15, 10, "ink")
     return g.px
 
 
@@ -355,6 +380,93 @@ def focus():
     return g.px
 
 
+# The nav and row icons share their shapes with dog-walker-game's: the cog (icon-settings), the doorway with an arrow
+# leaving it (ui-quit, and icon-exit at 16), and a solid house with a chimney on the right slope and a door gap
+# (dog-walker's home_icon()), cream with tan on its lower-right edges.
+
+EXIT_16 = [".#########......", ".#########......", ".##.....##..#...", ".##.....##..##..", ".##.........###.",
+           ".##...##########", ".##...##########", ".##.........###.", ".##.....##..##..", ".##.....##..#...",
+           ".#########......", ".#########......"]
+# a is fill, o the shade on the lower-right edges
+HOME_16 = [".....aa.ao..", "....aaaaao..", "...aaaaaao..", "..aaaaaaao..", ".aaaaaaaaao.", "aaaaaaaaaaao",
+           "..aaaaaaao..", "..aaa..aao..", "..aaa..aao..", "..ooo..ooo.."]
+HOME_20 = ["......aa.ao...", ".....aaaaao...", "....aaaaaao...", "...aaaaaaao...", "..aaaaaaaaao..",
+           ".aaaaaaaaaaao.", "aaaaaaaaaaaaao", "..aaaaaaaaao..", "..aaaaaaaaao..", "..aaaa..aaao..",
+           "..aaaa..aaao..", "..aaaa..aaao..", "..oooo..oooo.."]
+
+
+def home(n):
+    """A solid house, centred: a 1:1 pitched roof with a chimney on the right slope and a door gap at the foot,
+    cream with tan on its lower-right edges. 12x10 in a 16x16 frame, 14x13 in a 20x20 one."""
+    rows = HOME_16 if n == 16 else HOME_20
+    g = Grid(n, n)
+    x0, y0 = (n - len(rows[0])) // 2, (n - len(rows)) // 2
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch != ".":
+                g.p(x0 + x, y0 + y, "cream" if ch == "a" else "tan")
+    return g.px
+
+
+def exit_16():
+    """icon-exit, ui-quit's doorway and arrow at 16x16: 2px strokes, 12 rows tall, centred."""
+    g = Grid(16, 16)
+    stamp(g, bm(*EXIT_16), 0, 2, "cream")
+    return g.px
+
+
+def cog_20():
+    """icon-settings-nav, the cog at 20x20: a 4px-wide tooth on each axis, a 3x3 tooth on each diagonal, a ring
+    and a round hole."""
+    g = Grid(20, 20)
+    for y in range(20):
+        for x in range(20):
+            dx, dy = abs(x + 0.5 - 10), abs(y + 0.5 - 10)
+            r = math.hypot(dx, dy)
+            diag = 5.5 <= dx <= 7.5 and 5.5 <= dy <= 7.5
+            if r > 3.6 and (r <= 7.2 or min(dx, dy) <= 1.5 or diag):
+                g.p(x, y, "cream")
+    return g.px
+
+
+def icon_button(state):
+    """36x36: a nav button for a 20x20 icon at 8,6 (8,8 pressed). An ink line with cut corners, a dslate face with
+    a slate top highlight on a navy lip 4px deep; pressed, the face sinks 2px."""
+    top = 0 if state == "normal" else 2
+    g = Grid(36, 36)
+    panel(g, 0, top, 36, 36 - top, "navy", rim=None)
+    g.rect(1, top + 1, 34, 30, "dslate")
+    if state == "normal":
+        g.rect(2, 1, 32, 1, "slate")
+    return g.px
+
+
+def nav_bar():
+    """12x48 nine-slice, margins 1,1,1,3: a navy band ending in a slate line over an ink line."""
+    g = Grid(12, 48)
+    g.rect(0, 0, 12, 46, "navy")
+    g.rect(0, 46, 12, 1, "slate")
+    g.rect(0, 47, 12, 1, "ink")
+    return g.px
+
+
+def start(state):
+    """192x52: Resume's green button at the start screen's size, with no triangle or label drawn in: the game draws
+    ui-play-mark and the label, centred as one group."""
+    top = 0 if state == "normal" else 2
+    g = Grid(192, 52)
+    panel(g, 0, top, 192, 52 - top, "dgreen", rim=None)
+    g.rect(1, top + 1, 190, 46, "green")
+    return g.px
+
+
+def play_icon():
+    """5x10: the play triangle drawn in ink on Start, as Resume has it drawn in."""
+    g = Grid(5, 10)
+    tri_right(g, 0, 0, 10, "ink")
+    return g.px
+
+
 def quit_icon(state):
     """20x20: a doorway (2px strokes, open on the right) with an arrow leaving through it. Pressed, the arrow
     steps 2px further out and turns white."""
@@ -382,6 +494,7 @@ def close(state):
 
 SLICES = {
     "ui-name-tab": (2, 2, 2, 2),
+    "ui-nav-bar": (1, 1, 1, 3),
     "ui-button": (2, 4, 2, 6),
     "ui-focus": (4, 4, 4, 4),
     "ui-quip-strip": (2, 2, 2, 2),
@@ -402,6 +515,10 @@ def sprites():
     one = lambda frame, tag="rest": [(tag, [frame], 100)]  # noqa: E731
     for key in sorted(ICONS):
         yield key, one(icon(ICONS[key]))
+    yield "icon-exit", one(exit_16())
+    yield "icon-home", one(home(16))
+    yield "icon-home-nav", one(home(20))
+    yield "icon-settings-nav", one(cog_20())
     yield "icon-touch-controls", one(touch_controls_icon())
     yield "ui-answer", [(s, [answer(s)], 100) for s in ("normal", "selected", "pressed")]
     yield "ui-button", [(s, [button(s)], 100) for s in ("normal", "pressed")]
@@ -409,15 +526,19 @@ def sprites():
     yield "ui-close", [(s, [close(s)], 100) for s in ("normal", "pressed")]
     yield "ui-dialogue-box", one(dialogue_box())
     yield "ui-focus", one(focus())
+    yield "ui-icon-button", [(s, [icon_button(s)], 100) for s in ("normal", "pressed")]
     yield "ui-forward-mark", [("idle", forward_mark(), [ms for _, ms in FORWARD_STEPS])]
     yield "ui-name-tab", [(c, [name_tab(c)], 100) for c in TAB_FILLS]
+    yield "ui-nav-bar", one(nav_bar())
     yield "ui-pause", touch_button("pause")
+    yield "ui-play-mark", one(play_icon())
     yield "ui-portrait-frame", one(portrait_frame())
     yield "ui-quit", [(s, [quit_icon(s)], 100) for s in ("normal", "pressed")]
     yield "ui-quip-strip", one(quip_strip())
     yield "ui-resume", [(s, [resume(s)], 100) for s in ("normal", "pressed")]
     yield "ui-settings-card", one(settings_card())
     yield "ui-settings-row", one(settings_row())
+    yield "ui-start", [(s, [start(s)], 100) for s in ("normal", "pressed")]
     yield "ui-skip", [(s, [skip(s)], 100) for s in ("normal", "pressed", "disabled")]
     yield "ui-touch-jump", touch_button("jump")
     yield "ui-touch-use", touch_button("use")

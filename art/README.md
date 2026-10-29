@@ -109,7 +109,7 @@ In order:
 
 ### Text
 
-- Fonts: `font-body` (Tiny5, mixed case) for body text, dialogue and quips; `font-title` (Silkscreen, capitals) for titles, names and buttons. Both are native at 8px and drawn at 2x, so a line is 16 base pixels tall. Sprites keep 1px detail.
+- Fonts: `font-body` (Tiny5, mixed case) for body text, dialogue and quips; `font-title` (Silkscreen, capitals) for titles and names. Button labels use `font-body`, mixed case. Both are native at 8px and drawn at 2x, so a line is 16 base pixels tall. Sprites keep 1px detail.
 - Text holds 4.5:1 against what it sits on; essential icons and marks hold 3:1. A state never relies on colour alone.
 - Text never shrinks to fit: reword it or grow the box. Each text role keeps one size and one font.
 - Words in effects and labels are set in a font, never baked into sprites.
@@ -179,15 +179,25 @@ Two round buttons for the right thumb, Use above and to the left of Jump. Each i
 - Press: the ring turns white and thickens 1px and the face lifts a step, swelling 1px for the first frame (frame 0, then frame 1, 60ms each), then holds until release, which snaps back to rest.
 - Movement has no art: a touch anywhere off a button sets its own neutral point, and nothing marks it.
 
+### Start screen
+
+The game boots into the start screen; Start goes to the map. A nav bar runs across the top with icon buttons at its right, and Start sits below the logo.
+
+- Nav bar `ui-nav-bar`, 0,0,720,48.
+- Icon buttons `ui-icon-button`, 36x36 at y 6, each with a 44x44 hit area and a 20x20 icon 8 in and 6 down (8 down while pressed). With Exit: Settings at x 632 (hit 628,2,44,44) and Exit at x 676 (hit 672,2,44,44), so Exit is at the far right. Without Exit (Firefox for Android's installed app hides it): Settings alone at x 676.
+- Logo (`logo`, 360x193) at 180,60, with Start (`ui-start`, 192x52) at 264,268, 15 below it. Without the logo, Start sits at 264,178, centred under the nav bar. The logo layout is the recommended one.
+- Icons share their shapes with dog-walker-game's: the cog (8 square teeth round a ring with a round hole), the exit (a doorway in 2px strokes, open on the right, with a solid arrow leaving it) and the home (a solid house with a 1:1 pitched roof, a chimney on the right slope and a door gap). Each comes as a 20x20 nav icon and a 16x16 row icon.
+- Button labels are centred: origin x = the button's centre x minus floor(ink width / 2), where the ink width is the label's visible width. Start, Resume and Continue lead with the play mark (`ui-play-mark`, 5x10): the mark, a 6px gap, then the label's ink, centred as one group on the button by the same rule. The mark and the label sink 2px while the button is pressed.
+
 ### Pause, settings and install cards
 
-A pause button at the top left opens the pause card over the game, which is dimmed by stepping every colour two ramp steps darker. The pause card reads Settings, Quit and Resume; Settings opens the settings card over the same dim, and Install opens the install steps card for browsers that install from their own menu. One card shows at a time. Every card is the same frame, 368 wide at 176,88, with a 36px header holding its title and a close X (hit area 500,88,44,44). Rows are 352x48 at x 184, 4px apart, each its own hit area, with a 16x16 icon at x 198 and a label origin at x 228.
+A pause button at the top left opens the pause card over the game, which is dimmed by stepping every colour two ramp steps darker. The pause card reads Settings, Return home and Resume; Settings opens the settings card over the same dim, and Install opens the install steps card for browsers that install from their own menu. One card shows at a time. Every card is the same frame, 368 wide at 176,88, with a 36px header holding its title and a close X (hit area 500,88,44,44). Rows are 352x48 at x 184, 4px apart, each its own hit area, with a 16x16 icon at x 198 and a label origin at x 228.
 
 - Pause button: the Use and Jump disc, 33px across, with two pause bars and no label, centred at 26,26 with hit area 0,0,52,52 (reaching the screen's corner). It is a touch control: hidden on desktop and while a dialogue box is open, and its press matches Use and Jump.
 
 | Card     | Rect           | Title    | Rows (y)                                         | Below the rows                             |
 | -------- | -------------- | -------- | ------------------------------------------------ | ------------------------------------------ |
-| Pause    | 176,88,368,236 | Paused   | Settings 136, Quit 188                           | Resume 280,264,160,44                      |
+| Pause    | 176,88,368,236 | Paused   | Settings 136, Return home 188                    | Resume 280,264,160,44                      |
 | Settings | 176,88,368,184 | Settings | Touch controls 136, Install 188 (if installable) | build label centred on x 360, origin y 244 |
 | Steps    | 176,88,368,160 | Install  | none: two steps at y 144 and 196                 |                                            |
 
@@ -195,7 +205,7 @@ A pause button at the top left opens the pause card over the game, which is dimm
 - Touch controls row: its icon at 198,152, the checkbox (20x20) at 504,150, and Shown or Hidden ending at x 494, left of it. The checkbox stays: the user picked it, its two states differ in shape, and the state word reads it a second time.
 - Install row: its icon at 198,204 and a secondary button (`ui-button`, 72x28) at 452,198 whose label the game centres in it, at most 56 wide. The whole row is the hit area.
 - Build label: tan in `font-body`, centred on x 360, for example "v0.0.1 · dev".
-- Keyboard focus: `ui-focus`, a nine-slice ring (margins 4) drawn 4px outside the focused element on every side, at (x-4, y-4, w+8, h+8): a 2px yellow band between 1px ink lines, so it holds 3:1 on the card, the rows, the buttons and the dim. It fits the settings rows, the Install button, Resume, the answer buttons and the close X (round its 24x24 mark).
+- Keyboard focus: `ui-focus`, a nine-slice ring (margins 4) drawn 4px outside the focused element on every side, at (x-4, y-4, w+8, h+8): a 2px yellow band between 1px ink lines, so it holds 3:1 on the card, the rows, the buttons and the dim. It rings the focused element's hit area or face: a settings row (the Install row included), Resume, Start, an answer button, a nav button or the close X (round its 24x24 mark).
 - Install steps: each step is a 16x16 glyph at x 198 and up to two lines of text at x 228 (20px pitch, at most 296 wide). Step 1 shows the iOS Share glyph or the browser-menu glyph, whichever the browser uses; step 2 the install glyph.
 
 ## Map
