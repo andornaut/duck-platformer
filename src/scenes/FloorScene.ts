@@ -6,7 +6,7 @@ import {
 import { type GameObjects, Input, Scene } from "phaser";
 
 import { DUCK } from "../data/duck";
-import { SCREEN } from "../data/screen";
+import { SCREEN, TILE } from "../data/screen";
 import { TEST_FLOOR } from "../data/testFloor";
 import { TEXT } from "../data/text";
 import { TOUCH } from "../data/touch";
@@ -20,6 +20,7 @@ import {
 } from "../input/intent";
 import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
 import { type FloorState, startFloor, stepFloor } from "../rules/floor";
+import { floorLayout } from "../rules/tiles";
 import { animKey, type AsepriteSheet, sheetTags, type TagFrame, tagMs } from "../view/aseprite";
 import { duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
 import {
@@ -73,7 +74,7 @@ export class FloorScene extends Scene {
   private readonly heldKeys = new Set<string>();
   private readonly heldTouches = new Map<number, HeldTouch>();
   private landMs = 0;
-  private readonly layout = TEST_FLOOR;
+  private readonly layout = floorLayout(TILE, TEST_FLOOR);
   // When each held button's press began.
   private readonly presses = new Map<TouchControl, number>();
   private readonly tags = new Map<string, ReadonlyMap<string, readonly TagFrame[]>>();

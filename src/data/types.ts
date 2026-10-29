@@ -55,8 +55,38 @@ export interface TouchTuning {
   readonly moveDeadZone: number;
 }
 
-// One floor's geometry. solids block her; touching a hazard restarts the floor; reaching the
-// exit clears it; falling below the floor's height restarts it.
+// A rectangle on the tile grid, in whole tiles: col and row are its top-left tile.
+export interface TileRect {
+  readonly col: number;
+  readonly cols: number;
+  readonly row: number;
+  readonly rows: number;
+}
+
+// One floor on the tile grid, as authored. Its size is cols by rows tiles. She starts with her
+// collision box's centre on the grid line at the left edge of column start.col, standing on the
+// top edge of row start.row.
+export interface FloorPlan {
+  readonly cols: number;
+  readonly exit: TileRect;
+  readonly hazards: readonly TileRect[];
+  readonly rows: number;
+  readonly solids: readonly TileRect[];
+  readonly start: { readonly col: number; readonly row: number };
+}
+
+// How far the duck can jump, in tiles, from the top of the ground she leaves to the top of the
+// ledge she lands on. hop: the height of a short hop; jump: the height of a full jump; gap: the
+// width of a gap, at the same height, that a running full jump crosses.
+export interface Reaches {
+  readonly gap: number;
+  readonly hop: number;
+  readonly jump: number;
+}
+
+// One floor's geometry, in base pixels, converted from its FloorPlan. solids block her; touching
+// a hazard restarts the floor; reaching the exit clears it; falling below the floor's height
+// restarts it.
 export interface FloorLayout {
   readonly exit: Rect;
   readonly hazards: readonly Rect[];

@@ -35,6 +35,9 @@ npm run format
 # Run the unit tests
 npm test
 
+# Print the duck's measured reaches beside gameplay's targets
+npm run reaches
+
 # Build to dist/
 npm run build
 
