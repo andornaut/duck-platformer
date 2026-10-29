@@ -115,7 +115,7 @@ In order:
 
 The protagonist is a wide, round, cream-coloured duck, drawn facing right and mirrored for left. `art/tools/duck.py` draws her; its docstring gives every frame's pose, timing and squash and stretch table.
 
-- Shape: a wide, round blob of a body with a small round head set into its top at the front, a square ink dot eye and a short, plain orange bill. Her back slopes down to a short tail tip at the rear. No bow.
+- Shape: a wide, round blob of a body with a small round head set into its top at the front, a square ink dot eye and a short, plain orange bill. Her back dips at the nape, so her round head sits up above the back line, and ends in a short tail tip at the rear. No bow.
 - Colour: cream, with tan cel crescents and a white rim light. The wing is a flat tan patch, the feet tiny orange stubs. Dark-slate outline.
 - Every jump flutters (a slow, steerable fall), so the flutter is her signature: the wing raised up and back from the top of her back, the body 2px higher, and the feet tucked under her belly.
 - Frame 48x42, feet on rows 39 and 40 and the outline on row 41.

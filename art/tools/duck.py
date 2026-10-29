@@ -5,9 +5,10 @@ Usage, from the repository root:
   python3 -I art/tools/duck.py preview OUT.png  contact sheet of every frame on slate, tan and cream
 
 Design: a wide, round cream blob of a duck with a small round head set into the top of her body at the front,
-a square ink dot eye, a short plain orange bill, a flat tan wing patch and tiny orange stub feet. Her back
-slopes down to a short tail tip at the rear. Cel shading: a tan crescent on the lower right and a white rim on
-the upper left. Dark-slate outline. Facing right (the game mirrors her). No bow.
+a square ink dot eye, a short plain orange bill, a flat tan wing patch and tiny orange stub feet. Her back dips
+at the nape, so her round head sits up above the back line, and ends in a short tail tip at the rear. Cel
+shading: a tan crescent on the lower right and a white rim on the upper left. Dark-slate outline. Facing
+right (the game mirrors her). No bow.
 
 duck, 48x42. Collision body 24x36 (2x3 tiles of 12px), anchored bottom-centre: the frame's bottom edge sits on
 the body's bottom edge, and her body-centre x, 24 (the frame's centre line, between columns 23 and 24), sits on
@@ -57,9 +58,9 @@ SRC = "art/duck"
 W, H = 48, 42
 BOX_W, BOX_H = 24, 36  # collision body
 C = W / 2  # body centre x: the frame's centre line
-BRX, BRY, POWER = 16.4, 13.0, 2.35  # body superellipse at rest
+BRX, BRY, POWER = 16.4, 13.0, 2.15  # body superellipse at rest
 HEAD_R = 9.2  # head radius
-REAR_DROP = 6  # how far the back's top edge drops at the tail end, in px
+NAPE_DROP = 6  # how far the body's top dips at the nape, below the back of her head, in px
 HEAD_X, HEAD_UP = 0.43, 0.62  # head centre: right of the body centre and above it, in body radii
 BODY_BOTTOM = H - 3  # the body's bottom edge at rest; the feet fill the two rows under it
 BASE, SHADE, LIGHT = "cream", "tan", "white"
@@ -88,13 +89,15 @@ def in_ell(cx, cy, rx, ry, ang=0.0):
     return f
 
 
-def in_body(cx, cy, rx, ry, drop):
-    """Her body: the superellipse with its upper back pressed down, so the back line slopes down to the tail.
-    The top edge at the far back sits drop px lower, easing to nothing at the body's centre line."""
+def in_body(cx, cy, rx, ry, nape_x, drop):
+    """Her body: the superellipse with its top pressed down drop px at the nape (nape_x, where her back meets
+    the back of her head), easing to nothing over 0.55 of the body's radius either side. It leaves a dip
+    between her back and her head, so the head sits up above the back line."""
     def f(x, y):
         px = x + 0.5
-        if px < cx and y + 0.5 < cy:
-            y = y - drop * ((cx - px) / rx) ** 1.5
+        if y + 0.5 < cy:
+            w = max(0.0, 1 - abs(px - nape_x) / (rx * 0.55))
+            y = y - drop * w * w * (3 - 2 * w)
         return (abs(px - cx) / rx) ** POWER + (abs(y + 0.5 - cy) / ry) ** POWER <= 1
     return f
 
@@ -131,7 +134,7 @@ def draw(lift=0, bw=BRX, bh=BRY, wing=("fold", 0), feet=((-5, 0), (2, 0))):
         foot(0)
     # a short tail tip at the lowered rear, its root under the body
     cel(g, in_ell(C - bw + 1, bcy - 1, 4.4, 2.2, -0.45), BASE, SHADE, None, 1, 1)
-    cel(g, in_body(C, bcy, bw, bh, REAR_DROP), BASE, SHADE, LIGHT, 3, 1)
+    cel(g, in_body(C, bcy, bw, bh, hcx - HEAD_R * 0.7, NAPE_DROP), BASE, SHADE, LIGHT, 3, 1)
     if feet == "tucked":
         for dx in (-5, 2):
             g.rect(int(C + dx), bottom, 4, 1, "orange")
