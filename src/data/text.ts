@@ -10,6 +10,7 @@ export const TEXT: GameText = {
     reload: "Reload",
     title: "Something went wrong",
   },
+  lines: {},
   pause: {
     hidden: "Hidden",
     quit: "Quit",
@@ -18,4 +19,5 @@ export const TEXT: GameText = {
     title: "Paused",
     touchControls: "Touch controls",
   },
+  quips: {},
 };

@@ -15,7 +15,7 @@ export const TEST_LEVELS: readonly LevelPlan[] = [
       main: {
         cols: 140,
         entries: { start: { col: 3, row: 56 } },
-        objects: [{ col: 134, cols: 2, row: 18, rows: 4, type: "test-exit" }],
+        objects: [{ character: "test-exit", col: 134, cols: 2, row: 18, rows: 4 }],
         rows: 60,
         solids: [
           // Hop steps: up 2, then up 3 (the hop's reach).
@@ -46,22 +46,22 @@ export const TEST_LEVELS: readonly LevelPlan[] = [
         entries: { start: { col: 3, row: 56 } },
         objects: [
           // Hazard strips on the ground under gaps of 8 and 16.
-          { col: 18, cols: 8, row: 55, rows: 1, type: "test-hazard" },
-          { col: 32, cols: 16, row: 55, rows: 1, type: "test-hazard" },
+          { character: "test-hazard", col: 18, cols: 8, row: 55, rows: 1 },
+          { character: "test-hazard", col: 32, cols: 16, row: 55, rows: 1 },
           // Hazard blocks on a ledge to jump over: 3 tall, then 5 tall.
-          { col: 54, cols: 2, row: 49, rows: 3, type: "test-hazard" },
-          { col: 66, cols: 2, row: 47, rows: 5, type: "test-hazard" },
+          { character: "test-hazard", col: 54, cols: 2, row: 49, rows: 3 },
+          { character: "test-hazard", col: 66, cols: 2, row: 47, rows: 5 },
           // A hazard post in a gap of 14, 3 above the ledges either side.
-          { col: 86, cols: 2, row: 49, rows: 11, type: "test-hazard" },
+          { character: "test-hazard", col: 86, cols: 2, row: 49, rows: 11 },
           // A narrow landing, 4 wide, between two hazard posts 2 above it.
-          { col: 112, cols: 2, row: 50, rows: 10, type: "test-hazard" },
-          { col: 118, cols: 2, row: 50, rows: 10, type: "test-hazard" },
+          { character: "test-hazard", col: 112, cols: 2, row: 50, rows: 10 },
+          { character: "test-hazard", col: 118, cols: 2, row: 50, rows: 10 },
           // Hazard ceilings 8 above each step: a hop clears them and a full jump touches them.
-          { col: 134, cols: 4, row: 42, rows: 2, type: "test-hazard" },
-          { col: 138, cols: 6, row: 40, rows: 2, type: "test-hazard" },
-          { col: 144, cols: 6, row: 38, rows: 2, type: "test-hazard" },
-          { col: 150, cols: 6, row: 36, rows: 2, type: "test-hazard" },
-          { col: 190, cols: 2, row: 18, rows: 4, type: "test-exit" },
+          { character: "test-hazard", col: 134, cols: 4, row: 42, rows: 2 },
+          { character: "test-hazard", col: 138, cols: 6, row: 40, rows: 2 },
+          { character: "test-hazard", col: 144, cols: 6, row: 38, rows: 2 },
+          { character: "test-hazard", col: 150, cols: 6, row: 36, rows: 2 },
+          { character: "test-exit", col: 190, cols: 2, row: 18, rows: 4 },
         ],
         rows: 60,
         solids: [
@@ -99,46 +99,46 @@ export const TEST_LEVELS: readonly LevelPlan[] = [
         objects: [
           // A vertical mover lifts her 14, from the ground to a ledge.
           {
+            character: "test-mover",
             col: 14,
             cols: 4,
             overrides: { motion: { direction: "up", distance: 14, pause: 1, speed: 3.5 } },
             phase: 0,
             row: 56,
             rows: 1,
-            type: "test-mover",
           },
           // A horizontal mover 6 above the ledges across a gap of 28: she can jump up onto it only
           // while it is near.
           {
+            character: "test-mover",
             col: 34,
             cols: 6,
             overrides: { motion: { direction: "right", distance: 16, pause: 1, speed: 4 } },
             phase: 0,
             row: 36,
             rows: 1,
-            type: "test-mover",
           },
           // A vertical mover lifts her 16, into the upper screen.
           {
+            character: "test-mover",
             col: 70,
             cols: 4,
             overrides: { motion: { direction: "up", distance: 16, pause: 1, speed: 4 } },
             phase: 0,
             row: 42,
             rows: 1,
-            type: "test-mover",
           },
           // A horizontal mover level with the ledges across a gap of 28, to the exit.
           {
+            character: "test-mover",
             col: 88,
             cols: 6,
             overrides: { motion: { direction: "right", distance: 18, pause: 1, speed: 4.5 } },
             phase: 0,
             row: 26,
             rows: 1,
-            type: "test-mover",
           },
-          { col: 126, cols: 2, row: 22, rows: 4, type: "test-exit" },
+          { character: "test-exit", col: 126, cols: 2, row: 22, rows: 4 },
         ],
         rows: 60,
         solids: [
@@ -164,68 +164,68 @@ export const TEST_LEVELS: readonly LevelPlan[] = [
           // Vertical to horizontal: the lift pauses at its top as the horizontal mover, 2 higher and
           // 2 across, pauses at its near end.
           {
+            character: "test-mover",
             col: 14,
             cols: 4,
             overrides: { motion: { direction: "up", distance: 12, pause: 1, speed: 4 } },
             phase: 0.375,
             row: 56,
             rows: 1,
-            type: "test-mover",
           },
           {
+            character: "test-mover",
             col: 20,
             cols: 6,
             overrides: { motion: { direction: "right", distance: 18, pause: 1, speed: 6 } },
             phase: 0.875,
             row: 42,
             rows: 1,
-            type: "test-mover",
           },
           // Horizontal to vertical: the next lift reaches its bottom, level with the horizontal
           // mover and 2 across, as that mover ends its pause at its far end.
           {
+            character: "test-mover",
             col: 46,
             cols: 4,
             overrides: { motion: { direction: "up", distance: 12, pause: 1, speed: 4 } },
             phase: 0.25,
             row: 42,
             rows: 1,
-            type: "test-mover",
           },
           // Vertical to vertical: a second lift 2 across, without pauses, moves opposite to the
           // first, from 2 below the first's top to 4 below the ledge. She jumps up 4 from its top to
           // the ledge.
           {
+            character: "test-mover",
             col: 52,
             cols: 4,
             overrides: { motion: { direction: "up", distance: 12, pause: 0, speed: 3 } },
             phase: 0.8125,
             row: 32,
             rows: 1,
-            type: "test-mover",
           },
           // Horizontal to horizontal, opposite directions, fastest: the second, 4 higher and 2
           // across, pauses at its near end as the first pauses at its far end, then carries her to
           // the exit ledge. Their round trip is 5 s.
           {
+            character: "test-mover",
             col: 72,
             cols: 6,
             overrides: { motion: { direction: "right", distance: 16, pause: 0.5, speed: 8 } },
             phase: 0.4,
             row: 16,
             rows: 1,
-            type: "test-mover",
           },
           {
+            character: "test-mover",
             col: 96,
             cols: 6,
             overrides: { motion: { direction: "right", distance: 16, pause: 0.5, speed: 8 } },
             phase: 0.9,
             row: 12,
             rows: 1,
-            type: "test-mover",
           },
-          { col: 134, cols: 2, row: 8, rows: 4, type: "test-exit" },
+          { character: "test-exit", col: 134, cols: 2, row: 8, rows: 4 },
         ],
         rows: 60,
         solids: [
@@ -246,8 +246,8 @@ export const TEST_LEVELS: readonly LevelPlan[] = [
         cols: 360,
         entries: { door: { col: 4, row: 56 } },
         objects: [
-          { col: 40, row: 54, type: "test-cart" },
-          { col: 354, cols: 2, row: 52, rows: 4, type: "test-exit" },
+          { character: "test-cart", col: 40, row: 54 },
+          { character: "test-exit", col: 354, cols: 2, row: 52, rows: 4 },
         ],
         rows: 60,
         solids: [{ col: 0, cols: 360, row: 56, rows: 4 }],
@@ -256,8 +256,8 @@ export const TEST_LEVELS: readonly LevelPlan[] = [
         cols: 240,
         entries: { start: { col: 3, row: 56 } },
         objects: [
-          { col: 30, row: 54, type: "test-pigeon" },
-          { col: 228, row: 52, to: { area: "lobby", entry: "door" }, type: "test-door" },
+          { character: "test-pigeon", col: 30, row: 54 },
+          { character: "test-door", col: 228, row: 52, to: { area: "lobby", entry: "door" } },
         ],
         rows: 60,
         solids: [{ col: 0, cols: 240, row: 56, rows: 4 }],

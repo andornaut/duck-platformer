@@ -31,13 +31,20 @@ const STATIC: Motion = {
 
 function object(fields: Partial<ObjectLayout> & { origin: Point }): ObjectLayout {
   return {
+    animations: { idle: undefined, move: undefined, react: undefined, talk: undefined },
     art: "block",
+    character: "block",
     collision: "solid",
     height: 12,
     hitbox: undefined,
+    interaction: { kind: "none", range: 0 },
+    lines: [],
     motion: STATIC,
     phase: 0,
+    quips: [],
+    quirks: [],
     reaction: { kind: "none", range: 0, speed: 0 },
+    scene: undefined,
     to: undefined,
     width: 48,
     ...fields,

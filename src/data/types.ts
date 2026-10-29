@@ -42,11 +42,15 @@ export interface DuckTuning {
 
 // The words the player reads.
 export interface GameText {
+  // What characters say in dialogue, by key.
+  readonly lines: Readonly<Record<string, string>>;
   // The touch buttons' labels.
   readonly buttons: {
     readonly jump: string;
     readonly use: string;
   };
+  // What characters say in passing, by key.
+  readonly quips: Readonly<Record<string, string>>;
   // The screen over the page when the game stops on an error.
   readonly crash: {
     readonly body: string;
@@ -113,16 +117,59 @@ export interface Reaction {
   readonly speed: number;
 }
 
-// A kind of object, in tiles. collision: solid blocks her from every side; ledge only from above;
-// touching a hazard restarts the level; Use in a use zone goes through it; none is scenery.
-export interface ObjectType {
-  // The art key; a flat placeholder rectangle until the sprite exists.
-  readonly art: string;
+export type InteractionKind = "none" | "quip" | "talk";
+
+// How a character interacts with her, within range tiles of her (centre to centre). quip: says
+// one of its quips when she comes within range; talk: Use within range opens its dialogue.
+export interface Interaction {
+  readonly kind: InteractionKind;
+  readonly range: number;
+}
+
+// The parts of an archetype a character or an instance may override.
+export interface Tuning {
+  readonly interaction?: Partial<Interaction>;
+  readonly motion?: Partial<Motion>;
+  readonly reaction?: Partial<Reaction>;
+}
+
+// A behaviour (ARCHETYPES by name, in src/data/archetypes.ts): its collision, fixed, and the
+// default motion, reaction and interaction its characters tune. collision: solid blocks her from
+// every side; ledge only from above; touching a hazard restarts the level; Use in a use zone goes
+// through it; none is scenery.
+export interface Archetype {
   readonly collision: Collision;
-  readonly cols: number;
+  readonly interaction: Interaction;
   readonly motion: Motion;
   readonly reaction: Reaction;
+}
+
+// The states an animation tag can play for.
+export type CharacterState = "idle" | "move" | "react" | "talk";
+
+// An idle tic: tag plays once every `every` seconds, give or take variance (0 to 1) of that,
+// rolled fresh each attempt like random motion.
+export interface Quirk {
+  readonly every: number;
+  readonly tag: string;
+  readonly variance: number;
+}
+
+// Who or what a placed thing is (CHARACTERS by name, in src/data/characters.ts): one archetype
+// plus tuning, cols x rows tiles unless a placement sizes it. art: a tile or piece of the area's
+// tileset, a backdrop or a sprite, or placeholder-<name>. animations: the sprite tag each state
+// plays; a state left out plays idle's. Its hit box comes from art's manifest. lines and quips
+// are keys into TEXT.lines and TEXT.quips; a prop has none.
+export interface Character {
+  readonly animations?: Readonly<Partial<Record<CharacterState, string>>>;
+  readonly archetype: string;
+  readonly art: string;
+  readonly cols: number;
+  readonly lines?: readonly string[];
+  readonly quips?: readonly string[];
+  readonly quirks?: readonly Quirk[];
   readonly rows: number;
+  readonly tuning?: Tuning;
 }
 
 export interface AreaLink {
@@ -130,24 +177,26 @@ export interface AreaLink {
   readonly entry: string;
 }
 
-// An object placed in an area: its type (a key of OBJECT_TYPES) with its top-left tile at col,
-// row, and cols x rows tiles in size when given, else its type's size, such as a ledge drawn at
-// any width. phase (0 to 1, default 0) is where it starts in its motion's round trip: 0 at the
-// placed spot heading out, 0.5 at the far end heading back. to: on a "use" object, the area and
-// entry that Use at it goes to; a "use" object with no `to` is the level's exit, and Use at it
-// clears the level.
-export interface PlacedObject {
+// One placed thing in an area: a character with its top-left tile at col, row, and cols x rows
+// tiles in size when given, else the character's. Overrides go one way: an instance's overrides
+// over its character's tuning over its archetype. phase (0 to 1, default 0) is where its motion
+// starts in its round trip: 0 at the placed spot heading out, 0.5 at the far end heading back.
+// lines replace the character's for this one instance; scene names a dialogue scene. requires
+// and excludes are carried-choice flags: it is placed only while every required flag is set and
+// no excluded one is. to: where a door leads; a use thing with no `to` is the level's exit.
+export interface Instance {
+  readonly character: string;
   readonly col: number;
   readonly cols?: number;
-  readonly overrides?: {
-    readonly motion?: Partial<Motion>;
-    readonly reaction?: Partial<Reaction>;
-  };
+  readonly excludes?: readonly string[];
+  readonly lines?: readonly string[];
+  readonly overrides?: Tuning;
   readonly phase?: number;
+  readonly requires?: readonly string[];
   readonly row: number;
   readonly rows?: number;
+  readonly scene?: string;
   readonly to?: AreaLink;
-  readonly type: string;
 }
 
 // A run of terrain. In an area with a tileset, look names the family of the tileset's tiles it is
@@ -165,7 +214,7 @@ export interface TerrainRect extends TileRect {
 export interface AreaPlan {
   readonly cols: number;
   readonly entries: Readonly<Record<string, TilePoint>>;
-  readonly objects: readonly PlacedObject[];
+  readonly objects: readonly Instance[];
   readonly rows: number;
   readonly solids: readonly TerrainRect[];
   readonly tileset?: string;
@@ -187,18 +236,26 @@ export interface Reaches {
   readonly jump: number;
 }
 
-// A placed object in base pixels, its type and overrides resolved: its placed top-left corner,
-// size, motion and reaction in pixels. hitbox: where a hazard touches her, from its top-left
-// corner, when its art declares one; else its whole rectangle.
+// A placed thing in base pixels, its instance, character and archetype resolved into one flat
+// object: its placed top-left corner, size, motion, reaction and interaction in pixels, and what
+// the view and dialogue need. hitbox: where a hazard touches her, from its top-left corner, when
+// its art declares one; else its whole rectangle.
 export interface ObjectLayout {
+  readonly animations: Readonly<Record<CharacterState, string | undefined>>;
   readonly art: string;
+  readonly character: string;
   readonly collision: Collision;
   readonly height: number;
   readonly hitbox: Rect | undefined;
+  readonly interaction: Interaction;
+  readonly lines: readonly string[];
   readonly motion: Motion;
   readonly origin: Point;
   readonly phase: number;
+  readonly quips: readonly string[];
+  readonly quirks: readonly Quirk[];
   readonly reaction: Reaction;
+  readonly scene: string | undefined;
   readonly to: AreaLink | undefined;
   readonly width: number;
 }

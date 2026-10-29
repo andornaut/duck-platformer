@@ -1,4 +1,5 @@
 import { frameSteps, startStepClock, type StepClock } from "@andornaut/game-kit/clock/fixedStep";
+import { type Random, randomStream } from "@andornaut/game-kit/random";
 import { containsPoint } from "@andornaut/game-kit/rect";
 import {
   phaserBitmapFont,
@@ -6,10 +7,11 @@ import {
 } from "@andornaut/game-kit/text/phaser/phaserBitmapFont";
 import { type GameObjects, Input, Scene, type Tilemaps } from "phaser";
 
+import { ARCHETYPES } from "../data/archetypes";
+import { CHARACTERS } from "../data/characters";
 import { DUCK } from "../data/duck";
 import { LEVEL_1 } from "../data/level1";
 import { TEST_LEVELS } from "../data/levels";
-import { OBJECT_TYPES } from "../data/objects";
 import { SCREEN, TILE } from "../data/screen";
 import { TEXT } from "../data/text";
 import { TOUCH } from "../data/touch";
@@ -17,6 +19,7 @@ import type {
   AreaLayout,
   AreaLink,
   ArtHitbox,
+  CharacterState,
   Collision,
   LevelLayout,
   ObjectLayout,
@@ -47,6 +50,7 @@ import {
   type TagFrame,
   tagMs,
 } from "../view/aseprite";
+import { characterState, nextQuirkAt } from "../view/character";
 import { duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
 import { type ArtKind, artKind, artOffset } from "../view/objectArt";
 import { objectTiles, terrainTiles, type Tileset } from "../view/tiles";
@@ -58,6 +62,9 @@ import {
   labelColour,
   trackPress,
 } from "../view/touchControls";
+
+// What every level's instances are resolved against.
+const CATALOGUE = { archetypes: ARCHETYPES, characters: CHARACTERS };
 
 // The levels in play order, looping: level 1, then the test levels.
 const LEVELS = [LEVEL_1, ...TEST_LEVELS];
@@ -104,6 +111,8 @@ const OVERLAY_DEPTH = 2;
 interface ObjectArt {
   readonly item: GameObjects.Components.Transform & GameObjects.GameObject;
   readonly offset: Point;
+  // When its next quirk plays, and the draws that time it.
+  readonly quirk?: { at: number; readonly random: Random };
   readonly sprite: GameObjects.Sprite | undefined;
 }
 const PALETTE = "palette";
@@ -138,6 +147,7 @@ export class LevelScene extends Scene {
   private manifest!: ArtManifest;
   // The area drawn, and a rectangle for each of its objects.
   private areaShown = "";
+  private attemptShown = 0;
   // Play holds still while a door fades.
   private fading = false;
   private objectArt: ObjectArt[] = [];
@@ -225,7 +235,7 @@ export class LevelScene extends Scene {
         this.goThrough(this.level.using);
       }
     }
-    if (this.level.area !== this.areaShown) {
+    if (this.level.area !== this.areaShown || this.level.attempt !== this.attemptShown) {
       this.drawArea();
     }
     this.drawObjects();
@@ -241,7 +251,8 @@ export class LevelScene extends Scene {
       throw new Error(`No level ${index + 1}`);
     }
     this.levelIndex = index;
-    this.layout = levelLayout(TILE, OBJECT_TYPES, this.hitboxes, plan);
+    // PLACEHOLDER: carried choices set no flags yet.
+    this.layout = levelLayout(TILE, CATALOGUE, this.hitboxes, new Set(), plan);
     const asked = Number(new URLSearchParams(window.location.search).get("seed"));
     const seed = Number.isInteger(asked) && asked > 0 ? asked : Math.floor(Math.random() * 2 ** 31);
     this.level = startLevel(DUCK, this.layout, seed);
@@ -270,6 +281,7 @@ export class LevelScene extends Scene {
   private drawArea(): void {
     const area = areaOf(this.layout, this.level.area);
     this.areaShown = this.level.area;
+    this.attemptShown = this.level.attempt;
     this.cameras.main.setBounds(0, 0, area.width, area.height);
     this.cameras.main.setBackgroundColor(area.tileset ? INK : BACKGROUND);
     const tileset = area.tileset ? this.tileset(area.tileset) : undefined;
@@ -287,7 +299,9 @@ export class LevelScene extends Scene {
     for (const { item } of this.objectArt) {
       item.destroy();
     }
-    this.objectArt = area.objects.map((object) => this.drawObject(area.tileset, tileset, object));
+    this.objectArt = area.objects.map((object, index) =>
+      this.drawObject(area.tileset, tileset, object, index),
+    );
   }
 
   private drawTerrain(key: string, tileset: Tileset, area: AreaLayout): Tilemaps.Tilemap {
@@ -313,6 +327,7 @@ export class LevelScene extends Scene {
     key: string | undefined,
     tileset: Tileset | undefined,
     object: ObjectLayout,
+    index: number,
   ): ObjectArt {
     const kind = artKind(this.manifest, tileset, object.art);
     const rect = { height: object.height, width: object.width };
@@ -347,11 +362,21 @@ export class LevelScene extends Scene {
       }
       case "sprite": {
         const sprite = this.add.sprite(0, 0, object.art).setOrigin(0).setDepth(DEPTHS.sprite);
-        const [tag] = this.sheet(object.art).keys();
+        const tag = object.animations.idle ?? [...this.sheet(object.art).keys()][0];
         if (tag !== undefined) {
           show(sprite, tag);
         }
-        return { item: sprite, offset: artOffset(kind, rect, sprite.frame), sprite };
+        const [quirk] = object.quirks;
+        const random = randomStream(
+          this.level.seed + this.level.attempt,
+          `${this.level.area}:${index}:quirk`,
+        );
+        return {
+          item: sprite,
+          offset: artOffset(kind, rect, sprite.frame),
+          ...(quirk && { quirk: { at: nextQuirkAt(random, quirk, 0), random } }),
+          sprite,
+        };
       }
       default: {
         const item = this.add
@@ -363,19 +388,55 @@ export class LevelScene extends Scene {
     }
   }
 
-  // Each object where the rules put it, in whole pixels, a sprite facing the way it moved.
+  // Each object where the rules put it, in whole pixels. A character's sprite faces the way it
+  // moved and plays the tag for its state, and an idle one now and then plays a quirk.
   private drawObjects(): void {
+    const area = areaOf(this.layout, this.level.area);
+    const { duck } = this.level;
+    const hers = { x: duck.x + DUCK.width / 2, y: duck.y + DUCK.height / 2 };
     this.level.objects.forEach((at, index) => {
       const art = this.objectArt[index];
-      if (!art) {
+      const object = area.objects[index];
+      if (!art || !object) {
         return;
       }
       const x = Math.round(at.x + art.offset.x);
-      if (art.sprite && x !== art.item.x) {
-        art.sprite.setFlipX(x < art.item.x);
+      const y = Math.round(at.y + art.offset.y);
+      const moved = x !== art.item.x || y !== art.item.y;
+      if (art.sprite) {
+        if (x !== art.item.x) {
+          art.sprite.setFlipX(x < art.item.x);
+        }
+        const mine = { x: at.x + object.width / 2, y: at.y + object.height / 2 };
+        this.animate(art, object, characterState(object, moved, mine, hers));
       }
-      art.item.setPosition(x, Math.round(at.y + art.offset.y));
+      art.item.setPosition(x, y);
     });
+  }
+
+  // Plays the tag for a character's state, or while it idles, its quirks when they come due, each
+  // timed by the attempt's random draws so a restart rolls them afresh.
+  private animate(art: ObjectArt, object: ObjectLayout, state: CharacterState): void {
+    const sprite = art.sprite as GameObjects.Sprite;
+    const quirk = object.quirks[0];
+    const playingQuirk =
+      quirk !== undefined &&
+      sprite.anims.isPlaying &&
+      sprite.anims.currentAnim?.key === animKey(object.art, quirk.tag);
+    if (state === "idle" && quirk && art.quirk) {
+      if (this.level.seconds >= art.quirk.at) {
+        sprite.play(animKey(object.art, quirk.tag));
+        art.quirk.at = nextQuirkAt(art.quirk.random, quirk, this.level.seconds);
+        return;
+      }
+      if (playingQuirk) {
+        return;
+      }
+    }
+    const tag = object.animations[state];
+    if (tag !== undefined) {
+      show(sprite, tag);
+    }
   }
 
   private tileset(key: string): Tileset {

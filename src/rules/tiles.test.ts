@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import type { LevelPlan, ObjectType } from "../data/types";
-import { levelLayout, tileRect } from "./tiles";
+import type { Archetype, Character, Instance, LevelPlan } from "../data/types";
+import { type Catalogue, isPlaced, levelLayout, tileRect } from "./tiles";
 
 describe("tileRect", () => {
   it.each([
@@ -14,10 +14,9 @@ describe("tileRect", () => {
 });
 
 describe("levelLayout", () => {
-  const LIFT: ObjectType = {
-    art: "lift",
+  const PLATFORM: Archetype = {
     collision: "solid",
-    cols: 4,
+    interaction: { kind: "none", range: 0 },
     motion: {
       algorithm: "linear",
       direction: "up",
@@ -28,24 +27,38 @@ describe("levelLayout", () => {
       variance: 0,
     },
     reaction: { kind: "avoid", range: 5, speed: 3 },
-    rows: 1,
   };
+  const LIFT: Character = {
+    animations: { idle: "rest", move: "rise" },
+    archetype: "platform",
+    art: "lift",
+    cols: 4,
+    lines: ["lift-hello"],
+    quips: ["lift-quip"],
+    quirks: [{ every: 3, tag: "creak", variance: 0.2 }],
+    rows: 1,
+    tuning: { interaction: { kind: "quip", range: 4 }, motion: { speed: 4 } },
+  };
+  const CATALOGUE: Catalogue = { archetypes: { platform: PLATFORM }, characters: { lift: LIFT } };
   const PLAN: LevelPlan = {
     areas: {
       yard: {
         cols: 64,
         entries: { gate: { col: 5, row: 33 } },
         objects: [
-          { col: 20, row: 30, type: "lift" },
+          { character: "lift", col: 20, row: 30 },
           {
+            character: "lift",
             col: 40,
             cols: 8,
-            overrides: { motion: { distance: 3 }, reaction: { kind: "none" } },
+            lines: ["lift-special"],
+            overrides: { motion: { distance: 3, speed: 5 }, reaction: { kind: "none" } },
             phase: 0.5,
             row: 25,
+            scene: "lift-scene",
             to: { area: "yard", entry: "gate" },
-            type: "lift",
           },
+          { character: "lift", col: 0, requires: ["met-lift"], row: 0 },
         ],
         rows: 36,
         solids: [{ col: 0, cols: 64, row: 33, rows: 3 }],
@@ -53,48 +66,94 @@ describe("levelLayout", () => {
     },
     start: { area: "yard", entry: "gate" },
   };
-  const layout = levelLayout(
-    10,
-    { lift: LIFT },
-    { lift: { frame: { height: 10, width: 40 }, hitbox: { height: 6, width: 30, x: 5, y: 2 } } },
-    PLAN,
-  );
+  const hitboxes = {
+    lift: { frame: { height: 10, width: 40 }, hitbox: { height: 6, width: 30, x: 5, y: 2 } },
+  };
+  const layout = levelLayout(10, CATALOGUE, hitboxes, new Set(), PLAN);
   const yard = layout.areas.yard;
+  const [lift, special] = yard?.objects ?? [];
   it.each([
     ["the area's size", { height: yard?.height, width: yard?.width }, { height: 360, width: 640 }],
     ["its entries", yard?.entries, { gate: { x: 50, y: 330 } }],
     ["its terrain", yard?.solids, [{ height: 30, width: 640, x: 0, y: 330 }]],
+    ["only the instances the set flags place", yard?.objects.length, 2],
+    ["the archetype's collision", lift?.collision, "solid"],
     [
-      "an object of its type's size",
-      yard?.objects[0] && { height: yard.objects[0].height, width: yard.objects[0].width },
+      "the character's size",
+      lift && { height: lift.height, width: lift.width },
       { height: 10, width: 40 },
     ],
-    ["an object sized by its placement", yard?.objects[1]?.width, 80],
-    ["an object's spot", yard?.objects[0]?.origin, { x: 200, y: 300 }],
-    ["its motion in pixels", yard?.objects[0]?.motion.distance, 60],
-    ["its speed in pixels", yard?.objects[0]?.motion.speed, 20],
-    ["its reaction in pixels", yard?.objects[0]?.reaction, { kind: "avoid", range: 50, speed: 30 }],
-    ["a placement's motion overrides", yard?.objects[1]?.motion.distance, 30],
-    ["a placement's reaction overrides", yard?.objects[1]?.reaction.kind, "none"],
-    ["a phase, 0 when unset", [yard?.objects[0]?.phase, yard?.objects[1]?.phase], [0, 0.5]],
-    ["a door's link", yard?.objects[1]?.to, { area: "yard", entry: "gate" }],
-    ["its art's hit box", yard?.objects[0]?.hitbox, { height: 6, width: 30, x: 5, y: 2 }],
+    ["an instance's own size", special?.width, 80],
+    ["an instance's spot", lift?.origin, { x: 200, y: 300 }],
+    ["the archetype's motion, in pixels", lift?.motion.distance, 60],
+    ["the character's tuning over the archetype", lift?.motion.speed, 40],
+    [
+      "the instance's overrides over both",
+      [special?.motion.distance, special?.motion.speed],
+      [30, 50],
+    ],
+    [
+      "the archetype's reaction, in pixels",
+      lift?.reaction,
+      { kind: "avoid", range: 50, speed: 30 },
+    ],
+    ["the instance's reaction override", special?.reaction.kind, "none"],
+    ["the character's interaction, in pixels", lift?.interaction, { kind: "quip", range: 40 }],
+    [
+      "animations, a missing state playing idle's",
+      lift?.animations,
+      { idle: "rest", move: "rise", react: "rest", talk: "rest" },
+    ],
+    ["the character's words", [lift?.lines, lift?.quips], [["lift-hello"], ["lift-quip"]]],
+    [
+      "an instance's own lines and scene",
+      [special?.lines, special?.scene],
+      [["lift-special"], "lift-scene"],
+    ],
+    ["the character's quirks", lift?.quirks, LIFT.quirks],
+    ["a phase, 0 when unset", [lift?.phase, special?.phase], [0, 0.5]],
+    ["a door's link", special?.to, { area: "yard", entry: "gate" }],
+    ["its art's hit box", lift?.hitbox, { height: 6, width: 30, x: 5, y: 2 }],
     [
       "its art's hit box, the frame centred on a wider placement",
-      yard?.objects[1]?.hitbox,
+      special?.hitbox,
       { height: 6, width: 30, x: 25, y: 2 },
     ],
     ["the start", layout.start, { area: "yard", entry: "gate" }],
-  ])("converts %s", (_, converted, expected) => {
-    expect(converted).toEqual(expected);
+  ])("resolves %s", (_, resolved, expected) => {
+    expect(resolved).toEqual(expected);
   });
 
-  it("refuses a placement of an unknown type", () => {
-    const yardPlan = PLAN.areas.yard;
+  it.each([
+    ["an unknown character", { character: "kite", col: 0, row: 0 }, "kite"],
+    ["a character with an unknown archetype", { character: "orphan", col: 0, row: 0 }, "nobody"],
+  ])("refuses %s", (_, instance, message) => {
+    const catalogue = {
+      ...CATALOGUE,
+      characters: { ...CATALOGUE.characters, orphan: { ...LIFT, archetype: "nobody" } },
+    };
     const bad = {
       ...PLAN,
-      areas: { yard: { ...yardPlan, objects: [{ col: 0, row: 0, type: "kite" }] } },
-    };
-    expect(() => levelLayout(10, { lift: LIFT }, {}, bad as LevelPlan)).toThrow("kite");
+      areas: { yard: { ...PLAN.areas.yard, objects: [instance] } },
+    } as LevelPlan;
+    expect(() => levelLayout(10, catalogue, {}, new Set(), bad)).toThrow(message);
+  });
+});
+
+describe("isPlaced", () => {
+  const placed = (fields: Partial<Instance>): Instance => ({
+    character: "x",
+    col: 0,
+    row: 0,
+    ...fields,
+  });
+  it.each([
+    ["with no flags named", placed({}), [], true],
+    ["requiring a flag that is set", placed({ requires: ["a"] }), ["a"], true],
+    ["requiring a flag that is not", placed({ requires: ["a", "b"] }), ["a"], false],
+    ["excluding a flag that is set", placed({ excludes: ["a"] }), ["a"], false],
+    ["excluding a flag that is not", placed({ excludes: ["b"] }), ["a"], true],
+  ])("places an instance %s: %s", (_, instance, flags, expected) => {
+    expect(isPlaced(new Set(flags), instance)).toBe(expected);
   });
 });
