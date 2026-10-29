@@ -1,0 +1,120 @@
+{
+  "fonts": [
+    {
+      "key": "font-body",
+      "png": "fonts/font-body.png",
+      "fnt": "fonts/font-body.fnt"
+    },
+    {
+      "key": "font-title",
+      "png": "fonts/font-title.png",
+      "fnt": "fonts/font-title.fnt"
+    }
+  ],
+  "sprites": [
+    {
+      "key": "ui-answer",
+      "png": "sprites/ui-answer.png",
+      "json": "sprites/ui-answer.json"
+    },
+    {
+      "key": "ui-checkbox",
+      "png": "sprites/ui-checkbox.png",
+      "json": "sprites/ui-checkbox.json"
+    },
+    {
+      "key": "ui-close",
+      "png": "sprites/ui-close.png",
+      "json": "sprites/ui-close.json"
+    },
+    {
+      "key": "ui-dialogue-box",
+      "png": "sprites/ui-dialogue-box.png",
+      "json": "sprites/ui-dialogue-box.json"
+    },
+    {
+      "key": "ui-forward-mark",
+      "png": "sprites/ui-forward-mark.png",
+      "json": "sprites/ui-forward-mark.json"
+    },
+    {
+      "key": "ui-name-tab",
+      "png": "sprites/ui-name-tab.png",
+      "json": "sprites/ui-name-tab.json",
+      "slice": {
+        "left": 2,
+        "top": 2,
+        "right": 2,
+        "bottom": 2
+      }
+    },
+    {
+      "key": "ui-portrait-frame",
+      "png": "sprites/ui-portrait-frame.png",
+      "json": "sprites/ui-portrait-frame.json"
+    },
+    {
+      "key": "ui-quip-strip",
+      "png": "sprites/ui-quip-strip.png",
+      "json": "sprites/ui-quip-strip.json",
+      "slice": {
+        "left": 2,
+        "top": 2,
+        "right": 2,
+        "bottom": 2
+      }
+    },
+    {
+      "key": "ui-resume",
+      "png": "sprites/ui-resume.png",
+      "json": "sprites/ui-resume.json"
+    },
+    {
+      "key": "ui-settings-card",
+      "png": "sprites/ui-settings-card.png",
+      "json": "sprites/ui-settings-card.json",
+      "slice": {
+        "left": 2,
+        "top": 38,
+        "right": 2,
+        "bottom": 2
+      }
+    },
+    {
+      "key": "ui-settings-row",
+      "png": "sprites/ui-settings-row.png",
+      "json": "sprites/ui-settings-row.json",
+      "slice": {
+        "left": 2,
+        "top": 2,
+        "right": 2,
+        "bottom": 2
+      }
+    },
+    {
+      "key": "ui-skip",
+      "png": "sprites/ui-skip.png",
+      "json": "sprites/ui-skip.json"
+    },
+    {
+      "key": "ui-touch-interact",
+      "png": "sprites/ui-touch-interact.png",
+      "json": "sprites/ui-touch-interact.json"
+    },
+    {
+      "key": "ui-touch-jump",
+      "png": "sprites/ui-touch-jump.png",
+      "json": "sprites/ui-touch-jump.json"
+    },
+    {
+      "key": "ui-touch-knob",
+      "png": "sprites/ui-touch-knob.png",
+      "json": "sprites/ui-touch-knob.json"
+    },
+    {
+      "key": "ui-touch-move",
+      "png": "sprites/ui-touch-move.png",
+      "json": "sprites/ui-touch-move.json"
+    }
+  ]
+}

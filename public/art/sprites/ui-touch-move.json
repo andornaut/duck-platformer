@@ -1,0 +1,74 @@
+{ "frames": {
+   "ui-touch-move 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 77, "h": 67 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 77, "h": 67 },
+    "sourceSize": { "w": 77, "h": 67 },
+    "duration": 100
+   },
+   "ui-touch-move 1.aseprite": {
+    "frame": { "x": 77, "y": 0, "w": 77, "h": 67 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 77, "h": 67 },
+    "sourceSize": { "w": 77, "h": 67 },
+    "duration": 60
+   },
+   "ui-touch-move 2.aseprite": {
+    "frame": { "x": 154, "y": 0, "w": 77, "h": 67 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 77, "h": 67 },
+    "sourceSize": { "w": 77, "h": 67 },
+    "duration": 60
+   },
+   "ui-touch-move 3.aseprite": {
+    "frame": { "x": 231, "y": 0, "w": 77, "h": 67 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 77, "h": 67 },
+    "sourceSize": { "w": 77, "h": 67 },
+    "duration": 100
+   },
+   "ui-touch-move 4.aseprite": {
+    "frame": { "x": 308, "y": 0, "w": 77, "h": 67 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 77, "h": 67 },
+    "sourceSize": { "w": 77, "h": 67 },
+    "duration": 60
+   },
+   "ui-touch-move 5.aseprite": {
+    "frame": { "x": 385, "y": 0, "w": 77, "h": 67 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 77, "h": 67 },
+    "sourceSize": { "w": 77, "h": 67 },
+    "duration": 60
+   },
+   "ui-touch-move 6.aseprite": {
+    "frame": { "x": 462, "y": 0, "w": 77, "h": 67 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 77, "h": 67 },
+    "sourceSize": { "w": 77, "h": 67 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "http://www.aseprite.org/",
+  "version": "1.2.30-x64",
+  "image": "ui-touch-move.png",
+  "format": "RGBA8888",
+  "size": { "w": 539, "h": 67 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "rest", "from": 0, "to": 0, "direction": "forward" },
+   { "name": "press-left", "from": 1, "to": 2, "direction": "forward" },
+   { "name": "held-left", "from": 3, "to": 3, "direction": "forward" },
+   { "name": "press-right", "from": 4, "to": 5, "direction": "forward" },
+   { "name": "held-right", "from": 6, "to": 6, "direction": "forward" }
+  ]
+ }
+}

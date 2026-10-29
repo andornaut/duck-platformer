@@ -184,11 +184,12 @@ for i, px in ipairs(frames) do
   spr.frames[i].duration = durations[i]
 end
 {tags}
+{slice}
 spr:saveAs("{out}")
 """
 
 
-def _lua(tags, out):
+def _lua(tags, out, key, margins=None):
     frames, durations, tag_lines, n = [], [], [], 0
     h, w = len(tags[0][1][0]), len(tags[0][1][0][0])
     for tag, fs, ms in tags:
@@ -207,25 +208,34 @@ def _lua(tags, out):
     palette = "\n".join(
         "pal:setColor(%d, Color{ r = %d, g = %d, b = %d })" % ((i,) + rgb(c)) for i, c in enumerate(PALETTE)
     )
+    slice_lines = ""
+    if margins:
+        left, top, right, bottom = margins
+        slice_lines = (f'do local s = spr:newSlice(Rectangle(0, 0, {w}, {h})); s.name = "{key}"; '
+                       f's.center = Rectangle({left}, {top}, {w - left - right}, {h - top - bottom}) end')
     return LUA.format(w=w, h=h, ncolors=len(PALETTE), palette=palette, frames="{" + ",\n".join(frames) + "}",
-                      durations="{" + ",".join(durations) + "}", tags="\n".join(tag_lines), out=out)
+                      durations="{" + ",".join(durations) + "}", tags="\n".join(tag_lines), slice=slice_lines,
+                      out=out)
 
 
-def build(sprites, src_dir):
+def build(sprites, src_dir, slices=None):
     """Write src_dir/<key>.aseprite for every sprite, export it to public/art/sprites/<key>.png + .json
     with its tags, and list it in the manifest. sprites is a list of (key, tags), tags a list of
-    (tag, frames, ms)."""
+    (tag, frames, ms). slices maps a key to its nine-slice margins (left, top, right, bottom): the export
+    carries them as an Aseprite slice named after the key, and the manifest entry as "slice"."""
+    slices = slices or {}
     os.makedirs(src_dir, exist_ok=True)
     os.makedirs(SPRITES, exist_ok=True)
     built = []
     for key, tags in sprites:
         src = f"{src_dir}/{key}.aseprite"
         with tempfile.NamedTemporaryFile("w", suffix=".lua", delete=False) as f:
-            f.write(_lua(tags, src))
+            f.write(_lua(tags, src, key, slices.get(key)))
         subprocess.run(["aseprite", "-b", "--script", f.name], check=True)
         os.unlink(f.name)
         subprocess.run(["aseprite", "-b", src, "--sheet", f"{SPRITES}/{key}.png", "--data", f"{SPRITES}/{key}.json",
-                        "--format", "json-hash", "--list-tags"], check=True, stdout=subprocess.DEVNULL)
+                        "--format", "json-hash", "--list-tags"] + (["--list-slices"] if key in slices else []),
+                       check=True, stdout=subprocess.DEVNULL)
         built.append(key)
     manifest = {}
     if os.path.exists(MANIFEST):
@@ -234,6 +244,8 @@ def build(sprites, src_dir):
     entries = {s["key"]: s for s in manifest.get("sprites", [])}
     for key in built:
         entries[key] = {"key": key, "png": f"sprites/{key}.png", "json": f"sprites/{key}.json"}
+        if key in slices:
+            entries[key]["slice"] = dict(zip(("left", "top", "right", "bottom"), slices[key]))
     manifest["sprites"] = sorted(entries.values(), key=lambda s: s["key"])
     with open(MANIFEST, "w") as f:
         json.dump(manifest, f, indent=2)
@@ -241,11 +253,11 @@ def build(sprites, src_dir):
     print("built", ", ".join(built))
 
 
-def main(argv, sprites, src_dir, doc, grounds=("5a6988", "e4a672", "ead4aa")):
+def main(argv, sprites, src_dir, doc, grounds=("5a6988", "e4a672", "ead4aa"), slices=None):
     """The command line every art script shares: `build`, or `preview OUT.png`."""
     if len(argv) == 3 and argv[1] == "preview":
         preview(list(sprites()), argv[2], grounds)
     elif len(argv) == 2 and argv[1] == "build":
-        build(list(sprites()), src_dir)
+        build(list(sprites()), src_dir, slices)
     else:
         sys.exit(doc)

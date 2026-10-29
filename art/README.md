@@ -53,6 +53,8 @@ In order:
 - A build writes the Aseprite sources (`art/<set>/<key>.aseprite`) and exports them as PNG plus JSON, with Aseprite tags for animations, to `public/art/sprites/<key>.png` and `.json`.
 - Change the script, never the `.aseprite`: a build overwrites it.
 - Each script's docstring is its spec: every asset's size, tags, frame timings and placement.
+- A nine-slice texture carries its margins as an Aseprite slice named after its key and as `slice` in its manifest entry.
+- `art/tools/fonts.py` rasterizes the fonts in `art/fonts/` into BMFonts in `public/art/fonts/`, white for tinting.
 - `art/inventory.md` lists every asset (key, type, size, tags).
 - Art reads game layout and data from the generated export files the game writes, never from `src/`. The export files are in `shared/export/`. Art writes the shared data files the game reads (`lights.json`, `palette.json`).
 - Keys are kebab-case, named after what the player sees. Internal names match displayed names.
@@ -118,15 +120,16 @@ All positions are in base pixels (x, y, w, h). A touch target is at least 44x44.
 ### Dialogue box
 
 - A box at the bottom, 8,256,624,96, with the speaker's 64px portrait in a 68px frame at 16,270 and a name tab on the box's top edge. Two or three speakers use the same box: the portrait and name tab change.
+- The name tab's fill is the speaker's colour: amber, green, pink or tan. Ink text holds at least 6.6:1 on each, and each holds at least 5:1 on the box's navy.
 - Text area at x 96, y 268, 488 wide, 3 lines at a 20px pitch, one paragraph per box.
 - Forward mark 10x14, hit area 588,308,44,44. A tap anywhere or a key also advances. There is no back button and no timer.
 - Skip at the top right: mark 554,8,78,20, hit area 554,8,78,44. It runs ahead to the next choice; while a choice shows, it is disabled (greyed with the grey ramp, and changed in shape).
-- Choices: a row of two or three answer buttons above the box, each 204x36 (hit 204x44), row top y 192, at most 162px of text. The selected answer shows a cursor as well as a fill.
+- Choices: a row of two or three answer buttons above the box, each 204x36 (hit 204x44), row top y 192, at most 162px of text. Three sit at x 8, 218 and 428; two at 113 and 323. The selected answer shows a cursor as well as a fill.
 - The touch controls hide while a box is open.
 
 ### Quip
 
-A one-line strip at the top centre, y 8, height 24, sized to its text and at most 452 wide, led by the speaker's name. It never pauses play and never reaches the lower corners.
+A one-line strip at the top centre, y 8, height 24, sized to its text and at most 452 wide, led by the speaker's name in their name-tab colour. It never pauses play and never reaches the lower corners.
 
 ### Touch controls
 
@@ -136,7 +139,7 @@ Dashed rings, light ink with a dark fringe so they hold 3:1 on light and dark gr
 | -------- | ------- | -------------- | ----- |
 | Interact | 528,268 | 488,224,76,136 | 31x31 |
 | Jump     | 600,304 | 564,224,76,136 | 39x39 |
-| Move     | 72,300  | 0,224,152,136  | 62x55 |
+| Move     | 72,300  | 0,224,152,136  | 61x55 |
 
 - Move: the direction is the sign of the touch's distance from the fixed centre, with a dead zone of 6px either side, so one rule covers a drag and a tap on either half. The knob shows the distance, capped at 12px. A held direction shows a doubled chevron.
 - Press: the ring turns solid and swells (frame 0, 60ms), ripples outward (frame 1, 60ms), then holds a solid ring until release, which snaps back to rest. On a drag it starts when the touch leaves the dead zone.
@@ -144,6 +147,11 @@ Dashed rings, light ink with a dark fringe so they hold 3:1 on light and dark gr
 ### Settings
 
 A pause card over the game, which is dimmed by stepping every colour two ramp steps darker. A "Touch controls" checkbox reads Shown or Hidden, and the overlay behind the card updates as it changes. Resume and a close X return to the game.
+
+- Card 136,88,368,184 with a 36px header holding the title.
+- Close X hit area 460,88,44,44.
+- The "Touch controls" row, 144,136,352,48, is one hit area that toggles the checkbox (20x20 at 156,150).
+- Resume 240,212,160,44.
 
 ## Animation
 
@@ -189,5 +197,4 @@ A pause card over the game, which is dimmed by stepping every colour two ramp st
 ## Remaining for the first build
 
 - The shared drawing module, `art/tools/pixel.py`.
-- The fonts, the duck's animations and the UI art.
-- `art/inventory.md`.
+- The duck's animations.
