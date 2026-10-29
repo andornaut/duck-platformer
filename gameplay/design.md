@@ -49,8 +49,10 @@ A landscape, left-to-right platformer: a duck falls out of her apartment at the 
 
 ### The duck
 
-- **Flutter:** every jump flutters: her fall is slow enough to use, and the player steers her in the air
-- **Movement:** she walks left and right and jumps. PLACEHOLDER: her speeds and the jump and flutter values, in `src/data/`
+- **Flutter:** every fall flutters, after a jump or off a ledge: her fall is slow enough to use, and the player steers her in the air
+- **Jump timing:** a jump pressed just after she leaves a ledge still jumps (coyote time), and a jump pressed just before she lands jumps as she lands (jump buffering)
+- **Movement:** she walks left and right and jumps. Her speeds, jump, flutter and timing values are in `src/data/duck.ts`
+- **Short hop:** releasing Jump while she rises cuts the jump short, so precise short hops stay possible
 
 ### Floors and restarts
 
