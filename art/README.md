@@ -5,8 +5,8 @@ The art plan and pipeline for Duck Platformer. Art owns `art/` and the served ar
 ## Direction
 
 - Pixel art: minimalist, cute, a little retro, refined.
-- Everything, UI included, is pixel art at one base resolution, integer-scaled with no smoothing. PLACEHOLDER: the base resolution.
-- Chibi proportions: the head about as big as the body, so a character reads from head shape and markings alone.
+- Everything, UI included, is pixel art at one base resolution, integer-scaled with no smoothing: 640x360. A landscape phone shows it at 3x (1920x1080 device pixels), so 1 base pixel is 1 CSS pixel at a device pixel ratio of 3.
+- Chibi proportions: the head at least as big as the body, so a character reads from head shape and markings alone.
 - Style decisions are the user's (see Options and decisions).
 
 ## Process: critique and revise
@@ -62,7 +62,7 @@ In order:
 
 ### Palette
 
-- One fixed house palette, plus a few game-specific ramps that each end on a house colour. PLACEHOLDER: the palette (Endesga 32 is the recommended option to mock first).
+- One fixed house palette, plus a few game-specific ramps that each end on a house colour. The house palette is [Endesga 32](https://lospec.com/palette-list/endesga-32); colour names are the `K` names in `art/tools/pixel.py`.
 - Every pixel is fully opaque or fully transparent.
 - Each colour has a one-step-darker mapping (its ramp). Shadows and dimming step each colour down its ramp, never blend with black.
 - Neutral greys are reserved for disabled UI.
@@ -87,13 +87,63 @@ In order:
 - Draw on a small design grid, then rasterize at a fixed scale. Shapes scale; 1px lines and single pixels stay 1px.
 - Feet sit on the frame's bottom rows.
 - Size classes step evenly. Draw each to a target inked area, not just a frame size, so small and large read as distinct steps.
-- PLACEHOLDER: the frame sizes per sprite type.
+
+| Sprite | Frame |
+| ------ | ----- |
+| Duck   | 64x48 |
 
 ### Text
 
+- Fonts: `font-body` (Tiny5, mixed case) for body text, dialogue and quips; `font-title` (Silkscreen, capitals) for titles, names and buttons. Both are native at 8px and drawn at 2x, so a line is 16 base pixels tall. Sprites keep 1px detail.
+- Text holds 4.5:1 against what it sits on; essential icons and marks hold 3:1. A state never relies on colour alone.
 - Text never shrinks to fit: reword it or grow the box. Each text role keeps one size and one font.
 - Words in effects and labels are set in a font, never baked into sprites.
 - A backdrop never shows its own place's name; the HUD names it.
+
+## The duck
+
+The protagonist is a cute, chibi, cream-coloured female duck, drawn facing right and mirrored for left.
+
+- Proportions: her head is about 1.5x the area of her body.
+- Bow: a classic two-loop pink bow on top of her head.
+- Bill: long, flat and orange. Feet orange.
+- Body: cream, with tan cel shading; the wing is peach.
+- Every jump flutters (a slow, steerable fall), so the flutter pose is her signature: the wing raised up and back with a clear gap from the head, the body 2px higher, feet hanging.
+- Frame 64x48, feet on rows 44 to 46 and the outline on row 47.
+
+## UI
+
+All positions are in base pixels (x, y, w, h). A touch target is at least 44x44.
+
+### Dialogue box
+
+- A box at the bottom, 8,256,624,96, with the speaker's 64px portrait in a 68px frame at 16,270 and a name tab on the box's top edge. Two or three speakers use the same box: the portrait and name tab change.
+- Text area at x 96, y 268, 488 wide, 3 lines at a 20px pitch, one paragraph per box.
+- Forward mark 10x14, hit area 588,308,44,44. A tap anywhere or a key also advances. There is no back button and no timer.
+- Skip at the top right: mark 554,8,78,20, hit area 554,8,78,44. It runs ahead to the next choice; while a choice shows, it is disabled (greyed with the grey ramp, and changed in shape).
+- Choices: a row of two or three answer buttons above the box, each 204x36 (hit 204x44), row top y 192, at most 162px of text. The selected answer shows a cursor as well as a fill.
+- The touch controls hide while a box is open.
+
+### Quip
+
+A one-line strip at the top centre, y 8, height 24, sized to its text and at most 452 wide, led by the speaker's name. It never pauses play and never reaches the lower corners.
+
+### Touch controls
+
+Dashed rings, light ink with a dark fringe so they hold 3:1 on light and dark ground. Hidden on desktop and when the setting is off.
+
+| Control  | Centre  | Hit area       | Mark  |
+| -------- | ------- | -------------- | ----- |
+| Interact | 528,268 | 488,224,76,136 | 31x31 |
+| Jump     | 600,304 | 564,224,76,136 | 39x39 |
+| Move     | 72,300  | 0,224,152,136  | 62x55 |
+
+- Move: the direction is the sign of the touch's distance from the fixed centre, with a dead zone of 6px either side, so one rule covers a drag and a tap on either half. The knob shows the distance, capped at 12px. A held direction shows a doubled chevron.
+- Press: the ring turns solid and swells (frame 0, 60ms), ripples outward (frame 1, 60ms), then holds a solid ring until release, which snaps back to rest. On a drag it starts when the touch leaves the dead zone.
+
+### Settings
+
+A pause card over the game, which is dimmed by stepping every colour two ramp steps darker. A "Touch controls" checkbox reads Shown or Hidden, and the overlay behind the card updates as it changes. Resume and a close X return to the game.
 
 ## Animation
 
@@ -138,6 +188,6 @@ In order:
 
 ## Remaining for the first build
 
-- The user's picks from the mocks: base resolution, palette, frame sizes, the duck, the dialogue box, quips, the touch overlay and settings.
-- The shared drawing module and the first `art/tools/<set>.py`.
+- The shared drawing module, `art/tools/pixel.py`.
+- The fonts, the duck's animations and the UI art.
 - `art/inventory.md`.
