@@ -1,59 +1,14 @@
 import type { ZonePlan } from "./types";
 
-// Zone 1, the ground floor: the street outside the hotel, then the lobby.
+// Zone 1: a New York street, outdoors, in one area.
 //
 // The street is one screen of play: the sidewalk's top is row 26 (y 312), and below it the game
 // shows ink. A pit-floor hazard 4 below the sidewalk's top in every opening restarts the zone
-// soon after she drops in. Awnings and the hotel canopy sit on row 20, 6 above the sidewalk.
-// Left to right it teaches: walk, hop, jump, a gap, a cellar hatch, the courier, then the
-// ferret's trap at the hotel door.
+// soon after she drops in. Awnings and the canopy sit on row 20, 6 above the sidewalk. Left to
+// right it teaches: walk, hop, jump, a gap, a cellar hatch, the courier, then the ferret's trap
+// at the exit door.
 export const ZONE_1: ZonePlan = {
   areas: {
-    // The lobby: the floor's top is row 56 (y 672). A climb at the right end leads from the
-    // floor to the stairwell exit on the balcony, 40 up, in the upper screen.
-    lobby: {
-      cols: 360,
-      entries: { "front-door": { col: 8, row: 56 } },
-      objects: [
-        // The wood-panelled wall behind the whole room.
-        { character: "lobby-wall", col: 0, cols: 360, row: 0 },
-        // The balcony's railing, standing on it.
-        { character: "lobby-balustrade", col: 313, cols: 45, row: 13 },
-        { character: "lobby-front-door", col: 2, row: 41 },
-        // PLACEHOLDER: what happens in the lobby between the front door and the climb.
-        { character: "lobby-plant", col: 30, row: 46 },
-        { character: "lobby-window", col: 40, row: 26 },
-        { character: "lobby-lamp", col: 60, row: 2 },
-        { character: "lobby-plant", col: 100, row: 46 },
-        { character: "lobby-window", col: 120, row: 26 },
-        { character: "lobby-lamp", col: 150, row: 2 },
-        { character: "lobby-plant", col: 180, row: 46 },
-        { character: "lobby-window", col: 200, row: 26 },
-        { character: "lobby-lamp", col: 240, row: 2 },
-        { character: "lobby-plant", col: 260, row: 46 },
-        // The climb: hop 3 onto the sofa's seat, up 5 and across 4 to the desk, across 4 to the
-        // bookcase's lowest board, then up its boards 8 at a time and up 8 to the balcony.
-        { character: "sofa", col: 278, row: 50 },
-        { character: "sofa-cushion", col: 280, cols: 8, row: 53 },
-        { character: "desk", col: 292, row: 48 },
-        { character: "desk-top", col: 292, cols: 10, row: 48 },
-        { character: "bookcase", col: 306, row: 24 },
-        { character: "bookcase-shelf", col: 306, row: 48 },
-        { character: "bookcase-shelf", col: 306, row: 40 },
-        { character: "bookcase-shelf", col: 306, row: 32 },
-        { character: "bookcase-shelf", col: 306, row: 24 },
-        { character: "balcony", col: 313, cols: 45, row: 16 },
-        { character: "stairwell-exit", col: 348, row: 1 },
-      ],
-      rows: 60,
-      solids: [
-        // The floor, and a wood post at each end of the room.
-        { col: 0, cols: 360, look: "floor", row: 56, rows: 4 },
-        { col: 0, cols: 2, look: "post", row: 0, rows: 56 },
-        { col: 358, cols: 2, look: "post", row: 0, rows: 56 },
-      ],
-      tileset: "tiles-lobby",
-    },
     street: {
       cols: 240,
       entries: { start: { col: 4, row: 26 } },
@@ -108,14 +63,10 @@ export const ZONE_1: ZonePlan = {
         { character: "pedestrian-cat", col: 172, row: 21 },
         { character: "frog-courier", col: 186, row: 23 },
         { character: "pedestrian-raccoon", col: 200, phase: 0.5, row: 21 },
-        // The ferret's trap, then the hotel door under its canopy.
-        { character: "hotel-window", col: 206, row: 13 },
+        // The ferret's trap, then the zone's exit door under a canopy.
         { character: "ferret-trap-snap", col: 212, row: 24 },
-        { character: "hotel-canopy", col: 218, cols: 12, row: 20 },
-        { character: "hotel-crest", col: 220, row: 12 },
-        { character: "hotel-door", col: 222, row: 22, to: { area: "lobby", entry: "front-door" } },
-        { character: "doorman-podium", col: 227, row: 24 },
-        { character: "hotel-window", col: 233, row: 13 },
+        { character: "canopy", col: 218, cols: 12, row: 20 },
+        { character: "exit-door", col: 222, row: 22 },
       ],
       rows: 60,
       solids: [

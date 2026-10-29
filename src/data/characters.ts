@@ -2,8 +2,8 @@ import type { Character } from "./types";
 
 // Who or what each placed thing is, by name: its archetype, art, size and tuning. art is a piece
 // or tile name from art/README.md, a backdrop or sprite, or placeholder-<name> where art has none
-// yet. Tiled pieces (awnings, the canopy, planters, pit openings and the lobby's ledges) take
-// their width from each placement.
+// yet. Tiled pieces (awnings, the canopy, planters and pit openings) take their width from each
+// placement.
 export const CHARACTERS: Readonly<Record<string, Character>> = {
   // A shop awning: one-way, laid 6 above the sidewalk across a storefront.
   awning: {
@@ -12,24 +12,11 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 3,
     rows: 1,
   },
-  // The lobby's mezzanine edge: one-way.
-  balcony: {
+  // A canopy: one-way, 6 above the sidewalk, over the exit door.
+  canopy: {
     archetype: "ledge",
-    art: "one-way-balcony",
+    art: "one-way-canopy",
     cols: 3,
-    rows: 1,
-  },
-  bookcase: {
-    archetype: "scenery",
-    art: "lobby-bookcase",
-    cols: 7,
-    rows: 32,
-  },
-  // A board of the bookcase: one-way, at 8, 16, 24 and 32 above the floor.
-  "bookcase-shelf": {
-    archetype: "ledge",
-    art: "one-way-shelf",
-    cols: 7,
     rows: 1,
   },
   "cross-street": {
@@ -37,19 +24,6 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     art: "cross-street",
     cols: 10,
     rows: 2,
-  },
-  desk: {
-    archetype: "scenery",
-    art: "lobby-desk",
-    cols: 10,
-    rows: 8,
-  },
-  // The reception desk's top: one-way, 8 above the floor.
-  "desk-top": {
-    archetype: "ledge",
-    art: "one-way-desk",
-    cols: 10,
-    rows: 1,
   },
   // A harmless pug that trots up to her.
   "dog-pug": {
@@ -59,13 +33,15 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 4,
     rows: 3,
   },
-  "doorman-podium": {
-    archetype: "scenery",
-    art: "doorman-podium",
-    cols: 2,
-    rows: 2,
+  // PLACEHOLDER: a zone's exit, drawn with the street's door art until what it is is decided.
+  // Use there clears the zone.
+  "exit-door": {
+    archetype: "exit",
+    art: "door",
+    cols: 3,
+    rows: 4,
   },
-  // The ferret's first trap, set near the hotel door.
+  // The ferret's first trap, set near zone 1's exit.
   "ferret-trap-snap": {
     animations: { idle: "set", move: "set", react: "set", talk: "set" },
     archetype: "hazard",
@@ -100,69 +76,6 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     art: "hot-dog-cart",
     cols: 3,
     rows: 6,
-  },
-  // The hotel's canopy: one-way, 6 above the sidewalk, over the hotel door.
-  "hotel-canopy": {
-    archetype: "ledge",
-    art: "one-way-canopy",
-    cols: 3,
-    rows: 1,
-  },
-  "hotel-crest": {
-    archetype: "scenery",
-    art: "hotel-crest",
-    cols: 8,
-    rows: 4,
-  },
-  "hotel-door": {
-    archetype: "door",
-    art: "door",
-    cols: 3,
-    rows: 4,
-  },
-  "hotel-window": {
-    archetype: "scenery",
-    art: "hotel-window",
-    cols: 3,
-    rows: 13,
-  },
-  // The lobby's balcony railing, a backdrop repeated across its run.
-  "lobby-balustrade": {
-    archetype: "scenery",
-    art: "lobby-balustrade",
-    cols: 4,
-    rows: 3,
-  },
-  "lobby-front-door": {
-    archetype: "scenery",
-    art: "lobby-front-door",
-    cols: 13,
-    rows: 15,
-  },
-  "lobby-lamp": {
-    archetype: "scenery",
-    art: "lobby-lamp",
-    cols: 4,
-    rows: 16,
-  },
-  "lobby-plant": {
-    archetype: "scenery",
-    art: "lobby-plant",
-    cols: 4,
-    rows: 10,
-  },
-  // The lobby's wood-panelled wall, a backdrop repeated across the room.
-  "lobby-wall": {
-    archetype: "scenery",
-    art: "lobby-wall",
-    cols: 4,
-    rows: 60,
-  },
-  "lobby-window": {
-    archetype: "scenery",
-    art: "lobby-window",
-    cols: 8,
-    rows: 20,
   },
   // Pedestrians walking past, back and forth, paying her no attention. React and talk fall back
   // to idle.
@@ -211,26 +124,6 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     art: "planter",
     cols: 2,
     rows: 2,
-  },
-  sofa: {
-    archetype: "scenery",
-    art: "lobby-sofa",
-    cols: 10,
-    rows: 6,
-  },
-  // The sofa's seat: one-way, 3 above the floor.
-  "sofa-cushion": {
-    archetype: "ledge",
-    art: "one-way-cushion",
-    cols: 8,
-    rows: 1,
-  },
-  // The stairwell to the next floor: Use there clears the zone.
-  "stairwell-exit": {
-    archetype: "exit",
-    art: "exit",
-    cols: 7,
-    rows: 15,
   },
   "storefront-cafe": {
     archetype: "scenery",
