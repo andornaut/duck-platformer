@@ -127,10 +127,17 @@ Everything in a zone except its terrain is placed in data, in three layers.
 - **Kinds:** dialogue answers, as two or three answer buttons in a row above the dialogue box, route forks in a zone, and forks on the map
 - **Reach:** most choices affect only the current zone. A few flagged choices carry on to later zones or the ending, where they set up how she outwits the ferret
 
+### Start screen
+
+- **Boot:** the game opens on the start screen, in landscape
+- **Exit:** at the top right, at the far end. It closes the installed app; in a browser it goes to the site's home page. Exit is hidden in Firefox for Android's installed app, which can't close itself, and Settings then sits at the far right
+- **Settings:** at the top right, beside Exit. It opens the settings card
+- **Start:** the only other element. It opens the map, which at the beginning offers one place to go: the first zone
+
 ### Settings
 
 - **Back:** back during play opens the pause card, and back with the card open closes it. Where the browser can't hand back to the game (Firefox for Android's installed app, and before the first tap or key in browsers without CloseWatcher), back is the browser's own
 - **Open:** the pause button at the top left, shown only while a zone plays, P or Esc, or back
-- **Pause card:** a card titled Paused, over the dimmed game, which pauses play, with a close X. Its rows: Settings, Quit, then Resume
-- **Quit:** goes back past the game to the page before it, or, with none, closes the window where the browser allows
-- **Settings card:** opened from Settings on the pause card. Its rows: Touch controls (Shown or Hidden, Shown by default), then Install while the game can be installed, which opens the install steps. The build label sits at its foot. Its close X, P, Esc and back each return to the pause card
+- **Pause card:** a card titled Paused, over the dimmed game, which pauses play, with a close X. Its rows: Settings, Return home, then Resume
+- **Return home:** goes back to the start screen
+- **Settings card:** opened from Settings on the pause card or the start screen. Its rows: Touch controls (Shown or Hidden, Shown by default), then Install while the game can be installed, which opens the install steps. The build label sits at its foot. Its close X, P, Esc and back each return to whichever opened it
