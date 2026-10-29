@@ -42,6 +42,6 @@ Open questions:
 - **Confirm, dialogue pauses play:** assumed, a dialogue box pauses play
 - **Confirm, keyboard has no overlay:** assumed, the touch control overlay shows only with touch
 - **Confirm, restarts reset choices:** assumed, a floor restart also resets the choices made on that floor
-- **Ending:** what waits at the top
+- **Ending:** the rest of the ending, beyond outwitting the ferret
 - **Floors:** the list and order of floor themes
 - **Interact:** what it acts on (assumed: talking to animals, and doors and objects at route forks)

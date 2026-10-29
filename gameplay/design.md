@@ -11,6 +11,7 @@ A landscape, left-to-right platformer: a duck falls out of her apartment at the 
 ## Setting
 
 - **Characters:** the duck is the one the player controls: a cute, chibi, cream-coloured duck (her head about 1.5× the size of her body) with a pink bow on top of her head. Her full design is in the [art plan](../art/README.md). Animals talk, and most interactions are with animals. PLACEHOLDER: whether there are humans (see [`ideas.md`](ideas.md))
+- **Ferret:** the villain, an evil ferret in a top hat and bow tie, who schemes against the duck's climb. PLACEHOLDER: its design, once the user picks one
 - **Floors:** each floor is one everyday place in the building, such as a restaurant, pool or spa, and the whole floor stays in that place. PLACEHOLDER: the floors and their order
 - **World:** the modern day, mixing fantasy and reality
 
@@ -18,7 +19,7 @@ A landscape, left-to-right platformer: a duck falls out of her apartment at the 
 
 1. **A floor:** travel left to right through one themed place: platforming, talking with animals, and making choices that change the route.
 2. **Up a floor:** clearing a floor takes the duck up to the next. PLACEHOLDER: how she gets up.
-3. **The top:** reaching the top floor gets her home. PLACEHOLDER: the ending.
+3. **The top:** on the top floor she outwits the ferret, and gets home. PLACEHOLDER: the rest of the ending.
 
 ## Voice
 
@@ -71,11 +72,16 @@ A landscape, left-to-right platformer: a duck falls out of her apartment at the 
 - Short messages during play, for cutscenes, notices and quips. They never pause play
 - One line in a strip at the top centre, starting with the speaker's name
 
+### The ferret
+
+- **Appearances:** dialogue scenes on some floors, quips during play, and hazards it sets on floors
+- **Ending:** the ferret is outwitted, never fought: the carried choices set up how the final scene goes
+
 ### Choices
 
 - **Effect:** a choice changes where the duck goes, what she does and what she sees
 - **Kinds:** dialogue answers, as two or three answer buttons in a row above the dialogue box, and route forks in the level
-- **Reach:** most choices affect only the current floor. A few flagged choices carry on to later floors or the ending
+- **Reach:** most choices affect only the current floor. A few flagged choices carry on to later floors or the ending, where they set up how she outwits the ferret
 
 ### Settings
 
