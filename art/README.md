@@ -5,7 +5,7 @@ The art plan and pipeline for Duck Platformer. Art owns `art/` and the served ar
 ## Direction
 
 - Pixel art: minimalist, cute, a little retro, refined.
-- Everything, UI included, is pixel art at one base resolution, integer-scaled with no smoothing: 640x360. A landscape phone shows it at 3x (1920x1080 device pixels), so 1 base pixel is 1 CSS pixel at a device pixel ratio of 3.
+- Everything, UI included, is pixel art at one base resolution, 640x360. The game scales it to fill the screen at 16:9 with nearest-neighbour sampling and no smoothing, by a fractional factor, so on most screens some pixels come out one device pixel wider than others. On a landscape phone 1 base pixel is about 1 CSS pixel. Judge art at a fractional scale as well as at 3x, and avoid 1px patterns (checks, dashes, alternating rows) that turn uneven when pixels vary in width.
 - Chibi proportions: the head at least as big as the body, so a character reads from head shape and markings alone.
 - Style decisions are the user's (see Options and decisions).
 
