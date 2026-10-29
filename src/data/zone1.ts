@@ -49,8 +49,8 @@ export const ZONE_1: ZonePlan = {
         { character: "pigeon", col: 17, phase: 0.6, row: 48 },
         { character: "pigeon", col: 19, phase: 0.1, row: 48 },
         { character: "walk-signal", col: 24, row: 43 },
-        // Hop: a planter, up 2, in front of the florist; then down 1 into a cross street and up
-        // 1 out of it.
+        // Hop: a short press up 2 onto a planter in front of the florist; then down 1 into a cross
+        // street and a tap up 1 out of it.
         { character: "planter", col: 28, cols: 4, row: 48 },
         { character: "storefront-florist", col: 30, row: 40 },
         { character: "cross-street", col: 40, row: 49 },
