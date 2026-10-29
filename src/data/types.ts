@@ -40,6 +40,15 @@ export interface DuckTuning {
   readonly walkSpeed: number;
 }
 
+// The words the player reads.
+export interface GameText {
+  // The touch buttons' labels.
+  readonly buttons: {
+    readonly jump: string;
+    readonly use: string;
+  };
+}
+
 // The touch controls, in base pixels.
 export interface TouchTuning {
   // A move touch moves her once it is more than this far left or right of where it started.
