@@ -63,9 +63,11 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 
 ### Map
 
+- **Between zones:** the map shows before the first zone and after each zone's exit. She walks on to the next fork where she must choose, or stays at her place when only one path leads on. Where she has been and the paths she has travelled are marked
+- **Choose:** at a fork, the fork buttons or ←/→ pick a path; tapping the map does not. Where only one path leads on, Continue moves her on
 - **Forks:** at a fork she picks one of two or three paths. Paths split and rejoin, and every path reaches the same ending
 - **No backtracking:** she only moves forward on the map, and never returns to a zone she has left
-- **V1:** one path is built. Its forks still show, with the unbuilt paths and zones marked as unbuilt and not selectable. The map's look is in the [art plan](../art/README.md)
+- **V1:** one path is built. Its forks still show, with the unbuilt paths and zones marked as unbuilt and not selectable. After home, a new lap starts (PLACEHOLDER: until the ending exists). The map's look is in the [art plan](../art/README.md)
 
 ### Zones
 
