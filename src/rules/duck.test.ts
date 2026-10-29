@@ -47,10 +47,28 @@ describe("stepDuck", () => {
     expect(last(states).facing).toBe(move);
   });
 
-  it("rises to the height the jump speed and gravity give, within a step", () => {
-    const states = run(120, () => ({ jumpHeld: true, move: 0 }));
-    const apex = DUCK.jumpSpeed ** 2 / (2 * DUCK.gravity);
+  // Held for n steps, she rises at the jump speed for those steps, up to the hold time, then as
+  // far as the jump speed carries her against gravity.
+  const holdSteps = Math.round(DUCK.jumpHoldTime / STEP);
+  it.each([
+    ["a tap", 1],
+    ["a third of the hold", Math.round(holdSteps / 3)],
+    ["the whole hold", holdSteps],
+    ["longer than the hold", holdSteps * 2],
+  ])("rises as high as %s gives, within a step", (_name, steps) => {
+    const states = run(240, (step) => ({ jumpHeld: step < steps, move: 0 }));
+    const held = Math.min(steps, holdSteps) * STEP;
+    const apex = DUCK.jumpSpeed * held + DUCK.jumpSpeed ** 2 / (2 * DUCK.gravity);
     expect(Math.abs(startY - lowestY(states) - apex)).toBeLessThanOrEqual(DUCK.jumpSpeed * STEP);
+  });
+
+  it("hops when a buffered jump's button was already released", () => {
+    const land = hop().findIndex((state, i) => i > 2 && state.grounded);
+    const press = land - 3;
+    const states = run(600, (step) => ({ jumpHeld: step < 2 || step === press, move: 0 }));
+    const after = states.slice(land);
+    const hopApex = DUCK.jumpSpeed ** 2 / (2 * DUCK.gravity);
+    expect(Math.abs(startY - lowestY(after) - hopApex)).toBeLessThanOrEqual(DUCK.jumpSpeed * STEP);
   });
 
   it.each([

@@ -33,10 +33,11 @@ export interface DuckTuning {
   readonly width: number;
   // Seconds before landing in which a jump press is kept, to start as she lands.
   readonly jumpBuffer: number;
-  // Upward speed when a jump starts.
+  // Seconds a held Jump keeps her rising at jumpSpeed before gravity takes over: a tap hops,
+  // and a longer hold rises higher, up to a full jump.
+  readonly jumpHoldTime: number;
+  // Upward speed when a jump starts: a tap's hop.
   readonly jumpSpeed: number;
-  // Upward speed is multiplied by this when Jump is released while rising: a shorter hop.
-  readonly jumpReleaseCut: number;
   readonly walkSpeed: number;
 }
 

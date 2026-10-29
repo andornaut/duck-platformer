@@ -21,6 +21,8 @@ export interface DuckState {
   readonly facing: -1 | 1;
   readonly grounded: boolean;
   readonly jumpHeld: boolean;
+  // Seconds a still-held jump keeps her rising at jumpSpeed. 0 once Jump is released.
+  readonly jumpHoldLeft: number;
   readonly vx: number;
   readonly vy: number;
   // Her collision box's top-left corner.
@@ -36,6 +38,7 @@ export function startDuck(tuning: DuckTuning, start: Point): DuckState {
     facing: 1,
     grounded: false,
     jumpHeld: false,
+    jumpHoldLeft: 0,
     vx: 0,
     vy: 0,
     x: start.x - tuning.width / 2,
@@ -71,18 +74,22 @@ export function stepDuck(
   const jumpPressed = input.jumpHeld && !duck.jumpHeld;
   let bufferLeft = jumpPressed ? tuning.jumpBuffer : Math.max(0, duck.bufferLeft - seconds);
   let coyoteLeft = Math.max(0, duck.coyoteLeft - seconds);
+  let jumpHoldLeft = input.jumpHeld ? duck.jumpHoldLeft : 0;
   if ((jumpPressed || bufferLeft > 0) && (duck.grounded || duck.coyoteLeft > 0)) {
     vy = -tuning.jumpSpeed;
     bufferLeft = 0;
     coyoteLeft = 0;
-    // A buffered jump whose button was already released starts as a short hop.
-    if (!input.jumpHeld) {
-      vy *= tuning.jumpReleaseCut;
-    }
-  } else if (!input.jumpHeld && duck.jumpHeld && vy < 0) {
-    vy *= tuning.jumpReleaseCut;
+    // A buffered jump whose button was already released is a hop: no hold.
+    jumpHoldLeft = input.jumpHeld ? tuning.jumpHoldTime : 0;
   }
-  vy = Math.min(vy + tuning.gravity * seconds, tuning.flutterFallSpeed);
+  if (jumpHoldLeft > 0 && vy < 0) {
+    // A held jump rises steadily at jumpSpeed until the hold runs out.
+    vy = -tuning.jumpSpeed;
+    jumpHoldLeft = Math.max(0, jumpHoldLeft - seconds);
+  } else {
+    jumpHoldLeft = 0;
+    vy = Math.min(vy + tuning.gravity * seconds, tuning.flutterFallSpeed);
+  }
 
   let carryVx = duck.carryVx;
   const moving = vx + carryVx;
@@ -133,6 +140,7 @@ export function stepDuck(
     facing: input.move === 0 ? duck.facing : input.move,
     grounded,
     jumpHeld: input.jumpHeld,
+    jumpHoldLeft,
     vx,
     vy,
     x,
