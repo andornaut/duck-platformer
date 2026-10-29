@@ -31,35 +31,37 @@ Plain PNGs and one ICO from `art/tools/icons.py`, not manifest entries.
 
 ## Sprites
 
-| Key               | Type                  | Size   | Tags                            |
-| ----------------- | --------------------- | ------ | ------------------------------- |
-| duck              | character             | 48x42  | idle, walk, jump, flutter, land |
-| ferret            | character             | 64x80  | idle, scheme, talk              |
-| portrait-duck     | portrait              | 64x64  | neutral, happy, worried         |
-| portrait-ferret   | portrait              | 64x64  | neutral, smug, annoyed          |
-| ui-answer         | sprite                | 208x36 | normal, selected, pressed       |
-| ui-checkbox       | sprite                | 20x20  | off, on                         |
-| ui-close          | sprite                | 24x24  | normal, pressed                 |
-| ui-dialogue-box   | sprite                | 640x96 | rest                            |
-| ui-forward-mark   | sprite                | 10x14  | idle                            |
-| ui-name-tab       | nine-slice (2,2,2,2)  | 12x20  | amber, green, pink, tan         |
-| ui-portrait-frame | sprite                | 68x68  | rest                            |
-| ui-quip-strip     | nine-slice (2,2,2,2)  | 12x24  | rest                            |
-| ui-resume         | sprite                | 160x44 | normal, pressed                 |
-| ui-settings-card  | nine-slice (2,38,2,2) | 16x48  | rest                            |
-| ui-settings-row   | nine-slice (2,2,2,2)  | 12x48  | rest                            |
-| ui-skip           | sprite                | 78x20  | normal, pressed, disabled       |
-| ui-touch-jump     | sprite                | 57x57  | rest, press, held               |
-| ui-touch-use      | sprite                | 51x51  | rest, press, held               |
+| Key               | Type                       | Size   | Tags                            |
+| ----------------- | -------------------------- | ------ | ------------------------------- |
+| duck              | character                  | 48x42  | idle, walk, jump, flutter, land |
+| ferret            | character                  | 64x80  | idle, scheme, talk              |
+| ferret-trap-snap  | hazard, hit box 4,14,42,12 | 50x26  | set, snap (once)                |
+| frog-courier      | hazard, hit box 6,6,48,30  | 60x36  | ride, idle                      |
+| portrait-duck     | portrait                   | 64x64  | neutral, happy, worried         |
+| portrait-ferret   | portrait                   | 64x64  | neutral, smug, annoyed          |
+| ui-answer         | sprite                     | 208x36 | normal, selected, pressed       |
+| ui-checkbox       | sprite                     | 20x20  | off, on                         |
+| ui-close          | sprite                     | 24x24  | normal, pressed                 |
+| ui-dialogue-box   | sprite                     | 640x96 | rest                            |
+| ui-forward-mark   | sprite                     | 10x14  | idle                            |
+| ui-name-tab       | nine-slice (2,2,2,2)       | 12x20  | amber, green, pink, tan         |
+| ui-portrait-frame | sprite                     | 68x68  | rest                            |
+| ui-quip-strip     | nine-slice (2,2,2,2)       | 12x24  | rest                            |
+| ui-resume         | sprite                     | 160x44 | normal, pressed                 |
+| ui-settings-card  | nine-slice (2,38,2,2)      | 16x48  | rest                            |
+| ui-settings-row   | nine-slice (2,2,2,2)       | 12x48  | rest                            |
+| ui-skip           | sprite                     | 78x20  | normal, pressed, disabled       |
+| ui-touch-jump     | sprite                     | 57x57  | rest, press, held               |
+| ui-touch-use      | sprite                     | 51x51  | rest, press, held               |
 
 ## Tilesets
 
-12x12 tiles in rows of 8, from `art/tools/floor1.py`. One-way ledges are named `one-way-*`; doorways (`door-*`, `exit-*`) have no collision.
+12x12 tiles in rows of 8, from `art/tools/floor1.py`. One-way ledges are named `one-way-*`; doorways (`door-*`, `exit-*`) and pits (`pit-*`) have no collision.
 
-| Key          | Type                                                                                     | Size            | Pieces      |
-| ------------ | ---------------------------------------------------------------------------------------- | --------------- | ----------- |
-| tiles-lobby  | tileset: wood floor, one-way balcony, shelf, cushion and desk, wood post, stairwell exit | 130 tiles, 12px | exit (7x15) |
-| tiles-street | tileset: sidewalk, kerb, road, one-way awning, one-way canopy, planter, hotel door       | 35 tiles, 12px  | door (3x4)  |
+| Key          | Type                                                                                             | Size            | Pieces      |
+| ------------ | ------------------------------------------------------------------------------------------------ | --------------- | ----------- |
+| tiles-lobby  | tileset: wood floor, one-way balcony, shelf, cushion and desk, wood post, stairwell exit         | 130 tiles, 12px | exit (7x15) |
+| tiles-street | tileset: sidewalk, kerb, road, one-way awning, one-way canopy, planter, hotel door, cellar hatch | 42 tiles, 12px  | door (3x4)  |
 
 ## Backdrops
 

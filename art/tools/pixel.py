@@ -218,18 +218,27 @@ def _lua(tags, out, key, margins=None):
                       out=out)
 
 
-def build(sprites, src_dir, slices=None, once=None):
+def build(sprites, src_dir, slices=None, once=None, hitboxes=None):
     """Write src_dir/<key>.aseprite for every sprite, export it to public/art/sprites/<key>.png + .json
     with its tags, and list it in the manifest. sprites is a list of (key, tags), tags a list of
     (tag, frames, ms). slices maps a key to its nine-slice margins (left, top, right, bottom): the export
     carries them as an Aseprite slice named after the key, and the manifest entry as "slice". once maps a
     key to the tags that play once and hold their last frame; every other tag loops. Every manifest entry
-    carries "once", in frame order, [] when nothing plays once."""
-    slices, once = slices or {}, once or {}
+    carries "once", in frame order, [] when nothing plays once. hitboxes maps a key to its hit box
+    (x, y, width, height) in frame pixels, for the facing the sprite is drawn in; the manifest entry carries
+    it as "hitbox", and only sprites that declare one have it. A box outside the frame fails the build."""
+    slices, once, hitboxes = slices or {}, once or {}, hitboxes or {}
     sprites = list(sprites)
     for key, tags in sprites:
         unknown = set(once.get(key, ())) - {t for t, _, _ in tags}
         assert not unknown, f"{key}: once names tags it does not have: {sorted(unknown)}"
+        if key in hitboxes:
+            x, y, w, h = hitboxes[key]
+            fh, fw = len(tags[0][1][0]), len(tags[0][1][0][0])
+            assert w > 0 and h > 0 and x >= 0 and y >= 0 and x + w <= fw and y + h <= fh, \
+                f"{key}: hitbox {hitboxes[key]} is not inside its {fw}x{fh} frame"
+    unknown = set(hitboxes) - {k for k, _ in sprites}
+    assert not unknown, f"hitboxes name sprites the script does not draw: {sorted(unknown)}"
     os.makedirs(src_dir, exist_ok=True)
     os.makedirs(SPRITES, exist_ok=True)
     built = {}
@@ -253,6 +262,8 @@ def build(sprites, src_dir, slices=None, once=None):
                         "once": built[key]}
         if key in slices:
             entries[key]["slice"] = dict(zip(("left", "top", "right", "bottom"), slices[key]))
+        if key in hitboxes:
+            entries[key]["hitbox"] = dict(zip(("x", "y", "width", "height"), hitboxes[key]))
     manifest["sprites"] = sorted(entries.values(), key=lambda s: s["key"])
     with open(MANIFEST, "w") as f:
         json.dump(manifest, f, indent=2)
@@ -260,12 +271,13 @@ def build(sprites, src_dir, slices=None, once=None):
     print("built", ", ".join(built))
 
 
-def main(argv, sprites, src_dir, doc, grounds=("5a6988", "e4a672", "ead4aa"), slices=None, once=None):
+def main(argv, sprites, src_dir, doc, grounds=("5a6988", "e4a672", "ead4aa"), slices=None, once=None,
+         hitboxes=None):
     """The command line every art script shares: `build`, or `preview OUT.png`. A script declares the tags that
-    play once as a ONCE dict beside its sprites() and passes it here."""
+    play once as a ONCE dict beside its sprites(), and any hit boxes as a HITBOX dict, and passes them here."""
     if len(argv) == 3 and argv[1] == "preview":
         preview(list(sprites()), argv[2], grounds)
     elif len(argv) == 2 and argv[1] == "build":
-        build(list(sprites()), src_dir, slices, once)
+        build(list(sprites()), src_dir, slices, once, hitboxes)
     else:
         sys.exit(doc)

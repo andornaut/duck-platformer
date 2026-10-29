@@ -54,13 +54,14 @@ In order:
 - Change the script, never the `.aseprite`: a build overwrites it.
 - Each script's docstring is its spec: every asset's size, tags, frame timings and placement.
 - Every manifest sprite entry has `once`: the tags that play once and hold their last frame, `[]` when none. Every other tag loops. A script declares them in a `ONCE` dict beside its `sprites()`.
+- A sprite with a hit box carries `hitbox` in its manifest entry, `{"x", "y", "width", "height"}` in frame pixels for the facing it is drawn in. A script declares them in a `HITBOX` dict beside `ONCE`; only sprites that declare one have it, and a box outside the frame fails the build.
 - A nine-slice texture carries its margins as an Aseprite slice named after its key and as `slice` in its manifest entry.
 - `art/tools/fonts.py` rasterizes the fonts in `art/fonts/` into BMFonts in `public/art/fonts/`, white for tinting.
 - `art/tools/palette.py` writes `public/art/palette.json`, listed under `data` in the manifest: `colours` maps each palette name to `#rrggbb`, `darker` maps each colour one ramp step down, and `dim2` two steps down, the settings card's dim. Keys are sorted.
 - `art/tools/icons.py` draws the favicon and app icons, the duck's head on a green disc, as plain PNGs, not sprites or manifest entries: `public/favicon.ico` (16 and 32), `public/art/favicon-16.png` and `public/art/favicon.png`, and in `public/icons/` the 180 apple-touch icon on a green square, the 192 and 512 icons on a green disc with a transparent outside, and a 512 maskable icon with the subject inside the central 80%. The 16 and 32 are drawn natively; the larger icons are 64 and 90 drawings scaled by whole numbers.
 - `art/inventory.md` lists every asset (key, type, size, tags).
 - `art/tools/floor<n>.py` draws one floor's tilesets and backdrop pieces as plain PNGs, not Aseprite sprites, so the game builds each floor from level data instead of a fixed panorama.
-- A tileset is `public/art/tilesets/<key>.png`, 12x12 tiles in rows of 8 with no spacing or margin, plus `<key>.json`: `{"tileSize": 12, "columns": 8, "tiles": {"<name>": <index>}, "pieces": {"<name>": [[<index>, ...], ...]}}`. An index counts row by row. A piece is a multi-tile unit as rows of indices, top row first. A tile named `one-way-*` is a one-way ledge, which stops only a fall onto its top edge. A tile named `door-*` or `exit-*` is a doorway with no collision, and the game puts a Use zone over its piece. Every other tile with art is solid. The manifest lists each under `tilesets` as `{"key", "png", "json"}`.
+- A tileset is `public/art/tilesets/<key>.png`, 12x12 tiles in rows of 8 with no spacing or margin, plus `<key>.json`: `{"tileSize": 12, "columns": 8, "tiles": {"<name>": <index>}, "pieces": {"<name>": [[<index>, ...], ...]}}`. An index counts row by row. A piece is a multi-tile unit as rows of indices, top row first. A tile named `one-way-*` is a one-way ledge, which stops only a fall onto its top edge. A tile named `door-*` or `exit-*` is a doorway with no collision, and the game puts a Use zone over its piece. A tile named `pit-*` is a pit with no collision, so she falls through it and out of the level. Every other tile with art is solid. The manifest lists each under `tilesets` as `{"key", "png", "json"}`.
 - A backdrop piece is `public/art/backdrops/<key>.png`, drawn behind the play layer. The manifest lists each under `backdrops` as `{"key", "png", "width", "height", "anchor": "bottom-left", "y", "repeat"}`: its bottom edge sits at world `y`, at an x the level data chooses, and `"repeat": "x"` tiles it across a run while `"none"` places it once.
 - Art reads game layout and data from the generated export files the game writes, never from `src/`. The export files are in `shared/export/`. Art writes the shared data files the game reads (`lights.json`, `palette.json`).
 - Keys are kebab-case, named after what the player sees. Internal names match displayed names.
@@ -216,6 +217,24 @@ A pause card over the game, which is dimmed by stepping every colour two ramp st
 - An impact frame is an eight-point star in the event's colour with a white core.
 - Edge flashes pair a light ink with a dark fringe on the inward edge, so they hold 3:1 on light and dark grounds.
 
+## Hazards
+
+A hazard restarts the floor on contact. `art/tools/hazards.py` draws the hazard sprites and `art/tools/floor1.py` the hazard tiles; their docstrings give every frame and tile.
+
+- Every hazard sprite has an ink outline, so it holds 3:1 on every street ground, and is drawn at outdoor scale beside the duck.
+- Steel (the hatch and its leaves, the bike's wheels) uses the slate ramp (slate, dslate, navy), not grey: the leaves are slate because dslate does not separate from the dark facades in greyscale.
+- The ferret's calling card: every trap the ferret sets carries his badge, a 13x13 cream plate with his hat-and-bow mark (a plum stovepipe with a red band over a red bow tie). `badge()` in `hazards.py` draws it for every trap. A floor's own hazards (traffic, open hatches) never carry it.
+
+| Hazard           | Kind                                                          | Size                        | Collision                                    | Tags and timing                                                      |
+| ---------------- | ------------------------------------------------------------- | --------------------------- | -------------------------------------------- | -------------------------------------------------------------------- |
+| Cellar hatch     | tiles in `tiles-street`: `hatch-left`, `pit-*`, `hatch-right` | any width; leaves 2 rows up | edges solid; `pit-*` none, she falls through | none                                                                 |
+| frog-courier     | sprite, a frog on a delivery bike, facing right               | 60x36 (5x3 tiles)           | hit box 6,6,48,30                            | `ride` 4 x 100ms, `idle` frame 0 at 400ms                            |
+| ferret-trap-snap | sprite, the ferret's giant spring mousetrap with his badge    | 50x26 (about 4x2 tiles)     | hit box 4,14,42,12                           | `set` 1 x 400ms, `snap` 60, 60, 80, 80ms, plays once and ends closed |
+
+- Cellar hatch: on the sidewalk row `hatch-left`, one `pit-opening` per opening tile, `hatch-right`; `pit-opening` down every row below the opening; `pit-leaf-left-top` over `pit-leaf-left` above `hatch-left`, and the right leaf above `hatch-right`. It reads as a hole from several tiles away: two steel leaves standing up over a dark gap in the sidewalk line.
+- frog-courier rolls back and forth along the sidewalk and is mirrored for left. Its wheels roll without slipping at 51 px/s; the hit box leaves out his eye bump, the bag's top and 2px of each tyre.
+- ferret-trap-snap waits on `set` and plays `snap` once when the duck touches its hit box.
+
 ## Floor 1
 
 The hotel, in New York. Floor 1 starts outside on a day street of brick and brownstone, with the hotel's ground-floor shops and its neighbours, and ends at the hotel's front door. Use at the door fades to the lobby, a separate indoor scene. `art/tools/floor1.py` draws it; its docstring lists every tile and piece.
@@ -270,5 +289,5 @@ Below the floor line (y 312 outdoors, y 672 in the lobby) the game shows ink.
 
 ## Remaining for the first build
 
-- The look of the hazards the ferret sets, distinct from each floor's own hazards.
+- The ferret's later traps, each carrying his badge, and the hazards of the floors above.
 - The floors above Floor 1: one everyday place per floor.

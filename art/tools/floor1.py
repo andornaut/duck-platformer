@@ -24,7 +24,8 @@ Tilesets
      "pieces": {"<name>": [[<index>, ...], ...]}}        multi-tile pieces as rows of indices, top row first
   Names are kebab-case. A tile whose name starts with "one-way-" is a one-way ledge: it stops a fall onto its top
   edge and nothing else. A tile whose name starts with "door-" or "exit-" is a doorway: it has no collision, and
-  the game puts a Use zone over its piece. Every other tile with art is solid on all sides.
+  the game puts a Use zone over its piece. A tile whose name starts with "pit-" is a pit: it has no collision, so
+  she falls through it and out of the level. Every other tile with art is solid on all sides.
 - The manifest lists each as {"key": "<key>", "png": "tilesets/<key>.png", "json": "tilesets/<key>.json"}.
 - Walkable surfaces: the walkable edge is the tile's top row. A surface tile has a 1px edge, a 2px light lip and
   a 2px darker underside; the face tiles below it are plainer and darker.
@@ -44,6 +45,14 @@ tiles-street
   planter-right (the box). A planter is 2 tiles tall: a 2-tile step.
 - door (piece, 3x4 tiles, 36x48): the hotel's front door, a pair of lit amber glass doors in a tan frame. Tiles
   door-0 to door-11 in row order. Use at the door enters the lobby, a separate scene, after a fade.
+- The cellar hatch, a hazard: an open pit in the sidewalk, any number of tiles wide, its two steel leaves standing
+  up. On the sidewalk row: hatch-left, then pit-opening for each opening tile, then hatch-right. pit-opening fills
+  every row below the opening to the level's bottom, and sidewalk-face-right and sidewalk-face-left run down under
+  the two edges. pit-leaf-left-top over pit-leaf-left stand on the two rows above hatch-left, pit-leaf-right-top
+  over pit-leaf-right above hatch-right. hatch-left and hatch-right are solid sidewalk ends capped by a steel angle
+  iron; pit-opening is the dark drop (ink); the leaves are slate plates with dslate studs, 20px tall, leaning
+  outwards, with no collision. Steel is the slate ramp (slate, dslate, navy), no grey. Tiles 35 to 41, after the
+  door, so every earlier index holds.
 
 tiles-lobby (the boutique lobby: wood, books and plants, at indoor scale)
 - Every walkable top, the floor and each one-way ledge, has the same 2px cream lip under a 1px plum edge, so the
@@ -234,6 +243,52 @@ def hotel_door():
     return g
 
 
+# The cellar hatch: an open pit in the sidewalk with its two steel leaves standing up. Steel is the slate ramp
+# (slate, dslate, navy): slate leaves read against the dark facades in greyscale, where dslate would not.
+LEAF_H = 20                    # leaf height above the sidewalk, in px
+
+
+def hatch_edge(side):
+    """The sidewalk tile beside the opening (side "l" for the hatch's left edge, "r" its right): a sidewalk end
+    capped by a steel angle iron, its top lit, its flange running 5px down the shaft wall. Solid."""
+    g = sidewalk("tr" if side == "l" else "tl")
+    x = T - 4 if side == "l" else 0
+    R(g, (x, 0, 4, 3, "dslate"), (x, 0, 4, 1, "slate"))
+    fx = T - 2 if side == "l" else 0
+    R(g, (fx, 3, 2, 5, "dslate"), (T - 1 if side == "l" else 0, 3, 1, 5, "navy"))
+    return g
+
+
+def pit():
+    """The opening: the dark drop, ink to the bottom of the level. No collision."""
+    return R(Grid(T, T), (0, 0, T, T, "ink"))
+
+
+def hatch_leaf():
+    """The left leaf, standing on the left edge and leaning out 1px every 6 rows: a slate plate with dslate studs
+    and a dslate hinge knuckle, ink-outlined, LEAF_H tall over 2 tile rows (24px) above the sidewalk."""
+    g = Grid(T, 2 * T)
+    for y in range(2 * T - LEAF_H, 2 * T):
+        lean = (2 * T - 1 - y) // 6
+        R(g, (5 - lean, y, 6, 1, "slate"))
+    for y in range(2 * T - LEAF_H + 2, 2 * T - 1, 4):
+        lean = (2 * T - 1 - y) // 6
+        R(g, (5 - lean + (1 if (y // 4) % 2 else 3), y, 2, 2, "dslate"))
+    R(g, (9, 2 * T - 3, 2, 3, "dslate"))
+    g.px = g.outlined(lambda c: pixel.K["ink"])
+    return g
+
+
+def split_leaf(side):
+    """The leaf as its top and bottom tiles, mirrored for the right edge."""
+    g = hatch_leaf()
+    if side == "r":
+        g.px = pixel.flipped(g.px)
+    top, bottom = Grid(T, T), Grid(T, T)
+    top.px, bottom.px = g.px[:T], g.px[T:]
+    return top, bottom
+
+
 def cut(g, prefix):
     """A multi-tile drawing as named 12x12 tiles (prefix-0, prefix-1, ... in row order) and its piece rows."""
     tiles, rows = [], []
@@ -262,7 +317,15 @@ def street_tiles():
         ("one-way-canopy-right", awning("r", CANOPY)),
         ("planter-top-left", planter("tl")), ("planter-top", planter("t")), ("planter-top-right", planter("tr")),
         ("planter-left", planter("l")), ("planter", planter("")), ("planter-right", planter("r")),
-    ] + door, {"door": door_rows}
+    ] + door + hatch_tiles(), {"door": door_rows}
+
+
+def hatch_tiles():
+    """Appended after the door so every earlier index holds."""
+    lt, lb = split_leaf("l")
+    rt, rb = split_leaf("r")
+    return [("hatch-left", hatch_edge("l")), ("hatch-right", hatch_edge("r")), ("pit-opening", pit()),
+            ("pit-leaf-left-top", lt), ("pit-leaf-left", lb), ("pit-leaf-right-top", rt), ("pit-leaf-right", rb)]
 
 
 # ---------------------------------------------------------------- lobby tiles
@@ -740,7 +803,7 @@ COLS, ROWS = 2 * W // T, H // T
 GROUND = FY // T
 EXAMPLE = dict(
     road=(17, 10), planters=[(4, 3), (60, 3)], awnings=[(10, 6), (28, 6)], canopy=(88, 5), ledge_row=20,
-    door=(89, 22),
+    door=(89, 22), hatch=(45, 3),
     runs=[("street-sky", 0, 2 * W), ("street-skyline", 0, 2 * W), ("facade-one-storey", 0, 192),
           ("facade-walkup", 324, 564), ("facade-brownstone", 564, 792), ("facade-hotel", 792, 2 * W)],
     pieces=[("cross-street", 204), ("cab", 214), ("fire-escape", 344), ("hotel-crest", 1026),
@@ -774,6 +837,10 @@ def example_map():
     c0, w = E["canopy"]
     for c in range(c0, c0 + w):
         m[E["ledge_row"]][c] = "~"
+    c0, w = E["hatch"]
+    for r in range(GROUND, ROWS):
+        for c in range(c0, c0 + w):
+            m[r][c] = "_"
     return m
 
 
@@ -791,6 +858,10 @@ def example_tile(m, c, r):
         return ("" if at(c, r - 1) in same else "t") + ("" if at(c - 1, r) in same else "l") + \
             ("" if at(c + 1, r) in same else "r")
 
+    if ch == "_":
+        return "pit-opening"
+    if ch == "#" and r == GROUND and "_" in (at(c - 1, r), at(c + 1, r)):
+        return "hatch-left" if at(c + 1, r) == "_" else "hatch-right"
     if ch == "#":
         k = kind("#RP")
         if k in ("tl", "tr") and (at(c - 1, r + 1) == "R" or at(c + 1, r + 1) == "R"):
@@ -838,6 +909,10 @@ def example_strip(chars=True, hud=True):
     for j in range(4):
         for i in range(3):
             im.alpha_composite(tiles[f"door-{j * 3 + i}"], ((dc + i) * T, (dr + j) * T))
+    hc, hw = EXAMPLE["hatch"]
+    for c, side in ((hc - 1, "left"), (hc + hw, "right")):
+        im.alpha_composite(tiles[f"pit-leaf-{side}-top"], (c * T, (GROUND - 2) * T))
+        im.alpha_composite(tiles[f"pit-leaf-{side}"], (c * T, (GROUND - 1) * T))
     if chars:
         duck = Image.open(f"{SPRITES}/duck.png").convert("RGBA").crop((0, 0, 48, 42))
         im.alpha_composite(duck, (96 - 24, FY - 42))
