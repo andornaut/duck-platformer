@@ -1,7 +1,8 @@
 // Offline play and updates: registers the service worker (serviceWorker.ts) and follows the
 // kit's update flow. The game page is the only screen, so it counts as the home screen: a newer
 // version takes over at once before the player has interacted, and after that the
-// #update-ready toast in pages/play/index.html offers it.
+// #update-ready toast in pages/play/index.html offers it. The flow checks for one on each load,
+// and again when the page comes back into view (an installed app resumed without relaunching).
 import { serviceWorkerUrl } from "@andornaut/game-kit/pwa/serviceWorkerUrl";
 import { createUpdateFlow } from "@andornaut/game-kit/pwa/updateReady";
 
@@ -39,9 +40,10 @@ export function setupOfflinePlay(): Promise<void> {
   for (const type of INTERACTION_EVENTS) {
     window.addEventListener(type, () => flow.noteInteraction(), { capture: true, passive: true });
   }
-  document.addEventListener("visibilitychange", () =>
-    flow.setVisible(document.visibilityState === "visible"),
-  );
+  const followVisibility = () => flow.setVisible(document.visibilityState === "visible");
+  document.addEventListener("visibilitychange", followVisibility);
+  // A page restored from the back-forward cache comes back into view with no visibilitychange.
+  window.addEventListener("pageshow", followVisibility);
   setTimeout(() => flow.endBootWait(), BOOT_WAIT_MS);
   container
     .register(serviceWorkerUrl(SERVICE_WORKER_URL, undefined), { scope: "/" })

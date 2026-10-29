@@ -110,3 +110,20 @@ body {
 .update-toast[hidden] {
   display: none;
 }
+
+/* The build label (the kit's BUILD_LABEL, which src/main.ts writes in), small in the top right
+   corner over the game, so a browser tab and the installed app both show which version runs.
+   Taps pass through it to the game. */
+.build-label {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 4px);
+  right: calc(env(safe-area-inset-right, 0px) + 6px);
+  z-index: 5;
+  margin: 0;
+  color: #c0cbdc;
+  font:
+    11px/1 system-ui,
+    sans-serif;
+  opacity: 0.6;
+  pointer-events: none;
+}

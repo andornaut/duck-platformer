@@ -2,6 +2,7 @@
 import "./crash/install";
 import "./main.css";
 
+import { BUILD_LABEL } from "@andornaut/game-kit/build/buildLabel";
 import { AUTO, Game, Scale } from "phaser";
 
 // eslint-disable-next-line no-duplicate-imports -- the side-effect import above runs it first.
@@ -38,6 +39,14 @@ function startGame(): void {
   const followOrientation = () => (portrait.matches ? game.pause() : game.resume());
   portrait.addEventListener("change", followOrientation);
   followOrientation();
+}
+
+// An element in pages/play/index.html.
+const BUILD_LABEL_ID = "build-label";
+
+const buildLabel = document.getElementById(BUILD_LABEL_ID);
+if (buildLabel !== null) {
+  buildLabel.textContent = BUILD_LABEL;
 }
 
 // Asks for landscape, on the game page only. Browsers allow the lock only in fullscreen or an
