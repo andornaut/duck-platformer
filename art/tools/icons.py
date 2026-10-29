@@ -1,4 +1,4 @@
-"""The site's favicon and app icons: the duck on a green disc.
+"""The site's favicon and app icons: the duck on a sky-blue sunburst disc.
 
 Usage, from the repository root:
   python3 -I art/tools/icons.py build            write every icon below
@@ -15,15 +15,20 @@ crescents, a white rim from 32px up and a dark-slate outline.
 | public/art/favicon-16.png          | 16x16   | 16, close-up           | disc, transparent outside        |
 | public/art/favicon.png             | 32x32   | 32                     | disc, transparent outside        |
 | public/favicon.ico                 | 16, 32  | the two favicons above | disc, transparent outside        |
-| public/icons/apple-touch-icon.png  | 180x180 | 90, scaled 2x          | full-bleed green square          |
+| public/icons/apple-touch-icon.png  | 180x180 | 90, scaled 2x          | full-bleed sunburst square       |
 | public/icons/icon-192.png          | 192x192 | 64, scaled 3x          | disc, transparent outside        |
 | public/icons/icon-512.png          | 512x512 | 64, scaled 8x          | disc, transparent outside        |
-| public/icons/icon-maskable-512.png | 512x512 | 64 at 78%, scaled 8x   | full-bleed green, subject in 80% |
+| public/icons/icon-maskable-512.png | 512x512 | 64 at 78%, scaled 8x   | full-bleed sunburst, duck in 80% |
 
 From 32px up she stands whole in the disc, her head 0.18 of the side. At 16px she is a close-up, her head and the
-top of her back cut off by the disc inside a 1px green edge, so the 3x3 bill and the 2x2 eye still read.
+top of her back cut off by the disc inside a 1px edge, so the 3x3 bill and the 2x2 eye still read.
+
+The ground is a sunburst: twelve rays, alternating sky and blue, from a point just above the icon's centre
+(behind her), filling the disc and, on the full-bleed icons, the whole square. At 16px the rays do not hold, so
+the disc is flat sky.
 """
 
+import math
 import os
 import sys
 
@@ -32,7 +37,9 @@ import duck  # noqa: E402
 import pixel  # noqa: E402
 from pixel import K, Grid  # noqa: E402
 
-GROUND = "green"
+RAYS = ("sky", "blue")  # the sunburst's alternating rays
+RAY_COUNT = 12
+FLAT = "sky"  # the 16px ground, where the rays do not hold
 OUTPUTS = {
     "public/art/favicon-16.png": (16, "disc", 1),
     "public/art/favicon.png": (32, "disc", 1),
@@ -81,8 +88,8 @@ def duck_px(S, hr, place, feet=True):
 
 
 def icon(S, ground):
-    """One drawing: ground is "disc" (transparent outside), "full" (green square) or "mask" (green square,
-    the disc and her shrunk into the central 80%)."""
+    """One drawing: ground is "disc" (transparent outside), "full" (sunburst square) or "mask" (sunburst square,
+    her shrunk into the central 80%)."""
     f = MASK_SCALE if ground == "mask" else 1.0
     c, R = S / 2, S / 2 * f
     if S <= 16:
@@ -92,16 +99,22 @@ def icon(S, ground):
         def centred(b):  # the figure's bounds centred in the disc
             return c - (b[0] + b[2]) / 2, c - (b[1] + b[3]) / 2
         fig = duck_px(S, WHOLE_R * f * S, centred)
+    def ground_at(x, y):
+        if S <= 16:
+            return K[FLAT]
+        a = math.atan2(y + 0.5 - c * 0.95, x + 0.5 - c)
+        return K[RAYS[int((a + math.pi) / (2 * math.pi) * RAY_COUNT) % 2]]
+
     out = Grid(S, S)
-    if ground != "disc":
-        out.rect(0, 0, S, S, GROUND)
     for y in range(S):
         for x in range(S):
             d = ((x + 0.5 - c) ** 2 + (y + 0.5 - c) ** 2) ** 0.5
             if d <= R - 1:
-                out.px[y][x] = fig[y][x] or K[GROUND]
-            elif d <= R:  # a 1px green edge, so the 16px close-up's cut never meets the page
-                out.px[y][x] = K[GROUND] if S <= 16 else fig[y][x] or K[GROUND]
+                out.px[y][x] = fig[y][x] or ground_at(x, y)
+            elif d <= R:  # a 1px edge of ground, so the 16px close-up's cut never meets the page
+                out.px[y][x] = ground_at(x, y) if S <= 16 else fig[y][x] or ground_at(x, y)
+            elif ground != "disc":
+                out.px[y][x] = ground_at(x, y)
     return out.px
 
 

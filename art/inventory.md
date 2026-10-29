@@ -19,15 +19,15 @@ Every served art asset. Sizes are in base pixels at 720x360. Tags are in frame o
 
 Plain PNGs and one ICO from `art/tools/icons.py`, not manifest entries.
 
-| Key               | Type                                     | Size    | Path                                 |
-| ----------------- | ---------------------------------------- | ------- | ------------------------------------ |
-| apple-touch-icon  | icon, green square                       | 180x180 | `public/icons/apple-touch-icon.png`  |
-| favicon           | favicon, disc on transparent             | 32x32   | `public/art/favicon.png`             |
-| favicon-16        | favicon, disc on transparent             | 16x16   | `public/art/favicon-16.png`          |
-| favicon-ico       | ICO holding favicon-16 and favicon       | 16, 32  | `public/favicon.ico`                 |
-| icon-192          | web manifest icon, disc on transparent   | 192x192 | `public/icons/icon-192.png`          |
-| icon-512          | web manifest icon, disc on transparent   | 512x512 | `public/icons/icon-512.png`          |
-| icon-maskable-512 | maskable icon, green square, central 80% | 512x512 | `public/icons/icon-maskable-512.png` |
+| Key               | Type                                        | Size    | Path                                 |
+| ----------------- | ------------------------------------------- | ------- | ------------------------------------ |
+| apple-touch-icon  | icon, sunburst square                       | 180x180 | `public/icons/apple-touch-icon.png`  |
+| favicon           | favicon, disc on transparent                | 32x32   | `public/art/favicon.png`             |
+| favicon-16        | favicon, disc on transparent                | 16x16   | `public/art/favicon-16.png`          |
+| favicon-ico       | ICO holding favicon-16 and favicon          | 16, 32  | `public/favicon.ico`                 |
+| icon-192          | web manifest icon, disc on transparent      | 192x192 | `public/icons/icon-192.png`          |
+| icon-512          | web manifest icon, disc on transparent      | 512x512 | `public/icons/icon-512.png`          |
+| icon-maskable-512 | maskable icon, sunburst square, central 80% | 512x512 | `public/icons/icon-maskable-512.png` |
 
 ## Images
 
