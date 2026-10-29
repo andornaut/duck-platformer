@@ -55,20 +55,26 @@
   outline: 2px solid #feae34;
   outline-offset: 2px;
 }
+/* On /play/, a narrow column down the left side, so the game keeps the full height and the rest
+   of the width. Its width includes the left safe-area inset. */
 .site-nav.slim {
+  box-sizing: border-box;
+  width: calc(64px + env(safe-area-inset-left, 0px));
+  border-bottom: 0;
+  border-right: 1px solid #3a4466;
   font-size: 13px;
   line-height: 1;
 }
-/* The extra top padding holds the current page's lift and ring inside the row. */
+/* The padding holds the current page's lift and ring inside the column. */
 .site-nav.slim ul {
+  flex-direction: column;
   flex-wrap: nowrap;
-  padding-block: 9px 7px;
+  gap: 16px;
+  padding: 14px 0 0 env(safe-area-inset-left, 0px);
   white-space: nowrap;
 }
 .site-nav.slim li + li::before {
-  height: 12px;
-  margin: 0 10px;
-  vertical-align: -1px;
+  display: none;
 }
 .site-nav.slim a:focus-visible {
   outline-offset: -2px;

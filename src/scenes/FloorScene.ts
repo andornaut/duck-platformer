@@ -194,7 +194,7 @@ export class FloorScene extends Scene {
   // A touch takes the role it starts with and keeps it, wherever it moves, until it lifts. A new
   // touch goes last in heldTouches, so the latest move touch is the last. Touches anywhere on the
   // page count, the letterbox bars beside the canvas included (gamePoint puts them on the game's
-  // nearest edge), except on a link or button such as the nav bar's.
+  // nearest edge), except on the nav bar or a link or button.
   private watchTouches(): void {
     const toGame = (event: PointerEvent) => {
       const canvas = this.game.canvas.getBoundingClientRect();
@@ -202,7 +202,7 @@ export class FloorScene extends Scene {
     };
     const down = (event: PointerEvent) => {
       const target = event.target instanceof Element ? event.target : null;
-      if (event.pointerType !== "touch" || target?.closest("a, button") != null) {
+      if (event.pointerType !== "touch" || target?.closest("a, button, nav") != null) {
         return;
       }
       const point = toGame(event);

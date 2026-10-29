@@ -1,7 +1,7 @@
 // The site navigation bar: Home and Play. A page loads it with <link rel="stylesheet"
 // href="/nav.css"> and <script src="/nav.js" defer></script> in its head and adds nothing else.
 // The page links the stylesheet, rather than this script injecting it, so the bar's style blocks
-// the first paint. On /play/ the bar is one slim row, so the game keeps the height. On /play/ in
+// the first paint. On /play/ the bar is a narrow column on the left, so the game keeps the height. On /play/ in
 // the installed app (fullscreen or standalone display mode, or iOS's navigator.standalone) there
 // is no bar, so no link leaves the app and the game takes the full height.
 (() => {
