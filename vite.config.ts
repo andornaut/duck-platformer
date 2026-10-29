@@ -7,27 +7,29 @@ import { resolve } from "node:path";
 import { runnerImport } from "vite";
 import { defineConfig } from "vitest/config";
 
+import type * as ConfigModules from "./src/tools/viteConfigModules.ts";
+
 // An absolute path in this repository. Vite resolves relative paths against root, which is
 // pages/, so every path below goes through here instead.
 function repoPath(path: string): string {
   return resolve(import.meta.dirname, path);
 }
 
-// The build's label globals (the kit's build/buildInfo.d.ts): package.json's version, and the
-// commit from the kit's build/buildVersion.ts, or "dev" without git. Vite bundles this config
-// without its alias, so the kit's module loads through runnerImport rather than an import.
-async function buildGlobals(): Promise<Record<string, string>> {
-  const { module: build } = await runnerImport<
-    typeof import("./vendor/game-kit/src/build/buildVersion")
-  >(repoPath("vendor/game-kit/src/build/buildVersion.ts"), { configFile: false });
-  const { version } = JSON.parse(readFileSync(repoPath("package.json"), "utf8")) as {
-    version: string;
-  };
-  const commit = build.shortCommit(() => build.gitHead(repoPath(".")), process.env);
-  return { __APP_VERSION__: JSON.stringify(version), __COMMIT__: JSON.stringify(commit) };
-}
+// @andornaut/game-kit/<path> is the kit's module at <path>, as in tsconfig.json's paths.
+const KIT_ALIAS = { "@andornaut/game-kit": repoPath("vendor/game-kit/src") };
 
-export default defineConfig(async () => ({
+// Vite bundles this file without its own resolve.alias, so the repository's code, which imports
+// the kit by its alias, loads through a module runner given the alias.
+const {
+  module: { gitHead, securityHeadersPlugin, shortCommit },
+} = await runnerImport<typeof ConfigModules>(repoPath("src/tools/viteConfigModules.ts"), {
+  configFile: false,
+  resolve: { alias: KIT_ALIAS },
+});
+
+const packageVersion: string = JSON.parse(readFileSync(repoPath("package.json"), "utf8")).version;
+
+export default defineConfig({
   build: {
     // Outside root, so Vite would leave the previous build's files in place without emptyOutDir.
     emptyOutDir: true,
@@ -48,14 +50,21 @@ export default defineConfig(async () => ({
   preview: {
     allowedHosts: ["duck-preview"],
   },
-  define: await buildGlobals(),
+  // The build label's version and commit (the kit's build/buildInfo.d.ts); the commit reads "dev"
+  // without git. Fixed per commit, so two builds of one commit match.
+  define: {
+    __APP_VERSION__: JSON.stringify(packageVersion),
+    __COMMIT__: JSON.stringify(shortCommit(() => gitHead(repoPath(".")), process.env)),
+  },
+  // securityHeadersPlugin writes /_headers, the response headers with each page's CSP.
+  plugins: [securityHeadersPlugin()],
   publicDir: repoPath("public"),
   // The pages load their modules as /src/..., which names the repository's src/ rather than
   // pages/src/. The shared kit is a committed copy, imported as @andornaut/game-kit/<path>.
   resolve: {
     alias: {
       "/src": repoPath("src"),
-      "@andornaut/game-kit": repoPath("vendor/game-kit/src"),
+      ...KIT_ALIAS,
     },
   },
   root: repoPath("pages"),
@@ -69,4 +78,4 @@ export default defineConfig(async () => ({
     include: ["src/**/*.test.ts", "vendor/game-kit/src/**/*.test.ts"],
     root: repoPath("."),
   },
-}));
+});

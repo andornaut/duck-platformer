@@ -1,0 +1,4 @@
+// What vite.config.ts takes from the repository's code, in one module so the config loads it
+// through a single Vite module runner, which resolves @andornaut/game-kit as the app does.
+export { securityHeadersPlugin } from "../headers/securityHeadersPlugin";
+export { gitHead, shortCommit } from "@andornaut/game-kit/build/buildVersion";
