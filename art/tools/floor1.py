@@ -105,7 +105,9 @@ Backdrops
   banners and the crest), hotel-window 32x152 (y 592, a tall window). The tall dark stone building and these
   pieces are generic until the exit is decided.
 - Climbing (backdrop, no collision): fire-escape-railing 48x24 (repeat x, its bottom on a landing's top),
-  fire-escape-ladder 24x96 (none, 2x8 tiles, its bottom on the lower landing's top), water-tower 48x84 (none,
+  fire-escape-ladder 24x96 (none, 2x8 tiles) and fire-escape-ladder-4, -5, -6, -7 (24x48 to 24x84, 2x4 to
+  2x7 tiles): one per landing spacing in rows; place the one matching the spacing with its bottom on the lower
+  landing's top (y = lower row * 12), so its top meets the upper landing; water-tower 48x84 (none,
   4x7 tiles, its bottom on a roof; one-way-tank tiles on its second tile row).
 - Storefronts (none), each 120 tall (y 600), a whole number of tiles wide, with a sign icon (never text), a tall
   display window and a 46px door: storefront-cafe 84, storefront-florist 84, storefront-gift-shop 96,
@@ -750,11 +752,18 @@ def fire_escape_railing():
     return g
 
 
-def fire_escape_ladder():
-    """24x96 (2x8 tiles): an ink ladder between two landings, 2px rails and rungs every 8px; backdrop, so it does
-    not collide. Place it with its bottom at the lower landing's top edge."""
-    g = R(Grid(24, 96), (4, 0, 2, 96, "ink"), (18, 0, 2, 96, "ink"))
-    for y in range(4, 96, 8):
+# Fire-escape ladders, one per landing spacing in rows: fire-escape-ladder is 8 rows, fire-escape-ladder-<n> n rows.
+LADDER_ROWS = (4, 5, 6, 7)
+
+
+def fire_escape_ladder(rows=8):
+    """24 x 12*rows (2 x rows tiles): an ink ladder between two landings rows apart, 2px rails and 2px rungs every
+    8px; backdrop, so it does not collide. Place the one whose rows match the spacing with its bottom at the lower
+    landing's top edge (y = lower row * 12) and its left edge on the landing's ladder column; its top then meets the
+    upper landing's top edge, where the landing tile covers it."""
+    h = 12 * rows
+    g = R(Grid(24, h), (4, 0, 2, h, "ink"), (18, 0, 2, h, "ink"))
+    for y in range(4, h, 8):
         R(g, (4, y, 16, 2, "ink"))
     return g
 
@@ -884,6 +893,7 @@ BACKDROP_DEFS = {
     **{f"roofline-{k}": ((lambda k=k: roofline(k)), 108, "x") for k in ("walkup", "brownstone", "hotel")},
     "fire-escape-railing": (fire_escape_railing, 432, "x"),
     "fire-escape-ladder": (fire_escape_ladder, 432, "none"),
+    **{f"fire-escape-ladder-{n}": ((lambda n=n: fire_escape_ladder(n)), 432, "none") for n in LADDER_ROWS},
     "water-tower": (water_tower, 240, "none"),
     "lobby-wall": (lobby_wall, LOBBY_H, "x"),
     "lobby-balustrade": (lobby_balustrade, 288, "x"),

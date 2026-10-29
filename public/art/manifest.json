@@ -483,6 +483,42 @@
       "repeat": "none"
     },
     {
+      "key": "fire-escape-ladder-4",
+      "png": "backdrops/fire-escape-ladder-4.png",
+      "width": 24,
+      "height": 48,
+      "anchor": "bottom-left",
+      "y": 432,
+      "repeat": "none"
+    },
+    {
+      "key": "fire-escape-ladder-5",
+      "png": "backdrops/fire-escape-ladder-5.png",
+      "width": 24,
+      "height": 60,
+      "anchor": "bottom-left",
+      "y": 432,
+      "repeat": "none"
+    },
+    {
+      "key": "fire-escape-ladder-6",
+      "png": "backdrops/fire-escape-ladder-6.png",
+      "width": 24,
+      "height": 72,
+      "anchor": "bottom-left",
+      "y": 432,
+      "repeat": "none"
+    },
+    {
+      "key": "fire-escape-ladder-7",
+      "png": "backdrops/fire-escape-ladder-7.png",
+      "width": 24,
+      "height": 84,
+      "anchor": "bottom-left",
+      "y": 432,
+      "repeat": "none"
+    },
+    {
       "key": "fire-escape-railing",
       "png": "backdrops/fire-escape-railing.png",
       "width": 48,

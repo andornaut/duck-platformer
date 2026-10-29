@@ -115,7 +115,11 @@ Pieces placed from level data by their bottom-left corner at the bottom y given,
 | facade-walkup           | building facade, brick walk-up                                       | 48x312  | 600, x           |
 | facade-walkup-upper     | building facade, a walk-up's upper storey                            | 48x180  | 288, x           |
 | fire-escape             | facade piece, walk-up                                                | 196x185 | 473, none        |
-| fire-escape-ladder      | climbing, fire-escape ladder between landings                        | 24x96   | 432, none        |
+| fire-escape-ladder      | climbing, fire-escape ladder between landings 8 rows apart           | 24x96   | 432, none        |
+| fire-escape-ladder-4    | climbing, fire-escape ladder between landings 4 rows apart           | 24x48   | 432, none        |
+| fire-escape-ladder-5    | climbing, fire-escape ladder between landings 5 rows apart           | 24x60   | 432, none        |
+| fire-escape-ladder-6    | climbing, fire-escape ladder between landings 6 rows apart           | 24x72   | 432, none        |
+| fire-escape-ladder-7    | climbing, fire-escape ladder between landings 7 rows apart           | 24x84   | 432, none        |
 | fire-escape-railing     | climbing, fire-escape railing on a landing                           | 48x24   | 432, x           |
 | hot-dog-cart            | street furniture                                                     | 40x70   | 600, none        |
 | hotel-crest             | facade piece, banners and crest (generic)                            | 98x44   | 478, none        |
