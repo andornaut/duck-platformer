@@ -14,8 +14,8 @@ Format: `- [status] **Idea**: short description · notes`. Statuses: **floated**
 - [cut] **Back button and timed dialogue**: going back a dialogue screen, or advancing on a timer · a tap or keypress moves forward only
 - [cut] **Climbing a hotel**: she climbs a hotel floor by floor to get home · she travels zone to zone across a map
 - [cut] **Combat**: the duck attacks or stomps · the challenge is platforming, hazards and choices
+- [cut] **Double-tap for a minimal jump**: two quick taps give the smallest hop · it delays every jump and clashes with the jump buffer
 - [cut] **Fixed movement control**: a joystick in the lower left whose halves also act as buttons · a touch anywhere sets the neutral point
 - [cut] **Flutter on a hold or its own button**: flutter only when chosen · every jump flutters
 - [cut] **Historical and futuristic zones**: zones themed on a past or future era · zones are modern-day places
 - [cut] **Jump on release**: the jump starts when Jump is released after a hold · it adds delay and breaks coyote time and buffering
-- [cut] **Speed cut on release**: releasing Jump cuts her rising speed once · a held jump grows smoothly with hold time instead

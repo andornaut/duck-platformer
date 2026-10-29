@@ -52,13 +52,13 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 ### Grid
 
 - **Duck:** 2 tiles wide and 3 tall
-- **Reaches:** zones are built to the duck's reaches, measured in tiles from the top of the ground she leaves to the top of the ledge she lands on. A quick tap rises 1 tile (clearing a 1-tile ledge with a little room); a full jump rises 6; a full running jump with flutter crosses an 18-tile gap at the same height, with the jump pressed at its best moment, coyote time included. A ledge at a reach is always makeable, and one tile beyond it never is
+- **Reaches:** zones are built to the duck's reaches, measured in tiles from the top of the ground she leaves to the top of the ledge she lands on. A quick tap rises 1 tile (clearing a 1-tile ledge with a little room); a full jump rises 6; a full running jump with flutter crosses a 19-tile gap at the same height, with the jump pressed at its best moment, coyote time included. A ledge at a reach is always makeable, and one tile beyond it never is
 - **Tiles:** zones are built on a grid of 12 px tiles, so the screen is 60 columns by 30 rows. Every solid, ledge, hazard and exit sits on whole tiles and spans whole tiles
 
 ### The duck
 
 - **Flutter:** every fall flutters, after a jump or off a ledge: her fall is slow enough to use, and the player steers her in the air
-- **Jump height:** a press launches her at once at the hop's speed. While Jump is held, her rise holds steady for up to 0.2 s, so the height grows from about 1.5 tiles on a quick tap to about 6.5 on a full hold, and a typical touch tap lands in between. This lets a zone set obstacles only a tap clears, such as a low ledge with spikes just above it. The jump is snappy: about 0.3 s to the top. On release, or when the hold runs out, gravity takes over. A buffered jump whose button was already released is a hop
+- **Jump height:** every press launches her at full speed, and she keeps rising while Jump is held, up to about 6.5 tiles with the top at about 0.3 s. Letting go within the first 0.12 s stops the rise where she is, so the quickest tap rises about 1.5 tiles and a 0.1 s press about 3.7; letting go later halves her upward speed. A buffered jump whose button was already released is the quickest tap. This lets a zone set obstacles only a tap clears, such as a low ledge with spikes just above it
 - **Jump timing:** a jump pressed just after she leaves a ledge still jumps (coyote time), and a jump pressed just before she lands jumps as she lands (jump buffering)
 - **Movement:** she walks left and right and jumps. She is quick and responsive: about 0.1 s to reach full speed or stop, on the ground and in the air. Her speeds, jump, flutter and timing values are in `src/data/duck.ts`, tuned to the reaches under Grid
 
