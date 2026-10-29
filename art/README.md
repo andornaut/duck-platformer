@@ -74,7 +74,7 @@ In order:
 - One fixed house palette, plus a few game-specific ramps that each end on a house colour. The house palette is [Endesga 32](https://lospec.com/palette-list/endesga-32); colour names are the `K` names in `art/tools/pixel.py`.
 - Every pixel is fully opaque or fully transparent.
 - Each colour has a one-step-darker mapping (its ramp). Shadows and dimming step each colour down its ramp, never blend with black.
-- Neutral greys are reserved for disabled UI. Exceptions: the pigeon's body and the raccoon's rim light (see Street cast), where slate alone merges with the dark storefronts.
+- Neutral greys are reserved for disabled UI. Exception: the pigeon's body (see Street cast), where slate alone merges with the dark storefronts.
 
 ### Outlines
 
@@ -97,15 +97,15 @@ In order:
 - Feet sit on the frame's bottom rows.
 - Size classes step evenly. Draw each to a target inked area, not just a frame size, so small and large read as distinct steps.
 
-| Sprite          | Frame |
-| --------------- | ----- |
-| Duck            | 48x42 |
-| Duck portrait   | 64x64 |
-| Ferret          | 64x80 |
-| Ferret portrait | 64x64 |
-| Pigeon          | 22x22 |
-| Pug             | 44x32 |
-| Pedestrian      | 34x50 |
+| Sprite          | Frame                        |
+| --------------- | ---------------------------- |
+| Duck            | 48x42                        |
+| Duck portrait   | 64x64                        |
+| Ferret          | 64x80                        |
+| Ferret portrait | 64x64                        |
+| Pigeon          | 22x22                        |
+| Pug             | 44x32                        |
+| Pedestrian      | 34x50 (cat), 36x50 (raccoon) |
 
 ### Text
 
@@ -300,16 +300,16 @@ A hazard restarts the floor on contact. `art/tools/hazards.py` draws the hazard 
 
 The ambient characters of the Zone 1 street, drawn by `art/tools/cast.py`; its docstring gives every frame. They have no portraits, are never hazards or pickups and carry no hit box. Each faces right (mirrored for left) at outdoor scale beside the duck, with its feet on the frame's bottom rows and its body centre on the frame's centre line, so mirroring it does not move it. Outlines are coloured: two ramp steps darker, stepped further down until they hold 3:1 on the sidewalk.
 
-| Key                | Character                                                     | Frame | Tags and timing                                                                               |
-| ------------------ | ------------------------------------------------------------- | ----- | --------------------------------------------------------------------------------------------- |
-| pigeon             | a small pigeon at true street scale, placed in groups         | 22x22 | `idle` 600, 140, 140, 140ms (stand, peck, stand, peck); `flee` 2 x 80ms, once; `fly` 2 x 90ms |
-| dog-pug            | a fawn pug with a black mask and a sky-blue collar            | 44x32 | `idle` 2 x 400ms; `walk` 4 x 120ms; `perk` 2 x 80ms, once; `talk` 2 x 150ms                   |
-| pedestrian-cat     | an orange tabby in a mauve coat with a cream tote bag         | 34x50 | `walk` 4 x 140ms; `idle` 2 x 400ms                                                            |
-| pedestrian-raccoon | a raccoon in a tan trench coat, an ink mask and a ringed tail | 34x50 | `walk` 4 x 140ms; `idle` 2 x 400ms                                                            |
+| Key                | Character                                                        | Frame | Tags and timing                                                                               |
+| ------------------ | ---------------------------------------------------------------- | ----- | --------------------------------------------------------------------------------------------- |
+| pigeon             | a small pigeon at true street scale, placed in groups            | 22x22 | `idle` 600, 140, 140, 140ms (stand, peck, stand, peck); `flee` 2 x 80ms, once; `fly` 2 x 90ms |
+| dog-pug            | a fawn pug with a black mask and a sky-blue collar               | 44x32 | `idle` 2 x 400ms; `walk` 4 x 120ms; `perk` 2 x 80ms, once; `talk` 2 x 150ms                   |
+| pedestrian-cat     | an orange tabby in a mauve coat with a cream tote bag            | 34x50 | `walk` 4 x 140ms; `idle` 2 x 400ms                                                            |
+| pedestrian-raccoon | a knitted-style raccoon: cream face band, ink masks, banded tail | 36x50 | `walk` 4 x 140ms; `idle` 2 x 400ms                                                            |
 
 - The pigeon flees in two steps: `flee` plays once (crouch, leap) and the game then loops `fly` while it moves the pigeon up and away. It reads at 1x by its grey body, lgrey rim light, bold green-and-mauve neck sheen and pink feet.
-- The pedestrians share one body: a big round head over an A-line coat and two stub legs. Their walk is the two-leg cycle: a foot lifted 2px, passing (body 1px up), the other foot lifted, passing.
-- Grey exceptions: the pigeon is grey with an lgrey rim, and the raccoon's slate fur has a grey rim light. In greyscale, slate alone does not separate from the dark storefronts.
+- The cat has the coat body: a big round head over an A-line coat and two stub legs. The raccoon has its own front-on body after a knitted raccoon: a cream face band over ink masks, a wide round muzzle and belly, its head low on a round body, and a banded tail. Both walk the two-leg cycle: a foot lifted 2px, passing (body 1px up), the other foot lifted, passing.
+- Grey exception: the pigeon is grey with an lgrey rim. In greyscale, slate alone does not separate from the dark storefronts. The raccoon needs none: its cream face band and belly carry it.
 
 ## Zone 1: New York street
 

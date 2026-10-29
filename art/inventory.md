@@ -67,7 +67,7 @@ Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with 
 | map-wave            | map pen mark, tan                                   | 22x4   | rest                              |
 | map-zone            | map zone marker                                     | 35x35  | normal, current, visited, unbuilt |
 | pedestrian-cat      | street cast                                         | 34x50  | walk, idle                        |
-| pedestrian-raccoon  | street cast                                         | 34x50  | walk, idle                        |
+| pedestrian-raccoon  | street cast                                         | 36x50  | walk, idle                        |
 | pigeon              | street cast                                         | 22x22  | idle, flee (once), fly            |
 | portrait-duck       | portrait                                            | 64x64  | neutral, happy, worried           |
 | portrait-ferret     | portrait                                            | 64x64  | neutral, smug, annoyed            |

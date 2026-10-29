@@ -42,18 +42,25 @@ Feet on rows 29 and 30, outline on row 31; centre x 22: tail to nose spans colum
 
 perk plays once and holds.
 
-pedestrian-cat and pedestrian-raccoon, 34x50, on one shared body: a big round head over an A-line coat and two stub
-legs. Feet on rows 47 and 48, outline on row 49; centre x 17, the coat's centre line.
-- pedestrian-cat: an orange tabby (amber rim, rust shade and stripes, cream muzzle) in a mauve coat, a cream tote bag
-  on a purple strap.
-- pedestrian-raccoon: slate fur (a grey rim light, dslate shade), an ink mask with a white brow and muzzle, a ringed
-  tail, in a tan trench coat with a dark-brown belt. Grey: the rim light only, as on the pigeon.
+pedestrian-cat, 34x50: an orange tabby (amber rim, rust shade and stripes, cream muzzle) in a mauve A-line coat over
+two stub legs, a cream tote bag on a purple strap. Feet on rows 47 and 48, outline on row 49; centre x 17, the coat's
+centre line.
+
+pedestrian-raccoon, 36x50, its own body, after a knitted raccoon: front-on, the face turned 1px towards the facing
+side. Slate fur with dslate shade; tall ears with ink insides; a dslate forehead stripe; a cream face band flaring
+wider than the head over ink masks that slant down and out, each with a 2x2 white glint; an ink nose over a wide,
+round cream muzzle, jaw and cheeks that run down into a cream belly, a small dslate smile; the head sits low and snug
+on a round, full body, with no neck showing; dslate arms across the belly with ink paws together; ink feet; a short
+tail out to the lower left in 3px ink and cream bands, its cream tip curling up. No grey. Feet on rows 47 and 48,
+outline on row 49; centre x 18, the body's centre line.
+
+Both pedestrians walk the same two-leg cycle:
 
 | Tag  | Frame | ms  | Pose                                                               |
 | ---- | ----- | --- | ------------------------------------------------------------------ |
-| walk | 0     | 140 | the near foot forward and lifted 2px, the arm swung forward          |
+| walk | 0     | 140 | the near foot lifted 2px, the arm (or the raccoon's paws) swung    |
 | walk | 1     | 140 | passing: both feet down, the body 1px up                           |
-| walk | 2     | 140 | the far foot forward and lifted 2px, the arm swung back             |
+| walk | 2     | 140 | the other foot lifted 2px, the arm swung the other way             |
 | walk | 3     | 140 | passing                                                            |
 | idle | 0     | 400 | rest                                                               |
 | idle | 1     | 400 | breath: the body 1px up, feet planted                              |
@@ -218,14 +225,11 @@ def pug_tags():
             ("talk", [pug(), pug(mouth=True)], 150)]
 
 
-# ---------------------------------------------------------------- pedestrians (one shared body)
+# ---------------------------------------------------------------- pedestrian-cat (the coat body)
 
-PEDESTRIANS = {
-    "cat": dict(fur="orange", light="amber", shade="rust", face="cream", coat="mauve", coat_sh="purple",
-                coat_li="pink", leg="rust", ear="orange"),
-    "raccoon": dict(fur="slate", light="grey", shade="dslate", face="white", mask="ink", coat="tan",
-                    coat_sh="brown", coat_li="cream", belt="dbrown", leg="dslate", ear="dslate"),
-}
+CAT = dict(fur="orange", light="amber", shade="rust", face="cream", coat="mauve", coat_sh="purple", coat_li="pink",
+           leg="rust", ear="orange")
+WALK = [(1, 0), (0, 1), (-1, 0), (0, 1)]                # (step, lift): lifted, passing, other lifted, passing
 
 
 def coat(g, P, lift):
@@ -239,72 +243,109 @@ def coat(g, P, lift):
         g.rect(x0 + w - 2, y, 2, 1, P["coat_sh"])
 
 
-def pedestrian(kind, step=0, lift=0):
-    """A pedestrian, 34x50, facing right. step: 1 near foot forward and lifted, -1 far foot forward and lifted,
+def cat(step=0, lift=0):
+    """The cat, 34x50, facing right. step: 1 near foot forward and lifted, -1 far foot forward and lifted,
     0 passing."""
-    P = PEDESTRIANS[kind]
+    P = CAT
     g = Grid(34, 50)
     gy, hy = 48, 15 - lift
-    if kind == "raccoon":                               # ringed tail behind
-        for i, y in enumerate(range(31 - lift, 46 - lift, 3)):
-            g.rect(2 + i // 2, y, 7, 3, P["fur"] if i % 2 == 0 else P["mask"])
-    else:
-        stroke(g, 9, 40 - lift, 3, 32 - lift, P["fur"], 3)
-        stroke(g, 3, 32 - lift, 4, 25 - lift, P["fur"], 3)
+    stroke(g, 9, 40 - lift, 3, 32 - lift, P["fur"], 3)  # tail
+    stroke(g, 3, 32 - lift, 4, 25 - lift, P["fur"], 3)
     far_x, near_x = 17 - 3 * step, 13 + 3 * step
     far_up, near_up = (2 if step == -1 else 0), (2 if step == 1 else 0)
     g.rect(far_x, 41 - lift, 4, gy - 40 + lift - far_up, P["shade"])
     coat(g, P, lift)
-    if kind == "raccoon":
-        g.rect(9, 34 - lift, 15, 2, P["belt"])
-        g.rect(17, 25 - lift, 2, 16, P["coat_sh"])       # the coat's front edge
-        g.rect(13, 24 - lift, 7, 2, P["coat_li"])        # collar
     g.rect(near_x, 41 - lift, 4, gy - 40 + lift - near_up, P["leg"])
     g.rect(near_x, gy - 1 - near_up, 5, 2, P["shade"])
-    # ears, head, face
-    if kind == "cat":
-        g.tri((9, hy - 4), (14, hy - 7), (9, hy - 13), P["ear"])
-        g.tri((17, hy - 7), (22, hy - 5), (21, hy - 13), P["ear"])
-        g.tri((18, hy - 7), (21, hy - 6), (20.5, hy - 11), "pink")
-    else:
-        g.ell(10, hy - 7, 3.5, 3.5, P["ear"])
-        g.ell(20, hy - 8, 3.5, 3.5, P["ear"])
-        g.ell(20, hy - 8, 1.6, 1.6, P["face"])
+    g.tri((9, hy - 4), (14, hy - 7), (9, hy - 13), P["ear"])
+    g.tri((17, hy - 7), (22, hy - 5), (21, hy - 13), P["ear"])
+    g.tri((18, hy - 7), (21, hy - 6), (20.5, hy - 11), "pink")
     g.blob(16, hy, 10, 9, P["fur"], sh=P["shade"], li=P["light"])
-    if kind == "raccoon":
-        g.rect(13, hy - 2, 13, 5, P["mask"])
-        g.rect(19, hy - 4, 6, 2, P["face"])              # brow
-        g.blob(24, hy + 4, 4, 3, P["face"])              # muzzle
-        g.rect(27, hy + 3, 2, 2, "ink")
-        g.rect(20, hy - 1, 2, 2, "white")                # catchlight in the mask
-        g.rect(21, hy, 2, 2, "ink")
-    else:
-        g.blob(23, hy + 3, 4.5, 3.5, P["face"])
-        g.rect(27, hy + 1, 2, 2, "pink")
-        g.rect(19, hy - 3, 3, 3, "ink")
-        g.p(19, hy - 3, "white")
-        g.rect(12, hy - 6, 2, 4, P["shade"])            # tabby stripes
-        g.rect(15, hy - 7, 2, 3, P["shade"])
-    if kind == "cat":                                   # tote bag on a strap, behind the swinging arm
-        g.rect(12, 25 - lift, 2, 9, "purple")
-        g.rect(7, 33 - lift, 9, 10, "cream")
-        g.rect(7, 33 - lift, 9, 2, "white")
+    g.blob(23, hy + 3, 4.5, 3.5, P["face"])
+    g.rect(27, hy + 1, 2, 2, "pink")
+    g.rect(19, hy - 3, 3, 3, "ink")
+    g.p(19, hy - 3, "white")
+    g.rect(12, hy - 6, 2, 4, P["shade"])                # tabby stripes
+    g.rect(15, hy - 7, 2, 3, P["shade"])
+    g.rect(12, 25 - lift, 2, 9, "purple")               # tote bag on a strap, behind the swinging arm
+    g.rect(7, 33 - lift, 9, 10, "cream")
+    g.rect(7, 33 - lift, 9, 2, "white")
     g.rect(18 + step, 27 - lift, 3, 9, P["coat_sh"])     # near sleeve, swinging
     g.rect(18 + step, 36 - lift, 3, 2, P["fur"])
     return done(g, 1)
 
 
-def pedestrian_tags(kind):
-    steps = [(1, 0), (0, 1), (-1, 0), (0, 1)]           # (step, lift): lifted, passing, other lifted, passing
-    return [("walk", [pedestrian(kind, s, l) for s, l in steps], 140),
-            ("idle", [pedestrian(kind), pedestrian(kind, 0, 1)], 400)]
+def cat_tags():
+    return [("walk", [cat(s, l) for s, l in WALK], 140), ("idle", [cat(), cat(0, 1)], 400)]
+
+
+# ---------------------------------------------------------------- pedestrian-raccoon (its own body)
+
+RACCOON = dict(fur="slate", shade="dslate", dark="ink", cream="cream", glint="white")
+
+
+def raccoon_tail(g, lift, sway):
+    """A short, thick tail lying out to the lower left, its cream tip curling up 1px: 3px dark and cream bands."""
+    P = RACCOON
+    bands = [(9, 3, P["dark"]), (6, 3, P["cream"]), (3, 3, P["dark"]), (1, 2, P["cream"])]
+    g.rect(10, 40 - lift, 4, 6, P["fur"])
+    for i, (x, w, c) in enumerate(bands):
+        curl = (1 if i == len(bands) - 1 else 0) + (sway if i >= len(bands) - 2 else 0)
+        top = 41 - lift - curl
+        g.rect(x, top, w, 5, c)
+        if i == len(bands) - 1:
+            g.p(x, top, None)
+
+
+def raccoon(step=0, lift=0):
+    """The raccoon, 36x50, front-on with the face 1px towards the facing side. step: 1 the near (right) foot lifted,
+    -1 the far (left) foot lifted, 0 passing. lift raises everything above the feet."""
+    P = RACCOON
+    g = Grid(36, 50)
+    gy, fx, L = 48, 1, lift
+    raccoon_tail(g, L, 1 if step else 0)
+    for side, x in ((-1, 13), (1, 20)):                 # legs, dark paws
+        up = 2 if step == side else 0
+        g.rect(x, 42 - L, 4, gy - 42 + L + 1 - up, P["shade"] if side < 0 else P["fur"])
+        g.rect(x, gy - 1 - up, 4, 2, P["dark"])
+    g.blob(18, 36 - L, 9, 9, P["fur"], sh=P["shade"])   # body, round and full
+    g.blob(18.5 + fx, 36.5 - L, 5, 6, P["cream"])       # the belly, meeting the round jaw
+    for side in (-1, 1):                                # arms across the lower belly, paws together in front
+        dy = step * side
+        for i in range(5):
+            g.rect(10 + i if side < 0 else 26 - i, 36 - L + dy + i // 3, 1, 2, P["shade"])
+        g.rect(15 + fx if side < 0 else 20 + fx, 38 - L + dy, 2, 2, P["dark"])
+    hy = 2 - L                                          # the head sits low and snug on the body
+    g.tri((6, 13 + hy), (14, 9 + hy), (8, 0 + hy), P["fur"])        # tall ears, dark insides
+    g.tri((22, 9 + hy), (30, 13 + hy), (28, 0 + hy), P["fur"])
+    g.tri((8.5, 11 + hy), (13, 9 + hy), (9, 3 + hy), P["dark"])
+    g.tri((23, 9 + hy), (27.5, 11 + hy), (27, 3 + hy), P["dark"])
+    g.blob(18, 15 + hy, 10.5, 8.5, P["fur"], sh=P["shade"])         # head
+    g.ell(18.5 + fx, 20 + hy, 13, 3.8, P["cream"])                  # face band, flaring wider than the head
+    g.ell(13 + fx, 16.5 + hy, 4.2, 2.4, P["cream"])
+    g.ell(24 + fx, 16.5 + hy, 4.2, 2.4, P["cream"])
+    g.rect(17 + fx, 7 + hy, 3, 10, P["shade"])                      # forehead stripe
+    for cx, ox in ((12.5, 10), (24.5, 27)):                         # masks, slanting down and out
+        g.ell(cx + fx, 20 + hy, 5, 3.3, P["dark"])
+        g.ell(ox + fx, 21.5 + hy, 3, 2, P["dark"])
+    g.blob(18.5 + fx, 25 + hy, 6.5, 4, P["cream"])                  # a wide, round muzzle, jaw and cheeks
+    g.rect(17 + fx, 21 + hy, 3, 2, P["dark"])                       # nose
+    for x in (13, 24):
+        g.rect(x + fx, 18 + hy, 2, 2, P["glint"])
+    for x, y in ((16, 25), (17, 26), (18, 26), (19, 26), (20, 25)):  # small smile
+        g.p(x + fx, y + hy, P["shade"])
+    return done(g)
+
+
+def raccoon_tags():
+    return [("walk", [raccoon(s, l) for s, l in WALK], 140), ("idle", [raccoon(), raccoon(0, 1)], 400)]
 
 
 def sprites():
     yield "pigeon", pigeon_tags()
     yield "dog-pug", pug_tags()
-    yield "pedestrian-cat", pedestrian_tags("cat")
-    yield "pedestrian-raccoon", pedestrian_tags("raccoon")
+    yield "pedestrian-cat", cat_tags()
+    yield "pedestrian-raccoon", raccoon_tags()
 
 
 ONCE = {"pigeon": ["flee"], "dog-pug": ["perk"]}
