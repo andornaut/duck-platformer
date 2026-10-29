@@ -292,6 +292,17 @@ export const ZONES: Readonly<Record<string, ZonePlan>> = {
   street: ZONE_1,
 };
 
-// PLACEHOLDER: the zones assembled from chunks, by key, until gameplay writes the park's recipe.
-// A key here is never also a key in ZONES.
-export const RECIPES: Readonly<Record<string, ZoneRecipe>> = {};
+// The zones assembled from chunks, by key. A key here is never also a key in ZONES.
+export const RECIPES: Readonly<Record<string, ZoneRecipe>> = {
+  // The park: 6 to 10 screens, from difficulty 1 at its start to 3 at its end. No events or doors
+  // exist yet.
+  park: {
+    difficulty: { from: 1, to: 3 },
+    doors: [],
+    events: [],
+    finish: "park-finish",
+    length: { max: 600, min: 360 },
+    start: "park-start",
+    theme: "park",
+  },
+};
