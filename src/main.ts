@@ -10,6 +10,7 @@ import { CRASH_SCREEN } from "./crash/install";
 import { SCREEN } from "./data/screen";
 import { coverLevel, setupPhoneApp } from "./pwa";
 import { BootScene } from "./scenes/BootScene";
+import { capFrameRateOutOfPlay } from "./scenes/frameCap";
 import { LevelScene } from "./scenes/LevelScene";
 import { PauseScene } from "./scenes/PauseScene";
 
@@ -41,6 +42,7 @@ function startGame(): void {
   if (parent !== null) {
     new ResizeObserver(() => game.scale.refresh()).observe(parent);
   }
+  capFrameRateOutOfPlay(game);
   CRASH_SCREEN.stopGameOnCrash(() => game.pause());
   // The game pauses while main.css shows the turn-sideways notice over it, and the update toast
   // waits until the notice is gone.
