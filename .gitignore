@@ -1,4 +1,5 @@
 node_modules/
+dist/
 .wrangler/
 
 # Agent worktrees: full copies of the repository, local only.
