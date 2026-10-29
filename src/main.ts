@@ -21,6 +21,9 @@ function startGame(): void {
     input: { activePointers: 3 },
     parent: "game",
     pixelArt: true,
+    // Lower input-to-screen delay: a desynchronized context lets the browser show a frame without
+    // waiting on the page compositor, and the high-performance GPU where there is a choice.
+    render: { antialias: false, desynchronized: true, powerPreference: "high-performance" },
     scale: { autoCenter: Scale.CENTER_BOTH, mode: Scale.FIT },
     scene: [BootScene, LevelScene],
     type: AUTO,
