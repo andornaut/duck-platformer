@@ -30,16 +30,42 @@ export interface PlacedTile {
   readonly row: number;
 }
 
+// One row of a layered terrain look: its tile where it is open on the left, on the right, and
+// between, the middle cycling through its list along the row (shifted 2 per row down, so a
+// scatter such as pebbles does not line up).
+interface LookLayer {
+  readonly left: string;
+  readonly middle: readonly string[];
+  readonly right: string;
+}
+
+const layer = (left: string, middle: readonly string[], right: string): LookLayer => ({
+  left,
+  middle,
+  right,
+});
+
+// A layered look's rows from its top down; the last repeats to the terrain's bottom. Looks not
+// listed are a top row alternating with a joint every other column, over a face.
+const LAYERED_LOOKS: Readonly<Record<string, readonly LookLayer[]>> = {
+  // The park's ground: a grass top, one row of turf, then soil with pebbles on one tile in five.
+  grass: [
+    layer("grass-top-left", ["grass-top"], "grass-top-right"),
+    layer("turf-left", ["turf"], "turf-right"),
+    layer("soil-left", ["soil-pebbles", "soil", "soil", "soil", "soil"], "soil-right"),
+  ],
+};
+
+function layersOf(look: string): readonly LookLayer[] {
+  return (
+    LAYERED_LOOKS[look] ?? [
+      layer(`${look}-top-left`, [`${look}-top`, `${look}-top-joint`], `${look}-top-right`),
+      layer(`${look}-face-left`, [`${look}-face`], `${look}-face-right`),
+    ]
+  );
+}
+
 // The tile names each terrain look draws with.
-const TOP_AND_FACE = [
-  "top",
-  "top-joint",
-  "top-left",
-  "top-right",
-  "face",
-  "face-left",
-  "face-right",
-];
 export function lookTiles(look: string): string[] {
   switch (look) {
     case "road":
@@ -49,7 +75,9 @@ export function lookTiles(look: string): string[] {
         ["left", "right"].map((side) => ["post", part, side].filter(Boolean).join("-")),
       );
     default:
-      return TOP_AND_FACE.map((part) => `${look}-${part}`);
+      return [
+        ...new Set(layersOf(look).flatMap(({ left, middle, right }) => [left, ...middle, right])),
+      ];
   }
 }
 
@@ -116,25 +144,26 @@ function tileName(
   const top = at(col, row - 1) === undefined;
   const openLeft = at(col - 1, row) === undefined;
   const openRight = at(col + 1, row) === undefined;
-  if (top) {
-    if (openLeft && at(col - 1, row + 1) === "road") {
-      return "kerb-left";
-    }
-    if (openRight && at(col + 1, row + 1) === "road") {
-      return "kerb-right";
-    }
-    if (openLeft) {
-      return `${look}-top-left`;
-    }
-    if (openRight) {
-      return `${look}-top-right`;
-    }
-    return `${look}-top${col % 2 === 1 ? "-joint" : ""}`;
+  if (top && openLeft && at(col - 1, row + 1) === "road") {
+    return "kerb-left";
   }
+  if (top && openRight && at(col + 1, row + 1) === "road") {
+    return "kerb-right";
+  }
+  // Its layer: how far below the open cell above it is, down to the look's last layer.
+  const layers = layersOf(look);
+  let depth = 0;
+  while (depth < layers.length - 1 && at(col, row - depth - 1) !== undefined) {
+    depth++;
+  }
+  const { left, middle, right } = layers[depth] as LookLayer;
   if (openLeft) {
-    return `${look}-face-left`;
+    return left;
   }
-  return openRight ? `${look}-face-right` : `${look}-face`;
+  if (openRight) {
+    return right;
+  }
+  return middle[(col + 2 * row) % middle.length] as string;
 }
 
 // The tiles above a stacking tile, in art's rule for the cellar hatch: its steel leaf's top over

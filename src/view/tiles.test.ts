@@ -15,6 +15,7 @@ const NAMES = [
   ...lookTiles("sidewalk"),
   ...lookTiles("road"),
   ...lookTiles("post"),
+  ...lookTiles("grass"),
   "one-way-awning",
   "one-way-awning-left",
   "one-way-awning-right",
@@ -105,6 +106,28 @@ describe("terrainTiles", () => {
     ["terrain with no look", [{ col: 0, cols: 2, row: 0, rows: 1 }], []],
   ] as [string, TerrainRect[], string[]][])("draws %s", (_, solids, tiles) => {
     expect(named(terrainTiles(TILESET, 6, 3, solids))).toEqual(tiles);
+  });
+
+  it("draws the park's grass: a grass top, a row of turf, then soil with pebbles scattered", () => {
+    const solids = [{ col: 1, cols: 4, look: "grass", row: 1, rows: 4 }];
+    expect(named(terrainTiles(TILESET, 6, 5, solids))).toEqual([
+      "1,1 grass-top-left",
+      "2,1 grass-top",
+      "3,1 grass-top",
+      "4,1 grass-top-right",
+      "1,2 turf-left",
+      "2,2 turf",
+      "3,2 turf",
+      "4,2 turf-right",
+      "1,3 soil-left",
+      "2,3 soil",
+      "3,3 soil",
+      "4,3 soil-right",
+      "1,4 soil-left",
+      "2,4 soil-pebbles",
+      "3,4 soil",
+      "4,4 soil-right",
+    ]);
   });
 
   it("refuses a look the tileset has no tiles for", () => {
