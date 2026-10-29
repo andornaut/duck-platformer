@@ -40,6 +40,12 @@ export interface DuckTuning {
   readonly walkSpeed: number;
 }
 
+// The touch controls, in base pixels.
+export interface TouchTuning {
+  // A move touch moves her once it is more than this far left or right of where it started.
+  readonly moveDeadZone: number;
+}
+
 // One floor's geometry. solids block her; touching a hazard restarts the floor; reaching the
 // exit clears it; falling below the floor's height restarts it.
 export interface FloorLayout {

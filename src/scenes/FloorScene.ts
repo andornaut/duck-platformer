@@ -4,21 +4,20 @@ import { type GameObjects, Input, Scene } from "phaser";
 import { DUCK } from "../data/duck";
 import { SCREEN } from "../data/screen";
 import { TEST_FLOOR } from "../data/testFloor";
+import { TOUCH } from "../data/touch";
 import type { Rect } from "../data/types";
-import { combineIntents, controlAt, type HeldTouch, keyIntent, touchIntent } from "../input/intent";
+import {
+  combineIntents,
+  type HeldTouch,
+  keyIntent,
+  touchIntent,
+  touchUseAt,
+} from "../input/intent";
 import { TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
 import { type FloorState, startFloor, stepFloor } from "../rules/floor";
 import { animKey, type AsepriteSheet, sheetTags, type TagFrame, tagMs } from "../view/aseprite";
 import { duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
-import {
-  centredAt,
-  controlTag,
-  knobAt,
-  knobTag,
-  type Press,
-  pressSuffix,
-  trackPress,
-} from "../view/touchControls";
+import { buttonHeld, centredAt, controlTag, trackPress } from "../view/touchControls";
 
 const STEP_MS = 1000 / 60;
 // After a stall, run at most this much time at once rather than lurching ahead.
@@ -36,9 +35,7 @@ const DUCK_SPRITE = "duck";
 const CONTROL_SPRITES: Readonly<Record<TouchControl, string>> = {
   interact: "ui-touch-interact",
   jump: "ui-touch-jump",
-  move: "ui-touch-move",
 };
-const KNOB_SPRITE = "ui-touch-knob";
 
 // Starts a sprite's tag, unless it already shows it, playing or finished on its last frame.
 function show(sprite: GameObjects.Sprite, tag: string): void {
@@ -59,10 +56,10 @@ export class FloorScene extends Scene {
   private readonly focus = { x: 0, y: 0 };
   private readonly heldKeys = new Set<string>();
   private readonly heldTouches = new Map<number, HeldTouch>();
-  private knob!: GameObjects.Sprite;
   private landMs = 0;
   private readonly layout = TEST_FLOOR;
-  private readonly presses = new Map<TouchControl, Press>();
+  // When each held button's press began.
+  private readonly presses = new Map<TouchControl, number>();
   private readonly tags = new Map<string, ReadonlyMap<string, readonly TagFrame[]>>();
 
   constructor() {
@@ -84,7 +81,7 @@ export class FloorScene extends Scene {
     fill(this.layout.hazards, COLOURS.hazard);
     fill([this.layout.exit], COLOURS.exit);
 
-    for (const key of [DUCK_SPRITE, KNOB_SPRITE, ...Object.values(CONTROL_SPRITES)]) {
+    for (const key of [DUCK_SPRITE, ...Object.values(CONTROL_SPRITES)]) {
       this.tags.set(key, sheetTags(this.cache.json.get(key) as AsepriteSheet));
     }
     this.landMs = tagMs(this.sheet(DUCK_SPRITE), "land");
@@ -101,7 +98,6 @@ export class FloorScene extends Scene {
       const at = centredAt(TOUCH_CONTROLS[control].centre, sprite.frame);
       this.controls.set(control, sprite.setPosition(at.x, at.y));
     }
-    this.knob = this.add.sprite(0, 0, KNOB_SPRITE).setOrigin(0).setScrollFactor(0);
     this.watchKeys();
     this.watchTouches();
   }
@@ -110,7 +106,7 @@ export class FloorScene extends Scene {
     const frame = frameSteps({ maxFrameMs: MAX_FRAME_MS, stepMs: STEP_MS }, time, this.clock);
     this.clock = frame.clock;
     const touches = [...this.heldTouches.values()];
-    const intent = combineIntents(keyIntent(this.heldKeys), touchIntent(touches));
+    const intent = combineIntents(keyIntent(this.heldKeys), touchIntent(TOUCH, touches));
     for (let step = 0; step < frame.steps; step++) {
       const before = this.floor.duck;
       this.floor = stepFloor(
@@ -166,12 +162,13 @@ export class FloorScene extends Scene {
     this.game.events.on("blur", () => this.heldKeys.clear());
   }
 
-  // A touch takes the control it starts on and keeps it, wherever it moves, until it lifts.
+  // A touch takes the use it starts with and keeps it, wherever it moves, until it lifts. A new
+  // touch goes last in heldTouches, so the latest move touch is the last.
   private watchTouches(): void {
     this.input.on("pointerdown", (pointer: Input.Pointer) => {
-      const control = pointer.wasTouch ? controlAt({ x: pointer.x, y: pointer.y }) : undefined;
-      if (control) {
-        this.heldTouches.set(pointer.id, { control, x: pointer.x });
+      if (pointer.wasTouch) {
+        const use = touchUseAt({ x: pointer.x, y: pointer.y });
+        this.heldTouches.set(pointer.id, { startX: pointer.x, use, x: pointer.x });
       }
     });
     this.input.on("pointermove", (pointer: Input.Pointer) => {
@@ -185,23 +182,19 @@ export class FloorScene extends Scene {
     this.input.on("pointerupoutside", release);
   }
 
-  // The controls show only on a touch screen. A pressed control plays its press tag, then holds
-  // until release; the knob follows the move touch.
+  // The buttons show only on a touch screen. A pressed button plays its press tag, then holds
+  // until release. Nothing marks where a move touch started.
   private drawControls(nowMs: number, touches: readonly HeldTouch[]): void {
     const shown = window.matchMedia("(pointer: coarse)").matches;
     for (const [control, sprite] of this.controls) {
       sprite.setVisible(shown);
-      const press = trackPress(nowMs, pressSuffix(control, touches), this.presses.get(control));
-      if (press) {
-        this.presses.set(control, press);
-      } else {
+      const since = trackPress(nowMs, buttonHeld(control, touches), this.presses.get(control));
+      if (since === undefined) {
         this.presses.delete(control);
+      } else {
+        this.presses.set(control, since);
       }
-      show(sprite, controlTag(this.sheet(sprite.texture.key), nowMs, press));
+      show(sprite, controlTag(this.sheet(sprite.texture.key), nowMs, since));
     }
-    this.knob.setVisible(shown);
-    show(this.knob, knobTag(touches));
-    const at = knobAt(this.knob.frame, touches);
-    this.knob.setPosition(at.x, at.y);
   }
 }

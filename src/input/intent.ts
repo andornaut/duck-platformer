@@ -1,10 +1,5 @@
-import type { Point } from "../data/types";
-import {
-  KNOB_TRAVEL,
-  MOVE_DEAD_ZONE,
-  TOUCH_CONTROLS,
-  type TouchControl,
-} from "../layout/touchControls";
+import type { Point, TouchTuning } from "../data/types";
+import { TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
 import { contains } from "../rules/rect";
 
 // What the player is asking for, from the keyboard and the touch controls together.
@@ -30,37 +25,40 @@ export function keyIntent(held: ReadonlySet<string>): Intent {
   };
 }
 
-// The control a touch starting at point takes, if any. It keeps that control until it lifts.
-export function controlAt(point: Point): TouchControl | undefined {
-  return (Object.keys(TOUCH_CONTROLS) as TouchControl[]).find((control) =>
-    contains(TOUCH_CONTROLS[control].hit, point),
+// What a touch does: hold the button it starts on, or else move her.
+export type TouchUse = TouchControl | "move";
+
+// The use a touch starting at point takes. It keeps that use until it lifts.
+export function touchUseAt(point: Point): TouchUse {
+  return (
+    (Object.keys(TOUCH_CONTROLS) as TouchControl[]).find((control) =>
+      contains(TOUCH_CONTROLS[control].hit, point),
+    ) ?? "move"
   );
 }
 
-// A move touch's direction from its x offset to the ring's centre.
-export function moveFromOffset(dx: number): -1 | 0 | 1 {
-  if (dx > MOVE_DEAD_ZONE) {
+// A move touch's direction from its x offset to where it started.
+export function moveFromOffset(tuning: TouchTuning, dx: number): -1 | 0 | 1 {
+  if (dx > tuning.moveDeadZone) {
     return 1;
   }
-  return dx < -MOVE_DEAD_ZONE ? -1 : 0;
+  return dx < -tuning.moveDeadZone ? -1 : 0;
 }
 
-export function knobOffset(dx: number): number {
-  return Math.max(-KNOB_TRAVEL, Math.min(KNOB_TRAVEL, dx));
-}
-
-// Each held touch: the control it took and where it is now.
+// Each held touch, in the order they started: its use, the x it started at and its x now.
 export interface HeldTouch {
-  readonly control: TouchControl;
+  readonly startX: number;
+  readonly use: TouchUse;
   readonly x: number;
 }
 
-export function touchIntent(touches: readonly HeldTouch[]): Intent {
-  const mover = touches.find((touch) => touch.control === "move");
+// Of two move touches, the later one moves her.
+export function touchIntent(tuning: TouchTuning, touches: readonly HeldTouch[]): Intent {
+  const mover = touches.filter((touch) => touch.use === "move").at(-1);
   return {
-    interact: touches.some((touch) => touch.control === "interact"),
-    jump: touches.some((touch) => touch.control === "jump"),
-    move: mover ? moveFromOffset(mover.x - TOUCH_CONTROLS.move.centre.x) : 0,
+    interact: touches.some((touch) => touch.use === "interact"),
+    jump: touches.some((touch) => touch.use === "jump"),
+    move: mover ? moveFromOffset(tuning, mover.x - mover.startX) : 0,
   };
 }
 
