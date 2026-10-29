@@ -12,16 +12,27 @@ import { type GameObjects, type Input, Scene } from "phaser";
 import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
 import { CARD_TEXT_SCALE } from "../layout/pauseCard";
-import { type StartScreenLayout, startScreenLayout } from "../layout/startScreen";
+import {
+  type IconButtonLayout,
+  type StartScreenLayout,
+  startScreenLayout,
+} from "../layout/startScreen";
 import { PHONE_EVENTS } from "../pwa";
 import { setTouchControlsShown } from "../settings/touchControls";
-import { addCardText, paletteColour, TITLE_FONT } from "./cardParts";
+import { addCardText, addSlice, paletteColour, TITLE_FONT } from "./cardParts";
 import type { SettingsData, SettingsOpener, SettingsScene } from "./SettingsScene";
 
+const LOGO = "logo";
 const MAP = "map";
 const SETTINGS = "settings";
 
 type Control = "exit" | "settings" | "start";
+
+interface IconButton {
+  readonly face: GameObjects.Sprite;
+  readonly icon: GameObjects.Image;
+  readonly layout: IconButtonLayout;
+}
 
 // The keys that press Start while the settings card is closed.
 const START_KEYS = new Set(["Enter", " "]);
@@ -32,7 +43,8 @@ const START_KEYS = new Set(["Enter", " "]);
 // for Android's installed app ignores window.close(), so it shows no Exit there. A control acts
 // when a press lands on it and lifts on it.
 export class StartScene extends Scene implements SettingsOpener {
-  private exitIcon: GameObjects.Sprite | undefined;
+  // The nav's icon buttons: Settings and, where the game can exit, Exit.
+  private buttons = new Map<"exit" | "settings", IconButton>();
   private layout!: StartScreenLayout;
   // The control a press landed on, which acts if the press lifts on it too.
   private pressed: Control | undefined;
@@ -77,37 +89,51 @@ export class StartScene extends Scene implements SettingsOpener {
     this.settingsOpen = false;
   }
 
-  // PLACEHOLDER: flat shapes and the pause card's art until art draws the start screen.
+  // PLACEHOLDER: a plain ink background until art's background for the start screen is
+  // decided.
   private draw(): void {
-    const { exit, nav, settings, start } = this.layout;
+    const { exit, logo, nav, settings, start } = this.layout;
     this.cameras.main.setBackgroundColor(this.colour("ink"));
-    this.add.rectangle(nav.x, nav.y, nav.width, nav.height, this.colour("navy")).setOrigin(0);
-    this.add.image(settings.icon.x, settings.icon.y, "icon-settings").setOrigin(0);
-    this.exitIcon =
-      exit === undefined
-        ? undefined
-        : this.add.sprite(exit.icon.x, exit.icon.y, "ui-quit").setOrigin(0);
-    this.startButton = this.add.sprite(start.hit.x, start.hit.y, "ui-resume").setOrigin(0);
+    addSlice(this, "ui-nav-bar", nav);
+    this.add.image(logo.x, logo.y, LOGO).setOrigin(0);
+    this.buttons = new Map([
+      ["settings", this.iconButton(settings, "icon-settings-nav")],
+      ...(exit === undefined ? [] : [["exit", this.iconButton(exit, "ui-quit")] as const]),
+    ]);
+    this.startButton = this.add.sprite(start.button.x, start.button.y, "ui-start").setOrigin(0);
     const label = TEXT.start.start;
     const font = phaserBitmapFont(this.cache.bitmapFont.get(TITLE_FONT).data as PhaserFontData);
     const width = inkWidth(font, CARD_TEXT_SCALE, label);
     this.startLabel = addCardText(
       this,
       TITLE_FONT,
-      { x: start.hit.x + Math.floor((start.hit.width - width) / 2), y: start.labelY },
+      { x: start.button.x + Math.floor((start.button.width - width) / 2), y: start.labelY },
       label,
       this.colour("ink"),
     );
   }
 
+  // A nav icon button: its face, and its icon (the icon's first frame) over it.
+  private iconButton(layout: IconButtonLayout, icon: string): IconButton {
+    return {
+      face: this.add.sprite(layout.at.x, layout.at.y, "ui-icon-button").setOrigin(0),
+      icon: this.add.image(layout.icon.x, layout.icon.y, icon).setOrigin(0),
+      layout,
+    };
+  }
+
   // A pressed control shows its pressed look until the press lifts: Start's face and label sink,
-  // and Exit's arrow steps out.
+  // and a nav button's face sinks with its icon.
   private showPressed(control: Control | undefined): void {
     this.pressed = control;
     const { start } = this.layout;
-    this.startButton.play(animationKey("ui-resume", control === "start" ? "pressed" : "normal"));
+    this.startButton.play(animationKey("ui-start", control === "start" ? "pressed" : "normal"));
     this.startLabel.setY(control === "start" ? start.pressedLabelY : start.labelY);
-    this.exitIcon?.play(animationKey("ui-quit", control === "exit" ? "pressed" : "normal"));
+    for (const [name, { face, icon, layout }] of this.buttons) {
+      const pressed = control === name;
+      face.play(animationKey("ui-icon-button", pressed ? "pressed" : "normal"));
+      icon.setY(pressed ? layout.pressedIcon.y : layout.icon.y);
+    }
   }
 
   private controlAt(pointer: Input.Pointer): Control | undefined {
@@ -115,7 +141,7 @@ export class StartScene extends Scene implements SettingsOpener {
     const hits: [Control, Rect | undefined][] = [
       ["exit", exit?.hit],
       ["settings", settings.hit],
-      ["start", start.hit],
+      ["start", start.button],
     ];
     return hits.find(
       ([, hit]) => hit !== undefined && containsPoint(hit, pointer.x, pointer.y),

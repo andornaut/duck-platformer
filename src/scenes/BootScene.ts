@@ -11,6 +11,8 @@ import { launchReady } from "../pwa";
 import { ART_MANIFEST_FILE, ART_MANIFEST_KEY, ART_PATH, type ArtManifest } from "../view/aseprite";
 import { addAtlasArt, ATLAS, queueAtlasFonts, queueAtlasPages } from "./atlasArt";
 
+const LOGO = "logo";
+
 // First scene to run. Loads everything art's manifest lists, makes an animation of every sprite
 // tag, looping unless the manifest lists it as played once, then, once launchReady resolves,
 // starts the test zone and the pause scene beside it.
@@ -35,6 +37,11 @@ export class BootScene extends Scene {
       }
       for (const { json, key } of manifest.tilesets) {
         this.load.json(key, json);
+      }
+      // The start screen draws the logo, one of art's images, which the atlas leaves to the
+      // site's pages.
+      for (const { key, png } of manifest.images.filter((image) => image.key === LOGO)) {
+        this.load.image(key, png);
       }
       if (ATLAS !== null) {
         queueAtlasFonts(this, manifest);

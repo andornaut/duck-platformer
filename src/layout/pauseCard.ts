@@ -8,7 +8,7 @@ export const PAUSE_CARD = {
   card: { height: 236, width: 368, x: 176, y: 88 } satisfies Rect,
   close: { at: { x: 510, y: 94 } satisfies Point, hit: { height: 44, width: 44, x: 500, y: 88 } },
   home: {
-    icon: { x: 196, y: 202 } satisfies Point,
+    icon: { x: 198, y: 204 } satisfies Point,
     label: { x: 228, y: 203 } satisfies Point,
     row: { height: 48, width: 352, x: 184, y: 188 } satisfies Rect,
   },

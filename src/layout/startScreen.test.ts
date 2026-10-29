@@ -1,21 +1,17 @@
 import { containsPoint, rectsOverlap } from "@andornaut/game-kit/rect";
-import { inkWidth, parseBitmapFont } from "@andornaut/game-kit/text/bitmapFont";
 import { describe, expect, it } from "vitest";
 
-import fontTitle from "../../public/art/fonts/font-title.fnt?raw";
-import settingsSheet from "../../public/art/sprites/icon-settings.json";
-import quitSheet from "../../public/art/sprites/ui-quit.json";
-import resumeSheet from "../../public/art/sprites/ui-resume.json";
+import buttonSheet from "../../public/art/sprites/ui-icon-button.json";
+import startSheet from "../../public/art/sprites/ui-start.json";
 import { SCREEN } from "../data/screen";
-import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
-import { CARD_TEXT_SCALE } from "./pauseCard";
-import { startScreenLayout } from "./startScreen";
+import { type IconButtonLayout, startScreenLayout } from "./startScreen";
 
 // A touch target is at least this many base pixels on each side (art/README.md, UI).
 const MIN_TARGET = 44;
+// A nav icon's size (art/README.md, Start screen).
+const NAV_ICON = 20;
 const SCREEN_RECT: Rect = { ...SCREEN, x: 0, y: 0 };
-const TITLE = parseBitmapFont(fontTitle);
 
 function inside(outer: Rect, inner: Rect): boolean {
   return (
@@ -31,16 +27,20 @@ const frameOf = (sheet: { frames: Record<string, { frame: { h: number; w: number
 };
 
 const right = (rect: Rect) => rect.x + rect.width;
+const face = ({ at }: IconButtonLayout): Rect => ({ ...frameOf(buttonSheet), ...at });
 
 describe.each([
   ["with Exit", true],
   ["without Exit", false],
 ])("the start screen %s", (_, exitShown) => {
   const layout = startScreenLayout(exitShown);
+  const buttons: [string, IconButtonLayout][] = [
+    ["settings", layout.settings],
+    ...(layout.exit === undefined ? [] : [["exit", layout.exit] as [string, IconButtonLayout]]),
+  ];
   const hits: [string, Rect][] = [
-    ["settings", layout.settings.hit],
-    ["start", layout.start.hit],
-    ...(layout.exit === undefined ? [] : [["exit", layout.exit.hit] as [string, Rect]]),
+    ["start", layout.start.button],
+    ...buttons.map(([name, button]): [string, Rect] => [name, button.hit]),
   ];
 
   it.each(hits)("makes %s a touch target inside the screen", (__, hit) => {
@@ -60,29 +60,31 @@ describe.each([
     expect(overlapping).toEqual([]);
   });
 
-  it("ends the nav with Exit, or with Settings where there is no Exit", () => {
-    const last = layout.exit?.hit ?? layout.settings.hit;
+  it("ends the nav with Exit, or with Settings in Exit's place where there is no Exit", () => {
+    const last = layout.exit ?? layout.settings;
+    const withExit = startScreenLayout(true).exit;
     expect({
-      last: right(last),
-      settings: layout.exit === undefined ? right(layout.settings.hit) : layout.exit.hit.x,
-    }).toEqual({ last: right(layout.nav), settings: right(layout.settings.hit) });
+      lastIsExit: last === layout.exit,
+      settingsBeforeExit:
+        layout.exit === undefined || right(layout.settings.hit) <= layout.exit.hit.x,
+      x: last.at.x,
+    }).toEqual({ lastIsExit: exitShown, settingsBeforeExit: true, x: withExit?.at.x });
   });
 
-  it.each([
-    ["settings icon", settingsSheet, layout.settings.icon, layout.settings.hit],
-    ...(layout.exit === undefined
-      ? []
-      : [["exit icon", quitSheet, layout.exit.icon, layout.exit.hit] as const]),
-    ["start button", resumeSheet, layout.start.hit, layout.start.hit],
-  ] as const)("draws the %s inside its hit area", (__, sheet, at, hit) => {
-    expect(inside(hit, { ...frameOf(sheet), ...at })).toBe(true);
+  it.each(buttons)("draws %s's face and icon on the nav, inside its hit area", (__, button) => {
+    const icon = { height: NAV_ICON, width: NAV_ICON, ...button.icon };
+    const pressedIcon = { height: NAV_ICON, width: NAV_ICON, ...button.pressedIcon };
+    expect({
+      face: inside(button.hit, face(button)) && inside(layout.nav, face(button)),
+      icon: inside(face(button), icon) && inside(face(button), pressedIcon),
+    }).toEqual({ face: true, icon: true });
   });
 
-  it.each(hits.filter(([name]) => name !== "start"))("puts %s on the nav bar", (__, hit) => {
-    expect(inside(layout.nav, hit)).toBe(true);
-  });
-
-  it("fits Start's label across its button", () => {
-    expect(inkWidth(TITLE, CARD_TEXT_SCALE, TEXT.start.start)).toBeLessThan(layout.start.hit.width);
+  it("sizes Start to its art, under the nav bar", () => {
+    const { button } = layout.start;
+    expect({
+      below: button.y >= layout.nav.y + layout.nav.height,
+      size: { height: button.height, width: button.width },
+    }).toEqual({ below: true, size: frameOf(startSheet) });
   });
 });

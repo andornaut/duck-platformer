@@ -37,7 +37,6 @@ export class PauseScene extends Scene implements SettingsOpener {
   private pauseButton!: GameObjects.Sprite;
   // The control a press landed on, which acts if the press lifts on it too.
   private pressed: Control | undefined;
-  private homeIcon!: GameObjects.Sprite;
   private homeLabel!: GameObjects.BitmapText;
   private resume!: GameObjects.Sprite;
   private resumeLabel!: GameObjects.BitmapText;
@@ -193,6 +192,7 @@ export class PauseScene extends Scene implements SettingsOpener {
       this.slice("ui-settings-row", settings.row),
       this.add.image(settings.icon.x, settings.icon.y, "icon-settings").setOrigin(0),
       this.slice("ui-settings-row", home.row),
+      this.add.image(home.icon.x, home.icon.y, "icon-home").setOrigin(0),
     ];
     this.settingsLabel = this.text(
       BODY_FONT,
@@ -201,8 +201,6 @@ export class PauseScene extends Scene implements SettingsOpener {
       words.settings,
       cream,
     );
-    // PLACEHOLDER: ui-quit stands in for art's home icon.
-    this.homeIcon = this.add.sprite(home.icon.x, home.icon.y, "ui-quit").setOrigin(0);
     this.homeLabel = this.text(BODY_FONT, home.label.x, home.label.y, words.home, cream);
     this.closeX = this.add.sprite(close.at.x, close.at.y, "ui-close").setOrigin(0);
     this.resume = this.add.sprite(resume.hit.x, resume.hit.y, "ui-resume").setOrigin(0);
@@ -218,7 +216,6 @@ export class PauseScene extends Scene implements SettingsOpener {
       ...objects,
       this.closeX,
       this.settingsLabel,
-      this.homeIcon,
       this.homeLabel,
       this.resume,
       this.resumeLabel,
@@ -232,7 +229,6 @@ export class PauseScene extends Scene implements SettingsOpener {
     this.pressed = control;
     const { label, pressedLabel } = PAUSE_CARD.resume;
     this.closeX.play(animationKey("ui-close", control === "close" ? "pressed" : "normal"));
-    this.homeIcon.play(animationKey("ui-quit", control === "home" ? "pressed" : "normal"));
     this.homeLabel.setTint(this.colour(control === "home" ? "white" : "cream"));
     this.settingsLabel.setTint(this.colour(control === "settings" ? "white" : "cream"));
     this.resume.play(animationKey("ui-resume", control === "resume" ? "pressed" : "normal"));
