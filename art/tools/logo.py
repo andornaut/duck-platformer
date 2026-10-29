@@ -1,8 +1,8 @@
 """The game's logo: the duck peeking over a big sky-blue DUCK, with PLATFORMER in cream below.
 
 Usage, from the repository root:
-  python3 -I art/tools/logo.py build            write the two logos and list them in the manifest
-  python3 -I art/tools/logo.py preview OUT.png  both logos on ink and cream, at 1x and 3x
+  python3 -I art/tools/logo.py build            write the three logos and list them in the manifest
+  python3 -I art/tools/logo.py preview OUT.png  every logo on ink and cream, at 1x and 3x
 
 Plain PNGs on a transparent ground, every pixel fully opaque or fully transparent, listed in the manifest under
 "images" as {"key", "png", "width", "height"}:
@@ -11,17 +11,20 @@ Plain PNGs on a transparent ground, every pixel fully opaque or fully transparen
 | --------- | ------------------------ | -------------------------------------------- |
 | logo      | public/art/logo.png      | the title screen                             |
 | logo-nav  | public/art/logo-nav.png  | the site's nav bar                           |
-| logo-icon | public/art/logo-icon.png | the /play/ page's nav column: the D and her  |
+| logo-icon | public/art/logo-icon.png | the /play/ page's nav column: her profile    |
 
 The wordmark is WORDMARK: the first word large, the rest small below it (one line in the nav logo). Its letters
 come from GLYPHS, a 5x7 pixel alphabet drawn at a block size, made bold, with rounded outer corners, a 1px
 light rim, a shade crescent, a 1px ink outline and an optional drop shadow. GLYPHS has A C D E F K L M O P R
 T U; a new title needs any other letters added there. The duck stands behind the second and third letters of
 the first word, so only her head and back show over their top edge: at 2x (redrawn from art/tools/duck.py's
-shapes, the outline and rim kept 1px) in the title logo, and at 1x from her idle frame in the nav logo.
+shapes, the outline and rim kept 1px) in the title logo, and at 1x from her idle frame in the nav logo. The
+icon logo has no lettering: her profile alone on the downstroke (the wing level behind her, feet tucked),
+redrawn at 1.25x.
 """
 
 import json
+import math
 import os
 import sys
 
@@ -52,8 +55,7 @@ GLYPHS = {
 BIG = dict(b=13, fill="sky", light="cyan", shade="blue")  # the first word
 SMALL = dict(b=6, fill="cream", light="white", shade="tan", shadow="blue")  # the rest, below it
 NAV = dict(b=2, fill="sky", light="cyan", shade="blue")
-ICON = dict(b=7, fill="sky", light="cyan", shade="blue")  # the first word's first letter alone
-ICON_PEEK = 20  # rows of the 1x duck that show above the icon's letter
+ICON_SCALE = 1.25  # her size in the icon logo, against the game sprite
 PEEK = 50  # rows of the 2x duck that show above the big letters
 
 
@@ -132,26 +134,39 @@ def word(text, b, fill, light, shade, shadow=None):
     return image(out)
 
 
-def duck2x():
-    """Her idle pose redrawn at 2x from duck.py's shapes: every shape doubles, the outline and rim stay 1px."""
-    s = 2
-    W, H = D.W * s, D.H * s
+def duck_at(s, pose="rest"):
+    """Her side view redrawn at s times her size from duck.py's shapes: every shape scales, the outline and rim
+    stay 1px. pose is "rest" (standing, wing folded) or "downstroke" (in the air, the wing level behind her,
+    feet tucked under her belly)."""
+    W, H = round(D.W * s), round(D.H * s)
     g = Grid(W, H)
     C = W / 2
     bw, bh = D.BRX * s, D.BRY * s
-    bottom = D.BODY_BOTTOM * s
+    air = pose == "downstroke"
+    bottom = H - 1 - 2 * round(2 * s) if air else D.BODY_BOTTOM * s
     bcy = bottom - bh
     hr = D.HEAD_R * s
     hcx, hcy = C + D.HEAD_X * bw, bcy - D.HEAD_UP * bh
-    g.rect(int(C - 5 * s), H - 3 * s, 4 * s, 2 * s, "orange")
-    D.cel(g, D.in_ell(C - bw + s, bcy - s, 4.4 * s, 2.2 * s, -0.45), D.BASE, D.SHADE, None, s, 1)
+    fw, fh = round(4 * s), round(2 * s)
+    if not air:
+        g.rect(int(C - 5 * s), H - 1 - fh, fw, fh, "orange")
+    D.cel(g, D.in_ell(C - bw + s, bcy - s, 4.4 * s, 2.2 * s, -0.45), D.BASE, D.SHADE, None, round(s), 1)
     D.cel(g, D.in_body(C, bcy, bw, bh, hcx - hr * 0.7, D.NAPE_DROP * s, D.BACK_FLAT * s), D.BASE, D.SHADE,
-          D.LIGHT, 3 * s, 1)
-    g.rect(int(C + 2 * s), H - 3 * s, 4 * s, 2 * s, "orange")
-    D.cel(g, D.in_ell(hcx, hcy, hr, hr), D.BASE, D.SHADE, D.LIGHT, 3 * s, 1)
-    D.flat(g, D.in_ell(C - 2 * s, bcy + 2 * s, bw * 0.5, bh * 0.3, -0.3), D.WING)
-    g.rect(int(hcx + hr - 2 * s), int(hcy), 7 * s, 5 * s, "orange")
-    g.rect(int(hcx), int(hcy - hr * 0.55), 4 * s, 4 * s, "ink")
+          D.LIGHT, round(3 * s), 1)
+    if air:
+        for dx in (-5, 2):
+            g.rect(int(C + dx * s), int(bottom), fw, round(s), "orange")
+        a, ln = math.radians(172), 15 * s
+        sx, sy = C - 5 * s, bcy - bh * 0.45
+        D.flat(g, D.in_ell(sx + math.cos(a) * ln * 0.5, sy + math.sin(a) * ln * 0.5, ln * 0.5, ln * 0.27, a),
+               D.WING)
+    else:
+        g.rect(int(C + 2 * s), H - 1 - fh, fw, fh, "orange")
+    D.cel(g, D.in_ell(hcx, hcy, hr, hr), D.BASE, D.SHADE, D.LIGHT, round(3 * s), 1)
+    if not air:
+        D.flat(g, D.in_ell(C - 2 * s, bcy + 2 * s, bw * 0.5, bh * 0.3, -0.3), D.WING)
+    g.rect(int(hcx + hr - 2 * s), int(hcy), round(7 * s), round(5 * s), "orange")
+    g.rect(int(hcx), int(hcy - hr * 0.55), round(4 * s), round(4 * s), "ink")
     return image(g.outlined(lambda c: K[D.OUTLINE]))
 
 
@@ -161,7 +176,7 @@ def logo():
     b = BIG["b"]
     w1 = word(WORDMARK[0], **BIG)
     w2 = word(" ".join(WORDMARK[1:]), **SMALL)
-    d = duck2x()
+    d = duck_at(2)
     c = Image.new("RGBA", (max(w1.width, w2.width) + 20, d.height + w1.height + w2.height + 20), (0, 0, 0, 0))
     x1 = (c.width - w1.width) // 2
     top = PEEK + 2
@@ -186,24 +201,9 @@ def logo_nav():
 
 
 def logo_icon():
-    """The first letter of the wordmark alone, with her head and back over its top edge."""
-    from PIL import Image
-
-    frames = {n: fs for n, fs, _ in D.duck_tags()}
-    d = image(frames["idle"][0])
-    d = d.crop(d.getbbox())
-    w = word(WORDMARK[0][0], **ICON)
-    c = Image.new("RGBA", (max(d.width, w.width) + 8, ICON_PEEK + w.height + 4), (0, 0, 0, 0))
-    wx = (c.width - w.width) // 2
-    # her cut-off underside stays inside the letter's width, where the letter covers it
-    c.alpha_composite(d.crop((0, 0, d.width, ICON_PEEK)), (wx + max(1, (w.width - d.width) // 2), 0))
-    c.alpha_composite(w, (wx, ICON_PEEK))
-    # close her cut-off underside with ink where the letter's rounded corners leave it open
-    ink = pixel.rgb("ink") + (255,)
-    for x in range(c.width):
-        if c.getpixel((x, ICON_PEEK - 1))[3] and not c.getpixel((x, ICON_PEEK))[3]:
-            c.putpixel((x, ICON_PEEK), ink)
-    return c.crop(c.getbbox())
+    """Her profile alone on the downstroke, at ICON_SCALE times the sprite."""
+    d = duck_at(ICON_SCALE, "downstroke")
+    return d.crop(d.getbbox())
 
 
 def images():

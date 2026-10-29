@@ -129,7 +129,7 @@ The protagonist is a wide, round, cream-coloured duck, drawn facing right and mi
 
 ## Logo
 
-The logo is the duck peeking over a big sky-blue DUCK, her head and back showing over its top edge, with PLATFORMER in cream below. `art/tools/logo.py` draws it as plain PNGs on a transparent ground, listed in the manifest under `images` with their sizes: `logo` (360x193, the title screen), `logo-nav` (214x30, the site's nav bar, on one line) and `logo-icon` (43x75, the top of the /play/ page's nav column: the wordmark's sky-blue D alone with her over it).
+The logo is the duck peeking over a big sky-blue DUCK, her head and back showing over its top edge, with PLATFORMER in cream below. `art/tools/logo.py` draws it as plain PNGs on a transparent ground, listed in the manifest under `images` with their sizes: `logo` (360x193, the title screen), `logo-nav` (214x30, the site's nav bar, on one line) and `logo-icon` (53x41, the top of the /play/ page's nav column: her profile alone, no lettering, on the downstroke with the wing level behind her and feet tucked, redrawn at 1.25x).
 
 - The lettering is a 5x7 pixel alphabet drawn bold at a block size, with rounded corners, a light rim, a shade crescent and an ink outline; PLATFORMER takes a 2px blue drop shadow so it holds on a cream ground.
 - The title is one string in the script, `WORDMARK`. The alphabet has A C D E F K L M O P R T U, so a new title adds any other letters to `GLYPHS`.
