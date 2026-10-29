@@ -20,7 +20,7 @@ import {
   type PhaserFontData,
 } from "@andornaut/game-kit/text/phaser/phaserBitmapFont";
 import { pageToGame } from "@andornaut/game-kit/view/pagePoint";
-import { type GameObjects, Input, Scene, type Tilemaps } from "phaser";
+import { Core, type GameObjects, Input, Scene, type Tilemaps } from "phaser";
 
 import { ARCHETYPES } from "../data/archetypes";
 import { CHARACTERS } from "../data/characters";
@@ -73,6 +73,7 @@ import {
   labelColour,
   trackPress,
 } from "../view/touchControls";
+import type { PauseScene } from "./PauseScene";
 
 // The zone a map node plays.
 function zoneAt(node: string): ZonePlan {
@@ -109,6 +110,7 @@ const OBJECT_COLOURS: Readonly<Record<Collision, number>> = {
 const FADE_MS = 250;
 
 const DUCK_SPRITE = "duck";
+const PAUSE = "pause";
 const CONTROL_SPRITES: Readonly<Record<TouchControl, string>> = {
   jump: "ui-touch-jump",
   use: "ui-touch-use",
@@ -149,6 +151,7 @@ function show(sprite: GameObjects.Sprite, tag: string): void {
 // What a zone starts with: see ZoneScene.init.
 export interface ZoneData {
   readonly backdrop?: boolean;
+  readonly paused?: boolean;
   readonly route?: readonly string[];
 }
 
@@ -172,6 +175,8 @@ export class ZoneScene extends Scene {
   private areaArt!: GameObjects.Graphics;
   // Drawn as the start screen's backdrop rather than played.
   private backdrop = false;
+  // Opens under the pause card.
+  private openPaused = false;
   // The hit boxes art's sprites declare, by art key.
   private hitboxes: Readonly<Record<string, ArtHitbox>> = {};
   private manifest!: ArtManifest;
@@ -191,9 +196,12 @@ export class ZoneScene extends Scene {
   }
 
   // data.route: the nodes she has walked this lap on the map, ending at the node to play; without
-  // one, the chain from ?zone=<n>. data.backdrop: the start screen's backdrop instead (holdStill).
+  // one, the chain from ?zone=<n>. data.paused: open the pause card over the zone's first frame,
+  // as when the game reopens at a saved zone. data.backdrop: the start screen's backdrop instead
+  // (holdStill).
   init(data: ZoneData): void {
     this.backdrop = data.backdrop === true;
+    this.openPaused = data.paused === true;
     this.mapRoute = data.route;
     this.objectArt = [];
     this.heldKeys.clear();
@@ -246,6 +254,11 @@ export class ZoneScene extends Scene {
     }
     this.watchKeys();
     this.watchTouches();
+    if (this.openPaused) {
+      this.game.events.once(Core.Events.POST_RENDER, () => {
+        (this.scene.get(PAUSE) as PauseScene).openCard();
+      });
+    }
     // Paused under the pause card: keys and time while it was open count for nothing.
     this.events.on("resume", () => {
       this.clock = startStepClock;

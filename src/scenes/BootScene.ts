@@ -8,9 +8,10 @@ import { Scene } from "phaser";
 
 import { TILE } from "../data/screen";
 import { launchReady } from "../pwa";
-import { loadProgress } from "../save";
+import { loadProgress, savedProgress } from "../save";
 import { ART_MANIFEST_FILE, ART_MANIFEST_KEY, ART_PATH, type ArtManifest } from "../view/aseprite";
 import { addAtlasArt, ATLAS, queueAtlasFonts, queueAtlasPages } from "./atlasArt";
+import { resumeProgress } from "./resume";
 
 const LOGO = "logo";
 
@@ -79,15 +80,21 @@ export class BootScene extends Scene {
     }
     // The zone shows, and the save is read, once a version about to be replaced by a newer one
     // has had its chance to reload first, so it never draws the old zone or reads the save with
-    // the old format. The start screen comes first, unless ?zone=<n> plays the zones straight
+    // the old format. Saved progress resumes at once: a zone at its start under the pause card,
+    // or the map. Without any, the start screen comes first. ?zone=<n> plays the zones straight
     // through.
     void launchReady()
       .then(loadProgress)
       .then(() => {
         this.scene.launch("pause");
-        this.scene.start(
-          new URLSearchParams(window.location.search).has("zone") ? "zone" : "start",
-        );
+        const progress = savedProgress();
+        if (new URLSearchParams(window.location.search).has("zone")) {
+          this.scene.start("zone");
+        } else if (progress.at === "beginning") {
+          this.scene.start("start");
+        } else {
+          resumeProgress(this, true, progress);
+        }
       });
   }
 
