@@ -76,6 +76,7 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 - **Camera:** on the ground she sits about two thirds down the screen. In an assembled zone, the ground line follows the chunk she is in. The camera rises only when she climbs above the middle, and never shows below the lowest ground
 - **Challenge:** platforming, hazards and choices. There is no combat
 - **Checkpoint:** the start of a zone is its only checkpoint. Falling or touching a hazard restarts the zone from its start. Progress is saved: entering a zone saves its start, and clearing it saves the map where she stands. Continue on the start screen resumes from the save, so a cleared zone never replays
+- **Crush:** a moving platform that pushes her sideways carries her to its leading edge. If it squeezes her into terrain or another solid, she is crushed and the zone restarts from its start, as a hazard does. Layouts leave room beside every moving platform's path so she is never pinned on a required route
 - **Exit:** Use at the zone's exit clears the zone
 - **Kinds:** indoor, outdoor, or a hybrid with both
 - **Layout:** zone 1 is hand-built as the tutorial. Every later zone is assembled from hand-built chunks: a fixed start chunk, a seeded run of chunks whose entry and exit heights match, then a fixed finish chunk. The rules for chunks are under Chunks
