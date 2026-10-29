@@ -69,10 +69,11 @@ const FONT = parseBitmapFont(fontBody);
 
 describe("labelAt", () => {
   it.each([
-    ["jump", TEXT.buttons.jump, { x: 659, y: 313 }],
-    ["use", TEXT.buttons.use, { x: 604, y: 241 }],
+    ["jump", TEXT.buttons.jump, { x: 650, y: 306 }],
+    ["use", TEXT.buttons.use, { x: 580, y: 207 }],
   ] as const)("sets the %s label, %s, where art places it", (control, label, at) => {
-    expect(labelAt(FONT, TOUCH_CONTROLS[control].centre, label)).toEqual(at);
+    const { centre, labelRaise } = TOUCH_CONTROLS[control];
+    expect(labelAt(FONT, centre, labelRaise, label)).toEqual(at);
   });
 });
 
@@ -101,8 +102,8 @@ describe("labelColour", () => {
 
 describe("centredAt, on art's buttons", () => {
   it.each([
-    ["jump", 57, { x: 648, y: 288 }],
-    ["use", 51, { x: 591, y: 219 }],
+    ["jump", 75, { x: 630, y: 270 }],
+    ["use", 67, { x: 559, y: 177 }],
   ] as const)("puts the %s frame, %i square, at art's top-left", (control, size, at) => {
     expect(centredAt(TOUCH_CONTROLS[control].centre, { height: size, width: size })).toEqual(at);
   });

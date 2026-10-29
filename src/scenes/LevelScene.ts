@@ -181,11 +181,11 @@ export class LevelScene extends Scene {
         .setOrigin(0)
         .setScrollFactor(0)
         .setDepth(OVERLAY_DEPTH);
-      const { centre } = TOUCH_CONTROLS[control];
+      const { centre, labelRaise } = TOUCH_CONTROLS[control];
       const at = centredAt(centre, sprite.frame);
       this.controls.set(control, sprite.setPosition(at.x, at.y));
       const text = TEXT.buttons[control];
-      const origin = labelAt(font, centre, text);
+      const origin = labelAt(font, centre, labelRaise, text);
       const label = this.add
         .bitmapText(origin.x, origin.y, LABEL_FONT, text)
         .setScale(LABEL_SCALE)

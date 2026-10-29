@@ -2,7 +2,7 @@ import { type BitmapFont, inkWidth } from "@andornaut/game-kit/text/bitmapFont";
 
 import type { Point, Size } from "../data/types";
 import type { HeldTouch } from "../input/intent";
-import { LABEL_RAISE, LABEL_SCALE, type TouchControl } from "../layout/touchControls";
+import { LABEL_SCALE, type TouchControl } from "../layout/touchControls";
 import { type TagFrame, tagMs } from "./aseprite";
 
 // Whether a touch holds the button.
@@ -42,11 +42,11 @@ export function centredAt(centre: Point, frame: Size): Point {
 }
 
 // The origin of a label in font at LABEL_SCALE, its ink centred on centre, rounded left, and
-// LABEL_RAISE above it.
-export function labelAt(font: BitmapFont, centre: Point, label: string): Point {
+// raise above it.
+export function labelAt(font: BitmapFont, centre: Point, raise: number, label: string): Point {
   return {
     x: centre.x - Math.floor(inkWidth(font, LABEL_SCALE, label) / 2),
-    y: centre.y - LABEL_RAISE,
+    y: centre.y - raise,
   };
 }
 
