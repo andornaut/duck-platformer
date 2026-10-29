@@ -41,6 +41,18 @@
     transform-origin: top left;
   }
 
+  /* The turned frame's top is the game's top, the phone's right edge. Phaser's centring
+     measures the turned canvas, so here CSS centres it across instead (src/main.ts). */
+  html #game {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  html #game canvas {
+    flex: none;
+  }
+
   html .site-nav.slim {
     width: calc(64px + var(--inset-left));
   }
@@ -66,11 +78,9 @@ body {
 }
 
 /* Margins rather than padding: Phaser sizes the canvas to the parent's border box, padding
-   included. The canvas is centred in it. The nav column takes the left inset when it shows. */
+   included. The canvas sits at its top, and Phaser centres it across. The nav column takes the
+   left inset when it shows. */
 #game {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex: 1;
   min-width: 0;
   min-height: 0;
@@ -121,5 +131,5 @@ body {
 }
 
 #game canvas {
-  flex: none;
+  display: block;
 }

@@ -22,8 +22,9 @@ import { ZoneScene } from "./scenes/ZoneScene";
 
 // On a touch screen in portrait, src/main.css turns the page frame 90 degrees clockwise, so the
 // game reads correctly with the phone turned counter-clockwise onto its side. Phaser measures
-// #game and maps pointers by their bounding rects on the page, which the turn swaps, so here it
-// measures #game's own layout size and maps each pointer through the turn (the kit's pageToGame).
+// #game and the canvas, and maps pointers, by their bounding rects on the page, which the turn
+// swaps, so here it measures #game's own layout size, leaves the canvas's placement to
+// src/main.css, and maps each pointer through the turn (the kit's pageToGame).
 function followFrameTurn(game: Game, parent: HTMLElement): void {
   const scale = game.scale;
   const measure = scale.getParentBounds.bind(scale);
@@ -37,6 +38,15 @@ function followFrameTurn(game: Game, parent: HTMLElement): void {
     }
     scale.parentSize.setSize(width, height);
     return true;
+  };
+  const centre = scale.updateCenter.bind(scale);
+  scale.updateCenter = () => {
+    if (pageFrameTurn() === 0) {
+      centre();
+      return;
+    }
+    game.canvas.style.marginLeft = "";
+    game.canvas.style.marginTop = "";
   };
   const input = game.input;
   const transform = input.transformPointer.bind(input);
@@ -54,9 +64,9 @@ function followFrameTurn(game: Game, parent: HTMLElement): void {
 }
 
 // Scale.FIT: the base resolution stretches by whatever amount fills #game, keeping its aspect
-// ratio, with bars on the other axis. pixelArt keeps the stretch nearest-neighbour. The game is
-// constructed at once and loads while a fresh load checks for a newer version: BootScene holds
-// only the zone for the check (launchReady).
+// ratio, at the top of #game and centred across it, with bars on the other axis. pixelArt keeps
+// the stretch nearest-neighbour. The game is constructed at once and loads while a fresh load
+// checks for a newer version: BootScene holds only the zone for the check (launchReady).
 function startGame(): void {
   const game = new Game({
     height: SCREEN.height,
@@ -67,9 +77,8 @@ function startGame(): void {
     // Lower input-to-screen delay: a desynchronized context lets the browser show a frame without
     // waiting on the page compositor, and the high-performance GPU where there is a choice.
     render: { antialias: false, desynchronized: true, powerPreference: "high-performance" },
-    // src/main.css centres the canvas in #game: Phaser's own centring measures the canvas's
-    // bounding rect, which the portrait turn swaps.
-    scale: { autoCenter: Scale.NO_CENTER, mode: Scale.FIT },
+    // Phaser centres the canvas across #game, and src/main.css in the turned portrait frame.
+    scale: { autoCenter: Scale.CENTER_HORIZONTALLY, mode: Scale.FIT },
     // Later scenes draw over earlier ones: the pause card over the zone, the settings card over
     // the pause card's dim.
     scene: [BootScene, StartScene, MapScene, ZoneScene, PauseScene, SettingsScene],
@@ -79,8 +88,8 @@ function startGame(): void {
   });
   // Phaser measures #game on window resizes only, but its size also changes without one: an
   // installed app learns its safe-area insets (the gesture bar, the notch) after the first
-  // layout, and the frame turns as the phone does. Re-fit whenever #game itself changes size, so
-  // the canvas never overflows it.
+  // layout, page UI can change its height just after the game starts, and the frame turns as the
+  // phone does. Re-fit whenever #game itself changes size, so the canvas never overflows it.
   const parent = document.getElementById("game");
   if (parent !== null) {
     followFrameTurn(game, parent);
