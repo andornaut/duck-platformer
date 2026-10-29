@@ -24,9 +24,23 @@ export const TEXT: GameText = {
     hidden: "Hidden",
     quit: "Quit",
     resume: "Resume",
+    settings: "Settings",
     shown: "Shown",
     title: "Paused",
     touchControls: "Touch controls",
   },
   quips: {},
+  settings: {
+    hidden: "Hidden",
+    install: "Install",
+    installButton: "Install",
+    installSteps: {
+      firefoxAndroid: { first: "Tap the menu, then More.", second: "Tap Add app to Home screen." },
+      ios: { first: "Tap Share.", second: "Tap Add to Home Screen." },
+      title: "Install",
+    },
+    shown: "Shown",
+    title: "Settings",
+    touchControls: "Touch controls",
+  },
 };

@@ -65,15 +65,40 @@ export interface GameText {
     readonly reload: string;
     readonly title: string;
   };
-  // The pause card: its title, the Touch controls row and its two states, Quit and Resume.
+  // The pause card: its title, the Touch controls row and its two states, the Settings row, Quit
+  // and Resume.
   readonly pause: {
     readonly hidden: string;
     readonly quit: string;
     readonly resume: string;
+    readonly settings: string;
     readonly shown: string;
     readonly title: string;
     readonly touchControls: string;
   };
+  // The settings card: its title, the Touch controls row and its two states, the Install row and
+  // its button, and the install steps card: its title and, for each browser that installs only
+  // from its own menu, its two steps.
+  readonly settings: {
+    readonly hidden: string;
+    readonly install: string;
+    readonly installButton: string;
+    readonly installSteps: {
+      readonly firefoxAndroid: InstallSteps;
+      readonly ios: InstallSteps;
+      readonly title: string;
+    };
+    readonly shown: string;
+    readonly title: string;
+    readonly touchControls: string;
+  };
+}
+
+// A browser's install steps: the first beside its button's glyph, the second beside the install
+// glyph.
+export interface InstallSteps {
+  readonly first: string;
+  readonly second: string;
 }
 
 // The touch controls, in base pixels.
