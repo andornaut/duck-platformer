@@ -3,6 +3,8 @@ import "./crash/install";
 import "./main.css";
 
 import { BUILD_LABEL } from "@andornaut/game-kit/build/buildLabel";
+import { MENU_FPS } from "@andornaut/game-kit/clock/frameCap";
+import { capFrameRate } from "@andornaut/game-kit/clock/phaser/capFrameRate";
 import { Game, Scale, WEBGL } from "phaser";
 
 // eslint-disable-next-line no-duplicate-imports -- the side-effect import above runs it first.
@@ -10,7 +12,6 @@ import { CRASH_SCREEN } from "./crash/install";
 import { SCREEN } from "./data/screen";
 import { coverLevel, setupPhoneApp } from "./pwa";
 import { BootScene } from "./scenes/BootScene";
-import { capFrameRateOutOfPlay } from "./scenes/frameCap";
 import { LevelScene } from "./scenes/LevelScene";
 import { PauseScene } from "./scenes/PauseScene";
 
@@ -42,7 +43,9 @@ function startGame(): void {
   if (parent !== null) {
     new ResizeObserver(() => game.scale.refresh()).observe(parent);
   }
-  capFrameRateOutOfPlay(game);
+  // The pause card and BootScene draw at most about MENU_FPS frames a second; the level, every
+  // display frame. Under the turn-sideways notice the game is paused and draws nothing.
+  capFrameRate(MENU_FPS, () => game.scene.isActive("level"), game);
   CRASH_SCREEN.stopGameOnCrash(() => game.pause());
   // The game pauses while main.css shows the turn-sideways notice over it, and the update toast
   // waits until the notice is gone.

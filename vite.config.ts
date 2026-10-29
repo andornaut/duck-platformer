@@ -22,6 +22,7 @@ const KIT_ALIAS = { "@andornaut/game-kit": repoPath("vendor/game-kit/src") };
 // the kit by its alias, loads through a module runner given the alias.
 const {
   module: {
+    PHASER_BUILD,
     PHASER_ENTRY_ID,
     atlasPlugin,
     gitHead,
@@ -82,13 +83,13 @@ export default defineConfig({
   },
   // atlasPlugin, in a build only, packs every PNG art's manifest lists into atlas pages with
   // content-hashed names, and gives the game the atlas manifest that maps each art key to them.
-  // phaserBuildPlugin, in a build only, bundles Phaser from its source without the namespaces the
-  // game does not use and without the Canvas renderer.
+  // phaserBuildPlugin, in a build only, bundles Phaser from its source as PHASER_BUILD sets out:
+  // without the namespaces the game does not use, the Canvas renderer or sound.
   // precachePlugin writes /sw.js, the service worker that precaches the game for offline play.
   // securityHeadersPlugin writes /_headers, the response headers with each page's CSP.
   plugins: [
     atlas,
-    phaserBuildPlugin(),
+    phaserBuildPlugin(PHASER_BUILD),
     precachePlugin("play/index.html", repoPath("src/pwa/serviceWorker.ts"), atlas.api.pageUrls),
     securityHeadersPlugin(),
   ],

@@ -3,5 +3,7 @@
 export { securityHeadersPlugin } from "../headers/securityHeadersPlugin";
 export { precachePlugin } from "../pwa/precachePlugin";
 export { atlasPlugin } from "./atlas/atlasPlugin";
-export { PHASER_ENTRY_ID, phaserBuildPlugin } from "./phaserBuild";
+export { PHASER_BUILD } from "./phaserBuild";
 export { gitHead, shortCommit } from "@andornaut/game-kit/build/buildVersion";
+export { PHASER_ENTRY_ID } from "@andornaut/game-kit/build/phaserBuild";
+export { phaserBuildPlugin } from "@andornaut/game-kit/build/vite/phaserBuildPlugin";
