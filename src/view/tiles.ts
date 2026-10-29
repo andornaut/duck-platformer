@@ -151,8 +151,9 @@ export function drawsFrom(tileset: Tileset, art: string): boolean {
 
 // The tiles an object of art, cols x rows tiles, is drawn with, from its top-left. A piece is
 // drawn whole. A tile with -left and -right ends runs across the object's width, with a -top row
-// where the tileset has one (a planter). A stacking tile sits on the bottom row with its stack
-// above. Any other tile repeats across the object.
+// where the tileset has one (a planter), or -bed rows under its first where it has those (a
+// pond). A stacking tile sits on the bottom row with its stack above. Any other tile repeats
+// across the object.
 export function objectTiles(
   tileset: Tileset,
   art: string,
@@ -176,7 +177,12 @@ export function objectTiles(
         }
         name = [art, stack, `${stack}-top`][fromBottom] as string;
       } else {
-        const base = row === 0 && has(`${art}-top`) ? `${art}-top` : art;
+        const base =
+          row === 0 && has(`${art}-top`)
+            ? `${art}-top`
+            : row > 0 && has(`${art}-bed`)
+              ? `${art}-bed`
+              : art;
         const end = col === 0 ? "-left" : col === cols - 1 ? "-right" : "";
         name = cols > 1 && has(`${base}${end}`) ? `${base}${end}` : base;
       }
