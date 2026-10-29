@@ -21,7 +21,7 @@ export interface IconButtonLayout {
 }
 
 export interface StartScreenLayout {
-  // Present unless the game cannot exit (the kit's isFirefoxAndroidApp).
+  // Present where the start screen offers to leave the game (exitShown in src/pwa).
   readonly exit?: IconButtonLayout;
   readonly logo: Point;
   readonly nav: Rect;
@@ -46,8 +46,8 @@ function iconButton(slot: number): IconButtonLayout {
   };
 }
 
-// The start screen with Settings then Exit at the nav's right end, or Settings alone there when
-// the game cannot exit.
+// The start screen with Settings then Exit at the nav's right end, or Settings alone there where
+// Exit is hidden.
 export function startScreenLayout(exitShown: boolean): StartScreenLayout {
   const { labelDy, ...button } = START;
   return {

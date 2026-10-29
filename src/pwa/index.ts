@@ -8,6 +8,7 @@
 // pages/play/index.html offers it. The flow checks for one on each load, and again when the page
 // comes back into view (an installed app resumed without relaunching). The game loads meanwhile:
 // only its first screen and any save wait for the check (launchReady).
+import { appCannotClose } from "@andornaut/game-kit/pwa/appWindow";
 import {
   backCloseWatcher,
   browserCloseWatcher,
@@ -35,6 +36,8 @@ const UPDATE_READY_ID = "update-ready";
 // meanwhile.
 const BOOT_WAIT_MS = 4000;
 
+// An installed app whose window the game cannot close (the kit's appCannotClose) shows no Exit.
+let exitHidden = false;
 let home: HomeScreen | undefined;
 // Resolves once the game may show its first screen and write a save (UpdateFlow.bootable).
 let ready: Promise<void> = Promise.resolve();
@@ -77,6 +80,9 @@ export function setupPhoneApp(): void {
     pageRunsAsApp(window),
     "storage" in navigator ? navigator.storage : undefined,
   );
+  const createCloseWatcher = backCloseWatcher(navigator.userAgent, browserCloseWatcher());
+  // Read before the back guard pushes its entry, which would stop the window closing.
+  exitHidden = appCannotClose(createCloseWatcher, window);
   // Firefox for Android's installed app keeps its own back.
   // WORKAROUND: https://bugzilla.mozilla.org/show_bug.cgi?id=2079243 (see isFirefoxAndroidApp).
   if (!isFirefoxAndroidApp(navigator.userAgent, (query) => matchMedia(query).matches)) {
@@ -87,7 +93,7 @@ export function setupPhoneApp(): void {
       },
       window,
       window,
-      backCloseWatcher(navigator.userAgent, browserCloseWatcher()),
+      createCloseWatcher,
       history,
     );
   }
@@ -95,6 +101,12 @@ export function setupPhoneApp(): void {
     "wakeLock" in navigator ? navigator.wakeLock : undefined,
     document,
   );
+}
+
+// Whether the start screen offers to leave the game: Exit, and back with no card open. A browser
+// tab can always leave for the site's home page; an installed app only where its window closes.
+export function exitShown(): boolean {
+  return !exitHidden;
 }
 
 // Resolves once the game may show its first screen and write a save: at once, or after a fresh

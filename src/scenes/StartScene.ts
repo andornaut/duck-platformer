@@ -1,5 +1,4 @@
 import { animationKey } from "@andornaut/game-kit/art/aseprite";
-import { isFirefoxAndroidApp } from "@andornaut/game-kit/pwa/backNavigation";
 import { browserExitPage, exitApp } from "@andornaut/game-kit/pwa/exitApp";
 import { containsPoint } from "@andornaut/game-kit/rect";
 import { type GameObjects, type Input, Scene } from "phaser";
@@ -11,8 +10,9 @@ import {
   type StartScreenLayout,
   startScreenLayout,
 } from "../layout/startScreen";
+import { startBackAction } from "../pause/cardInput";
 import { focusKeyAction, stepFocus } from "../pause/focusInput";
-import { PHONE_EVENTS } from "../pwa";
+import { exitShown, PHONE_EVENTS } from "../pwa";
 import { setTouchControlsShown } from "../settings/touchControls";
 import {
   addButtonLabel,
@@ -39,9 +39,10 @@ interface IconButton {
 
 // The screen the game opens on: the Start button, which goes to the map, under a nav bar with
 // Settings and Exit at its right end. Settings opens the settings card over this screen, which
-// passes it the keys and back until it closes. Exit leaves the game (the kit's exitApp); Firefox
-// for Android's installed app ignores window.close(), so it shows no Exit there. A control acts
-// when a press lands on it and lifts on it.
+// passes it the keys and back until it closes. Exit, and back with no card open, leave the game
+// (the kit's exitApp). An installed app whose window the game cannot close shows no Exit
+// (exitShown), and back there is the browser's own. A control acts when a press lands on it and
+// lifts on it.
 export class StartScene extends Scene implements SettingsOpener {
   // The nav's icon buttons: Settings and, where the game can exit, Exit.
   private buttons = new Map<"exit" | "settings", IconButton>();
@@ -64,19 +65,17 @@ export class StartScene extends Scene implements SettingsOpener {
     this.settingsOpen = false;
     this.focus = undefined;
     this.focusRing = undefined;
-    // WORKAROUND: https://bugzilla.mozilla.org/show_bug.cgi?id=2079243 (see isFirefoxAndroidApp).
-    const canExit = !isFirefoxAndroidApp(
-      navigator.userAgent,
-      (query) => window.matchMedia(query).matches,
-    );
-    this.layout = startScreenLayout(canExit);
+    this.layout = startScreenLayout(exitShown());
     this.draw();
     this.showPressed(undefined);
     this.watchPresses();
     this.input.keyboard?.on("keydown", (event: KeyboardEvent) => this.key(event));
     const onBack = () => {
-      if (this.settingsOpen) {
+      const action = startBackAction(this.settingsOpen, this.layout.exit !== undefined);
+      if (action === "closeSettings") {
         this.settings().back();
+      } else if (action === "exit") {
+        this.act("exit");
       }
     };
     window.addEventListener(PHONE_EVENTS.backPressed, onBack);
