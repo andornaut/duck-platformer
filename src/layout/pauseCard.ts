@@ -1,9 +1,9 @@
 import type { Point, Rect } from "../data/types";
 
-// Art's pause card (art/README.md, Pause card), in base pixels: a 9-slice card with the title in
-// its header, the close X at its top right, the Touch controls and Quit rows, and Resume at the
-// foot. Each label's point is its text's top-left; the state text ends at stateRight. Resume's
-// label sinks to pressedLabel while Resume is pressed.
+// Art's pause card (art/README.md, Pause, settings and install cards), in base pixels: a 9-slice
+// card with the title in its header, the close X at its top right, the Settings and Quit rows,
+// and Resume at the foot. Each label's point is its text's top-left. Resume's label sinks to
+// pressedLabel while Resume is pressed.
 export const PAUSE_CARD = {
   card: { height: 236, width: 368, x: 176, y: 88 } satisfies Rect,
   close: { at: { x: 510, y: 94 } satisfies Point, hit: { height: 44, width: 44, x: 500, y: 88 } },
@@ -17,13 +17,12 @@ export const PAUSE_CARD = {
     label: { x: 339, y: 275 } satisfies Point,
     pressedLabel: { x: 339, y: 277 } satisfies Point,
   },
-  title: { x: 190, y: 93 } satisfies Point,
-  touchControls: {
-    checkbox: { x: 196, y: 150 } satisfies Point,
+  settings: {
+    icon: { x: 198, y: 152 } satisfies Point,
     label: { x: 228, y: 151 } satisfies Point,
     row: { height: 48, width: 352, x: 184, y: 136 } satisfies Rect,
-    stateRight: 524,
   },
+  title: { x: 190, y: 93 } satisfies Point,
 } as const;
 
 // Art's pause button in the game's top-left corner: where its frame is drawn, and the area a

@@ -65,16 +65,12 @@ export interface GameText {
     readonly reload: string;
     readonly title: string;
   };
-  // The pause card: its title, the Touch controls row and its two states, the Settings row, Quit
-  // and Resume.
+  // The pause card: its title, the Settings and Quit rows, and Resume.
   readonly pause: {
-    readonly hidden: string;
     readonly quit: string;
     readonly resume: string;
     readonly settings: string;
-    readonly shown: string;
     readonly title: string;
-    readonly touchControls: string;
   };
   // The settings card: its title, the Touch controls row and its two states, the Install row and
   // its button, and the install steps card: its title and, for each browser that installs only

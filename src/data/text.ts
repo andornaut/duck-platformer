@@ -21,13 +21,10 @@ export const TEXT: GameText = {
     },
   },
   pause: {
-    hidden: "Hidden",
     quit: "Quit",
     resume: "Resume",
     settings: "Settings",
-    shown: "Shown",
     title: "Paused",
-    touchControls: "Touch controls",
   },
   quips: {},
   settings: {

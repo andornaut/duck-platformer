@@ -2,7 +2,6 @@
 import "./crash/install";
 import "./main.css";
 
-import { BUILD_LABEL } from "@andornaut/game-kit/build/buildLabel";
 import { MENU_FPS } from "@andornaut/game-kit/clock/frameCap";
 import { capFrameRate } from "@andornaut/game-kit/clock/phaser/capFrameRate";
 import { pageToGame } from "@andornaut/game-kit/view/pagePoint";
@@ -13,9 +12,11 @@ import { CRASH_SCREEN } from "./crash/install";
 import { SCREEN } from "./data/screen";
 import { pageFrameTurn } from "./input/frameTurn";
 import { setupPhoneApp } from "./pwa";
+import { installOffer } from "./pwa/installOffer";
 import { BootScene } from "./scenes/BootScene";
 import { MapScene } from "./scenes/MapScene";
 import { PauseScene } from "./scenes/PauseScene";
+import { SettingsScene } from "./scenes/SettingsScene";
 import { ZoneScene } from "./scenes/ZoneScene";
 
 // On a touch screen in portrait, src/main.css turns the page frame 90 degrees clockwise, so the
@@ -68,8 +69,9 @@ function startGame(): void {
     // src/main.css centres the canvas in #game: Phaser's own centring measures the canvas's
     // bounding rect, which the portrait turn swaps.
     scale: { autoCenter: Scale.NO_CENTER, mode: Scale.FIT },
-    // Later scenes draw over earlier ones: the pause card over the zone.
-    scene: [BootScene, MapScene, ZoneScene, PauseScene],
+    // Later scenes draw over earlier ones: the pause card over the zone, the settings card over
+    // the pause card's dim.
+    scene: [BootScene, MapScene, ZoneScene, PauseScene, SettingsScene],
     // WebGL only: the build's Phaser has no Canvas renderer (src/tools/phaserBuild.ts).
     type: WEBGL,
     width: SCREEN.width,
@@ -92,13 +94,9 @@ function startGame(): void {
   CRASH_SCREEN.stopGameOnCrash(() => game.pause());
 }
 
-// An element in pages/play/index.html.
-const BUILD_LABEL_ID = "build-label";
-
-const buildLabel = document.getElementById(BUILD_LABEL_ID);
-if (buildLabel !== null) {
-  buildLabel.textContent = BUILD_LABEL;
-}
+// The browser's install prompt can come before the game draws, so the settings card's offer
+// starts listening as the page loads.
+installOffer();
 
 // Asks for landscape, on the game page only. Browsers allow the lock only in fullscreen or an
 // installed app and reject it elsewhere, which needs no handling: in portrait the frame turns.
