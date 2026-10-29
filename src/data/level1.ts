@@ -3,7 +3,8 @@ import type { LevelPlan } from "./types";
 // Level 1, the ground floor: the street outside the hotel, then the lobby.
 //
 // The street is one screen of play: the sidewalk's top is row 26 (y 312), and below it the game
-// shows ink, so every opening in the sidewalk is a fall out of the area that restarts the level. Awnings and the
+// shows ink. A pit-floor hazard 4 below the sidewalk's top in every opening restarts the level
+// soon after she drops in. Awnings and the
 // hotel canopy sit on row 20, 6 above the sidewalk. Left to right it teaches: walk, hop, jump, a
 // gap, a cellar hatch, the courier, then the ferret's trap at the hotel door.
 export const LEVEL_1: LevelPlan = {
@@ -71,17 +72,20 @@ export const LEVEL_1: LevelPlan = {
         { col: 82, row: 15, type: "street-tree" },
         // A gap: a subway entrance, 10 across.
         { col: 102, row: 21, type: "subway-railing" },
+        { col: 108, cols: 10, row: 30, type: "pit-floor" },
         // A cellar hatch open 4 across, past the pet shop's dog; then one open 6 across. Each
         // has a steel leaf 2 up at each edge.
         { col: 120, row: 16, type: "storefront-pet-shop" },
         { col: 122, row: 24, type: "dog" },
         { col: 134, row: 24, type: "hatch-left" },
         { col: 135, cols: 4, row: 26, type: "pit-opening" },
+        { col: 135, cols: 4, row: 30, type: "pit-floor" },
         { col: 139, row: 24, type: "hatch-right" },
         { col: 140, row: 16, type: "storefront-diner" },
         { col: 140, cols: 9, row: 20, type: "awning" },
         { col: 148, row: 24, type: "hatch-left" },
         { col: 149, cols: 6, row: 26, type: "pit-opening" },
+        { col: 149, cols: 6, row: 30, type: "pit-floor" },
         { col: 155, row: 24, type: "hatch-right" },
         // The courier: rides from col 186 to as far as col 166 and back. Wait left of col 164
         // or on the noodle bar's awning, then jump it.
@@ -101,6 +105,8 @@ export const LEVEL_1: LevelPlan = {
       ],
       rows: 60,
       solids: [
+        // A wall at the street's left edge, above the sidewalk.
+        { col: 0, cols: 1, row: 0, rows: 26 },
         { col: 0, cols: 40, row: 26, rows: 4 },
         // The cross street's road, one below the sidewalk.
         { col: 40, cols: 10, row: 27, rows: 3 },

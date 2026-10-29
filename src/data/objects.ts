@@ -117,6 +117,9 @@ export const OBJECT_TYPES: Readonly<Record<string, ObjectType>> = {
     reaction: { kind: "avoid", range: 6, speed: 8 },
     rows: 1,
   },
+  // The dark floor of a pit, 4 below the sidewalk's top: a quick restart for a fall into an
+  // opening.
+  "pit-floor": fixed("placeholder-pit-floor", "hazard", 1, 1),
   // The open cellar between a hatch's edges: drawn only, over a gap in the sidewalk she falls
   // through.
   "pit-opening": fixed("pit-opening", "none", 1, 1),
