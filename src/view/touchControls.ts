@@ -1,9 +1,9 @@
+import { type AnimationFrame, tagMs } from "@andornaut/game-kit/art/aseprite";
 import { type BitmapFont, inkWidth } from "@andornaut/game-kit/text/bitmapFont";
 
 import type { Point, Size } from "../data/types";
 import type { HeldTouch } from "../input/intent";
 import { LABEL_SCALE, type TouchControl } from "../layout/touchControls";
-import { type TagFrame, tagMs } from "./aseprite";
 
 // Whether a touch holds the button.
 export function buttonHeld(control: TouchControl, touches: readonly HeldTouch[]): boolean {
@@ -26,7 +26,7 @@ export function trackPress(
 // The tag a button shows: rest, its press tag for as long as that plays, then held until
 // release.
 export function controlTag(
-  tags: ReadonlyMap<string, readonly TagFrame[]>,
+  tags: ReadonlyMap<string, readonly AnimationFrame[]>,
   nowMs: number,
   sinceMs: number | undefined,
 ): string {

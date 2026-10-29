@@ -1,9 +1,10 @@
 import { itemAt } from "@andornaut/game-kit/arrays";
+import type { AsepriteSheet } from "@andornaut/game-kit/art/aseprite";
 import { PNG } from "pngjs";
 
 import { type AtlasFrame, type AtlasTexture, BASE_FRAME } from "../../assets/atlasManifest";
 import { TILE } from "../../data/screen";
-import type { ArtManifest, AsepriteSheet } from "../../view/aseprite";
+import type { ArtManifest } from "../../view/aseprite";
 import { EXTRUDE, layoutAtlas } from "./atlasLayout";
 import { blankImage, blitExtruded, type RgbaImage } from "./atlasPixels";
 

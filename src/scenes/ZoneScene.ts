@@ -1,3 +1,10 @@
+import {
+  type AnimationFrame,
+  animationKey,
+  type AsepriteSheet,
+  sheetTags,
+  tagMs,
+} from "@andornaut/game-kit/art/aseprite";
 import { frameSteps, startStepClock, type StepClock } from "@andornaut/game-kit/clock/fixedStep";
 import {
   clientPoint,
@@ -51,16 +58,7 @@ import { zoneLayout } from "../rules/tiles";
 import { areaOf, enterArea, startZone, stepZone, type ZoneState } from "../rules/zone";
 import { nextZoneIndex, startZoneIndex } from "../rules/zoneChain";
 import { touchControlsShown } from "../settings/touchControls";
-import {
-  animKey,
-  ART_MANIFEST_KEY,
-  artHitboxes,
-  type ArtManifest,
-  type AsepriteSheet,
-  sheetTags,
-  type TagFrame,
-  tagMs,
-} from "../view/aseprite";
+import { ART_MANIFEST_KEY, artHitboxes, type ArtManifest } from "../view/aseprite";
 import { cameraScroll } from "../view/camera";
 import { characterState, nextQuirkAt } from "../view/character";
 import { duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
@@ -141,7 +139,7 @@ const PALETTE = "palette";
 
 // Starts a sprite's tag, unless it already shows it, playing or finished on its last frame.
 function show(sprite: GameObjects.Sprite, tag: string): void {
-  const key = animKey(sprite.texture.key, tag);
+  const key = animationKey(sprite.texture.key, tag);
   if (sprite.anims.currentAnim?.key !== key) {
     sprite.play(key);
   }
@@ -176,7 +174,7 @@ export class ZoneScene extends Scene {
   private terrainMap: Tilemaps.Tilemap | undefined;
   // When each held button's press began.
   private readonly presses = new Map<TouchControl, number>();
-  private readonly tags = new Map<string, ReadonlyMap<string, readonly TagFrame[]>>();
+  private readonly tags = new Map<string, ReadonlyMap<string, readonly AnimationFrame[]>>();
 
   constructor() {
     super("zone");
@@ -463,10 +461,10 @@ export class ZoneScene extends Scene {
     const playingQuirk =
       quirk !== undefined &&
       sprite.anims.isPlaying &&
-      sprite.anims.currentAnim?.key === animKey(object.art, quirk.tag);
+      sprite.anims.currentAnim?.key === animationKey(object.art, quirk.tag);
     if (state === "idle" && quirk && art.quirk) {
       if (this.zone.seconds >= art.quirk.at) {
-        sprite.play(animKey(object.art, quirk.tag));
+        sprite.play(animationKey(object.art, quirk.tag));
         art.quirk.at = nextQuirkAt(art.quirk.random, quirk, this.zone.seconds);
         return;
       }
@@ -488,7 +486,7 @@ export class ZoneScene extends Scene {
     return tileset;
   }
 
-  private sheet(key: string): ReadonlyMap<string, readonly TagFrame[]> {
+  private sheet(key: string): ReadonlyMap<string, readonly AnimationFrame[]> {
     let tags = this.tags.get(key);
     if (!tags) {
       tags = sheetTags(this.cache.json.get(key) as AsepriteSheet);

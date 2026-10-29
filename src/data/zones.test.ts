@@ -1,10 +1,11 @@
+import { type AsepriteSheet, sheetTags } from "@andornaut/game-kit/art/aseprite";
 import { describe, expect, it } from "vitest";
 
 import manifestJson from "../../public/art/manifest.json";
 import lobbyTiles from "../../public/art/tilesets/tiles-lobby.json";
 import streetTiles from "../../public/art/tilesets/tiles-street.json";
 import { resolveNames } from "../rules/tiles";
-import { type ArtManifest, type AsepriteSheet, sheetTags } from "../view/aseprite";
+import type { ArtManifest } from "../view/aseprite";
 import { artKind } from "../view/objectArt";
 import { lookTiles, type Tileset } from "../view/tiles";
 import { ARCHETYPES, NO_INTERACTION, NO_REACTION, STATIC_MOTION } from "./archetypes";

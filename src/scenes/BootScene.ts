@@ -1,17 +1,14 @@
+import {
+  animationKey,
+  type AsepriteSheet,
+  sheetTags,
+  tagRepeat,
+} from "@andornaut/game-kit/art/aseprite";
 import { Scene } from "phaser";
 
 import { TILE } from "../data/screen";
 import { launchReady } from "../pwa";
-import {
-  animKey,
-  ART_MANIFEST_FILE,
-  ART_MANIFEST_KEY,
-  ART_PATH,
-  type ArtManifest,
-  type AsepriteSheet,
-  sheetTags,
-  tagRepeat,
-} from "../view/aseprite";
+import { ART_MANIFEST_FILE, ART_MANIFEST_KEY, ART_PATH, type ArtManifest } from "../view/aseprite";
 import { addAtlasArt, ATLAS, queueAtlasFonts, queueAtlasPages } from "./atlasArt";
 
 // First scene to run. Loads everything art's manifest lists, makes an animation of every sprite
@@ -66,8 +63,8 @@ export class BootScene extends Scene {
       const sheet = this.cache.json.get(key) as AsepriteSheet;
       for (const [tag, frames] of sheetTags(sheet)) {
         this.anims.create({
-          frames: frames.map(({ frame, ms }) => ({ duration: ms, frame, key })),
-          key: animKey(key, tag),
+          frames: frames.map(({ duration, frame }) => ({ duration, frame, key })),
+          key: animationKey(key, tag),
           repeat: tagRepeat(once, tag),
         });
       }

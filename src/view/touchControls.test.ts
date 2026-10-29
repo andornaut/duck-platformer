@@ -1,3 +1,4 @@
+import type { AnimationFrame } from "@andornaut/game-kit/art/aseprite";
 import { parseBitmapFont } from "@andornaut/game-kit/text/bitmapFont";
 import { overflowingTexts } from "@andornaut/game-kit/text/overflow";
 import { bitmapMeasure } from "@andornaut/game-kit/text/textFit";
@@ -7,7 +8,6 @@ import fontBody from "../../public/art/fonts/font-body.fnt?raw";
 import { TEXT } from "../data/text";
 import type { HeldTouch } from "../input/intent";
 import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
-import type { TagFrame } from "./aseprite";
 import {
   buttonHeld,
   centredAt,
@@ -43,7 +43,8 @@ describe("trackPress", () => {
 });
 
 describe("controlTag", () => {
-  const frames = (...ms: number[]): TagFrame[] => ms.map((each) => ({ frame: "", ms: each }));
+  const frames = (...ms: number[]): AnimationFrame[] =>
+    ms.map((duration) => ({ duration, frame: "" }));
   const tags = new Map([["press", frames(60, 60)]]);
   it.each([
     [0, undefined, "rest"],

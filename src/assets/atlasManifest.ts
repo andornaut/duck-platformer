@@ -1,4 +1,4 @@
-import type { AsepriteSheet } from "../view/aseprite";
+import type { AsepriteSheet } from "@andornaut/game-kit/art/aseprite";
 
 // The atlas a build packs art's PNGs into, as the build's code and the game both read it.
 

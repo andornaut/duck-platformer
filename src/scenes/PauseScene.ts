@@ -1,3 +1,4 @@
+import { animationKey } from "@andornaut/game-kit/art/aseprite";
 import { containsPoint } from "@andornaut/game-kit/rect";
 import { inkWidth } from "@andornaut/game-kit/text/bitmapFont";
 import {
@@ -13,7 +14,7 @@ import { CARD_TEXT_SCALE, PAUSE_BUTTON, PAUSE_CARD } from "../layout/pauseCard";
 import { type CardAction, cardBackAction, cardKeyAction } from "../pause/cardInput";
 import { coverZone, leaveGame, PHONE_EVENTS, startWakeLock, stopWakeLock, zoneShown } from "../pwa";
 import { setTouchControlsShown, touchControlsShown } from "../settings/touchControls";
-import { animKey, type ArtManifest } from "../view/aseprite";
+import type { ArtManifest } from "../view/aseprite";
 import { dimPixels, type Palette } from "../view/dim";
 import type { ZoneScene } from "./ZoneScene";
 
@@ -132,7 +133,7 @@ export class PauseScene extends Scene {
   private renderTouchControls(): void {
     const shown = touchControlsShown();
     const words = TEXT.pause;
-    this.checkbox.play(animKey(this.checkbox.texture.key, shown ? "on" : "off"));
+    this.checkbox.play(animationKey(this.checkbox.texture.key, shown ? "on" : "off"));
     const text = shown ? words.shown : words.hidden;
     const font = phaserBitmapFont(this.cache.bitmapFont.get(BODY_FONT).data as PhaserFontData);
     this.stateText
@@ -242,16 +243,18 @@ export class PauseScene extends Scene {
   private setPressed(control: Control | undefined): void {
     this.pressed = control;
     const { label, pressedLabel } = PAUSE_CARD.resume;
-    this.closeX.play(animKey("ui-close", control === "close" ? "pressed" : "normal"));
-    this.quitIcon.play(animKey("ui-quit", control === "quit" ? "pressed" : "normal"));
+    this.closeX.play(animationKey("ui-close", control === "close" ? "pressed" : "normal"));
+    this.quitIcon.play(animationKey("ui-quit", control === "quit" ? "pressed" : "normal"));
     this.quitLabel.setTint(this.colour(control === "quit" ? "white" : "cream"));
-    this.resume.play(animKey("ui-resume", control === "resume" ? "pressed" : "normal"));
+    this.resume.play(animationKey("ui-resume", control === "resume" ? "pressed" : "normal"));
     this.resumeLabel.setY(control === "resume" ? pressedLabel.y : label.y);
     this.pauseButton.chain();
     if (control === "pauseButton") {
-      this.pauseButton.play(animKey("ui-pause", "press")).chain(animKey("ui-pause", "held"));
+      this.pauseButton
+        .play(animationKey("ui-pause", "press"))
+        .chain(animationKey("ui-pause", "held"));
     } else {
-      this.pauseButton.play(animKey("ui-pause", "rest"));
+      this.pauseButton.play(animationKey("ui-pause", "rest"));
     }
   }
 
