@@ -23,9 +23,8 @@ export interface DuckState {
   readonly jumpHeld: boolean;
   // Seconds Jump has been held since it started her jump; 0 while it is up.
   readonly jumpHeldFor: number;
-  // Seconds a still-held jump keeps her rising at jumpSpeed once its tap window has passed. 0 once
-  // Jump is released or she meets a ceiling.
-  readonly jumpHoldLeft: number;
+  // Her y when her latest jump took off.
+  readonly jumpFromY: number;
   readonly vx: number;
   readonly vy: number;
   // Her collision box's top-left corner.
@@ -40,9 +39,9 @@ export function startDuck(tuning: DuckTuning, start: Point): DuckState {
     coyoteLeft: 0,
     facing: 1,
     grounded: false,
+    jumpFromY: 0,
     jumpHeld: false,
     jumpHeldFor: 0,
-    jumpHoldLeft: 0,
     vx: 0,
     vy: 0,
     x: start.x - tuning.width / 2,
@@ -57,6 +56,12 @@ export function duckBox(tuning: DuckTuning, duck: DuckState): Rect {
 // Moves speed toward target by at most step.
 function approach(speed: number, target: number, step: number): number {
   return speed < target ? Math.min(target, speed + step) : Math.max(target, speed - step);
+}
+
+// The upward speed that stops her climbing at the hop's height, having risen px since she
+// took off: 0 once she is there.
+function hopSpeed(tuning: DuckTuning, risen: number): number {
+  return Math.sqrt(2 * tuning.gravity * Math.max(0, tuning.jumpHopHeight - risen));
 }
 
 // One fixed step of seconds: steer, jump, fall, then move along x and along y in turn, each
@@ -78,31 +83,31 @@ export function stepDuck(
   const jumpPressed = input.jumpHeld && !duck.jumpHeld;
   let bufferLeft = jumpPressed ? tuning.jumpBuffer : Math.max(0, duck.bufferLeft - seconds);
   let coyoteLeft = Math.max(0, duck.coyoteLeft - seconds);
-  let jumpHoldLeft = input.jumpHeld ? duck.jumpHoldLeft : 0;
+  let jumpFromY = duck.jumpFromY;
   // Seconds Jump was held before this step, since it started her jump.
   let heldBefore = duck.jumpHeldFor;
   if ((jumpPressed || bufferLeft > 0) && (duck.grounded || duck.coyoteLeft > 0)) {
     vy = -tuning.jumpSpeed;
     bufferLeft = 0;
     coyoteLeft = 0;
-    // A buffered jump whose button was already released is a hop: no hold.
-    jumpHoldLeft = input.jumpHeld ? tuning.jumpHoldTime : 0;
+    jumpFromY = duck.y;
     heldBefore = 0;
+    // A buffered jump whose button was already released is a hop.
+    if (!input.jumpHeld) {
+      vy = -hopSpeed(tuning, 0);
+    }
   }
   const jumpHeldFor = input.jumpHeld ? heldBefore + seconds : 0;
-  // Letting go of a jump held past its tap window while she still rises cuts her climb short. A
-  // press let go within the window is a hop, the launch alone, however short it was.
+  // Letting go while she rises: within the tap window, she rises no higher than the hop from where
+  // she took off; after it, her climb is cut short.
   const released = duck.jumpHeld && !input.jumpHeld;
-  if (released && heldBefore >= tuning.jumpTapWindow && vy < 0) {
-    vy *= tuning.jumpReleaseCut;
+  if (released && vy < 0) {
+    vy =
+      heldBefore < tuning.jumpTapWindow
+        ? -Math.min(-vy, hopSpeed(tuning, jumpFromY - duck.y))
+        : vy * tuning.jumpReleaseCut;
   }
-  if (jumpHoldLeft > 0 && heldBefore >= tuning.jumpTapWindow) {
-    // Held past the tap window, a jump rises steadily at jumpSpeed until the hold runs out.
-    vy = -tuning.jumpSpeed;
-    jumpHoldLeft = Math.max(0, jumpHoldLeft - seconds);
-  } else {
-    vy = Math.min(vy + tuning.gravity * seconds, tuning.flutterFallSpeed);
-  }
+  vy = Math.min(vy + tuning.gravity * seconds, tuning.flutterFallSpeed);
 
   let carryVx = duck.carryVx;
   const moving = vx + carryVx;
@@ -128,7 +133,6 @@ export function stepDuck(
         grounded = true;
       } else {
         y = solid.y + solid.height;
-        jumpHoldLeft = 0;
       }
       vy = 0;
     }
@@ -153,9 +157,9 @@ export function stepDuck(
     coyoteLeft,
     facing: input.move === 0 ? duck.facing : input.move,
     grounded,
+    jumpFromY,
     jumpHeld: input.jumpHeld,
     jumpHeldFor,
-    jumpHoldLeft,
     vx,
     vy,
     x,

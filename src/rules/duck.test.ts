@@ -56,10 +56,11 @@ describe("stepDuck", () => {
   const rise = (tuning: typeof DUCK, seconds: number) =>
     startY -
     lowestY(run(240, (step) => ({ jumpHeld: step * STEP < seconds, move: 0 }), [GROUND], tuning));
-  const { gravity, jumpHoldTime, jumpSpeed, jumpTapWindow } = DUCK;
-  // The launch alone, and the most a hold adds: the hold time at jumpSpeed, from where the hop
-  // is at the end of the tap window.
-  const hopHeight = jumpSpeed ** 2 / (2 * gravity);
+  const { gravity, jumpHopHeight, jumpSpeed, jumpTapWindow } = DUCK;
+  // From the end of the tap window to the top of a full jump.
+  const jumpHoldTime = jumpSpeed / gravity - jumpTapWindow;
+  // The hop's height from the takeoff, and the full jump's.
+  const hopHeight = jumpHopHeight;
   const fullHeight = rise(DUCK, 10);
   const within = jumpSpeed * STEP;
 
@@ -76,9 +77,9 @@ describe("stepDuck", () => {
   });
 
   it.each([
-    ["a third of the hold", 1 / 3],
-    ["half the hold", 1 / 2],
-    ["two thirds of the hold", 2 / 3],
+    ["a sixth of the way to the top", 1 / 6],
+    ["a quarter of the way to the top", 1 / 4],
+    ["a third of the way to the top", 1 / 3],
   ])("rises between the hop and the full jump for %s past the tap window", (_name, share) => {
     const height = rise(DUCK, jumpTapWindow + STEP + share * jumpHoldTime);
     expect(height).toBeGreaterThan(hopHeight + within);
@@ -102,7 +103,7 @@ describe("stepDuck", () => {
   it.each([0.25, 0.5, 0.75])(
     "stops climbing sooner when let go mid-hold, keeping %d of her speed",
     (cut) => {
-      const press = jumpTapWindow + STEP + jumpHoldTime / 2;
+      const press = jumpTapWindow + 2 * STEP;
       const kept = rise({ ...DUCK, jumpReleaseCut: 1 }, press);
       expect(rise({ ...DUCK, jumpReleaseCut: cut }, press)).toBeLessThan(kept - within);
     },
@@ -113,12 +114,12 @@ describe("stepDuck", () => {
     const press = land - 3;
     const states = run(600, (step) => ({ jumpHeld: step < 2 || step === press, move: 0 }));
     const after = states.slice(land);
-    const hopApex = DUCK.jumpSpeed ** 2 / (2 * DUCK.gravity);
+    const hopApex = DUCK.jumpHopHeight;
     expect(Math.abs(startY - lowestY(after) - hopApex)).toBeLessThanOrEqual(DUCK.jumpSpeed * STEP);
   });
 
   it.each([
-    ["after a jump", hop()],
+    ["after a jump", run(600, (step) => ({ jumpHeld: step < 120, move: 0 }))],
     ["off a ledge", walkOff()],
   ])("falls at the flutter speed at most %s", (_name, states) => {
     const falling = states.filter((state) => state.vy > 0 && !state.grounded);
