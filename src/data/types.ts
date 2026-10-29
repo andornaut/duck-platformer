@@ -1,0 +1,47 @@
+// The shapes of the game data. The value files beside this one fill them.
+
+// An axis-aligned rectangle in base pixels: x and y are its top-left corner, y grows downward.
+export interface Rect {
+  readonly height: number;
+  readonly width: number;
+  readonly x: number;
+  readonly y: number;
+}
+
+export interface Point {
+  readonly x: number;
+  readonly y: number;
+}
+
+// The duck's movement, in base pixels and seconds.
+export interface DuckTuning {
+  // Speed gained per second while a direction is held, on the ground and in the air.
+  readonly airAccel: number;
+  readonly groundAccel: number;
+  // Downward acceleration while rising, and while falling without a flutter.
+  readonly gravity: number;
+  // Her collision box.
+  readonly height: number;
+  readonly width: number;
+  // Upward speed when a jump starts.
+  readonly jumpSpeed: number;
+  // Upward speed is multiplied by this when Jump is released while rising: a shorter hop.
+  readonly jumpReleaseCut: number;
+  // Fastest fall after a jump: the flutter.
+  readonly flutterFallSpeed: number;
+  // Fastest fall otherwise.
+  readonly maxFallSpeed: number;
+  readonly walkSpeed: number;
+}
+
+// One floor's geometry. solids block her; touching a hazard restarts the floor; reaching the
+// exit clears it; falling below the floor's height restarts it.
+export interface FloorLayout {
+  readonly exit: Rect;
+  readonly hazards: readonly Rect[];
+  readonly height: number;
+  readonly solids: readonly Rect[];
+  // Where her collision box's bottom centre starts.
+  readonly start: Point;
+  readonly width: number;
+}
