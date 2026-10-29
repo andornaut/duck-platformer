@@ -30,6 +30,13 @@ function startGame(): void {
     type: AUTO,
     width: SCREEN.width,
   });
+  // Phaser measures #game on window resizes only, but its size also changes without one: an
+  // installed app learns its safe-area insets (the gesture bar, the notch) after the first
+  // layout. Re-fit whenever #game itself changes size, so the canvas never overflows it.
+  const parent = document.getElementById("game");
+  if (parent !== null) {
+    new ResizeObserver(() => game.scale.refresh()).observe(parent);
+  }
   CRASH_SCREEN.stopGameOnCrash(() => {
     game.pause();
     game.sound.pauseAll();
