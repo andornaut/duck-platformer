@@ -10,7 +10,7 @@ A landscape, left-to-right platformer: a duck falls out of her apartment at the 
 
 ## Setting
 
-- **Characters:** the duck, a cute duck, is the one the player controls. Animals talk, and most interactions are with animals. PLACEHOLDER: whether there are humans (see [`ideas.md`](ideas.md))
+- **Characters:** the duck, a white Pekin duck with a pink bow, is the one the player controls. Animals talk, and most interactions are with animals. PLACEHOLDER: whether there are humans (see [`ideas.md`](ideas.md))
 - **Floors:** each floor is one everyday place in the building, such as a restaurant, pool or spa, and the whole floor stays in that place. PLACEHOLDER: the floors and their order
 - **World:** the modern day, mixing fantasy and reality
 
@@ -25,6 +25,7 @@ A landscape, left-to-right platformer: a duck falls out of her apartment at the 
 - **Data:** every string a player sees lives in the text data files, with `{placeholders}` the game fills, never as a literal in code
 - **Fit:** text never shrinks to fit. Reword it or grow its box
 - **Labels:** one label for one action, everywhere
+- **Lengths:** text is Tiny5 drawn at 2×, about 6.5 base px a character on average; measure the width, don't count characters. A dialogue paragraph fits 3 lines of 488 px (about 70 characters a line). An answer fits 162 px (about 24 characters). A quip, with its speaker's name, fits 452 px (about 60 characters)
 - **Spelling:** Canadian (colour, favourite, neighbour). No em dashes and no emojis
 - **Style:** plain, short and consistent: no flourishes, no figures of speech, no redundancy
 
@@ -32,10 +33,10 @@ A landscape, left-to-right platformer: a duck falls out of her apartment at the 
 
 ### Screen and controls
 
-- Landscape. Phone browser first, with on-screen touch controls; keyboard on desktop
+- Landscape, 640×360 base resolution. Phone browser first, with on-screen touch controls; keyboard on desktop
 - **Interact:** PLACEHOLDER: what it acts on
 - **Keyboard:** ←/→ or A/D to move; Space, ↑ or W to jump; E to interact
-- **Overlay:** a subtle overlay marks where each touch control activates, without obscuring much of the play area. A control animates subtly when it activates, by tap or by drag. The overlay is visible by default; Settings hides it
+- **Overlay:** a subtle overlay of rings marks where each touch control activates, without obscuring much of the play area. A control animates subtly when it activates, by tap or by drag. The overlay is visible by default; Settings hides it
 - **Touch buttons** (right thumb): Jump and Interact
 - **Touch movement** (left thumb): a fixed control in the lower left. Dragging left or right from its centre moves the duck, like a joystick. Tapping its left or right half acts as a left or right button
 
@@ -58,21 +59,22 @@ A landscape, left-to-right platformer: a duck falls out of her apartment at the 
 
 ### Dialogue
 
-- **Box:** a text rectangle, not a speech bubble, for a conversation between two characters, sometimes three. Each screen shows one paragraph
-- **Forward:** a tap or keypress moves to the next screen. There is no back and no timer
+- **Box:** a fixed box along the bottom, not a speech bubble, for a conversation between two characters, sometimes three. It shows the speaker's 64 px portrait with a name tab, and one paragraph of at most 3 lines. A paragraph that runs to a 4th line is reworded
+- **Forward:** a tap or keypress moves to the next box. There is no back and no timer
 - **Restarts:** after a floor restart, the floor's dialogue plays again
-- **Skip:** every dialogue has a skip button that skips the whole conversation
+- **Skip:** every dialogue has a skip button at the top right that skips the conversation. Skip runs ahead to the next choice and stops there; once it is answered, Skip works again
 
 ### Quips
 
 - Short messages during play, for cutscenes, notices and quips. They never pause play
+- One line in a strip at the top centre, starting with the speaker's name
 
 ### Choices
 
 - **Effect:** a choice changes where the duck goes, what she does and what she sees
-- **Kinds:** dialogue answers in the dialogue box, and route forks in the level
+- **Kinds:** dialogue answers, as two or three answer buttons in a row above the dialogue box, and route forks in the level
 - **Reach:** most choices affect only the current floor. A few flagged choices carry on to later floors or the ending
 
 ### Settings
 
-- A settings page, with a toggle for the touch control overlay (on by default)
+- A pause card over the dimmed game, which pauses play. Its rows: Touch controls (Shown or Hidden, Shown by default), then Resume
