@@ -15,7 +15,7 @@ import { SCREEN, TILE } from "./screen";
 import { TEXT } from "./text";
 import type { AreaPlan, Instance, TileRect, Tuning } from "./types";
 import { ZONE_1 } from "./zone1";
-import { TEST_ZONES, ZONES as ZONES_BY_KEY } from "./zones";
+import { RECIPES, TEST_ZONES, ZONES as ZONES_BY_KEY } from "./zones";
 
 const MANIFEST = manifestJson as ArtManifest;
 const TILESETS: Readonly<Record<string, Tileset>> = {
@@ -179,11 +179,11 @@ describe("the map", () => {
     expect([ZONE_MAP.start, ZONE_MAP.finish].filter((id) => !ids.includes(id))).toEqual([]);
   });
 
-  it("names a zone for every zone node a built path reaches, and only zones that exist", () => {
+  it("names a zone for every zone node a built path reaches, and only zones or recipes that exist", () => {
     const built = reach(ZONE_MAP.start, (id) => after(id, true));
     for (const node of ZONE_MAP.nodes) {
       if (node.zone !== undefined) {
-        expect(ZONES_BY_KEY[node.zone], node.zone).toBeDefined();
+        expect(ZONES_BY_KEY[node.zone] ?? RECIPES[node.zone], node.zone).toBeDefined();
       }
       if (node.kind === "zone" && built.has(node.id)) {
         expect(node.zone, node.id).toBeDefined();

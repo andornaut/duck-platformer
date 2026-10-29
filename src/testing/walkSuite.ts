@@ -1,0 +1,86 @@
+// The zone walk's checks on one zone plan, for the walk tests: it clears, it reaches every
+// surface it does not mark out of reach and none it does, and no no-cross pair is crossed.
+import { beforeAll, expect, it } from "vitest";
+
+import manifestJson from "../../public/art/manifest.json";
+import { ARCHETYPES } from "../data/archetypes";
+import { CHARACTERS } from "../data/characters";
+import { DUCK } from "../data/duck";
+import { TILE } from "../data/screen";
+import type { TilePoint, ZoneLayout, ZonePlan } from "../data/types";
+import { zoneLayout } from "../rules/tiles";
+import { crosses, type Surface, surfaceAt, walkZone, type ZoneWalk } from "../sim/zoneWalk";
+import { artHitboxes, type ArtManifest } from "../view/aseprite";
+
+const SHEETS = import.meta.glob<{
+  readonly frames: Readonly<Record<string, { readonly sourceSize: { w: number; h: number } }>>;
+}>("../../public/art/sprites/*.json", { eager: true, import: "default" });
+export const HITBOXES = artHitboxes((key) => {
+  const frame = Object.values(SHEETS[`../../public/art/sprites/${key}.json`]?.frames ?? {})[0];
+  return { height: frame?.sourceSize.h ?? 0, width: frame?.sourceSize.w ?? 0 };
+}, manifestJson as ArtManifest);
+export const CATALOGUE = { archetypes: ARCHETYPES, characters: CHARACTERS };
+// The walk takes seconds on a large zone.
+export const WALK_MS = 120_000;
+
+const named = (surface: Surface) =>
+  `${surface.area} cols ${surface.left / TILE}-${surface.right / TILE} row ${surface.y / TILE}${
+    surface.mover === undefined ? "" : " (moving)"
+  }`;
+const spotName = (area: string, spot: TilePoint) => `${area} col ${spot.col} row ${spot.row}`;
+
+// Registers the walk's checks on plan, inside the caller's describe.
+export function walkSuite(plan: ZonePlan): void {
+  let layout: ZoneLayout;
+  let walk: ZoneWalk;
+  const areas = Object.entries(plan.areas);
+  const marks = areas.flatMap(([area, { outOfReach = [] }]) =>
+    outOfReach.map((spot) => ({ area, spot })),
+  );
+
+  beforeAll(() => {
+    layout = zoneLayout(TILE, CATALOGUE, HITBOXES, new Set(), plan);
+    walk = walkZone(DUCK, layout);
+  }, WALK_MS);
+
+  it("clears at its exit, walked from the start", () => {
+    expect(walk.cleared).toBe(true);
+  });
+
+  it("reaches every surface it does not mark out of reach", () => {
+    const marked = new Set(
+      marks.flatMap(({ area, spot }) => surfaceAt(TILE, walk.surfaces, area, spot)?.key ?? []),
+    );
+    const unreached = walk.surfaces.filter(
+      (surface) => !walk.reached.has(surface.key) && !marked.has(surface.key),
+    );
+    expect(unreached.map(named)).toEqual([]);
+  });
+
+  it("marks out of reach only surfaces she never reaches", () => {
+    const wrong = marks.filter(({ area, spot }) => {
+      const surface = surfaceAt(TILE, walk.surfaces, area, spot);
+      return surface === undefined || walk.reached.has(surface.key);
+    });
+    expect(wrong.map(({ area, spot }) => spotName(area, spot))).toEqual([]);
+  });
+
+  it(
+    "can't be crossed at a no-cross spot in one move",
+    () => {
+      const crossed = areas.flatMap(([area, { noCross = [] }]) =>
+        noCross.flatMap(({ from, to }) => {
+          const start = surfaceAt(TILE, walk.surfaces, area, from);
+          const end = surfaceAt(TILE, walk.surfaces, area, to);
+          const pair = `${spotName(area, from)} to ${spotName(area, to)}`;
+          if (!start || !end) {
+            return [`${pair}: not both surfaces`];
+          }
+          return crosses(DUCK, layout, walk.surfaces, start, end) ? [pair] : [];
+        }),
+      );
+      expect(crossed).toEqual([]);
+    },
+    WALK_MS,
+  );
+}
