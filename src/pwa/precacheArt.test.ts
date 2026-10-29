@@ -11,18 +11,14 @@ describe("artUrls", () => {
     [
       "a sprite",
       { ...EMPTY, sprites: [{ json: "s/a.json", key: "a", once: [], png: "s/a.png" }] },
-      ["s/a.png", "s/a.json"],
+      [],
     ],
-    [
-      "a font",
-      { ...EMPTY, fonts: [{ fnt: "f/b.fnt", key: "b", png: "f/b.png" }] },
-      ["f/b.png", "f/b.fnt"],
-    ],
+    ["a font", { ...EMPTY, fonts: [{ fnt: "f/b.fnt", key: "b", png: "f/b.png" }] }, ["f/b.fnt"]],
     ["a data file", { ...EMPTY, data: [{ json: "c.json", key: "c" }] }, ["c.json"]],
     [
       "a tileset",
       { ...EMPTY, tilesets: [{ json: "t/d.json", key: "d", png: "t/d.png" }] },
-      ["t/d.png", "t/d.json"],
+      ["t/d.json"],
     ],
     [
       "a backdrop",
@@ -30,9 +26,9 @@ describe("artUrls", () => {
         ...EMPTY,
         backdrops: [{ height: 9, key: "e", png: "b/e.png", repeat: "x", width: 4, y: 9 } as const],
       },
-      ["b/e.png"],
+      [],
     ],
-  ])("lists the manifest and %s", (_, manifest, files) => {
+  ])("lists the manifest and what a build loads from its files for %s", (_, manifest, files) => {
     expect(artUrls(manifest)).toEqual([ART_MANIFEST_URL, ...files.map((file) => ART_PATH + file)]);
   });
 });

@@ -1,0 +1,102 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+
+import { itemAt } from "@andornaut/game-kit/arrays";
+import { describe, expect, it } from "vitest";
+
+import { BASE_FRAME } from "../../assets/atlasManifest";
+import { TILE } from "../../data/screen";
+import { ART_MANIFEST_FILE, ART_PATH, type ArtManifest } from "../../view/aseprite";
+import { buildAtlas, decodePng } from "./atlasBuild";
+import { EXTRUDE } from "./atlasLayout";
+import type { RgbaImage } from "./atlasPixels";
+
+const ART_DIR = join(import.meta.dirname, "../../../public", ART_PATH);
+const readArt = async (path: string) => new Uint8Array(await readFile(join(ART_DIR, path)));
+const ART = JSON.parse(new TextDecoder().decode(await readArt(ART_MANIFEST_FILE))) as ArtManifest;
+const ATLAS = await buildAtlas(readArt, ART);
+
+// Every PNG art's manifest lists, by key.
+const PNGS: ReadonlyMap<string, string> = new Map(
+  [...ART.sprites, ...ART.tilesets, ...ART.fonts, ...ART.backdrops].map(({ key, png }) => [
+    key,
+    png,
+  ]),
+);
+
+function textureOf(key: string) {
+  const texture = ATLAS.textures.find((candidate) => candidate.key === key);
+  if (texture === undefined) {
+    throw new Error(`${key} is not in the atlas`);
+  }
+  return texture;
+}
+
+// Where a PNG sits on its page: its frames' top-left.
+const topLeft = (frames: readonly { x: number; y: number }[]) => ({
+  x: Math.min(...frames.map(({ x }) => x)),
+  y: Math.min(...frames.map(({ y }) => y)),
+});
+
+// The RGBA bytes of a rect of image, row by row.
+function pixels(image: RgbaImage, x: number, y: number, width: number, height: number): number[] {
+  const rows = Array.from({ length: height }, (_, row) => {
+    const start = ((y + row) * image.width + x) * 4;
+    return [...image.data.subarray(start, start + width * 4)];
+  });
+  return rows.flat();
+}
+
+describe("buildAtlas", () => {
+  it("packs every PNG art's manifest lists, once", () => {
+    expect(ATLAS.textures.map(({ key }) => key).sort()).toEqual([...PNGS.keys()].sort());
+  });
+
+  it.each([...PNGS])(
+    "draws %s's PNG whole on its page, its edges repeated around it",
+    async (key, png) => {
+      const texture = textureOf(key);
+      const source = decodePng(await readArt(png));
+      const page = itemAt(ATLAS.pages, texture.page);
+      const { x, y } = topLeft(texture.frames);
+      expect(pixels(page, x, y, source.width, source.height)).toEqual(
+        pixels(source, 0, 0, source.width, source.height),
+      );
+      expect(pixels(page, x - EXTRUDE, y, EXTRUDE, source.height)).toEqual(
+        pixels(source, 0, 0, 1, source.height),
+      );
+      expect(pixels(page, x, y + source.height, source.width, EXTRUDE)).toEqual(
+        pixels(source, 0, source.height - 1, source.width, 1),
+      );
+    },
+  );
+
+  it.each(ART.sprites.map(({ json, key }) => [key, json]))(
+    "keeps each of %s's frames at its rect in its PNG",
+    async (key, json) => {
+      const sheet = JSON.parse(new TextDecoder().decode(await readArt(json))) as {
+        frames: Record<string, { frame: { h: number; w: number; x: number; y: number } }>;
+      };
+      const { frames } = textureOf(key);
+      const origin = topLeft(frames);
+      expect(
+        frames.map(({ h, name, w, x, y }) => [name, { h, w, x: x - origin.x, y: y - origin.y }]),
+      ).toEqual(Object.entries(sheet.frames).map(([name, { frame }]) => [name, frame]));
+    },
+  );
+
+  it.each(ART.tilesets.map(({ key }) => [key]))(
+    "names %s's tiles by index in reading order, covering its PNG",
+    (key) => {
+      const tileSize = TILE;
+      const { frames } = textureOf(key);
+      const base = frames.find(({ name }) => name === BASE_FRAME);
+      const tiles = frames.filter(({ name }) => name !== BASE_FRAME);
+      const readingOrder = [...tiles].sort((a, b) => a.y - b.y || a.x - b.x);
+      expect(readingOrder.map(({ name }) => name)).toEqual(tiles.map((_, index) => String(index)));
+      expect(tiles.every(({ h, w }) => w === tileSize && h === tileSize)).toBe(true);
+      expect(tiles.length * tileSize ** 2).toBe((base?.w ?? 0) * (base?.h ?? 0));
+      expect(new Set(tiles.map(({ x, y }) => `${x},${y}`)).size).toBe(tiles.length);
+    },
+  );
+});

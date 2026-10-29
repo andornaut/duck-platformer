@@ -7,10 +7,15 @@ import { ART_MANIFEST_URL, artUrls } from "./precacheArt";
 
 // The kit's precache plugin with the game's cache policy, building /sw.js from
 // serviceWorkerSource (serviceWorker.ts) to precache the game page at pageHtmlFile and what it
-// loads. BootScene loads the art from public/art/ at runtime rather than linking it, and the
-// kit precaches only build output beyond the page's links, so a first plugin emits every file
-// art's manifest lists into the build output at its own path, for the kit's to name.
-export function precachePlugin(pageHtmlFile: string, serviceWorkerSource: string): Plugin[] {
+// loads. BootScene loads the art at runtime rather than linking it, and the kit precaches only
+// build output beyond the page's links, so a first plugin emits every file it loads from
+// public/art/ into the build output at its own path, for the kit's to name with the atlas pages
+// atlasPageUrls gives.
+export function precachePlugin(
+  pageHtmlFile: string,
+  serviceWorkerSource: string,
+  atlasPageUrls: () => readonly string[],
+): Plugin[] {
   let urls: string[] = [];
   const emitArt: Plugin = {
     apply: "build",
@@ -31,7 +36,7 @@ export function precachePlugin(pageHtmlFile: string, serviceWorkerSource: string
   return [
     emitArt,
     kitPrecachePlugin({
-      hashedFiles: () => ({ sounds: {}, urls }),
+      hashedFiles: () => ({ sounds: {}, urls: [...urls, ...atlasPageUrls()] }),
       pageHtmlFile,
       policy: CACHE_POLICY,
       serviceWorkerSource,

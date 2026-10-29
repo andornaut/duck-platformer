@@ -2,5 +2,6 @@
 // through a single Vite module runner, which resolves @andornaut/game-kit as the app does.
 export { securityHeadersPlugin } from "../headers/securityHeadersPlugin";
 export { precachePlugin } from "../pwa/precachePlugin";
+export { atlasPlugin } from "./atlas/atlasPlugin";
 export { PHASER_ENTRY_ID, phaserBuildPlugin } from "./phaserBuild";
 export { gitHead, shortCommit } from "@andornaut/game-kit/build/buildVersion";

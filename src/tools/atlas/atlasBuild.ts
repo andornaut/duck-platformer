@@ -1,0 +1,120 @@
+import { itemAt } from "@andornaut/game-kit/arrays";
+import { PNG } from "pngjs";
+
+import { type AtlasFrame, type AtlasTexture, BASE_FRAME } from "../../assets/atlasManifest";
+import { TILE } from "../../data/screen";
+import type { ArtManifest, AsepriteSheet } from "../../view/aseprite";
+import { EXTRUDE, layoutAtlas } from "./atlasLayout";
+import { blankImage, blitExtruded, type RgbaImage } from "./atlasPixels";
+
+export function decodePng(bytes: Uint8Array): RgbaImage {
+  const { data, height, width } = PNG.sync.read(Buffer.from(bytes));
+  return { data: new Uint8Array(data), height, width };
+}
+
+// A PNG of art's, with its frames' rects in it and, for a sprite, its tags.
+interface Source {
+  readonly frames: readonly AtlasFrame[];
+  readonly image: RgbaImage;
+  readonly key: string;
+  readonly tags?: AsepriteSheet["meta"]["frameTags"];
+}
+
+// An Aseprite json-hash export's frames, with each frame's rect.
+interface AsepriteExport extends AsepriteSheet {
+  readonly frames: Readonly<
+    Record<
+      string,
+      { readonly duration: number; readonly frame: { h: number; w: number; x: number; y: number } }
+    >
+  >;
+}
+
+const wholeFrame = ({ height, width }: RgbaImage): AtlasFrame => ({
+  h: height,
+  name: BASE_FRAME,
+  w: width,
+  x: 0,
+  y: 0,
+});
+
+// A tileset's whole PNG and its TILE-sized tiles in rows from the top-left, named by index as
+// Phaser names the frames of a spritesheet BootScene loads with that frame size.
+function tileFrames(image: RgbaImage): AtlasFrame[] {
+  const tileSize = TILE;
+  const columns = Math.floor(image.width / tileSize);
+  const rows = Math.floor(image.height / tileSize);
+  const tiles = Array.from({ length: columns * rows }, (_, index) => ({
+    h: tileSize,
+    name: String(index),
+    w: tileSize,
+    x: (index % columns) * tileSize,
+    y: Math.floor(index / columns) * tileSize,
+  }));
+  return [wholeFrame(image), ...tiles];
+}
+
+// A sprite's frames in export order, each with its duration.
+function spriteFrames({ frames }: AsepriteExport): AtlasFrame[] {
+  return Object.entries(frames).map(([name, { duration, frame }]) => ({
+    duration,
+    h: frame.h,
+    name,
+    w: frame.w,
+    x: frame.x,
+    y: frame.y,
+  }));
+}
+
+export interface AtlasBuild {
+  readonly pages: readonly RgbaImage[];
+  // Each key's frames at their rects on its page.
+  readonly textures: readonly AtlasTexture[];
+}
+
+// Packs every PNG art's manifest lists (sprites, fonts, tilesets and backdrops) whole into
+// atlas pages, reading each file by its path relative to the art directory. A frame keeps its
+// rect in its PNG, moved to where the PNG sits on its page.
+export async function buildAtlas(
+  readArt: (path: string) => Promise<Uint8Array>,
+  manifest: ArtManifest,
+): Promise<AtlasBuild> {
+  const readJson = async (path: string): Promise<unknown> =>
+    JSON.parse(new TextDecoder().decode(await readArt(path)));
+  const readPng = async (path: string) => decodePng(await readArt(path));
+  const sources: Source[] = await Promise.all([
+    ...manifest.sprites.map(async ({ json, key, png }) => {
+      const sheet = (await readJson(json)) as AsepriteExport;
+      return {
+        frames: spriteFrames(sheet),
+        image: await readPng(png),
+        key,
+        tags: sheet.meta.frameTags,
+      };
+    }),
+    ...manifest.tilesets.map(async ({ key, png }) => {
+      const image = await readPng(png);
+      return { frames: tileFrames(image), image, key };
+    }),
+    ...[...manifest.fonts, ...manifest.backdrops].map(async ({ key, png }) => {
+      const image = await readPng(png);
+      return { frames: [wholeFrame(image)], image, key };
+    }),
+  ]);
+  const layout = layoutAtlas(
+    sources.map(({ image: { height, width }, key }) => ({ height, key, width })),
+  );
+  const pages = layout.pages.map(({ height, width }) => blankImage(width, height));
+  const textures = layout.placements.map(({ key, page, x, y }): AtlasTexture => {
+    const source = sources.find((candidate) => candidate.key === key);
+    if (source === undefined) {
+      throw new Error(`No art for ${key}`);
+    }
+    blitExtruded(source.image, EXTRUDE, itemAt(pages, page), { x, y });
+    const frames = source.frames.map((frame) => ({ ...frame, x: frame.x + x, y: frame.y + y }));
+    return source.tags === undefined
+      ? { frames, key, page }
+      : { frames, key, page, tags: source.tags };
+  });
+  return { pages, textures };
+}
