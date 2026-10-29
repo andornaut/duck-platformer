@@ -32,6 +32,9 @@ and the frame's, between columns 31 and 32), sits on the box centre, so mirrorin
 
 Lift is how far the body sits above its rest row, in pixels. Every tag loops (ONCE is empty).
 
+States: idle idle; move none, falls back to idle (it stands where it is placed); react none, falls back to scheme
+(the pleased steeple when its plan works); talk talk; quirk scheme (an idle tic).
+
 portrait-ferret, 64x64: its wedge head and long neck facing right towards the text (as portrait-duck),
 cut off by the frame's bottom edge, with one ink outer line on a transparent ground (the dialogue box's
 68x68 frame supplies the backing). Tags: neutral (soft round eye, small smile), smug (the eye a pleased

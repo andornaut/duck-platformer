@@ -40,6 +40,9 @@ may draw under her: the land contact frame's is the largest. flutter and jump 1 
 is the game's to place. jump and land play once and hold their last frame (the manifest's "once"); every
 other tag loops. After land, play idle.
 
+States: idle idle; move walk, and in the air jump, flutter and land; react none, falls back to land (its squash
+reads as a flinch); talk none, falls back to idle (the portrait carries the speech); quirk none.
+
 portrait-duck, 64x64: her head and the top of her body, facing right towards the text, cut off by the frame's
 bottom edge, on a transparent ground (the dialogue box's 68x68 frame supplies the backing), with one ink outer
 line. Tags: neutral (dot eye), happy (eye closed in an upward arc), worried (dot eye under a brow slanting down

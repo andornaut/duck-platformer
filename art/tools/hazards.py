@@ -23,6 +23,9 @@ the top 6 rows (his eye bump and the bag's top) and 2px of each tyre's outer rim
 
 The wheel bar turns 45 degrees (5.1px of tyre) per frame, so at 100ms the wheels roll without slipping at 51 px/s.
 
+frog-courier is a character. States: idle idle; move ride; react none, falls back to idle; talk none, falls back
+to idle; quirk none.
+
 ferret-trap-snap, 50x26: the ferret's giant spring mousetrap. A wooden board (tan top, brown face) with a red
 trigger pedal, a plum-and-red spring at the hinge, a white steel bar and, standing on the front end, the ferret's
 badge. Board on rows 19 to 24, outline on row 25. Hit box 4,14,42,12: the board and the pedal, not the cocked
@@ -37,7 +40,8 @@ cocked bar alone reads as armed.
 | snap | 2     | 80  | the bar slammed flat on the pedal, the badge jolted 1px up |
 | snap | 3     | 80  | closed: the bar flat, the badge settled                    |
 
-snap plays once and holds its last frame (ONCE); set is one frame, so a still trap reads as still.
+snap plays once and holds its last frame (ONCE); set is one frame, so a still trap reads as still. It is a hazard,
+not a character, so it has no character states.
 
 The badge (badge(), 13x13) is the ferret's calling card: a cream plate with his hat-and-bow mark (emblem(), 7x11:
 a plum stovepipe with a red band over a red bow tie). Every trap the ferret sets carries it.

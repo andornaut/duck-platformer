@@ -194,6 +194,18 @@ A pause card over the game, which is dimmed by stepping every colour two ramp st
 - Frame 0 of every idle is the rest pose, and every sprite that stands or waits loops one.
 - A prop's idle changes colour in 2px clusters, never as a hard blink, and never brighter than the rest pose.
 
+### Character states
+
+A placed thing has three layers: an archetype (its behaviour), a character (its art, animations, hit box, dialogue and quip pools and quirks) and an instance (one placement). A character's data names its art key and the tag that plays for each state, so every character sprite lists its tags by state (idle, move, react, talk, quirk) in its script docstring and in the table below. A state with no tag of its own says "none" or names the tag it falls back to. A state with more than one tag names each.
+
+| Character    | idle   | move                                         | react                        | talk                       | quirk    |
+| ------------ | ------ | -------------------------------------------- | ---------------------------- | -------------------------- | -------- |
+| duck         | `idle` | `walk`; in the air `jump`, `flutter`, `land` | none, falls back to `land`   | none, falls back to `idle` | none     |
+| ferret       | `idle` | none, falls back to `idle`                   | none, falls back to `scheme` | `talk`                     | `scheme` |
+| frog-courier | `idle` | `ride`                                       | none, falls back to `idle`   | none, falls back to `idle` | none     |
+
+- ferret-trap-snap is a hazard, not a character: it has no character states, only `set` and `snap`.
+
 ### Reduced motion
 
 - Every loop shows frame 0, and effects hold their peak frame.
