@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { DUCK } from "../data/duck";
 import type { DuckState } from "../rules/duck";
+import { STEP_MS } from "../rules/step";
 import { duckFrameAt, type DuckPose, stepPose } from "./duck";
 
 const LAND_MS = 180;
-const STEP_MS = 1000 / 60;
 
 const STILL: DuckState = {
   bufferLeft: 0,

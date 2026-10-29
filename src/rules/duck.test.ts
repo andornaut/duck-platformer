@@ -3,8 +3,9 @@ import { describe, expect, it } from "vitest";
 import { DUCK } from "../data/duck";
 import type { Rect } from "../data/types";
 import { type DuckInput, type DuckState, startDuck, stepDuck } from "./duck";
+import { STEP_SECONDS } from "./step";
 
-const STEP = 1 / 60;
+const STEP = STEP_SECONDS;
 const GROUND: Rect = { height: 40, width: 2000, x: -1000, y: 300 };
 const IDLE: DuckInput = { jumpHeld: false, move: 0 };
 

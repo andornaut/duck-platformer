@@ -23,6 +23,7 @@ import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchC
 import { type LevelState, startLevel, stepLevel } from "../rules/level";
 import { nextLevelIndex, startLevelIndex } from "../rules/levelChain";
 import { moverAt } from "../rules/movers";
+import { STEP_MS, STEP_SECONDS } from "../rules/step";
 import { levelLayout } from "../rules/tiles";
 import { animKey, type AsepriteSheet, sheetTags, type TagFrame, tagMs } from "../view/aseprite";
 import { duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
@@ -35,7 +36,6 @@ import {
   trackPress,
 } from "../view/touchControls";
 
-const STEP_MS = 1000 / 60;
 // After a stall, run at most this much time at once rather than lurching ahead.
 const MAX_FRAME_MS = 250;
 
@@ -143,7 +143,7 @@ export class LevelScene extends Scene {
       this.level = stepLevel(
         DUCK,
         this.layout,
-        STEP_MS / 1000,
+        STEP_SECONDS,
         { jumpHeld: intent.jump, move: intent.move },
         this.level,
       );

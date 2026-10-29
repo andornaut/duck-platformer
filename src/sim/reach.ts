@@ -1,9 +1,9 @@
 import { assertNever } from "@andornaut/game-kit/assertNever";
-import { STEP_SECONDS } from "@andornaut/game-kit/clock/fixedStep";
 
 import type { DuckTuning, LevelLayout, LevelPlan, Reaches, Rect } from "../data/types";
 import type { DuckInput } from "../rules/duck";
 import { type LevelState, startLevel, stepLevel } from "../rules/level";
+import { STEP_SECONDS } from "../rules/step";
 import { levelLayout, tileRect } from "../rules/tiles";
 
 export type Reach = keyof Reaches;
@@ -15,7 +15,7 @@ const RUN_UP = 40;
 const FAR_SIDE = 20;
 // The largest reach tried, in tiles, and how long a try may take before it counts as missed.
 const MAX_TILES = 60;
-const MAX_STEPS = 600;
+const MAX_STEPS = Math.round(10 / STEP_SECONDS);
 // Steps she stands still first, so every try starts from her standing on the ground.
 const SETTLE_STEPS = 2;
 const STILL: DuckInput = { jumpHeld: false, move: 0 };

@@ -5,8 +5,9 @@ import type { LevelLayout, MoverLayout } from "../data/types";
 import type { DuckInput } from "./duck";
 import { type LevelState, standsOn, startLevel, stepLevel } from "./level";
 import { moverRect } from "./movers";
+import { STEP_SECONDS } from "./step";
 
-const STEP = 1 / 60;
+const STEP = STEP_SECONDS;
 const GROUND = { height: 40, width: 200, x: 0, y: 300 };
 const LEVEL: LevelLayout = {
   exit: { height: 40, width: 20, x: 1000, y: 260 },
@@ -150,7 +151,7 @@ describe("moving hazards", () => {
       0,
     ],
   ])("%s", (_, hazard, restarts) => {
-    const states = run({ ...WIDE, movingHazards: [hazard] }, 180, STILL);
+    const states = run({ ...WIDE, movingHazards: [hazard] }, Math.round(3 / STEP), STILL);
     expect(states.at(-1)?.restarts).toBe(restarts);
   });
 
