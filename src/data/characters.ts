@@ -48,6 +48,32 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 3,
     rows: 4,
   },
+  // Facades, each a backdrop repeated across its run: the ground and second storeys standing on
+  // the sidewalk line, and a walk-up's upper storey stacked above.
+  "facade-brownstone": {
+    archetype: "scenery",
+    art: "facade-brownstone",
+    cols: 4,
+    rows: 26,
+  },
+  "facade-one-storey": {
+    archetype: "scenery",
+    art: "facade-one-storey",
+    cols: 4,
+    rows: 16,
+  },
+  "facade-walkup": {
+    archetype: "scenery",
+    art: "facade-walkup",
+    cols: 4,
+    rows: 26,
+  },
+  "facade-walkup-upper": {
+    archetype: "scenery",
+    art: "facade-walkup-upper",
+    cols: 4,
+    rows: 15,
+  },
   // The ferret's first trap, set near zone 1's exit.
   "ferret-trap-snap": {
     animations: { idle: "set", move: "set", react: "set", talk: "set" },
@@ -151,6 +177,19 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     art: "planter",
     cols: 2,
     rows: 2,
+  },
+  // A roofline capping a facade, repeated across its run: a cornice goes along its top.
+  "roofline-brownstone": {
+    archetype: "scenery",
+    art: "roofline-brownstone",
+    cols: 4,
+    rows: 4,
+  },
+  "roofline-walkup": {
+    archetype: "scenery",
+    art: "roofline-walkup",
+    cols: 4,
+    rows: 4,
   },
   "storefront-cafe": {
     archetype: "scenery",

@@ -18,6 +18,30 @@ export const ZONE_1: ZonePlan = {
         // The sky and the far skyline behind the whole street, down to the sidewalk.
         { character: "street-sky", col: 0, cols: 240, row: 0 },
         { character: "street-skyline", col: 0, cols: 240, row: 0 },
+        // The buildings behind the shops, standing on the sidewalk line, in runs a whole number
+        // of pieces wide. A two-storey building is its facade capped by a roofline at row 20; a
+        // three-storey one adds an upper storey (rows 9 to 23) and its roofline's top is row 5.
+        // Each roofline carries a cornice along its top. Left to right: a brownstone, the cross
+        // street's gap, one-storey brick, the walk-up whose fire escape the detour climbs, the
+        // brownstone with the water tower, one-storey brick, a second walk-up and a brownstone to
+        // the exit.
+        { character: "facade-brownstone", col: 0, cols: 40, row: 24 },
+        { character: "roofline-brownstone", col: 0, cols: 40, row: 20 },
+        { character: "cornice", col: 1, cols: 39, row: 20 },
+        { character: "facade-one-storey", col: 52, cols: 12, row: 34 },
+        { character: "facade-walkup", col: 64, cols: 32, row: 24 },
+        { character: "facade-walkup-upper", col: 64, cols: 32, row: 9 },
+        { character: "roofline-walkup", col: 64, cols: 32, row: 5 },
+        { character: "facade-brownstone", col: 96, cols: 28, row: 24 },
+        { character: "roofline-brownstone", col: 96, cols: 28, row: 20 },
+        { character: "facade-one-storey", col: 124, cols: 28, row: 34 },
+        { character: "facade-walkup", col: 152, cols: 40, row: 24 },
+        { character: "facade-walkup-upper", col: 152, cols: 40, row: 9 },
+        { character: "roofline-walkup", col: 152, cols: 40, row: 5 },
+        { character: "cornice", col: 152, cols: 40, row: 5 },
+        { character: "facade-brownstone", col: 192, cols: 48, row: 24 },
+        { character: "roofline-brownstone", col: 192, cols: 48, row: 20 },
+        { character: "cornice", col: 192, cols: 48, row: 20 },
         // Walk: the café, with a flock of pigeons that flee as she comes near.
         { character: "storefront-cafe", col: 6, row: 40 },
         { character: "pigeon", col: 12, row: 48 },
