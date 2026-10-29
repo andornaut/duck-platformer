@@ -168,6 +168,57 @@ describe("moving platforms", () => {
   });
 });
 
+describe("pushes", () => {
+  // A block 48 wide on the ground, level with her side; she starts at x 100 (her box 88 to 112).
+  const block = (x: number, direction?: Motion["direction"]) =>
+    object({
+      height: 24,
+      motion: direction
+        ? { ...STATIC, algorithm: "linear", direction, distance: 200, speed: 60 }
+        : STATIC,
+      origin: { x, y: GROUND.y - 24 },
+    });
+  const wall = { height: 100, width: 40, x: 20, y: GROUND.y - 100 };
+  const leftEdge = (state: ZoneState) => state.objects[0]?.x ?? 0;
+  const rightEdge = (state: ZoneState) => leftEdge(state) + 48;
+
+  it.each([
+    [
+      "standing still, hit from the left by a block moving right, ahead of it",
+      block(20, "right"),
+      STILL,
+      (state: ZoneState) => state.duck.x - rightEdge(state),
+    ],
+    [
+      "standing still, hit from the right by a block moving left, ahead of it",
+      block(140, "left"),
+      STILL,
+      (state: ZoneState) => state.duck.x + DUCK.width - leftEdge(state),
+    ],
+    [
+      "running right into a still block, stopped at its side",
+      block(140),
+      RIGHT,
+      (state: ZoneState) => state.duck.x + DUCK.width - leftEdge(state),
+    ],
+    [
+      "running right into a block moving left toward her, at its side",
+      block(200, "left"),
+      RIGHT,
+      (state: ZoneState) => state.duck.x + DUCK.width - leftEdge(state),
+    ],
+  ])("ends %s", (_, mover, input, gap) => {
+    const states = run(zone(area([mover])), 1.5, input);
+    expect(states.every((state) => state.restarts === 0)).toBe(true);
+    expect(gap(states.at(-1) as ZoneState)).toBeCloseTo(0, 9);
+  });
+
+  it("restarts the zone when a block pushes her into a wall", () => {
+    const layout = zone(area([block(140, "left")], { solids: [GROUND, wall] }));
+    expect(run(layout, 3, STILL).some((state) => state.restarts > 0)).toBe(true);
+  });
+});
+
 describe("use zones", () => {
   const exit = object({
     collision: "use",

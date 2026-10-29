@@ -155,12 +155,29 @@ function ride(
   return { ...duck, x, y };
 }
 
+// A solid moving along x into her side pushes her out of its way, to the side she was on before
+// it moved: its leading edge, as it runs into her. One that has not moved along x leaves her to
+// the duck's own collision, which stops her by her own motion.
+export function pushedAside(
+  tuning: DuckTuning,
+  before: Rect,
+  after: Rect,
+  duck: DuckState,
+): DuckState {
+  if (after.x === before.x || !overlaps(duckBox(tuning, duck), after)) {
+    return duck;
+  }
+  const left = duck.x + tuning.width / 2 < before.x + before.width / 2;
+  return { ...duck, x: left ? after.x - tuning.width : after.x + after.width };
+}
+
 // One fixed step of the zone. Pure, so the game and a headless simulator run the same rules.
 // Solid objects block like terrain and ledge objects only from above; standing on a moving one,
 // she moves with it, and leaving it by a jump or a walk off its edge she keeps its speed along x
-// until she lands. Touching a hazard or falling out of the area restarts the zone at its start,
-// the next attempt. Use at a use zone clears the zone at its exit, or at a door sets `using`,
-// and the zone holds still until enterArea.
+// until she lands. A solid one running into her side pushes her ahead of it. Touching a hazard,
+// being pushed into a solid or falling out of the area restarts the zone at its start, the next
+// attempt. Use at a use zone clears the zone at its exit, or at a door sets `using`, and the
+// zone holds still until enterArea.
 export function stepZone(
   tuning: DuckTuning,
   layout: ZoneLayout,
@@ -198,6 +215,17 @@ export function stepZone(
   }
   const rects = (collision: string) =>
     objects.filter(({ object }) => object.collision === collision).map(({ after }) => after);
+  // A solid platform running into her side pushes her ahead of it. Pushed into a solid, she is
+  // crushed, which restarts the zone as a hazard does.
+  const solids = [...area.solids, ...rects("solid")];
+  let crushed = false;
+  for (const { after, before, object } of platforms) {
+    const pushed = object.collision === "solid" ? pushedAside(tuning, before, after, duck) : duck;
+    if (pushed !== duck) {
+      duck = pushed;
+      crushed ||= solids.some((solid) => overlaps(duckBox(tuning, duck), solid));
+    }
+  }
   const hazards = objects
     .filter(({ object }) => object.collision === "hazard")
     .map(({ after, object }) =>
@@ -205,20 +233,13 @@ export function stepZone(
         ? { ...object.hitbox, x: after.x + object.hitbox.x, y: after.y + object.hitbox.y }
         : after,
     );
-  duck = stepDuck(
-    tuning,
-    [...area.solids, ...rects("solid")],
-    rects("ledge"),
-    seconds,
-    input,
-    duck,
-  );
+  duck = stepDuck(tuning, solids, rects("ledge"), seconds, input, duck);
   if (riding && !duck.grounded) {
     duck = { ...duck, carryVx: dx / seconds };
   }
   const box = duckBox(tuning, duck);
   const steps = zone.steps + 1;
-  if (duck.y > area.height || hazards.some((hazard) => overlaps(box, hazard))) {
+  if (crushed || duck.y > area.height || hazards.some((hazard) => overlaps(box, hazard))) {
     return enterArea(tuning, layout, layout.start, {
       attempt: zone.attempt + 1,
       restarts: zone.restarts + 1,
