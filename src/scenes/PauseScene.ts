@@ -5,6 +5,7 @@ import {
   phaserBitmapFont,
   type PhaserFontData,
 } from "@andornaut/game-kit/text/phaser/phaserBitmapFont";
+import { snapshotRemapped } from "@andornaut/game-kit/view/phaser/snapshotRemap";
 import { Core, type GameObjects, type Input, Scene } from "phaser";
 
 import { SCREEN } from "../data/screen";
@@ -15,7 +16,7 @@ import { type CardAction, cardBackAction, cardKeyAction } from "../pause/cardInp
 import { coverZone, leaveGame, PHONE_EVENTS, startWakeLock, stopWakeLock, zoneShown } from "../pwa";
 import { setTouchControlsShown, touchControlsShown } from "../settings/touchControls";
 import type { ArtManifest } from "../view/aseprite";
-import { dimPixels, type Palette } from "../view/dim";
+import { dimColour, type Palette } from "../view/dim";
 import type { ZoneScene } from "./ZoneScene";
 
 const ZONE = "zone";
@@ -165,26 +166,8 @@ export class PauseScene extends Scene {
 
   // The canvas as rendered at the end of the next frame, redrawn two steps down each colour's
   // ramp into the texture key. Where the renderer gives no image, the card shows undimmed.
-  private dimZone(key: string): Promise<void> {
-    return new Promise((resolve) => {
-      this.game.renderer.snapshotArea(0, 0, SCREEN.width, SCREEN.height, (snapshot) => {
-        if (snapshot instanceof HTMLImageElement) {
-          if (this.textures.exists(key)) {
-            this.textures.remove(key);
-          }
-          const texture = this.textures.createCanvas(key, SCREEN.width, SCREEN.height);
-          const context = texture?.getContext();
-          if (texture && context) {
-            context.drawImage(snapshot, 0, 0);
-            const pixels = context.getImageData(0, 0, SCREEN.width, SCREEN.height);
-            dimPixels(this.palette(), pixels.data);
-            context.putImageData(pixels, 0, 0);
-            texture.refresh();
-          }
-        }
-        resolve();
-      });
-    });
+  private async dimZone(key: string): Promise<void> {
+    await snapshotRemapped(dimColour(this.palette()), this, { ...SCREEN, x: 0, y: 0 }, key);
   }
 
   private drawCard(): GameObjects.Container {
