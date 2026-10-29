@@ -157,39 +157,67 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
   },
   // Pedestrians walking past, back and forth, paying her no attention. React and talk fall back
   // to idle.
-  // PLACEHOLDER: the park's pieces, drawn as flat rectangles until art draws the park. Ledges are
-  // one-way: a bench's seat, a branch, the bandstand's roof. The boat is a moving platform whose
-  // motion each placement sets. The gate is the park's exit.
+  // The park's pieces. The bandstand, 7 tall, with its roof a one-way ledge 6 above its base.
   "park-bandstand": {
     archetype: "scenery",
-    art: "placeholder-park-bandstand",
-    cols: 14,
-    rows: 10,
+    art: "park-bandstand",
+    cols: 10,
+    rows: 7,
   },
   "park-bandstand-roof": {
     archetype: "ledge",
-    art: "placeholder-park-bandstand-roof",
-    cols: 14,
+    art: "one-way-bandstand",
+    cols: 10,
     rows: 1,
   },
+  // A bench: its seat a one-way ledge 2 above the ground, and its frame below it.
   "park-bench": {
     archetype: "ledge",
-    art: "placeholder-park-bench",
-    cols: 4,
+    art: "one-way-bench",
+    cols: 3,
     rows: 1,
   },
+  "park-bench-frame": {
+    archetype: "scenery",
+    art: "park-bench",
+    cols: 3,
+    rows: 2,
+  },
+  // PLACEHOLDER: a boat on the pond, a moving platform whose motion each placement sets, until art
+  // draws it.
   "park-boat": {
     archetype: "platform",
     art: "placeholder-park-boat",
     cols: 6,
     rows: 1,
   },
+  // A tree's branch: a one-way ledge 6 above the ground.
   "park-branch": {
     archetype: "ledge",
-    art: "placeholder-park-branch",
+    art: "one-way-branch",
     cols: 4,
     rows: 1,
   },
+  // The park's backdrops, each repeated across a whole zone.
+  "park-city": {
+    archetype: "scenery",
+    art: "park-city",
+    cols: 30,
+    rows: 17,
+  },
+  "park-clouds": {
+    archetype: "scenery",
+    art: "park-clouds",
+    cols: 30,
+    rows: 14,
+  },
+  "park-far-trees": {
+    archetype: "scenery",
+    art: "park-far-trees",
+    cols: 20,
+    rows: 10,
+  },
+  // PLACEHOLDER: the park gate, the zone's exit, until art draws it.
   "park-gate": {
     archetype: "exit",
     art: "placeholder-park-gate",
@@ -198,15 +226,27 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
   },
   "park-lamp": {
     archetype: "scenery",
-    art: "placeholder-park-lamp",
-    cols: 1,
-    rows: 6,
+    art: "park-lamp",
+    cols: 2,
+    rows: 7,
+  },
+  "park-sky": {
+    archetype: "scenery",
+    art: "park-sky",
+    cols: 4,
+    rows: 50,
   },
   "park-tree": {
     archetype: "scenery",
-    art: "placeholder-park-tree",
-    cols: 6,
-    rows: 14,
+    art: "park-tree",
+    cols: 8,
+    rows: 13,
+  },
+  "park-treetops": {
+    archetype: "scenery",
+    art: "park-treetops",
+    cols: 30,
+    rows: 35,
   },
   "pedestrian-cat": {
     animations: { idle: "idle", move: "walk", react: "idle", talk: "idle" },
@@ -255,13 +295,13 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     rows: 2,
   },
   // A roofline capping a facade, repeated across its run: a cornice goes along its top.
-  // PLACEHOLDER: a shallow pond: touching the water restarts her. Placed with a width, between
+  // A shallow pond, two rows deep: touching the water restarts her. Placed with a width, between
   // solid banks.
   pond: {
     archetype: "hazard",
-    art: "placeholder-park-pond",
+    art: "hazard-pond",
     cols: 3,
-    rows: 1,
+    rows: 2,
   },
   "roofline-brownstone": {
     archetype: "scenery",
@@ -385,12 +425,12 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
       reaction: { range: 8, speed: 10 },
     },
   },
-  // PLACEHOLDER: a thorny hedge: a hazard, not solid, placed with a width.
+  // A thorny hedge, one row tall: a hazard, not solid, placed with a width.
   "thorn-hedge": {
     archetype: "hazard",
-    art: "placeholder-park-thorn-hedge",
+    art: "hazard-thorn",
     cols: 3,
-    rows: 2,
+    rows: 1,
   },
   "walk-signal": {
     archetype: "scenery",
