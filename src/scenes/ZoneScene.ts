@@ -55,7 +55,7 @@ import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchC
 import { nodeOf } from "../rules/map";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
 import { zoneLayout } from "../rules/tiles";
-import { areaOf, enterArea, startZone, stepZone, type ZoneState } from "../rules/zone";
+import { areaOf, enterArea, exitAt, startZone, stepZone, type ZoneState } from "../rules/zone";
 import { askedLapSeed, askedRecipe, nextZoneIndex, startZoneIndex } from "../rules/zoneChain";
 import { zonePlanFor } from "../rules/zonePlans";
 import { newLapSeed, saveClearedZone, saveZoneStart } from "../save";
@@ -108,6 +108,8 @@ const OBJECT_COLOURS: Readonly<Record<Collision, number>> = {
 };
 // Going through a door fades to black and back, each way this long, with play held still.
 const FADE_MS = 250;
+// The tag an exit's art plays once as she uses it, before the zone is left, where it has one.
+const EXIT_TAG = "open";
 
 const DUCK_SPRITE = "duck";
 const PAUSE = "pause";
@@ -189,8 +191,10 @@ export class ZoneScene extends Scene {
   // The area drawn, and a rectangle for each of its objects.
   private areaShown = "";
   private attemptShown = 0;
-  // Play holds still while a door fades.
+  // Play holds still while a door fades or an exit opens.
   private fading = false;
+  // The exit opening, by its index among the area's objects: drawObjects leaves its tag alone.
+  private opening: number | undefined;
   private objectArt: ObjectArt[] = [];
   private terrainMap: Tilemaps.Tilemap | undefined;
   // When each held button's press began.
@@ -312,19 +316,11 @@ export class ZoneScene extends Scene {
         this.zone,
       );
       this.duckPose = stepPose(this.landMs, STEP_MS, before, this.zone.duck, this.duckPose);
-      // Clearing a zone goes to the map; without one, the recipe ?zone=<key> names assembled
-      // again, or the next zone in the chain.
-      if (this.zone.cleared && this.mapRoute !== undefined) {
-        saveClearedZone(this.lapSeed, this.mapRoute);
-        this.scene.start("map", { played: true, route: this.mapRoute, seed: this.lapSeed });
+      if (this.zone.cleared) {
+        this.openExit();
         return;
       }
-      if (this.zone.cleared && this.trial !== undefined) {
-        this.lapSeed = askedLapSeed(window.location.search) ?? newLapSeed();
-        this.loadPlan(zonePlanFor(this.lapSeed, this.trial));
-      } else if (this.zone.cleared) {
-        this.loadZone(nextZoneIndex(this.zoneIndex, CHAIN.length));
-      } else if (this.zone.using) {
+      if (this.zone.using) {
         this.goThrough(this.zone.using);
       }
     }
@@ -334,6 +330,38 @@ export class ZoneScene extends Scene {
     this.drawObjects();
     this.drawDuck();
     this.drawControls(time, touches);
+  }
+
+  // Plays the open tag of the exit she used, where its art has one, play held still, then leaves.
+  private openExit(): void {
+    const index = exitAt(DUCK, this.layout, this.zone);
+    const sprite = index === undefined ? undefined : this.objectArt[index]?.sprite;
+    if (!sprite || !this.sheet(sprite.texture.key).has(EXIT_TAG)) {
+      this.leave();
+      return;
+    }
+    this.fading = true;
+    this.opening = index;
+    sprite.play(animationKey(sprite.texture.key, EXIT_TAG));
+    sprite.once("animationcomplete", () => {
+      this.fading = false;
+      this.opening = undefined;
+      this.leave();
+    });
+  }
+
+  // Leaves the cleared zone for the map; without one, plays the recipe ?zone=<key> names
+  // assembled again, or the next zone in the chain.
+  private leave(): void {
+    if (this.mapRoute !== undefined) {
+      saveClearedZone(this.lapSeed, this.mapRoute);
+      this.scene.start("map", { played: true, route: this.mapRoute, seed: this.lapSeed });
+    } else if (this.trial !== undefined) {
+      this.lapSeed = askedLapSeed(window.location.search) ?? newLapSeed();
+      this.loadPlan(zonePlanFor(this.lapSeed, this.trial));
+    } else {
+      this.loadZone(nextZoneIndex(this.zoneIndex, CHAIN.length));
+    }
   }
 
   // Starts the zone at index from its start. Each load draws a fresh seed, so the random
@@ -505,7 +533,7 @@ export class ZoneScene extends Scene {
       const x = Math.round(at.x + art.offset.x);
       const y = Math.round(at.y + art.offset.y);
       const moved = x !== art.item.x || y !== art.item.y;
-      if (art.sprite) {
+      if (art.sprite && index !== this.opening) {
         if (x !== art.item.x) {
           art.sprite.setFlipX(x < art.item.x);
         }

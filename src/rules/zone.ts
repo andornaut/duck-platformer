@@ -262,3 +262,20 @@ export function stepZone(
     using: useArea?.object.to,
   };
 }
+
+// The index among her area's objects of the exit she stands at (a use zone that leads nowhere),
+// or undefined: the one she used once the zone is cleared.
+export function exitAt(
+  tuning: DuckTuning,
+  layout: ZoneLayout,
+  zone: ZoneState,
+): number | undefined {
+  const box = duckBox(tuning, zone.duck);
+  const index = areaOf(layout, zone.area).objects.findIndex(
+    (object, i) =>
+      object.collision === "use" &&
+      object.to === undefined &&
+      overlaps(box, rectAt(object, zone.objects[i] ?? object.origin)),
+  );
+  return index < 0 ? undefined : index;
+}

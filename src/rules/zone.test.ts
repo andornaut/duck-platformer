@@ -6,6 +6,7 @@ import { startDuck } from "./duck";
 import { STEP_SECONDS } from "./step";
 import {
   enterArea,
+  exitAt,
   objectStep,
   standsOn,
   startZone,
@@ -247,6 +248,14 @@ describe("use zones", () => {
     ],
   ])("%s", (_, layout, input, cleared) => {
     expect(run(layout, 0.5, input).at(-1)?.cleared).toBe(cleared);
+  });
+
+  it.each([
+    ["the exit she used, past a door", [{ ...door, origin: { x: 600, y: 252 } }, exit], 1],
+    ["none away from every exit", [{ ...exit, origin: { x: 600, y: 252 } }], undefined],
+  ])("exitAt names %s", (_, objects, index) => {
+    const layout = zone(area(objects), { hall });
+    expect(exitAt(DUCK, layout, run(layout, 0.5, press).at(-1) as ZoneState)).toBe(index);
   });
 
   it("Use at a door holds the zone still at the door until enterArea takes her through", () => {
