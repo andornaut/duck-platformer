@@ -4,9 +4,9 @@ import type { ZonePlan } from "./types";
 //
 // The street is one screen of play: the sidewalk's top is row 26 (y 312), and below it the game
 // shows ink. A pit-floor hazard 4 below the sidewalk's top in every opening restarts the zone
-// soon after she drops in. Awnings and the
-// hotel canopy sit on row 20, 6 above the sidewalk. Left to right it teaches: walk, hop, jump, a
-// gap, a cellar hatch, the courier, then the ferret's trap at the hotel door.
+// soon after she drops in. Awnings and the hotel canopy sit on row 20, 6 above the sidewalk.
+// Left to right it teaches: walk, hop, jump, a gap, a cellar hatch, the courier, then the
+// ferret's trap at the hotel door.
 export const ZONE_1: ZonePlan = {
   areas: {
     // The lobby: the floor's top is row 56 (y 672). A climb at the right end leads from the
@@ -61,10 +61,12 @@ export const ZONE_1: ZonePlan = {
         // The sky and the far skyline behind the whole street.
         { character: "street-sky", col: 0, cols: 240, row: 0 },
         { character: "street-skyline", col: 0, cols: 240, row: 3 },
-        // Walk: the café, with pigeons that flee as she comes near.
+        // Walk: the café, with a flock of pigeons that flee as she comes near.
         { character: "storefront-cafe", col: 6, row: 16 },
-        { character: "pigeon", col: 14, row: 25 },
-        { character: "pigeon", col: 17, row: 25 },
+        { character: "pigeon", col: 12, row: 24 },
+        { character: "pigeon", col: 14, phase: 0.3, row: 24 },
+        { character: "pigeon", col: 17, phase: 0.6, row: 24 },
+        { character: "pigeon", col: 19, phase: 0.1, row: 24 },
         { character: "walk-signal", col: 24, row: 19 },
         // Hop: a planter, up 2, in front of the florist; then down 1 into a cross street and up
         // 1 out of it.
@@ -78,13 +80,17 @@ export const ZONE_1: ZonePlan = {
         { character: "storefront-makeup-store", col: 69, row: 16 },
         { character: "awning", col: 69, cols: 8, row: 20 },
         { character: "street-tree", col: 82, row: 15 },
+        // A second flock, under the tree.
+        { character: "pigeon", col: 88, row: 24 },
+        { character: "pigeon", col: 91, phase: 0.4, row: 24 },
+        { character: "pigeon", col: 93, phase: 0.7, row: 24 },
         // A gap: a subway entrance, 10 across.
         { character: "subway-railing", col: 102, row: 21 },
         { character: "pit-floor", col: 108, cols: 10, row: 30 },
         // A cellar hatch open 4 across, past the pet shop's dog; then one open 6 across. Each
         // has a steel leaf 2 up at each edge.
         { character: "storefront-pet-shop", col: 120, row: 16 },
-        { character: "dog", col: 122, row: 24 },
+        { character: "dog-pug", col: 122, row: 23 },
         { character: "hatch-left", col: 134, row: 24 },
         { character: "pit-opening", col: 135, cols: 4, row: 26 },
         { character: "pit-floor", col: 135, cols: 4, row: 30 },
@@ -99,9 +105,9 @@ export const ZONE_1: ZonePlan = {
         // or on the noodle bar's awning, then jump it.
         { character: "storefront-noodle-bar", col: 158, row: 16 },
         { character: "awning", col: 158, cols: 10, row: 20 },
-        { character: "pedestrian", col: 172, row: 22 },
+        { character: "pedestrian-cat", col: 172, row: 21 },
         { character: "frog-courier", col: 186, row: 23 },
-        { character: "pedestrian", col: 200, phase: 0.5, row: 22 },
+        { character: "pedestrian-raccoon", col: 200, phase: 0.5, row: 21 },
         // The ferret's trap, then the hotel door under its canopy.
         { character: "hotel-window", col: 206, row: 13 },
         { character: "ferret-trap-snap", col: 212, row: 24 },

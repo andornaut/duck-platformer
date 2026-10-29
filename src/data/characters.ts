@@ -51,12 +51,13 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 10,
     rows: 1,
   },
-  // PLACEHOLDER: a harmless dog that trots up to her.
-  dog: {
+  // A harmless pug that trots up to her.
+  "dog-pug": {
+    animations: { idle: "idle", move: "walk", react: "perk", talk: "talk" },
     archetype: "approacher",
-    art: "placeholder-dog",
-    cols: 3,
-    rows: 2,
+    art: "dog-pug",
+    cols: 4,
+    rows: 3,
   },
   "doorman-podium": {
     archetype: "scenery",
@@ -163,19 +164,30 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 8,
     rows: 20,
   },
-  // PLACEHOLDER: people walking past, back and forth, paying her no attention.
-  pedestrian: {
+  // Pedestrians walking past, back and forth, paying her no attention. React and talk fall back
+  // to idle.
+  "pedestrian-cat": {
+    animations: { idle: "idle", move: "walk", react: "idle", talk: "idle" },
     archetype: "walker",
-    art: "placeholder-pedestrian",
-    cols: 2,
-    rows: 4,
+    art: "pedestrian-cat",
+    cols: 3,
+    rows: 5,
   },
-  // PLACEHOLDER: pigeons pecking about, which flee as she comes near.
+  "pedestrian-raccoon": {
+    animations: { idle: "idle", move: "walk", react: "idle", talk: "idle" },
+    archetype: "walker",
+    art: "pedestrian-raccoon",
+    cols: 3,
+    rows: 5,
+  },
+  // Pigeons pecking about in flocks, which flee as she comes near: react plays flee once, then
+  // move's fly. Talk falls back to idle.
   pigeon: {
+    animations: { idle: "idle", move: "fly", react: "flee", talk: "idle" },
     archetype: "hopper-avoider",
-    art: "placeholder-pigeon",
-    cols: 1,
-    rows: 1,
+    art: "pigeon",
+    cols: 2,
+    rows: 2,
   },
   // The dark floor of a pit, 4 below the sidewalk's top: a quick restart for a fall into an
   // opening.
