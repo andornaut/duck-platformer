@@ -6,6 +6,8 @@ export interface ArtManifest {
   readonly sprites: readonly {
     readonly json: string;
     readonly key: string;
+    // The tags that play once and hold their last frame. Every other tag loops.
+    readonly once: readonly string[];
     readonly png: string;
   }[];
 }
@@ -52,6 +54,11 @@ export function tagMs(tags: ReadonlyMap<string, readonly TagFrame[]>, tag: strin
     throw new Error(`No tag ${tag}`);
   }
   return frames.reduce((sum, frame) => sum + frame.ms, 0);
+}
+
+// A tag's Phaser repeat count: 0 plays it once, -1 loops it.
+export function tagRepeat(once: readonly string[], tag: string): number {
+  return once.includes(tag) ? 0 : -1;
 }
 
 // The animation key of a sprite's tag: tag names repeat across sprites.

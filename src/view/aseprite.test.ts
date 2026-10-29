@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { animKey, type AsepriteSheet, sheetTags, tagMs } from "./aseprite";
+import { animKey, type AsepriteSheet, sheetTags, tagMs, tagRepeat } from "./aseprite";
 
 const tag = (name: string, from: number, to: number, direction = "forward") => ({
   direction,
@@ -48,6 +48,17 @@ describe("tagMs", () => {
 
   it("refuses a missing tag", () => {
     expect(() => tagMs(sheetTags(SHEET), "held")).toThrow("held");
+  });
+});
+
+describe("tagRepeat", () => {
+  it.each([
+    [["jump", "land"], "jump", 0],
+    [["jump", "land"], "land", 0],
+    [["jump", "land"], "walk", -1],
+    [[], "rest", -1],
+  ])("with %j played once, repeats %s %i times", (once, tag, repeat) => {
+    expect(tagRepeat(once, tag)).toBe(repeat);
   });
 });
 

@@ -1,11 +1,17 @@
 import { Scene } from "phaser";
 
-import { animKey, type ArtManifest, type AsepriteSheet, sheetTags } from "../view/aseprite";
+import {
+  animKey,
+  type ArtManifest,
+  type AsepriteSheet,
+  sheetTags,
+  tagRepeat,
+} from "../view/aseprite";
 
 const MANIFEST = "manifest";
 
 // First scene to run. Loads everything art's manifest lists, makes an animation of every sprite
-// tag, then starts the test floor.
+// tag, looping unless the manifest lists it as played once, then starts the test floor.
 export class BootScene extends Scene {
   constructor() {
     super("boot");
@@ -29,12 +35,13 @@ export class BootScene extends Scene {
   }
 
   create(): void {
-    for (const { key } of this.manifest().sprites) {
+    for (const { key, once } of this.manifest().sprites) {
       const sheet = this.cache.json.get(key) as AsepriteSheet;
       for (const [tag, frames] of sheetTags(sheet)) {
         this.anims.create({
           frames: frames.map(({ frame, ms }) => ({ duration: ms, frame, key })),
           key: animKey(key, tag),
+          repeat: tagRepeat(once, tag),
         });
       }
     }

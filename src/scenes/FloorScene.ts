@@ -9,7 +9,7 @@ import { combineIntents, controlAt, type HeldTouch, keyIntent, touchIntent } fro
 import { TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
 import { type FloorState, startFloor, stepFloor } from "../rules/floor";
 import { animKey, type AsepriteSheet, sheetTags, type TagFrame, tagMs } from "../view/aseprite";
-import { duckFrameAt, type DuckPose, LOOPING_DUCK_TAGS, startPose, stepPose } from "../view/duck";
+import { duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
 import {
   centredAt,
   controlTag,
@@ -41,10 +41,10 @@ const CONTROL_SPRITES: Readonly<Record<TouchControl, string>> = {
 const KNOB_SPRITE = "ui-touch-knob";
 
 // Starts a sprite's tag, unless it already shows it, playing or finished on its last frame.
-function show(sprite: GameObjects.Sprite, tag: string, repeat = 0): void {
+function show(sprite: GameObjects.Sprite, tag: string): void {
   const key = animKey(sprite.texture.key, tag);
   if (sprite.anims.currentAnim?.key !== key) {
-    sprite.play({ key, repeat });
+    sprite.play(key);
   }
 }
 
@@ -141,7 +141,7 @@ export class FloorScene extends Scene {
   private drawDuck(): void {
     const { duck } = this.floor;
     const { tag } = this.duckPose;
-    show(this.duck, tag, LOOPING_DUCK_TAGS.has(tag) ? -1 : 0);
+    show(this.duck, tag);
     const at = duckFrameAt(DUCK, this.duck.frame, duck);
     this.duck.setPosition(at.x, at.y).setFlipX(duck.facing < 0);
     this.focus.x = Math.round(duck.x + DUCK.width / 2);

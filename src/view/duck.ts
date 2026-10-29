@@ -3,10 +3,6 @@ import type { DuckState } from "../rules/duck";
 
 export type DuckTag = "flutter" | "idle" | "jump" | "land" | "walk";
 
-// The tags that loop. jump holds its last frame while she rises, and land gives way to idle or
-// walk once it has played.
-export const LOOPING_DUCK_TAGS: ReadonlySet<DuckTag> = new Set(["flutter", "idle", "walk"]);
-
 // The tag she shows, and how long she has shown it as of this step.
 export interface DuckPose {
   readonly ms: number;

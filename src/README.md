@@ -10,7 +10,7 @@
 ## Architecture
 
 - **Phaser boundary:** only `src/scenes/` and `src/main.ts` import Phaser or a scene, enforced by ESLint's `no-restricted-imports`. Logic, layout and data are Phaser-free, so they unit-test without a renderer.
-- **Scenes:** `BootScene` runs first: it loads everything `public/art/manifest.json` lists and makes an animation of each sprite tag, keyed `<sprite>:<tag>`, with the tag's frames and durations from the sprite's Aseprite export.
+- **Scenes:** `BootScene` runs first: it loads everything `public/art/manifest.json` lists and makes an animation of each sprite tag, keyed `<sprite>:<tag>`, with the tag's frames and durations from the sprite's Aseprite export. A tag the sprite's manifest entry lists in `once` plays once and holds its last frame; every other tag loops.
 - **Shared kit:** `@andornaut/game-kit` is a committed copy at `vendor/game-kit/`, synced by game-kit's `scripts/sync-into.sh` with its source commit in `vendor/game-kit/KIT_COMMIT`, and changed only at its source.
 - **Test helpers:** `src/testing/` is importable only from tests.
 - **View:** `src/view/` picks each sprite's tag and whole-pixel position from the game state, Phaser-free, so the scenes only draw what it picks.
