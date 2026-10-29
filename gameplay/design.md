@@ -64,18 +64,26 @@ A landscape platformer: a duck falls out of her room at the top of a New York ho
 
 ### Levels
 
+- **Areas:** a level can have more than one area, joined by doors. Use at a door fades to the other area
 - **Challenge:** platforming, hazards and choices. There is no combat
 - **Checkpoint:** the start of a level is its only checkpoint. Falling or touching a hazard restarts the level from its start
 - **No backtracking:** once she leaves a level, she never returns to it
 - **Scale:** outdoors, the scenery is drawn at a quarter of indoor scale; the duck, the tiles and the reaches stay the same everywhere
 - **Shape:** a level is 2 screens (60 tiles) tall and as wide as it needs, and scrolls sideways and up. To a small duck the hotel's ceilings are high: a door is 15 tiles tall, half the screen
 
+### Objects
+
+- **Placement:** everything in a level except its terrain is an object: a type and a position, in data
+- **Types:** a type sets the object's art, size, collision (none, solid, one-way ledge, hazard or Use), movement and reaction
+- **Movement:** an algorithm (static, linear, ease, hop or wander), a direction, a distance, a speed, a pause at each end, and a random variance that rolls fresh on every attempt
+- **Reaction:** none, avoiding the duck, or approaching her, within a range
+
 ### Level 1
 
 - **Entrance:** the hotel door is seen only from the street. Use at the door enters the hotel after a quick fade, into the lobby, a separate indoor scene
 - **Length:** 10 screens (540 tiles): 4 of street, then 6 of lobby
 - **Lobby:** PLACEHOLDER: what happens there
-- **Street:** a day-time New York street past the hotel's ground-floor shops: a café, a florist, a gift shop, a makeup store, a pet shop and two restaurants. Its hazards are open cellar hatches in the sidewalk, rolling traffic along it, and the ferret's first trap, set near the hotel door with a quip
+- **Street:** a day-time New York street past the hotel's ground-floor shops: a café, a florist, a gift shop, a makeup store, a pet shop and two restaurants. Its hazards are open cellar hatches in the sidewalk, a frog courier riding a delivery bike back and forth along it, and the ferret's first trap, a giant snap trap set near the hotel door with a quip. PLACEHOLDER: pigeons that flee, a dog that approaches, and pedestrians walking past
 
 ### Rooms
 
@@ -97,6 +105,7 @@ A landscape platformer: a duck falls out of her room at the top of a New York ho
 ### The ferret
 
 - **Appearances:** dialogue scenes in some levels, quips during play, and hazards it sets in levels
+- **Calling card:** every trap it sets carries a badge of its stovepipe hat and bow tie
 - **Ending:** the ferret is outwitted, never fought: the carried choices set up how the final scene goes
 
 ### Choices
