@@ -5,13 +5,13 @@ import "./main.css";
 import { BUILD_LABEL } from "@andornaut/game-kit/build/buildLabel";
 import { MENU_FPS } from "@andornaut/game-kit/clock/frameCap";
 import { capFrameRate } from "@andornaut/game-kit/clock/phaser/capFrameRate";
+import { pageToGame } from "@andornaut/game-kit/view/pagePoint";
 import { Game, type Input, Scale, WEBGL } from "phaser";
 
 // eslint-disable-next-line no-duplicate-imports -- the side-effect import above runs it first.
 import { CRASH_SCREEN } from "./crash/install";
 import { SCREEN } from "./data/screen";
 import { pageFrameTurn } from "./input/frameTurn";
-import { gameScaledPoint } from "./input/screenPoint";
 import { setupPhoneApp } from "./pwa";
 import { BootScene } from "./scenes/BootScene";
 import { MapScene } from "./scenes/MapScene";
@@ -21,7 +21,7 @@ import { ZoneScene } from "./scenes/ZoneScene";
 // On a touch screen in portrait, src/main.css turns the page frame 90 degrees clockwise, so the
 // game reads correctly with the phone turned counter-clockwise onto its side. Phaser measures
 // #game and maps pointers by their bounding rects on the page, which the turn swaps, so here it
-// measures #game's own layout size and maps each pointer through the turn (gameScaledPoint).
+// measures #game's own layout size and maps each pointer through the turn (the kit's pageToGame).
 function followFrameTurn(game: Game, parent: HTMLElement): void {
   const scale = game.scale;
   const measure = scale.getParentBounds.bind(scale);
@@ -45,7 +45,7 @@ function followFrameTurn(game: Game, parent: HTMLElement): void {
       return;
     }
     const client = { x: pageX - window.scrollX, y: pageY - window.scrollY };
-    const point = gameScaledPoint(turn, game.canvas.getBoundingClientRect(), SCREEN, client);
+    const point = pageToGame(turn, game.canvas.getBoundingClientRect(), SCREEN, client);
     pointer.prevPosition.copy(pointer.position);
     pointer.position.set(point.x, point.y);
   };

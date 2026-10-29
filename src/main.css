@@ -1,7 +1,7 @@
 /* The game page's layout under public/site.css's page frame: the nav column on the left (absent
    in the installed app), then the game filling the rest, clear of the notch in landscape. On a
    touch screen in portrait the whole frame turns 90 degrees clockwise, filling the screen on its
-   side, to be played with the phone turned counter-clockwise; src/input/screenPoint.ts's
+   side, to be played with the phone turned counter-clockwise; src/input/frameTurn.ts's
    TURNED_FRAME_QUERY is the same query. The --inset-* properties are the safe-area insets on the
    frame's own edges, which the turn moves. */
 

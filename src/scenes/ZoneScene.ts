@@ -19,6 +19,7 @@ import {
   phaserBitmapFont,
   type PhaserFontData,
 } from "@andornaut/game-kit/text/phaser/phaserBitmapFont";
+import { pageToGame } from "@andornaut/game-kit/view/pagePoint";
 import { type GameObjects, Input, Scene, type Tilemaps } from "phaser";
 
 import { ARCHETYPES } from "../data/archetypes";
@@ -49,7 +50,6 @@ import {
   touchIntent,
   touchRoleAt,
 } from "../input/intent";
-import { gameScaledPoint } from "../input/screenPoint";
 import { PAUSE_BUTTON } from "../layout/pauseCard";
 import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
 import { nodeOf } from "../rules/map";
@@ -529,13 +529,13 @@ export class ZoneScene extends Scene {
   // page count, the letterbox bars and safe-area margins beside the canvas included, except on
   // the nav bar or a link or button, on the pause button, or while the pause card is open. A
   // touch's role is read where it starts on the game's nearest edge pixel (clampInto), and a move
-  // touch's travel unclamped (gameScaledPoint), so a drag within the bars still moves her. Both
+  // touch's travel unclamped (pageToGame), so a drag within the bars still moves her. Both
   // read through the page frame's turn (pageFrameTurn). Only a touch on the canvas can be on the
   // pause button: one in the bar beside it lands on the game's edge, inside the button's hit
   // area, and moves her.
   private watchTouches(): void {
     const unclamped = (event: PagePointerEvent) =>
-      gameScaledPoint(
+      pageToGame(
         pageFrameTurn(),
         this.game.canvas.getBoundingClientRect(),
         SCREEN,
