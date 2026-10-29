@@ -937,16 +937,9 @@ def build():
         frame_image(g.px).save(f"{BACKDROPS}/{key}.png")
         backdrops.append({"key": key, "png": f"backdrops/{key}.png", "width": g.w, "height": g.h,
                           "anchor": "bottom-left", "y": y, "repeat": repeat})
-    manifest = {}
-    if os.path.exists(pixel.MANIFEST):
-        with open(pixel.MANIFEST) as f:
-            manifest = json.load(f)
-    # floor1.py owns both lists outright, so a piece it no longer draws leaves the manifest
-    manifest["tilesets"] = sorted(tilesets, key=lambda e: e["key"])
-    manifest["backdrops"] = sorted(backdrops, key=lambda e: e["key"])
-    with open(pixel.MANIFEST, "w") as f:
-        json.dump(manifest, f, indent=2)
-        f.write("\n")
+    # merged by key, so the park theme's entries stay; a piece floor1.py stops drawing is removed by hand
+    pixel.update_manifest("tilesets", tilesets)
+    pixel.update_manifest("backdrops", backdrops)
     print("built", ", ".join(k for k, _ in TILESET_DEFS), "and", len(backdrops), "backdrops")
 
 

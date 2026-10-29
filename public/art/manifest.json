@@ -413,6 +413,11 @@
       "json": "tilesets/tiles-lobby.json"
     },
     {
+      "key": "tiles-park",
+      "png": "tilesets/tiles-park.png",
+      "json": "tilesets/tiles-park.json"
+    },
+    {
       "key": "tiles-street",
       "png": "tilesets/tiles-street.png",
       "json": "tilesets/tiles-street.json"
@@ -688,6 +693,141 @@
       "anchor": "bottom-left",
       "y": 552,
       "repeat": "none"
+    },
+    {
+      "key": "park-bandstand",
+      "png": "backdrops/park-bandstand.png",
+      "width": 120,
+      "height": 84,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "none"
+    },
+    {
+      "key": "park-bench",
+      "png": "backdrops/park-bench.png",
+      "width": 36,
+      "height": 24,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "none"
+    },
+    {
+      "key": "park-bin",
+      "png": "backdrops/park-bin.png",
+      "width": 16,
+      "height": 24,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "none"
+    },
+    {
+      "key": "park-city",
+      "png": "backdrops/park-city.png",
+      "width": 360,
+      "height": 200,
+      "anchor": "bottom-left",
+      "y": 540,
+      "repeat": "x"
+    },
+    {
+      "key": "park-clouds",
+      "png": "backdrops/park-clouds.png",
+      "width": 360,
+      "height": 160,
+      "anchor": "bottom-left",
+      "y": 200,
+      "repeat": "x"
+    },
+    {
+      "key": "park-far-trees",
+      "png": "backdrops/park-far-trees.png",
+      "width": 240,
+      "height": 120,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
+      "key": "park-flower-bed",
+      "png": "backdrops/park-flower-bed.png",
+      "width": 72,
+      "height": 16,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "none"
+    },
+    {
+      "key": "park-fountain",
+      "png": "backdrops/park-fountain.png",
+      "width": 96,
+      "height": 48,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "none"
+    },
+    {
+      "key": "park-lamp",
+      "png": "backdrops/park-lamp.png",
+      "width": 16,
+      "height": 84,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "none"
+    },
+    {
+      "key": "park-lily-pad",
+      "png": "backdrops/park-lily-pad.png",
+      "width": 14,
+      "height": 4,
+      "anchor": "bottom-left",
+      "y": 608,
+      "repeat": "none"
+    },
+    {
+      "key": "park-reeds",
+      "png": "backdrops/park-reeds.png",
+      "width": 24,
+      "height": 30,
+      "anchor": "bottom-left",
+      "y": 610,
+      "repeat": "none"
+    },
+    {
+      "key": "park-sign",
+      "png": "backdrops/park-sign.png",
+      "width": 24,
+      "height": 40,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "none"
+    },
+    {
+      "key": "park-sky",
+      "png": "backdrops/park-sky.png",
+      "width": 48,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
+      "key": "park-tree",
+      "png": "backdrops/park-tree.png",
+      "width": 96,
+      "height": 150,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "none"
+    },
+    {
+      "key": "park-treetops",
+      "png": "backdrops/park-treetops.png",
+      "width": 360,
+      "height": 420,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
     },
     {
       "key": "roofline-brownstone",

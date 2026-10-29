@@ -104,6 +104,7 @@ Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with 
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | ----------- |
 | tiles-lobby  | tileset (kept for a later indoor zone): wood floor, one-way balcony, shelf, cushion and desk, wood post, stairwell exit                                    | 130 tiles, 12px | exit (7x15) |
 | tiles-street | tileset: sidewalk, kerb, road, one-way awning, one-way canopy, planter, door, cellar hatch, one-way fire-escape landing, sill, cornice and water-tower top | 54 tiles, 12px  | door (3x4)  |
+| tiles-park   | tileset (park theme): grass, turf, soil, path, stone stairs, one-way bench, branch and bandstand, pond and thorn hazards                                   | 32 tiles, 12px  |             |
 
 ## Backdrops
 
@@ -141,6 +142,21 @@ Pieces placed from level data by their bottom-left corner at the bottom y given,
 | lobby-sofa              | lobby (later indoor zone), sofa                                      | 120x72  | 672, none        |
 | lobby-wall              | lobby wall (later indoor zone), wood panelling                       | 48x720  | 720, x           |
 | lobby-window            | lobby (later indoor zone), tall window                               | 96x240  | 552, none        |
+| park-bandstand          | park prop, bandstand under its one-way roof                          | 120x84  | 600, none        |
+| park-bench              | park prop, bench under its one-way top                               | 36x24   | 600, none        |
+| park-bin                | park prop, bin                                                       | 16x24   | 600, none        |
+| park-city               | park, the city behind                                                | 360x200 | 540, x           |
+| park-clouds             | park, cream clouds                                                   | 360x160 | 200, x           |
+| park-far-trees          | park, distant crowns                                                 | 240x120 | 600, x           |
+| park-flower-bed         | park prop, flower bed                                                | 72x16   | 600, none        |
+| park-fountain           | park prop, fountain                                                  | 96x48   | 600, none        |
+| park-lamp               | park prop, lamp                                                      | 16x84   | 600, none        |
+| park-lily-pad           | park prop, lily pad                                                  | 14x4    | 608, none        |
+| park-reeds              | park prop, pond reeds                                                | 24x30   | 610, none        |
+| park-sign               | park prop, sign with a tree icon                                     | 24x40   | 600, none        |
+| park-sky                | park, peach sky                                                      | 48x600  | 600, x           |
+| park-tree               | park prop, autumn tree                                               | 96x150  | 600, none        |
+| park-treetops           | park, tall autumn treetops                                           | 360x420 | 600, x           |
 | roofline-brownstone     | roofline, brownstone                                                 | 48x48   | 108, x           |
 | roofline-hotel          | roofline, tall stone building                                        | 48x48   | 108, x           |
 | roofline-walkup         | roofline, walk-up                                                    | 48x48   | 108, x           |

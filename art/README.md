@@ -60,8 +60,8 @@ In order:
 - `art/tools/palette.py` writes `public/art/palette.json`, listed under `data` in the manifest: `colours` maps each palette name to `#rrggbb`, `darker` maps each colour one ramp step down, and `dim2` two steps down, the settings card's dim. Keys are sorted.
 - `art/tools/icons.py` draws the favicon and app icons, the duck on a sky-blue sunburst disc (whole from 32px up, her head and back at 16px on flat sky, where the rays do not hold), as plain PNGs, not sprites or manifest entries: `public/favicon.ico` (16 and 32), `public/art/favicon-16.png` and `public/art/favicon.png`, and in `public/icons/` the 180 apple-touch icon on a full-bleed sunburst square, the 192 and 512 icons on a sunburst disc with a transparent outside, and a 512 maskable icon with the subject inside the central 80%. The 16 and 32 are drawn natively; the larger icons are 64 and 90 drawings scaled by whole numbers.
 - `art/inventory.md` lists every asset (key, type, size, tags).
-- `art/tools/floor<n>.py` draws one zone's tilesets and backdrop pieces as plain PNGs, not Aseprite sprites, so the game builds each zone from level data instead of a fixed panorama (`floor1.py` draws Zone 1).
-- A tileset is `public/art/tilesets/<key>.png`, 12x12 tiles in rows of 8 with no spacing or margin, plus `<key>.json`: `{"tileSize": 12, "columns": 8, "tiles": {"<name>": <index>}, "pieces": {"<name>": [[<index>, ...], ...]}}`. An index counts row by row. A piece is a multi-tile unit as rows of indices, top row first. A tile named `one-way-*` is a one-way ledge, which stops only a fall onto its top edge. A tile named `door-*` or `exit-*` is a doorway with no collision, and the game puts a Use zone over its piece. A tile named `pit-*` is a pit with no collision, so she falls through it and out of the level. Every other tile with art is solid. The manifest lists each under `tilesets` as `{"key", "png", "json"}`.
+- `art/tools/floor<n>.py` draws one zone's tilesets and backdrop pieces as plain PNGs, not Aseprite sprites, so the game builds each zone from level data instead of a fixed panorama (`floor1.py` draws Zone 1). A chunk theme has its own module, such as `art/tools/park.py`, with the same `build` and `preview OUT.png` commands; each tool merges its own keys into the manifest's `tilesets` and `backdrops` and keeps the others.
+- A tileset is `public/art/tilesets/<key>.png`, 12x12 tiles in rows of 8 with no spacing or margin, plus `<key>.json`: `{"tileSize": 12, "columns": 8, "tiles": {"<name>": <index>}, "pieces": {"<name>": [[<index>, ...], ...]}}`. An index counts row by row. A piece is a multi-tile unit as rows of indices, top row first. A tile named `one-way-*` is a one-way ledge, which stops only a fall onto its top edge. A tile named `door-*` or `exit-*` is a doorway with no collision, and the game puts a Use zone over its piece. A tile named `pit-*` is a pit with no collision, so she falls through it and out of the level. A tile named `hazard-*` has no collision and is drawn for a hazard instance placed with a width: touching its hit box restarts her. Every other tile with art is solid. The manifest lists each under `tilesets` as `{"key", "png", "json"}`.
 - A backdrop piece is `public/art/backdrops/<key>.png`, drawn behind the play layer. The manifest lists each under `backdrops` as `{"key", "png", "width", "height", "anchor": "bottom-left", "y", "repeat"}`: its bottom edge sits at world `y`, at an x the level data chooses, and `"repeat": "x"` tiles it across a run while `"none"` places it once.
 - Art reads game layout and data from the generated export files the game writes, never from `src/`. The export files are in `shared/export/`. Art writes the shared data files the game reads (`lights.json`, `palette.json`).
 - Keys are kebab-case, named after what the player sees. Internal names match displayed names.
@@ -388,6 +388,47 @@ The lobby set is no longer in Zone 1. It is kept, unchanged, for a later indoor 
 | lobby-lamp       | 48x192  | 220                | none   |
 | lobby-window     | 96x240  | 552                | none   |
 | lobby-front-door | 156x180 | 672                | none   |
+
+## Park theme
+
+The first chunk theme: an autumn park. Later zones are built from hand-built chunks, each a screen or two wide, in a seeded order that rerolls each lap; a theme carries one tileset, its terrain and its repeated backdrops, drawn across the whole zone so seams never show, and chunks add their own props. `art/tools/park.py` draws it; its docstring lists every tile and piece.
+
+- Frame and scale as the street: outdoor scale, 12px tiles, zones 60 rows (720px) tall.
+- Chunk seams sit at ground rows 50, 40 and 30 (y 600, 480 and 360): a chunk's left and right edges meet the next chunk's at one of those heights. Height changes are whole-tile steps of 1 or 2 rows, with no slopes.
+- Look: a peach sky with cream clouds, tall tan treetops and a skin2 city behind, close to the sky's value; the ground two bright rows deep (a cream-lipped grass top over green turf), then warm brown soil with sparse 2px pebbles. Every walkable top's lip holds at least 2:1 against what is behind it: cream lips, and white on the stone stairs and the bandstand roof, which stand against the tan treetops.
+
+| Tile                                              | Collision                                                                                                                                                            |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `grass-top`, `grass-top-left`, `grass-top-right`  | solid; the walkable top, the end tiles rounded on an exposed side                                                                                                    |
+| `turf`, `turf-left`, `turf-right`                 | solid; the row under a grass top                                                                                                                                     |
+| `soil`, `soil-pebbles`, `soil-left`, `soil-right` | solid; the fill, pebbles on about one tile in five                                                                                                                   |
+| `path-top`, `path-top-joint`                      | solid; a gravel path top, alternated                                                                                                                                 |
+| `step-stair`, `step-stair-left`                   | solid; a stone tread in a step's top, every other step                                                                                                               |
+| `one-way-bench-*` (left, middle, right)           | one-way; a bench's top, 2 rows up                                                                                                                                    |
+| `one-way-branch-*`                                | one-way; a tree's branch, 6 rows up                                                                                                                                  |
+| `one-way-bandstand-*`                             | one-way; the bandstand roof, 6 rows above its base                                                                                                                   |
+| `hazard-pond-*`, `hazard-pond-bed-*`              | none; a pond hazard two rows deep, placed with a width. Hit box: from 4px below its first row's top to its second row's bottom (20px). The banks beside it are solid |
+| `hazard-thorn-*`                                  | none; a thorn-hedge hazard one row tall, placed with a width. Hit box: y 2 to 12 of its row (10px)                                                                   |
+
+Backdrops repeat in x at widths that divide 720, so chunk seams never show; props stand on the ground (their bottom y is given for row 50; subtract 120 per seam row up).
+
+| Backdrop        | Size    | Bottom y | Repeat |
+| --------------- | ------- | -------- | ------ |
+| park-sky        | 48x600  | 600      | x      |
+| park-clouds     | 360x160 | 200      | x      |
+| park-treetops   | 360x420 | 600      | x      |
+| park-city       | 360x200 | 540      | x      |
+| park-far-trees  | 240x120 | 600      | x      |
+| park-tree       | 96x150  | 600      | none   |
+| park-bench      | 36x24   | 600      | none   |
+| park-bandstand  | 120x84  | 600      | none   |
+| park-lamp       | 16x84   | 600      | none   |
+| park-fountain   | 96x48   | 600      | none   |
+| park-flower-bed | 72x16   | 600      | none   |
+| park-bin        | 16x24   | 600      | none   |
+| park-sign       | 24x40   | 600      | none   |
+| park-reeds      | 24x30   | 610      | none   |
+| park-lily-pad   | 14x4    | 608      | none   |
 
 ## Remaining for the first build
 

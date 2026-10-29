@@ -139,6 +139,22 @@ class Grid:
         return out
 
 
+def update_manifest(section, entries):
+    """Merge entries (dicts with a "key") into the manifest's section (tilesets, backdrops): replace those with the
+    same key, keep every other entry, sort by key. Each tool owns its own keys, so several tools can share a
+    section; a tool that stops drawing a piece removes its entry by hand."""
+    manifest = {}
+    if os.path.exists(MANIFEST):
+        with open(MANIFEST) as f:
+            manifest = json.load(f)
+    merged = {e["key"]: e for e in manifest.get(section, [])}
+    merged.update({e["key"]: e for e in entries})
+    manifest[section] = sorted(merged.values(), key=lambda e: e["key"])
+    with open(MANIFEST, "w") as f:
+        json.dump(manifest, f, indent=2)
+        f.write("\n")
+
+
 def flipped(frame):
     """A frame mirrored left to right."""
     return [row[::-1] for row in frame]
