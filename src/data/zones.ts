@@ -1,4 +1,5 @@
 import type { ZonePlan } from "./types";
+import { ZONE_1 } from "./zone1";
 
 // PLACEHOLDER: parkour test zones, until gameplay designs the real zones.
 //
@@ -266,3 +267,8 @@ export const TEST_ZONES: readonly ZonePlan[] = [
     start: { area: "street", entry: "start" },
   },
 ];
+
+// The zones the map leads to, by key.
+export const ZONES: Readonly<Record<string, ZonePlan>> = {
+  street: ZONE_1,
+};

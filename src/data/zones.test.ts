@@ -9,11 +9,12 @@ import { artKind } from "../view/objectArt";
 import { lookTiles, type Tileset } from "../view/tiles";
 import { ARCHETYPES, NO_INTERACTION, NO_REACTION, STATIC_MOTION } from "./archetypes";
 import { CHARACTERS } from "./characters";
+import { ZONE_MAP } from "./map";
 import { SCREEN, TILE } from "./screen";
 import { TEXT } from "./text";
 import type { AreaPlan, Instance, TileRect, Tuning } from "./types";
 import { ZONE_1 } from "./zone1";
-import { TEST_ZONES } from "./zones";
+import { TEST_ZONES, ZONES as ZONES_BY_KEY } from "./zones";
 
 const MANIFEST = manifestJson as ArtManifest;
 const TILESETS: Readonly<Record<string, Tileset>> = {
@@ -152,4 +153,55 @@ describe("the zones", () => {
       expect(exits.length).toBeGreaterThan(0);
     },
   );
+});
+
+describe("the map", () => {
+  const ids = ZONE_MAP.nodes.map(({ id }) => id);
+  const after = (id: string, builtOnly = false) =>
+    ZONE_MAP.edges
+      .filter((edge) => edge.from === id && (!builtOnly || edge.built))
+      .map(({ to }) => to);
+  const reach = (from: string, next: (id: string) => string[]) => {
+    const seen = new Set([from]);
+    for (const id of seen) {
+      for (const to of next(id)) {
+        seen.add(to);
+      }
+    }
+    return seen;
+  };
+
+  it("names each node once, and every path's ends", () => {
+    expect(new Set(ids).size).toBe(ids.length);
+    const ends = ZONE_MAP.edges.flatMap(({ from, to }) => [from, to]);
+    expect(ends.filter((id) => !ids.includes(id))).toEqual([]);
+    expect([ZONE_MAP.start, ZONE_MAP.finish].filter((id) => !ids.includes(id))).toEqual([]);
+  });
+
+  it("names a zone for every zone node a built path reaches, and only zones that exist", () => {
+    const built = reach(ZONE_MAP.start, (id) => after(id, true));
+    for (const node of ZONE_MAP.nodes) {
+      if (node.zone !== undefined) {
+        expect(ZONES_BY_KEY[node.zone], node.zone).toBeDefined();
+      }
+      if (node.kind === "zone" && built.has(node.id)) {
+        expect(node.zone, node.id).toBeDefined();
+      }
+    }
+  });
+
+  it("leads every node from the start and on to the finish, never back", () => {
+    expect([...reach(ZONE_MAP.start, (id) => after(id))].sort()).toEqual([...ids].sort());
+    for (const id of ids) {
+      expect(reach(id, (each) => after(each)).has(ZONE_MAP.finish), id).toBe(true);
+      expect(
+        after(id).some((to) => reach(to, (each) => after(each)).has(id)),
+        `${id} loops back`,
+      ).toBe(false);
+    }
+  });
+
+  it("has a built path from the start to the finish", () => {
+    expect(reach(ZONE_MAP.start, (id) => after(id, true)).has(ZONE_MAP.finish)).toBe(true);
+  });
 });

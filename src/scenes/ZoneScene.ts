@@ -10,6 +10,7 @@ import { type GameObjects, Input, Scene, type Tilemaps } from "phaser";
 import { ARCHETYPES } from "../data/archetypes";
 import { CHARACTERS } from "../data/characters";
 import { DUCK } from "../data/duck";
+import { ZONE_MAP } from "../data/map";
 import { SCREEN, TILE } from "../data/screen";
 import { TEXT } from "../data/text";
 import { TOUCH } from "../data/touch";
@@ -22,9 +23,10 @@ import type {
   ObjectLayout,
   Point,
   ZoneLayout,
+  ZonePlan,
 } from "../data/types";
 import { ZONE_1 } from "../data/zone1";
-import { TEST_ZONES } from "../data/zones";
+import { TEST_ZONES, ZONES } from "../data/zones";
 import {
   combineIntents,
   type HeldTouch,
@@ -35,6 +37,7 @@ import {
 import { gamePoint, gameScaledPoint } from "../input/screenPoint";
 import { PAUSE_BUTTON } from "../layout/pauseCard";
 import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
+import { nodeOf } from "../rules/map";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
 import { zoneLayout } from "../rules/tiles";
 import { areaOf, enterArea, startZone, stepZone, type ZoneState } from "../rules/zone";
@@ -64,11 +67,21 @@ import {
   trackPress,
 } from "../view/touchControls";
 
+// The zone a map node plays.
+function zoneAt(node: string): ZonePlan {
+  const key = nodeOf(ZONE_MAP, node).zone;
+  const plan = key === undefined ? undefined : ZONES[key];
+  if (!plan) {
+    throw new Error(`Map node ${node} has no zone to play`);
+  }
+  return plan;
+}
+
 // What every zone's instances are resolved against.
 const CATALOGUE = { archetypes: ARCHETYPES, characters: CHARACTERS };
 
 // The zones in play order, looping: zone 1, then the test zones.
-const ZONES = [ZONE_1, ...TEST_ZONES];
+const CHAIN = [ZONE_1, ...TEST_ZONES];
 
 // After a stall, run at most this much time at once rather than lurching ahead.
 const MAX_FRAME_MS = 250;
@@ -139,7 +152,9 @@ export class ZoneScene extends Scene {
   private readonly heldTouches = new Map<number, HeldTouch>();
   private landMs = 0;
   private layout!: ZoneLayout;
-  private zoneIndex = startZoneIndex(window.location.search, ZONES.length);
+  private zoneIndex = startZoneIndex(window.location.search, CHAIN.length);
+  // The map node she plays, or undefined when ?zone=<n> chains the zones without the map.
+  private mapNode: string | undefined;
   private areaArt!: GameObjects.Graphics;
   // The hit boxes art's sprites declare, by art key.
   private hitboxes: Readonly<Record<string, ArtHitbox>> = {};
@@ -159,6 +174,14 @@ export class ZoneScene extends Scene {
     super("zone");
   }
 
+  // data.node: the map node to play; without one, the chain from ?zone=<n>.
+  init(data: { node?: string }): void {
+    this.mapNode = data.node;
+    this.objectArt = [];
+    this.heldKeys.clear();
+    this.heldTouches.clear();
+  }
+
   create(): void {
     this.cameras.main.setBackgroundColor(BACKGROUND);
     this.cameras.main.setRoundPixels(true);
@@ -169,7 +192,11 @@ export class ZoneScene extends Scene {
     this.duck = this.add.sprite(0, 0, DUCK_SPRITE).setOrigin(0).setDepth(DUCK_DEPTH);
     this.manifest = this.cache.json.get(ART_MANIFEST_KEY) as ArtManifest;
     this.hitboxes = artHitboxes((key) => this.textures.getFrame(key), this.manifest);
-    this.loadZone(this.zoneIndex);
+    if (this.mapNode === undefined) {
+      this.loadZone(this.zoneIndex);
+    } else {
+      this.loadPlan(zoneAt(this.mapNode));
+    }
 
     const font = phaserBitmapFont(this.cache.bitmapFont.get(LABEL_FONT).data as PhaserFontData);
     this.colours = (this.cache.json.get(PALETTE) as { colours: Record<string, string> }).colours;
@@ -226,9 +253,13 @@ export class ZoneScene extends Scene {
         this.zone,
       );
       this.duckPose = stepPose(this.landMs, STEP_MS, before, this.zone.duck, this.duckPose);
-      // PLACEHOLDER: what clearing a zone leads to. For now the next zone starts.
+      // Clearing a zone goes to the map, or without one, the next zone in the chain.
+      if (this.zone.cleared && this.mapNode !== undefined) {
+        this.scene.start("map", { at: this.mapNode, played: true });
+        return;
+      }
       if (this.zone.cleared) {
-        this.loadZone(nextZoneIndex(this.zoneIndex, ZONES.length));
+        this.loadZone(nextZoneIndex(this.zoneIndex, CHAIN.length));
       } else if (this.zone.using) {
         this.goThrough(this.zone.using);
       }
@@ -244,11 +275,15 @@ export class ZoneScene extends Scene {
   // Starts the zone at index from its start. Each load draws a fresh seed, so the random
   // motion differs from one play to the next; ?seed=<n> fixes it.
   private loadZone(index: number): void {
-    const plan = ZONES[index];
+    const plan = CHAIN[index];
     if (!plan) {
       throw new Error(`No zone ${index + 1}`);
     }
     this.zoneIndex = index;
+    this.loadPlan(plan);
+  }
+
+  private loadPlan(plan: ZonePlan): void {
     // PLACEHOLDER: carried choices set no flags yet.
     this.layout = zoneLayout(TILE, CATALOGUE, this.hitboxes, new Set(), plan);
     const asked = Number(new URLSearchParams(window.location.search).get("seed"));

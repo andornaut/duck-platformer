@@ -12,6 +12,7 @@ import { CRASH_SCREEN } from "./crash/install";
 import { SCREEN } from "./data/screen";
 import { coverZone, setupPhoneApp } from "./pwa";
 import { BootScene } from "./scenes/BootScene";
+import { MapScene } from "./scenes/MapScene";
 import { PauseScene } from "./scenes/PauseScene";
 import { ZoneScene } from "./scenes/ZoneScene";
 
@@ -31,7 +32,7 @@ function startGame(): void {
     render: { antialias: false, desynchronized: true, powerPreference: "high-performance" },
     scale: { autoCenter: Scale.CENTER_BOTH, mode: Scale.FIT },
     // Later scenes draw over earlier ones: the pause card over the zone.
-    scene: [BootScene, ZoneScene, PauseScene],
+    scene: [BootScene, MapScene, ZoneScene, PauseScene],
     // WebGL only: the build's Phaser has no Canvas renderer (src/tools/phaserBuild.ts).
     type: WEBGL,
     width: SCREEN.width,

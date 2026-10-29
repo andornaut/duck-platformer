@@ -289,3 +289,29 @@ export interface ZoneLayout {
   readonly areas: Readonly<Record<string, AreaLayout>>;
   readonly start: AreaLink;
 }
+
+// A point on the map: a zone she plays, or a fork where paths split or join. at: where it is
+// drawn on the map screen, on its tile grid. zone: a zone node's key in ZONES; a zone not built
+// yet has none.
+export interface MapNode {
+  readonly at: TilePoint;
+  readonly id: string;
+  readonly kind: "fork" | "zone";
+  readonly zone?: string;
+}
+
+// A path from one node to the next, in the direction she travels, never back. A path not built
+// yet is drawn greyed out and cannot be chosen.
+export interface MapEdge {
+  readonly built: boolean;
+  readonly from: string;
+  readonly to: string;
+}
+
+// The map of zones: every path starts at start and ends at finish.
+export interface ZoneMap {
+  readonly edges: readonly MapEdge[];
+  readonly finish: string;
+  readonly nodes: readonly MapNode[];
+  readonly start: string;
+}
