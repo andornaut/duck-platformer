@@ -12,8 +12,9 @@ Run from the repository root.
 
 Frame and scale: as the street, outdoor scale (a storey about 180px, a door about 45px), 12px tiles, zones 60 rows
 (720px) tall. Chunk seams sit at ground rows 50, 40 and 30 (y 600, 480 and 360): a chunk's left and right edges meet
-the next chunk's at one of those heights. Height changes are whole-tile steps of 1 or 2 rows (a tap rises about 1.5
-tiles, a full hold about 6.5); there are no slopes.
+the next chunk's at one of those heights. A step of 1 or 2 rows is a tap's walk-up (a tap rises about 1.5 tiles, a
+full hold about 6.5); a taller terrace face is turf over soil, soil-left or soil-right running down the face, any
+height. There are no slopes.
 
 Look: a peach autumn sky with cream clouds, tall tan treetops and a skin2 city behind, close to the sky's value;
 the ground two bright rows deep (a cream-lipped grass top over green turf) and then warm brown soil with sparse
@@ -49,6 +50,17 @@ Backdrops (bottom-left anchored at world y; repeat-x widths divide 720 so chunk 
 - park-treetops 360x420 (y 600, x): tall lobed tan treetops rising into the upper screen.
 - park-city 360x200 (y 540, x): the city behind the trees, skin2, with two water towers.
 - park-far-trees 240x120 (y 600, x): a band of distant crowns, skin2 over brown.
+Sprites (Aseprite, public/art/sprites/<key>.png + .json, listed under the manifest's "sprites")
+- park-boat, 72x18, facing right: a rowing boat, the moving platform on a pond. Its collision is 6x1 tiles (72x12)
+  with its top on the frame's row 0, the deck line: a 1px dark-brown edge on row 0 and a 2px cream lip on rows 1
+  and 2, like every walkable top; nothing is drawn above it. A tan gunwale (rows 3 and 4), then a rust hull lit
+  ochre along its top and shaded dark brown underneath, rounded to the keel at row 16 or 17, dipping into the pond's
+  water rows. Tag idle, 2 frames at 400ms: frame 1 drops the keel 1px; the deck line stays fixed.
+- park-gate, 36x60 (3x5 tiles), the zone's exit, a Use zone with no collision. Anchor: the frame's bottom-left on
+  the ground's top at the park's end. A wrought-iron arch (ink with plum lit edges) on two posts with leaf finials
+  and ochre and rust leaves along the arch, over a pale skin1 opening above a brown path (the way on); two leaves
+  of 2px bars with scrolls. Tags idle (closed, 1 frame at 400ms) and open (4 frames at 80ms, played once: the
+  leaves swing back to the posts and hold open).
 Props (none; y is the ground top they stand on, given for row 50; add -120 per seam row up)
 - park-tree 96x150 (y 600): a lobed rust crown with ochre lit lobes; its one-way-branch row is 6 rows up.
 - park-bench 36x24 (y 600): the bench's legs and seat under its one-way-bench row, 2 rows up.
@@ -399,6 +411,81 @@ BACKDROP_DEFS = {
 }
 
 
+# ---------------------------------------------------------------- sprites
+
+def boat(frame=0):
+    """park-boat, 72x18: the deck line on row 0, the hull below; frame 1 drops the keel 1px."""
+    g = pixel.Grid(72, 18)
+    g.rect(1, 0, 70, 1, "dbrown")
+    g.rect(1, 1, 70, 2, "cream")
+    g.rect(1, 3, 70, 2, "tan")
+    g.rect(0, 1, 1, 5, "dbrown")
+    g.rect(71, 1, 1, 5, "dbrown")
+    g.rect(1, 5, 70, 1, "dbrown")
+    keel = 16 + frame
+    for y in range(6, keel):
+        inset = 1 + ((y - 5) ** 2) // (6 if frame else 5)       # the hull rounds in towards the keel
+        x0, x1 = inset, 71 - inset
+        if x1 <= x0:
+            break
+        g.rect(x0, y, x1 - x0 + 1, 1, "rust")
+        g.p(x0 - 1, y, "dbrown")
+        g.p(x1 + 1, y, "dbrown")
+        if y == 6:
+            g.rect(x0, y, x1 - x0 + 1, 1, "ochre")              # lit along the top
+        if y >= keel - 3:
+            g.rect(x0 + (x1 - x0) // 3, y, (x1 - x0) * 2 // 3 + 1, 1, "dbrown")   # shade underneath, lower right
+        last = (x0, x1, y)
+    x0, x1, y = last
+    g.rect(x0, y + 1, x1 - x0 + 1, 1, "dbrown")
+    for x in (20, 50):                                         # the oarlocks' rowlocks, 2px, on the gunwale
+        g.rect(x, 3, 2, 2, "dbrown")
+    return g.px
+
+
+def gate(open_k=0):
+    """park-gate, 36x60: an iron arch over a pale opening, its two leaves swung open_k quarters back to the posts."""
+    g = pixel.Grid(36, 60)
+    g.rect(5, 12, 26, 48, "skin1")                              # the way on, pale
+    g.rect(5, 50, 26, 10, "brown")
+    g.ell(18, 16, 13, 12, "ink")                                # the arch: a 2px iron band
+    g.ell(18, 16, 11, 10, "skin1")
+    g.rect(5, 16, 26, 44, "skin1")
+    g.rect(5, 50, 26, 10, "brown")
+    for x in (0, 31):                                           # posts with a plum lit edge
+        g.rect(x, 12, 5, 48, "ink")
+        g.rect(x + 1, 12, 1, 48, "plum")
+        g.rect(x - 0, 8, 5, 4, "ink")                           # finial base
+        g.rect(x + 1, 4, 3, 4, "forest")                        # a leaf finial
+        g.rect(x + 2, 2, 1, 2, "forest")
+    for x, y, c in ((8, 8, "ochre"), (13, 5, "rust"), (21, 5, "ochre"), (26, 8, "rust"), (17, 3, "ochre")):
+        g.rect(x, y, 3, 2, c)                                   # leaves along the arch
+        g.p(x + 1, y + 2, c)
+    half = 13 * (4 - open_k) // 4                               # each leaf's visible width
+    for side in (0, 1):
+        x0 = 5 if side == 0 else 31 - half
+        if half <= 1:
+            g.rect(5 if side == 0 else 29, 18, 2, 40, "ink")     # fully open: edge-on against the post
+            continue
+        g.rect(x0, 20, half, 2, "ink")
+        g.rect(x0, 48, half, 2, "ink")
+        for bx in range(x0, x0 + half, 4):
+            g.rect(bx, 18, 2, 40, "ink")
+        cx = x0 + half // 2
+        g.rect(cx - 2, 32, 4, 2, "ink")                         # a scroll with a leaf
+        g.rect(cx - 1, 30, 2, 2, "forest")
+    return g.px
+
+
+# Tags that play once and hold their last frame; every other tag loops.
+ONCE = {"park-gate": ("open",)}
+
+
+def sprites():
+    yield "park-boat", [("idle", [boat(0), boat(1)], 400)]
+    yield "park-gate", [("idle", [gate(0)], 400), ("open", [gate(k) for k in (1, 2, 3, 4)], 80)]
+
+
 # ---------------------------------------------------------------- build
 
 def tileset_image(items):
@@ -423,6 +510,7 @@ def build():
                           "anchor": "bottom-left", "y": y, "repeat": repeat})
     pixel.update_manifest("tilesets", [tileset])
     pixel.update_manifest("backdrops", backdrops)
+    pixel.build(list(sprites()), "art/park", once=ONCE)
     print("built", TILESET, "and", len(backdrops), "backdrops")
 
 
@@ -434,7 +522,9 @@ def build():
 STEPS = [(30 + 2 * i, 48 - 2 * i) for i in range(5)] + [(94 + 2 * i, 38 - 2 * i) for i in range(5)]
 POND = (76, 85)
 LEDGES = [("bench", 48, 10, 3), ("branch", 44, 16, 6), ("bandstand", 24, 104, 8)]
-THORNS = (114, 4, 39)
+THORNS = (112, 3, 39)
+BOAT = (78, 40)       # col, the pond row its deck sits on
+GATE = (116, 40)      # col, the ground row it stands on
 
 
 def tops():
@@ -503,6 +593,10 @@ def example(chars=True):
     for c in range(c0, c0 + w):
         side = "-left" if c == c0 else "-right" if c == c0 + w - 1 else ""
         im.alpha_composite(t[f"hazard-thorn{side}"], (c * T, row * T))
+    bx, brow = BOAT
+    im.alpha_composite(pixel_image(boat(0)), (bx * T, brow * T))
+    gx, grow = GATE
+    im.alpha_composite(pixel_image(gate(0)), (gx * T, grow * T - 60))
     if chars:
         duck = Image.open(f"{SPRITES}/duck.png").convert("RGBA").crop((0, 0, 48, 42))
         im.alpha_composite(duck, (14 * T - 24, 50 * T - 42))
@@ -514,6 +608,17 @@ def example(chars=True):
         for x, row in ((5 * T, 50), (24 * T, 50), (90 * T, 40)):
             im.alpha_composite(pig, (x, row * T - pig.height))
     return im.convert("RGB")
+
+
+def pixel_image(px):
+    from PIL import Image
+
+    im = Image.new("RGBA", (len(px[0]), len(px)), (0, 0, 0, 0))
+    for y, row in enumerate(px):
+        for x, c in enumerate(row):
+            if c:
+                im.putpixel((x, y), rgb(c) + (255,))
+    return im
 
 
 def walkable_check(im):

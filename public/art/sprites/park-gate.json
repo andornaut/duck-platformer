@@ -1,0 +1,55 @@
+{ "frames": {
+   "park-gate 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 36, "h": 60 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 36, "h": 60 },
+    "sourceSize": { "w": 36, "h": 60 },
+    "duration": 400
+   },
+   "park-gate 1.aseprite": {
+    "frame": { "x": 36, "y": 0, "w": 36, "h": 60 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 36, "h": 60 },
+    "sourceSize": { "w": 36, "h": 60 },
+    "duration": 80
+   },
+   "park-gate 2.aseprite": {
+    "frame": { "x": 72, "y": 0, "w": 36, "h": 60 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 36, "h": 60 },
+    "sourceSize": { "w": 36, "h": 60 },
+    "duration": 80
+   },
+   "park-gate 3.aseprite": {
+    "frame": { "x": 108, "y": 0, "w": 36, "h": 60 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 36, "h": 60 },
+    "sourceSize": { "w": 36, "h": 60 },
+    "duration": 80
+   },
+   "park-gate 4.aseprite": {
+    "frame": { "x": 144, "y": 0, "w": 36, "h": 60 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 36, "h": 60 },
+    "sourceSize": { "w": 36, "h": 60 },
+    "duration": 80
+   }
+ },
+ "meta": {
+  "app": "http://www.aseprite.org/",
+  "version": "1.2.30-x64",
+  "image": "park-gate.png",
+  "format": "RGBA8888",
+  "size": { "w": 180, "h": 60 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "idle", "from": 0, "to": 0, "direction": "forward" },
+   { "name": "open", "from": 1, "to": 4, "direction": "forward" }
+  ]
+ }
+}

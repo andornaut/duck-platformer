@@ -176,6 +176,20 @@
       "once": []
     },
     {
+      "key": "park-boat",
+      "png": "sprites/park-boat.png",
+      "json": "sprites/park-boat.json",
+      "once": []
+    },
+    {
+      "key": "park-gate",
+      "png": "sprites/park-gate.png",
+      "json": "sprites/park-gate.json",
+      "once": [
+        "open"
+      ]
+    },
+    {
       "key": "pedestrian-cat",
       "png": "sprites/pedestrian-cat.png",
       "json": "sprites/pedestrian-cat.json",
