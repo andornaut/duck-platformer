@@ -1,0 +1,49 @@
+{ "frames": {
+   "map-zone 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 35, "h": 35 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 35, "h": 35 },
+    "sourceSize": { "w": 35, "h": 35 },
+    "duration": 100
+   },
+   "map-zone 1.aseprite": {
+    "frame": { "x": 35, "y": 0, "w": 35, "h": 35 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 35, "h": 35 },
+    "sourceSize": { "w": 35, "h": 35 },
+    "duration": 100
+   },
+   "map-zone 2.aseprite": {
+    "frame": { "x": 70, "y": 0, "w": 35, "h": 35 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 35, "h": 35 },
+    "sourceSize": { "w": 35, "h": 35 },
+    "duration": 100
+   },
+   "map-zone 3.aseprite": {
+    "frame": { "x": 105, "y": 0, "w": 35, "h": 35 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 35, "h": 35 },
+    "sourceSize": { "w": 35, "h": 35 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "http://www.aseprite.org/",
+  "version": "1.2.30-x64",
+  "image": "map-zone.png",
+  "format": "RGBA8888",
+  "size": { "w": 140, "h": 35 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "normal", "from": 0, "to": 0, "direction": "forward" },
+   { "name": "current", "from": 1, "to": 1, "direction": "forward" },
+   { "name": "visited", "from": 2, "to": 2, "direction": "forward" },
+   { "name": "unbuilt", "from": 3, "to": 3, "direction": "forward" }
+  ]
+ }
+}

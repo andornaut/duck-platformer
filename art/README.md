@@ -198,6 +198,19 @@ A pause button at the top left opens the pause card over the game, which is dimm
 - Keyboard focus: `ui-focus`, a nine-slice ring (margins 4) drawn 4px outside the focused element on every side, at (x-4, y-4, w+8, h+8): a 2px yellow band between 1px ink lines, so it holds 3:1 on the card, the rows, the buttons and the dim. It fits the settings rows, the Install button, Resume, the answer buttons and the close X (round its 24x24 mark).
 - Install steps: each step is a 16x16 glyph at x 198 and up to two lines of text at x 228 (20px pitch, at most 296 wide). Step 1 shows the iOS Share glyph or the browser-menu glyph, whichever the browser uses; step 2 the install glyph.
 
+## Map
+
+The map screen shows the zones and the forks between them as a paper map, before Zone 1 and after each zone's exit. `art/tools/map.py` draws it; its docstring gives every sprite's states, anchor and placement, and the drawing rules below in full. The game lays the nodes out from the map data, on the 60x30 grid of 12px tiles, centred at (12 col + 6, 12 row + 6).
+
+- Paper: `map-paper`, a nine-slice drawn 720x360 at 0,0: cream with a brown rule 6px in and a tan rule 11px in. The pen marks (`map-hill`, `map-wave`, `map-compass`) are tan sprites the map data places, at least a tile clear of every node, path and label, since the node layout varies with the map.
+- Ink is dbrown, the accent dred, unbuilt slate; the pen marks are tan, below the 3:1 of anything that carries meaning.
+- Zone marker `map-zone`, 35x35 centred on the node: normal (a cream disc in a dbrown ring), current (a second dred ring outside), visited (a solid dbrown disc with a tick badge) and unbuilt (a broken slate ring round a question mark). Over every state but unbuilt the zone's icon, `map-icon-<zone>` (14x14, tag `normal` or `visited`), sits centred; a zone without one shows `map-icon-zone`, so a new zone needs only its icon.
+- Fork marker `map-fork`, 29x29: a hollow dbrown diamond, ringed in dred when current, solid when visited, four slate corner dots when unbuilt. A fork has no label.
+- The duck's marker `map-duck` (26x22, `idle` 2 x 400ms) stands on the current node's ring.
+- Paths have no art. The game draws each from node to node as a gentle curve (a quadratic Bezier bent 8% of its length, alternating sides), trimmed 3px outside the markers, by stamping squares along it: built a 2px dbrown dash (6 on, 4 off), travelled a 4px solid dred line, unbuilt 2x2 slate dots every 6px. At a fork the paths she can take carry an arrowhead, and the selected one turns to 4px dred dashes.
+- Labels: the zone's name in `font-title` at 2x, plum, centred under its marker: origin (cx - floor((A - 4) / 2) - 2, cy + 12), where A is its advance width at 2x, over a cream knock-out (ox - 2, cy + 17, A + 4, 16) that hides the paths behind it.
+- Continue is `ui-resume` at 280,300. At a fork, one `ui-fork-choice` (160x36, hit 160x44, as `ui-answer`) per path replaces it, 8 apart and centred on x 360 at y 304, each with the zone's name and a `ui-fork-arrow` (up, level or down) for the direction the path leaves the fork.
+
 ## Animation
 
 - Motion is in whole pixels. Tag names are the animation names. New tags go after existing ones so frame indices hold.

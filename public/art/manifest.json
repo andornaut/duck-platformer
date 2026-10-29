@@ -92,6 +92,66 @@
       "once": []
     },
     {
+      "key": "map-compass",
+      "png": "sprites/map-compass.png",
+      "json": "sprites/map-compass.json",
+      "once": []
+    },
+    {
+      "key": "map-duck",
+      "png": "sprites/map-duck.png",
+      "json": "sprites/map-duck.json",
+      "once": []
+    },
+    {
+      "key": "map-fork",
+      "png": "sprites/map-fork.png",
+      "json": "sprites/map-fork.json",
+      "once": []
+    },
+    {
+      "key": "map-hill",
+      "png": "sprites/map-hill.png",
+      "json": "sprites/map-hill.json",
+      "once": []
+    },
+    {
+      "key": "map-icon-street",
+      "png": "sprites/map-icon-street.png",
+      "json": "sprites/map-icon-street.json",
+      "once": []
+    },
+    {
+      "key": "map-icon-zone",
+      "png": "sprites/map-icon-zone.png",
+      "json": "sprites/map-icon-zone.json",
+      "once": []
+    },
+    {
+      "key": "map-paper",
+      "png": "sprites/map-paper.png",
+      "json": "sprites/map-paper.json",
+      "once": [],
+      "slice": {
+        "left": 13,
+        "top": 13,
+        "right": 13,
+        "bottom": 13
+      }
+    },
+    {
+      "key": "map-wave",
+      "png": "sprites/map-wave.png",
+      "json": "sprites/map-wave.json",
+      "once": []
+    },
+    {
+      "key": "map-zone",
+      "png": "sprites/map-zone.png",
+      "json": "sprites/map-zone.json",
+      "once": []
+    },
+    {
       "key": "pedestrian-cat",
       "png": "sprites/pedestrian-cat.png",
       "json": "sprites/pedestrian-cat.json",
@@ -170,6 +230,18 @@
         "right": 4,
         "bottom": 4
       }
+    },
+    {
+      "key": "ui-fork-arrow",
+      "png": "sprites/ui-fork-arrow.png",
+      "json": "sprites/ui-fork-arrow.json",
+      "once": []
+    },
+    {
+      "key": "ui-fork-choice",
+      "png": "sprites/ui-fork-choice.png",
+      "json": "sprites/ui-fork-choice.json",
+      "once": []
     },
     {
       "key": "ui-forward-mark",
