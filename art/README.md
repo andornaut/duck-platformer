@@ -74,7 +74,7 @@ In order:
 - One fixed house palette, plus a few game-specific ramps that each end on a house colour. The house palette is [Endesga 32](https://lospec.com/palette-list/endesga-32); colour names are the `K` names in `art/tools/pixel.py`.
 - Every pixel is fully opaque or fully transparent.
 - Each colour has a one-step-darker mapping (its ramp). Shadows and dimming step each colour down its ramp, never blend with black.
-- Neutral greys are reserved for disabled UI.
+- Neutral greys are reserved for disabled UI. Exceptions: the pigeon's body and the raccoon's rim light (see Street cast), where slate alone merges with the dark storefronts.
 
 ### Outlines
 
@@ -103,6 +103,9 @@ In order:
 | Duck portrait   | 64x64 |
 | Ferret          | 64x80 |
 | Ferret portrait | 64x64 |
+| Pigeon          | 22x22 |
+| Pug             | 44x32 |
+| Pedestrian      | 34x50 |
 
 ### Text
 
@@ -201,11 +204,15 @@ A pause button at the top left opens a pause card over the game, which is dimmed
 
 A placed thing has three layers: an archetype (its behaviour), a character (its art, animations, hit box, dialogue and quip pools and quirks) and an instance (one placement). A character's data names its art key and the tag that plays for each state, so every character sprite lists its tags by state (idle, move, react, talk, quirk) in its script docstring and in the table below. A state with no tag of its own says "none" or names the tag it falls back to. A state with more than one tag names each.
 
-| Character    | idle   | move                                         | react                        | talk                       | quirk    |
-| ------------ | ------ | -------------------------------------------- | ---------------------------- | -------------------------- | -------- |
-| duck         | `idle` | `walk`; in the air `jump`, `flutter`, `land` | none, falls back to `land`   | none, falls back to `idle` | none     |
-| ferret       | `idle` | none, falls back to `idle`                   | none, falls back to `scheme` | `talk`                     | `scheme` |
-| frog-courier | `idle` | `ride`                                       | none, falls back to `idle`   | none, falls back to `idle` | none     |
+| Character          | idle   | move                                         | react                        | talk                       | quirk    |
+| ------------------ | ------ | -------------------------------------------- | ---------------------------- | -------------------------- | -------- |
+| duck               | `idle` | `walk`; in the air `jump`, `flutter`, `land` | none, falls back to `land`   | none, falls back to `idle` | none     |
+| ferret             | `idle` | none, falls back to `idle`                   | none, falls back to `scheme` | `talk`                     | `scheme` |
+| frog-courier       | `idle` | `ride`                                       | none, falls back to `idle`   | none, falls back to `idle` | none     |
+| pigeon             | `idle` | `fly`                                        | `flee`, then `fly`           | none, falls back to `idle` | none     |
+| dog-pug            | `idle` | `walk`                                       | `perk`                       | `talk`                     | none     |
+| pedestrian-cat     | `idle` | `walk`                                       | none, falls back to `idle`   | none, falls back to `idle` | none     |
+| pedestrian-raccoon | `idle` | `walk`                                       | none, falls back to `idle`   | none, falls back to `idle` | none     |
 
 - ferret-trap-snap is a hazard, not a character: it has no character states, only `set` and `snap`.
 
@@ -249,6 +256,21 @@ A hazard restarts the floor on contact. `art/tools/hazards.py` draws the hazard 
 - Cellar hatch: on the sidewalk row `hatch-left`, one `pit-opening` per opening tile, `hatch-right`; `pit-opening` down every row below the opening; `pit-leaf-left-top` over `pit-leaf-left` above `hatch-left`, and the right leaf above `hatch-right`. It reads as a hole from several tiles away: two steel leaves standing up over a dark gap in the sidewalk line.
 - frog-courier rolls back and forth along the sidewalk and is mirrored for left. Its wheels roll without slipping at 51 px/s; the hit box leaves out his eye bump, the bag's top and 2px of each tyre.
 - ferret-trap-snap waits on `set` and plays `snap` once when the duck touches its hit box.
+
+## Street cast
+
+The ambient characters of the Floor 1 street, drawn by `art/tools/cast.py`; its docstring gives every frame. They have no portraits, are never hazards or pickups and carry no hit box. Each faces right (mirrored for left) at outdoor scale beside the duck, with its feet on the frame's bottom rows and its body centre on the frame's centre line, so mirroring it does not move it. Outlines are coloured: two ramp steps darker, stepped further down until they hold 3:1 on the sidewalk.
+
+| Key                | Character                                                     | Frame | Tags and timing                                                                               |
+| ------------------ | ------------------------------------------------------------- | ----- | --------------------------------------------------------------------------------------------- |
+| pigeon             | a small pigeon at true street scale, placed in groups         | 22x22 | `idle` 600, 140, 140, 140ms (stand, peck, stand, peck); `flee` 2 x 80ms, once; `fly` 2 x 90ms |
+| dog-pug            | a fawn pug with a black mask and a sky-blue collar            | 44x32 | `idle` 2 x 400ms; `walk` 4 x 120ms; `perk` 2 x 80ms, once; `talk` 2 x 150ms                   |
+| pedestrian-cat     | an orange tabby in a mauve coat with a cream tote bag         | 34x50 | `walk` 4 x 140ms; `idle` 2 x 400ms                                                            |
+| pedestrian-raccoon | a raccoon in a tan trench coat, an ink mask and a ringed tail | 34x50 | `walk` 4 x 140ms; `idle` 2 x 400ms                                                            |
+
+- The pigeon flees in two steps: `flee` plays once (crouch, leap) and the game then loops `fly` while it moves the pigeon up and away. It reads at 1x by its grey body, lgrey rim light, bold green-and-mauve neck sheen and pink feet.
+- The pedestrians share one body: a big round head over an A-line coat and two stub legs. Their walk is the two-leg cycle: a foot lifted 2px, passing (body 1px up), the other foot lifted, passing.
+- Grey exceptions: the pigeon is grey with an lgrey rim, and the raccoon's slate fur has a grey rim light. In greyscale, slate alone does not separate from the dark storefronts.
 
 ## Floor 1
 

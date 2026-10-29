@@ -1,0 +1,97 @@
+{ "frames": {
+   "dog-pug 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 44, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 32 },
+    "sourceSize": { "w": 44, "h": 32 },
+    "duration": 400
+   },
+   "dog-pug 1.aseprite": {
+    "frame": { "x": 44, "y": 0, "w": 44, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 32 },
+    "sourceSize": { "w": 44, "h": 32 },
+    "duration": 400
+   },
+   "dog-pug 2.aseprite": {
+    "frame": { "x": 88, "y": 0, "w": 44, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 32 },
+    "sourceSize": { "w": 44, "h": 32 },
+    "duration": 120
+   },
+   "dog-pug 3.aseprite": {
+    "frame": { "x": 132, "y": 0, "w": 44, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 32 },
+    "sourceSize": { "w": 44, "h": 32 },
+    "duration": 120
+   },
+   "dog-pug 4.aseprite": {
+    "frame": { "x": 176, "y": 0, "w": 44, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 32 },
+    "sourceSize": { "w": 44, "h": 32 },
+    "duration": 120
+   },
+   "dog-pug 5.aseprite": {
+    "frame": { "x": 220, "y": 0, "w": 44, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 32 },
+    "sourceSize": { "w": 44, "h": 32 },
+    "duration": 120
+   },
+   "dog-pug 6.aseprite": {
+    "frame": { "x": 264, "y": 0, "w": 44, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 32 },
+    "sourceSize": { "w": 44, "h": 32 },
+    "duration": 80
+   },
+   "dog-pug 7.aseprite": {
+    "frame": { "x": 308, "y": 0, "w": 44, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 32 },
+    "sourceSize": { "w": 44, "h": 32 },
+    "duration": 80
+   },
+   "dog-pug 8.aseprite": {
+    "frame": { "x": 352, "y": 0, "w": 44, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 32 },
+    "sourceSize": { "w": 44, "h": 32 },
+    "duration": 150
+   },
+   "dog-pug 9.aseprite": {
+    "frame": { "x": 396, "y": 0, "w": 44, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 32 },
+    "sourceSize": { "w": 44, "h": 32 },
+    "duration": 150
+   }
+ },
+ "meta": {
+  "app": "http://www.aseprite.org/",
+  "version": "1.2.30-x64",
+  "image": "dog-pug.png",
+  "format": "RGBA8888",
+  "size": { "w": 440, "h": 32 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "idle", "from": 0, "to": 1, "direction": "forward" },
+   { "name": "walk", "from": 2, "to": 5, "direction": "forward" },
+   { "name": "perk", "from": 6, "to": 7, "direction": "forward" },
+   { "name": "talk", "from": 8, "to": 9, "direction": "forward" }
+  ]
+ }
+}

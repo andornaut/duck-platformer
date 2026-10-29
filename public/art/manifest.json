@@ -13,6 +13,14 @@
   ],
   "sprites": [
     {
+      "key": "dog-pug",
+      "png": "sprites/dog-pug.png",
+      "json": "sprites/dog-pug.json",
+      "once": [
+        "perk"
+      ]
+    },
+    {
       "key": "duck",
       "png": "sprites/duck.png",
       "json": "sprites/duck.json",
@@ -52,6 +60,26 @@
         "width": 48,
         "height": 30
       }
+    },
+    {
+      "key": "pedestrian-cat",
+      "png": "sprites/pedestrian-cat.png",
+      "json": "sprites/pedestrian-cat.json",
+      "once": []
+    },
+    {
+      "key": "pedestrian-raccoon",
+      "png": "sprites/pedestrian-raccoon.png",
+      "json": "sprites/pedestrian-raccoon.json",
+      "once": []
+    },
+    {
+      "key": "pigeon",
+      "png": "sprites/pigeon.png",
+      "json": "sprites/pigeon.json",
+      "once": [
+        "flee"
+      ]
     },
     {
       "key": "portrait-duck",
