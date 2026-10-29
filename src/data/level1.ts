@@ -15,6 +15,10 @@ export const LEVEL_1: LevelPlan = {
       cols: 360,
       entries: { "front-door": { col: 8, row: 56 } },
       objects: [
+        // The wood-panelled wall behind the whole room.
+        { col: 0, cols: 360, row: 0, type: "lobby-wall" },
+        // The balcony's railing, standing on it.
+        { col: 313, cols: 45, row: 13, type: "lobby-balustrade" },
         { col: 2, row: 41, type: "lobby-front-door" },
         // PLACEHOLDER: what happens in the lobby between the front door and the climb.
         { col: 30, row: 46, type: "lobby-plant" },
@@ -44,15 +48,19 @@ export const LEVEL_1: LevelPlan = {
       rows: 60,
       solids: [
         // The floor, and a wood post at each end of the room.
-        { col: 0, cols: 360, row: 56, rows: 4 },
-        { col: 0, cols: 2, row: 0, rows: 56 },
-        { col: 358, cols: 2, row: 0, rows: 56 },
+        { col: 0, cols: 360, look: "floor", row: 56, rows: 4 },
+        { col: 0, cols: 2, look: "post", row: 0, rows: 56 },
+        { col: 358, cols: 2, look: "post", row: 0, rows: 56 },
       ],
+      tileset: "tiles-lobby",
     },
     street: {
       cols: 240,
       entries: { start: { col: 4, row: 26 } },
       objects: [
+        // The sky and the far skyline behind the whole street.
+        { col: 0, cols: 240, row: 0, type: "street-sky" },
+        { col: 0, cols: 240, row: 3, type: "street-skyline" },
         // Walk: the café, with pigeons that flee as she comes near.
         { col: 6, row: 16, type: "storefront-cafe" },
         { col: 14, row: 25, type: "pigeon" },
@@ -106,17 +114,18 @@ export const LEVEL_1: LevelPlan = {
       rows: 60,
       solids: [
         // A wall at the street's left edge, above the sidewalk.
-        { col: 0, cols: 1, row: 0, rows: 26 },
-        { col: 0, cols: 40, row: 26, rows: 4 },
+        { col: 0, cols: 1, look: "sidewalk", row: 0, rows: 26 },
+        { col: 0, cols: 40, look: "sidewalk", row: 26, rows: 4 },
         // The cross street's road, one below the sidewalk.
-        { col: 40, cols: 10, row: 27, rows: 3 },
-        { col: 50, cols: 58, row: 26, rows: 4 },
+        { col: 40, cols: 10, look: "road", row: 27, rows: 3 },
+        { col: 50, cols: 58, look: "sidewalk", row: 26, rows: 4 },
         // The subway entrance: cols 108 to 117.
-        { col: 118, cols: 16, row: 26, rows: 4 },
+        { col: 118, cols: 16, look: "sidewalk", row: 26, rows: 4 },
         // Cellar hatches: cols 134 to 139 and 148 to 155, their edge tiles placed as objects.
-        { col: 140, cols: 8, row: 26, rows: 4 },
-        { col: 156, cols: 84, row: 26, rows: 4 },
+        { col: 140, cols: 8, look: "sidewalk", row: 26, rows: 4 },
+        { col: 156, cols: 84, look: "sidewalk", row: 26, rows: 4 },
       ],
+      tileset: "tiles-street",
     },
   },
   start: { area: "street", entry: "start" },

@@ -79,9 +79,13 @@ export const OBJECT_TYPES: Readonly<Record<string, ObjectType>> = {
   "hotel-crest": fixed("hotel-crest", "none", 8, 4),
   "hotel-door": fixed("door", "use", 3, 4),
   "hotel-window": fixed("hotel-window", "none", 3, 13),
+  // The lobby's balcony railing, a backdrop repeated across its run.
+  "lobby-balustrade": fixed("lobby-balustrade", "none", 4, 3),
   "lobby-front-door": fixed("lobby-front-door", "none", 13, 15),
   "lobby-lamp": fixed("lobby-lamp", "none", 4, 16),
   "lobby-plant": fixed("lobby-plant", "none", 4, 10),
+  // The lobby's wood-panelled wall, a backdrop repeated across the room.
+  "lobby-wall": fixed("lobby-wall", "none", 4, 60),
   "lobby-window": fixed("lobby-window", "none", 8, 20),
   // PLACEHOLDER: people walking past, back and forth, paying her no attention.
   pedestrian: {
@@ -137,6 +141,9 @@ export const OBJECT_TYPES: Readonly<Record<string, ObjectType>> = {
   "storefront-makeup-store": fixed("storefront-makeup-store", "none", 8, 10),
   "storefront-noodle-bar": fixed("storefront-noodle-bar", "none", 10, 10),
   "storefront-pet-shop": fixed("storefront-pet-shop", "none", 9, 10),
+  // The street's sky and far skyline, backdrops repeated across the street.
+  "street-sky": fixed("street-sky", "none", 4, 26),
+  "street-skyline": fixed("street-skyline", "none", 28, 23),
   "street-tree": fixed("street-tree", "none", 5, 11),
   "subway-railing": fixed("subway-railing", "none", 6, 5),
   // PLACEHOLDER: the test levels' objects, drawn as flat rectangles: exits and a door (Use
