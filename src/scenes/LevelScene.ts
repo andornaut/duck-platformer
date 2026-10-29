@@ -50,6 +50,7 @@ import {
   type TagFrame,
   tagMs,
 } from "../view/aseprite";
+import { cameraScroll } from "../view/camera";
 import { characterState, nextQuirkAt } from "../view/character";
 import { duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
 import { type ArtKind, artKind, artOffset } from "../view/objectArt";
@@ -134,8 +135,6 @@ export class LevelScene extends Scene {
   private duck!: GameObjects.Sprite;
   private duckPose: DuckPose = startPose;
   private level!: LevelState;
-  // The camera follows her collision box's centre.
-  private readonly focus = { x: 0, y: 0 };
   private readonly heldKeys = new Set<string>();
   private readonly heldTouches = new Map<number, HeldTouch>();
   private landMs = 0;
@@ -168,7 +167,6 @@ export class LevelScene extends Scene {
     this.landMs = tagMs(this.sheet(DUCK_SPRITE), "land");
 
     this.duck = this.add.sprite(0, 0, DUCK_SPRITE).setOrigin(0).setDepth(DUCK_DEPTH);
-    this.cameras.main.startFollow(this.focus, true);
     this.manifest = this.cache.json.get(ART_MANIFEST_KEY) as ArtManifest;
     this.hitboxes = artHitboxes((key) => this.textures.getFrame(key), this.manifest);
     this.loadLevel(this.levelIndex);
@@ -462,8 +460,9 @@ export class LevelScene extends Scene {
     show(this.duck, tag);
     const at = duckFrameAt(DUCK, this.duck.frame, duck);
     this.duck.setPosition(at.x, at.y).setFlipX(duck.facing < 0);
-    this.focus.x = Math.round(duck.x + DUCK.width / 2);
-    this.focus.y = Math.round(duck.y + DUCK.height / 2);
+    const feet = { x: duck.x + DUCK.width / 2, y: duck.y + DUCK.height };
+    const scroll = cameraScroll(SCREEN, areaOf(this.layout, this.level.area), feet);
+    this.cameras.main.setScroll(scroll.x, scroll.y);
   }
 
   private watchKeys(): void {
