@@ -7,10 +7,10 @@ export const DUCK: DuckTuning = {
   flutterFallSpeed: 60,
   gravity: 900,
   groundAccel: 1500,
-  height: 32,
+  height: 30,
   jumpBuffer: 0.1,
   jumpReleaseCut: 0.5,
   jumpSpeed: 300,
   walkSpeed: 120,
-  width: 24,
+  width: 20,
 };

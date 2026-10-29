@@ -28,6 +28,7 @@ Gameplay owns the rulebook and the values and content in the data value files (e
 Each target is a band, not a point, that the simulator reports per floor and skill. PLACEHOLDER: every band, agreed with the user. The kinds of target:
 
 - **Floor length:** the time to clear a floor, by skill. A mistake restarts the floor and touch jumps are imprecise, so a floor is short enough that a restart doesn't sting
+- **Reaches:** the duck makes every jump at a reach in the rulebook's Grid, and never one tile beyond it. A pass or fail check, not a band
 - **Restarts:** a failed attempt is one that ends in a floor restart (a fall or a hazard). Restarts per floor, by skill: some attempts fail, and the band says how often
 - **Route spread:** every route a choice opens lands within a narrow window of the floor's median clear time and restart rate, so no route is a lot easier or harder
 - **Session length:** the time to finish the game, by skill

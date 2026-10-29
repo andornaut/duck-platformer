@@ -48,11 +48,17 @@ A landscape, left-to-right platformer: a duck falls out of her apartment at the 
 - **Minimal:** show only what the player needs. No heading that repeats a tab's name, no label the picture already gives, and no decoration that competes with play
 - **Options:** art mocks up visual options for the user to pick
 
+### Grid
+
+- **Duck:** 2 tiles wide and 3 tall
+- **Reaches:** floors are built to the duck's reaches, measured in tiles from the top of the ground she leaves to the top of the ledge she lands on. A short hop rises 2 tiles; a full jump rises 6; a full jump with flutter crosses a 12-tile gap at the same height. A ledge at a reach is always makeable, and one tile beyond it never is
+- **Tiles:** floors are built on a grid of 10 px tiles, so the screen is 64 columns by 36 rows. Every solid, ledge, hazard and exit sits on whole tiles and spans whole tiles
+
 ### The duck
 
 - **Flutter:** every fall flutters, after a jump or off a ledge: her fall is slow enough to use, and the player steers her in the air
 - **Jump timing:** a jump pressed just after she leaves a ledge still jumps (coyote time), and a jump pressed just before she lands jumps as she lands (jump buffering)
-- **Movement:** she walks left and right and jumps. Her speeds, jump, flutter and timing values are in `src/data/duck.ts`
+- **Movement:** she walks left and right and jumps. Her speeds, jump, flutter and timing values are in `src/data/duck.ts`, tuned to the reaches under Grid
 - **Short hop:** releasing Jump while she rises cuts the jump short, so precise short hops stay possible
 
 ### Floors and restarts
