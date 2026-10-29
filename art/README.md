@@ -56,7 +56,7 @@ In order:
 - Every manifest sprite entry has `once`: the tags that play once and hold their last frame, `[]` when none. Every other tag loops. A script declares them in a `ONCE` dict beside its `sprites()`.
 - A sprite with a hit box carries `hitbox` in its manifest entry, `{"x", "y", "width", "height"}` in frame pixels for the facing it is drawn in. A script declares them in a `HITBOX` dict beside `ONCE`; only sprites that declare one have it, and a box outside the frame fails the build.
 - A nine-slice texture carries its margins as an Aseprite slice named after its key and as `slice` in its manifest entry.
-- `art/tools/fonts.py` rasterizes the fonts in `art/fonts/` into BMFonts in `public/art/fonts/`, white for tinting.
+- `art/tools/fonts.py` rasterizes the fonts in `art/fonts/` into BMFonts in `public/art/fonts/`, white for tinting: printable ASCII and the middle dot (·).
 - `art/tools/palette.py` writes `public/art/palette.json`, listed under `data` in the manifest: `colours` maps each palette name to `#rrggbb`, `darker` maps each colour one ramp step down, and `dim2` two steps down, the settings card's dim. Keys are sorted.
 - `art/tools/icons.py` draws the favicon and app icons, the duck's head on a green disc, as plain PNGs, not sprites or manifest entries: `public/favicon.ico` (16 and 32), `public/art/favicon-16.png` and `public/art/favicon.png`, and in `public/icons/` the 180 apple-touch icon on a green square, the 192 and 512 icons on a green disc with a transparent outside, and a 512 maskable icon with the subject inside the central 80%. The 16 and 32 are drawn natively; the larger icons are 64 and 90 drawings scaled by whole numbers.
 - `art/inventory.md` lists every asset (key, type, size, tags).
@@ -194,7 +194,8 @@ A pause button at the top left opens the pause card over the game, which is dimm
 - Settings card without Install: 368x132, the build label at origin y 192.
 - Touch controls row: its icon at 198,152, the checkbox (20x20) at 504,150, and Shown or Hidden ending at x 494, left of it. The checkbox stays: the user picked it, its two states differ in shape, and the state word reads it a second time.
 - Install row: its icon at 198,204 and a secondary button (`ui-button`, 72x28) at 452,198 whose label the game centres in it, at most 56 wide. The whole row is the hit area.
-- Build label: tan in `font-body`, centred on x 360.
+- Build label: tan in `font-body`, centred on x 360, for example "v0.0.1 · dev".
+- Keyboard focus: `ui-focus`, a nine-slice ring (margins 4) drawn 4px outside the focused element on every side, at (x-4, y-4, w+8, h+8): a 2px yellow band between 1px ink lines, so it holds 3:1 on the card, the rows, the buttons and the dim. It fits the settings rows, the Install button, Resume, the answer buttons and the close X (round its 24x24 mark).
 - Install steps: each step is a 16x16 glyph at x 198 and up to two lines of text at x 228 (20px pitch, at most 296 wide). Step 1 shows the iOS Share glyph or the browser-menu glyph, whichever the browser uses; step 2 the install glyph.
 
 ## Animation

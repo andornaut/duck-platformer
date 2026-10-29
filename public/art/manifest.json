@@ -160,6 +160,18 @@
       "once": []
     },
     {
+      "key": "ui-focus",
+      "png": "sprites/ui-focus.png",
+      "json": "sprites/ui-focus.json",
+      "once": [],
+      "slice": {
+        "left": 4,
+        "top": 4,
+        "right": 4,
+        "bottom": 4
+      }
+    },
+    {
       "key": "ui-forward-mark",
       "png": "sprites/ui-forward-mark.png",
       "json": "sprites/ui-forward-mark.json",

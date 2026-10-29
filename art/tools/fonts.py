@@ -7,7 +7,9 @@
   1 leading): capitals sit on rows 4 to 8 of the line box and columns 1 onward of the advance.
 
 The game draws both at 2x, so body lines step 20 base pixels and capitals are 10 base pixels tall. Glyphs are
-white on transparent, fully opaque, so the game tints them. Printable ASCII.
+white on transparent, fully opaque, so the game tints them. Printable ASCII and the middle dot (U+00B7), which
+both fonts carry as a 1px dot on the capitals' middle row: advance 2 in font-body and 3 in font-title (4 and 6 at
+2x). It comes after ASCII, so every other glyph keeps its place in the atlas.
 
 Both are SIL Open Font License fonts; the font files and licenses are in art/fonts/.
 
@@ -32,7 +34,7 @@ FONTS = {
     "font-title": ("Silkscreen", "art/fonts/silkscreen/Silkscreen-Regular.ttf", 8),
 }
 OUT = "public/art/fonts"
-CHARS = [chr(c) for c in range(32, 127)]
+CHARS = [chr(c) for c in range(32, 127)] + ["\u00b7"]
 ATLAS_W = 128
 
 

@@ -63,6 +63,7 @@ Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with 
 | ui-checkbox         | sprite                              | 20x20  | off, on                         |
 | ui-close            | sprite                              | 24x24  | normal, pressed                 |
 | ui-dialogue-box     | sprite                              | 640x96 | rest                            |
+| ui-focus            | nine-slice (4,4,4,4)                | 16x16  | rest                            |
 | ui-forward-mark     | sprite                              | 10x14  | idle                            |
 | ui-name-tab         | nine-slice (2,2,2,2)                | 12x20  | amber, green, pink, tan         |
 | ui-pause            | sprite                              | 35x35  | rest, press, held               |

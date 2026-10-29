@@ -65,11 +65,15 @@ Pause card, settings card and install steps card (each over the game dimmed two 
   (icon-touch-controls; ui-checkbox at 504,150; state Shown or Hidden cream, its last glyph ending at x 494, origin
   496-A); Install at y 188, only while the app is installable (icon-install; ui-button drawn 72x28 at 452,198, label
   ink, origin x 452 + (72 - ink width) / 2, y 201, or 203 when pressed; room 56). The build label, tan in
-  font-body, is centred on x 360 with its origin 28 above the card's foot: y 244, or 192 without Install.
+  font-body (for example "v0.0.1 · dev"), is centred on x 360 with its origin 28 above the card's foot: y 244,
+  or 192 without Install.
 - Install steps card, 368x160, title "Install". Two steps, each a 16x16 glyph and up to two lines of cream
   font-body at a 20px pitch, room 296: step 1's glyph (icon-ios-share on iOS, icon-browser-menu where the browser
   installs from its menu) at 198,145, text origin 228,144; step 2's glyph (icon-install) at 198,197, text origin
   228,196.
+- ui-focus, nine-slice 16x16, margins 4,4,4,4: the keyboard focus ring, a 2px yellow band between 1px ink lines with
+  cut corners. Draw it at (x-4, y-4, w+8, h+8) round the focused element: a row (360x56), the Install button
+  (80x36), Resume (168x52), an answer (216x44) or the close X's 24x24 mark (32x32). One tag, rest.
 - ui-checkbox, 20x20. Tags off (empty box), on (a green tick).
 - ui-quit, 20x20: a doorway with an arrow leaving it. Tags normal (cream), pressed (white, the arrow 2px further
   out).
@@ -337,6 +341,20 @@ def touch_controls_icon():
     return g.px
 
 
+def focus():
+    """16x16 nine-slice, margins 4: the keyboard focus ring. From the outside in: a 1px ink fringe, a 2px yellow
+    band and a 1px ink line, with cut corners, and a clear centre. Drawn 4px outside the element on every side, so
+    the yellow band sits 2 to 3px outside its edge and the ink holds it apart from any fill on either side."""
+    g = Grid(16, 16)
+    for k, c in ((0, "ink"), (1, "yellow"), (3, "ink")):
+        w = 16 - 2 * k
+        g.rect(k, k, w, w, c)
+        for cx, cy in ((k, k), (k + w - 1, k), (k, k + w - 1), (k + w - 1, k + w - 1)):
+            g.p(cx, cy, None if k == 0 else ("ink" if k == 1 else "yellow"))
+    g.rect(4, 4, 8, 8, None)
+    return g.px
+
+
 def quit_icon(state):
     """20x20: a doorway (2px strokes, open on the right) with an arrow leaving through it. Pressed, the arrow
     steps 2px further out and turns white."""
@@ -365,6 +383,7 @@ def close(state):
 SLICES = {
     "ui-name-tab": (2, 2, 2, 2),
     "ui-button": (2, 4, 2, 6),
+    "ui-focus": (4, 4, 4, 4),
     "ui-quip-strip": (2, 2, 2, 2),
     "ui-settings-card": (2, 38, 2, 2),
     "ui-settings-row": (2, 2, 2, 2),
@@ -389,6 +408,7 @@ def sprites():
     yield "ui-checkbox", [("off", [checkbox(False)], 100), ("on", [checkbox(True)], 100)]
     yield "ui-close", [(s, [close(s)], 100) for s in ("normal", "pressed")]
     yield "ui-dialogue-box", one(dialogue_box())
+    yield "ui-focus", one(focus())
     yield "ui-forward-mark", [("idle", forward_mark(), [ms for _, ms in FORWARD_STEPS])]
     yield "ui-name-tab", [(c, [name_tab(c)], 100) for c in TAB_FILLS]
     yield "ui-pause", touch_button("pause")
