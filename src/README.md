@@ -9,6 +9,7 @@
 
 ## Architecture
 
+- **Crash screen:** `src/main.ts` first imports `src/crash/install.ts`, which installs the kit's crash screen in art's palette with the words in `src/data/text.ts`; it pauses the game on the first uncaught error. `?dev=1` adds the error's details. The build label's version and commit come from Vite's `define` in `vite.config.ts`, the commit reading `dev` without git.
 - **Game data:** `src/data/types.ts` holds the shapes; every other file in `src/data/` holds gameplay's values, with the words the player reads in `text.ts`.
 - **Phaser boundary:** only `src/scenes/` and `src/main.ts` import Phaser or a scene, enforced by ESLint's `no-restricted-imports`. Logic, layout and data are Phaser-free, so they unit-test without a renderer.
 - **Scenes:** `BootScene` runs first: it loads everything `public/art/manifest.json` lists and makes an animation of each sprite tag, keyed `<sprite>:<tag>`, with the tag's frames and durations from the sprite's Aseprite export. A tag the sprite's manifest entry lists in `once` plays once and holds its last frame; every other tag loops.

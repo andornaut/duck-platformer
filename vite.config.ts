@@ -1,8 +1,10 @@
 // Node types for this config file only, so browser code type-checks without Node globals.
 /// <reference types="node" />
 
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { runnerImport } from "vite";
 import { defineConfig } from "vitest/config";
 
 // An absolute path in this repository. Vite resolves relative paths against root, which is
@@ -11,7 +13,21 @@ function repoPath(path: string): string {
   return resolve(import.meta.dirname, path);
 }
 
-export default defineConfig({
+// The build's label globals (the kit's build/buildInfo.d.ts): package.json's version, and the
+// commit from the kit's build/buildVersion.ts, or "dev" without git. Vite bundles this config
+// without its alias, so the kit's module loads through runnerImport rather than an import.
+async function buildGlobals(): Promise<Record<string, string>> {
+  const { module: build } = await runnerImport<
+    typeof import("./vendor/game-kit/src/build/buildVersion")
+  >(repoPath("vendor/game-kit/src/build/buildVersion.ts"), { configFile: false });
+  const { version } = JSON.parse(readFileSync(repoPath("package.json"), "utf8")) as {
+    version: string;
+  };
+  const commit = build.shortCommit(() => build.gitHead(repoPath(".")), process.env);
+  return { __APP_VERSION__: JSON.stringify(version), __COMMIT__: JSON.stringify(commit) };
+}
+
+export default defineConfig(async () => ({
   build: {
     // Outside root, so Vite would leave the previous build's files in place without emptyOutDir.
     emptyOutDir: true,
@@ -32,6 +48,7 @@ export default defineConfig({
   preview: {
     allowedHosts: ["duck-preview"],
   },
+  define: await buildGlobals(),
   publicDir: repoPath("public"),
   // The pages load their modules as /src/..., which names the repository's src/ rather than
   // pages/src/. The shared kit is a committed copy, imported as @andornaut/game-kit/<path>.
@@ -52,4 +69,4 @@ export default defineConfig({
     include: ["src/**/*.test.ts", "vendor/game-kit/src/**/*.test.ts"],
     root: repoPath("."),
   },
-});
+}));

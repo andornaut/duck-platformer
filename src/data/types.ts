@@ -47,6 +47,12 @@ export interface GameText {
     readonly jump: string;
     readonly use: string;
   };
+  // The screen over the page when the game stops on an error.
+  readonly crash: {
+    readonly body: string;
+    readonly reload: string;
+    readonly title: string;
+  };
 }
 
 // The touch controls, in base pixels.

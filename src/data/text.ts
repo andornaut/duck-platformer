@@ -5,4 +5,9 @@ export const TEXT: GameText = {
     jump: "Jump",
     use: "Use",
   },
+  crash: {
+    body: "The game stopped. Reload to play again.",
+    reload: "Reload",
+    title: "Something went wrong",
+  },
 };

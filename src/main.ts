@@ -1,7 +1,11 @@
+// First, so the crash screen catches an error thrown while Phaser or the game's modules load.
+import "./crash/install";
 import "./main.css";
 
 import { AUTO, Game, Scale } from "phaser";
 
+// eslint-disable-next-line no-duplicate-imports -- the side-effect import above runs it first.
+import { CRASH_SCREEN } from "./crash/install";
 import { SCREEN } from "./data/screen";
 import { BootScene } from "./scenes/BootScene";
 import { FloorScene } from "./scenes/FloorScene";
@@ -18,6 +22,10 @@ const game = new Game({
   scene: [BootScene, FloorScene],
   type: AUTO,
   width: SCREEN.width,
+});
+CRASH_SCREEN.stopGameOnCrash(() => {
+  game.pause();
+  game.sound.pauseAll();
 });
 
 // The game pauses while public/site.css shows the turn-sideways notice over it.
