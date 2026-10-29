@@ -41,6 +41,7 @@ export const TEXT: GameText = {
     touchControls: "Touch controls",
   },
   start: {
+    continue: "Continue",
     exit: "Exit",
     settings: "Settings",
     start: "Start",

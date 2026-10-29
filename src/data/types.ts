@@ -72,8 +72,10 @@ export interface GameText {
     readonly settings: string;
     readonly title: string;
   };
-  // The start screen: its Start button, and the nav bar's Settings and Exit buttons.
+  // The start screen: its Start button, which reads Continue once progress is saved, and the nav
+  // bar's Settings and Exit buttons.
   readonly start: {
+    readonly continue: string;
     readonly exit: string;
     readonly settings: string;
     readonly start: string;
