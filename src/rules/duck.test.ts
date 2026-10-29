@@ -49,7 +49,7 @@ describe("stepDuck", () => {
   it("rises to the height the jump speed and gravity give, within a step", () => {
     const states = run(120, () => ({ jumpHeld: true, move: 0 }));
     const apex = DUCK.jumpSpeed ** 2 / (2 * DUCK.gravity);
-    expect(startY - lowestY(states)).toBeCloseTo(apex, -1);
+    expect(Math.abs(startY - lowestY(states) - apex)).toBeLessThanOrEqual(DUCK.jumpSpeed * STEP);
   });
 
   it.each([
