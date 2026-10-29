@@ -34,7 +34,7 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 
 ### Screen and controls
 
-- Landscape, 720×360 base resolution. Phone browser first, with on-screen touch controls; keyboard on desktop
+- Landscape, 720×360 base resolution. Phone browser first, with on-screen touch controls; keyboard on desktop. In portrait on a touch screen, the game draws turned a quarter turn to fill the screen, so the player turns the phone
 - **Keyboard:** ←/→ or A/D to move; Space, ↑ or W to jump; E to use; P or Esc to open or close the pause card
 - **Overlay:** the touch buttons show by default. Settings hides them, and hidden buttons still work
 - **Touch buttons** (right thumb): Use above, Jump below. Each is labelled with its name, reads clearly as a button and stands out against any background, while hiding little of the play area. A button animates subtly when pressed
