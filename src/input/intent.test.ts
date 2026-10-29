@@ -9,10 +9,10 @@ import {
   keyIntent,
   moveFromOffset,
   touchIntent,
-  touchUseAt,
+  touchRoleAt,
 } from "./intent";
 
-const NONE: Intent = { interact: false, jump: false, move: 0 };
+const NONE: Intent = { jump: false, move: 0, use: false };
 
 describe("keyIntent", () => {
   it.each([
@@ -25,26 +25,26 @@ describe("keyIntent", () => {
     [["Space"], { ...NONE, jump: true }],
     [["ArrowUp"], { ...NONE, jump: true }],
     [["KeyW"], { ...NONE, jump: true }],
-    [["KeyE"], { ...NONE, interact: true }],
+    [["KeyE"], { ...NONE, use: true }],
     [["ArrowRight", "Space"], { ...NONE, jump: true, move: 1 }],
   ])("maps %j", (keys, intent) => {
     expect(keyIntent(new Set(keys))).toEqual(intent);
   });
 });
 
-describe("touchUseAt", () => {
-  const { interact, jump } = TOUCH_CONTROLS;
+describe("touchRoleAt", () => {
+  const { jump, use } = TOUCH_CONTROLS;
   it.each([
-    [interact.centre, "interact"],
-    [{ x: interact.hit.x, y: interact.hit.y }, "interact"],
+    [use.centre, "use"],
+    [{ x: use.hit.x, y: use.hit.y }, "use"],
     [jump.centre, "jump"],
     [{ x: jump.hit.x + jump.hit.width - 1, y: jump.hit.y + jump.hit.height - 1 }, "jump"],
     [{ x: 72, y: 300 }, "move"],
     [{ x: 320, y: 180 }, "move"],
     [{ x: jump.hit.x, y: jump.hit.y - 1 }, "move"],
-    [{ x: interact.hit.x - 1, y: interact.centre.y }, "move"],
-  ])("takes %j as %s", (point, use) => {
-    expect(touchUseAt(point)).toBe(use);
+    [{ x: use.hit.x - 1, y: use.centre.y }, "move"],
+  ])("takes %j as %s", (point, role) => {
+    expect(touchRoleAt(point)).toBe(role);
   });
 });
 
@@ -65,8 +65,8 @@ describe("moveFromOffset", () => {
 
 describe("touchIntent", () => {
   const beyond = TOUCH.moveDeadZone + 1;
-  const move = (startX: number, x: number): HeldTouch => ({ startX, use: "move", x });
-  const JUMP: HeldTouch = { startX: 600, use: "jump", x: 600 };
+  const move = (startX: number, x: number): HeldTouch => ({ role: "move", startX, x });
+  const JUMP: HeldTouch = { role: "jump", startX: 600, x: 600 };
   it.each([
     ["nothing", [], NONE],
     ["a drag right", [move(300, 300 + beyond)], { ...NONE, move: 1 }],
@@ -80,7 +80,7 @@ describe("touchIntent", () => {
       { ...NONE, move: 1 },
     ],
     ["the later move, still", [move(100, 100 - beyond), move(400, 400)], NONE],
-    ["Interact", [{ startX: 528, use: "interact", x: 528 }], { ...NONE, interact: true }],
+    ["Use", [{ role: "use", startX: 528, x: 528 }], { ...NONE, use: true }],
   ] as const)("reads %s", (_, touches, intent) => {
     expect(touchIntent(TOUCH, touches)).toEqual(intent);
   });
@@ -96,7 +96,7 @@ describe("combineIntents", () => {
       { ...NONE, jump: true, move: -1 },
       { ...NONE, jump: true, move: -1 },
     ],
-    [{ ...NONE, interact: true }, NONE, { ...NONE, interact: true }],
+    [{ ...NONE, use: true }, NONE, { ...NONE, use: true }],
   ] as const)("combines %j and %j", (a, b, intent) => {
     expect(combineIntents(a, b)).toEqual(intent);
   });

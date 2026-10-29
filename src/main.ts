@@ -10,7 +10,7 @@ import { FloorScene } from "./scenes/FloorScene";
 // ratio, with bars on the other axis. pixelArt keeps the stretch nearest-neighbour.
 const game = new Game({
   height: SCREEN.height,
-  // Three touch pointers: move, jump and interact can all be held at once.
+  // Three touch pointers: a move touch, Jump and Use can all be held at once.
   input: { activePointers: 3 },
   parent: "game",
   pixelArt: true,

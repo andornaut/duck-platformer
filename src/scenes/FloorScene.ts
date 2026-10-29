@@ -11,7 +11,7 @@ import {
   type HeldTouch,
   keyIntent,
   touchIntent,
-  touchUseAt,
+  touchRoleAt,
 } from "../input/intent";
 import { TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
 import { type FloorState, startFloor, stepFloor } from "../rules/floor";
@@ -33,8 +33,9 @@ const COLOURS = {
 
 const DUCK_SPRITE = "duck";
 const CONTROL_SPRITES: Readonly<Record<TouchControl, string>> = {
-  interact: "ui-touch-interact",
   jump: "ui-touch-jump",
+  // Art renames this sprite ui-touch-use with the button redesign.
+  use: "ui-touch-interact",
 };
 
 // Starts a sprite's tag, unless it already shows it, playing or finished on its last frame.
@@ -162,13 +163,13 @@ export class FloorScene extends Scene {
     this.game.events.on("blur", () => this.heldKeys.clear());
   }
 
-  // A touch takes the use it starts with and keeps it, wherever it moves, until it lifts. A new
+  // A touch takes the role it starts with and keeps it, wherever it moves, until it lifts. A new
   // touch goes last in heldTouches, so the latest move touch is the last.
   private watchTouches(): void {
     this.input.on("pointerdown", (pointer: Input.Pointer) => {
       if (pointer.wasTouch) {
-        const use = touchUseAt({ x: pointer.x, y: pointer.y });
-        this.heldTouches.set(pointer.id, { startX: pointer.x, use, x: pointer.x });
+        const role = touchRoleAt({ x: pointer.x, y: pointer.y });
+        this.heldTouches.set(pointer.id, { role, startX: pointer.x, x: pointer.x });
       }
     });
     this.input.on("pointermove", (pointer: Input.Pointer) => {

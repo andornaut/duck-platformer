@@ -4,15 +4,15 @@ import type { HeldTouch } from "../input/intent";
 import type { TagFrame } from "./aseprite";
 import { buttonHeld, centredAt, controlTag, trackPress } from "./touchControls";
 
-const JUMP: HeldTouch = { startX: 600, use: "jump", x: 600 };
-const MOVE: HeldTouch = { startX: 100, use: "move", x: 140 };
+const JUMP: HeldTouch = { role: "jump", startX: 600, x: 600 };
+const MOVE: HeldTouch = { role: "move", startX: 100, x: 140 };
 
 describe("buttonHeld", () => {
   it.each([
     ["jump", [], false],
     ["jump", [JUMP], true],
     ["jump", [MOVE], false],
-    ["interact", [JUMP, MOVE], false],
+    ["use", [JUMP, MOVE], false],
   ] as const)("holds %s with %j: %s", (control, touches, held) => {
     expect(buttonHeld(control, touches)).toBe(held);
   });

@@ -5,7 +5,7 @@ import { type TagFrame, tagMs } from "./aseprite";
 
 // Whether a touch holds the button.
 export function buttonHeld(control: TouchControl, touches: readonly HeldTouch[]): boolean {
-  return touches.some((touch) => touch.use === control);
+  return touches.some((touch) => touch.role === control);
 }
 
 // When a button's press began: kept while it is held, nowMs on the frame it is first held, and
