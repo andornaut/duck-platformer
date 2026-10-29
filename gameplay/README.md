@@ -13,7 +13,7 @@ Docs state the current rule only; git keeps the history. An idea stays in `ideas
 
 ## Scope
 
-Gameplay owns the rulebook and the values and content in the data value files (`src/data/*.ts`; PLACEHOLDER: the files there that hold types and wiring rather than values, once tech scaffolds them). Every number (speeds, jump and flutter heights, timings, counts) and every string a player sees lives in those files, never in code. A new field, key or shape goes through tech.
+Gameplay owns the rulebook and the values and content in the data value files (every `src/data/*.ts` except the types, index and test files). Every number (speeds, jump and flutter heights, timings, counts) and every string a player sees lives in those files, never in code. A new field, key or shape goes through tech.
 
 ## Method
 
