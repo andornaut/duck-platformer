@@ -1,13 +1,19 @@
+import type { Rect } from "../data/types";
+
 // Art's sprites, as public/art/manifest.json lists them and Aseprite exports them.
 
 // public/art/ is served here, with its manifest of everything BootScene loads.
 export const ART_PATH = "/art/";
 export const ART_MANIFEST_FILE = "manifest.json";
+// The manifest's key in the loader's JSON cache.
+export const ART_MANIFEST_KEY = "manifest";
 
 export interface ArtManifest {
   readonly data: readonly { readonly json: string; readonly key: string }[];
   readonly fonts: readonly { readonly fnt: string; readonly key: string; readonly png: string }[];
   readonly sprites: readonly {
+    // Where the sprite touches her as a hazard, in frame pixels, when it declares one.
+    readonly hitbox?: Rect;
     readonly json: string;
     readonly key: string;
     // The tags that play once and hold their last frame. Every other tag loops.
@@ -75,4 +81,11 @@ export function tagRepeat(once: readonly string[], tag: string): number {
 // The animation key of a sprite's tag: tag names repeat across sprites.
 export function animKey(sprite: string, tag: string): string {
   return `${sprite}:${tag}`;
+}
+
+// The hit boxes the manifest's sprites declare, by sprite key.
+export function artHitboxes(manifest: ArtManifest): Readonly<Record<string, Rect>> {
+  return Object.fromEntries(
+    manifest.sprites.flatMap(({ hitbox, key }) => (hitbox ? [[key, hitbox] as const] : [])),
+  );
 }

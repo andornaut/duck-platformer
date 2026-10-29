@@ -8,10 +8,11 @@ import { type GameObjects, Input, Scene } from "phaser";
 
 import { DUCK } from "../data/duck";
 import { TEST_LEVELS } from "../data/levels";
+import { OBJECT_TYPES } from "../data/objects";
 import { SCREEN, TILE } from "../data/screen";
 import { TEXT } from "../data/text";
 import { TOUCH } from "../data/touch";
-import type { LevelLayout, MoverLayout, Rect } from "../data/types";
+import type { AreaLink, Collision, LevelLayout, Rect } from "../data/types";
 import {
   combineIntents,
   type HeldTouch,
@@ -22,13 +23,21 @@ import {
 import { gamePoint } from "../input/screenPoint";
 import { PAUSE_BUTTON } from "../layout/pauseCard";
 import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
-import { type LevelState, startLevel, stepLevel } from "../rules/level";
+import { areaOf, enterArea, type LevelState, startLevel, stepLevel } from "../rules/level";
 import { nextLevelIndex, startLevelIndex } from "../rules/levelChain";
-import { moverAt } from "../rules/movers";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
 import { levelLayout } from "../rules/tiles";
 import { touchControlsShown } from "../settings/touchControls";
-import { animKey, type AsepriteSheet, sheetTags, type TagFrame, tagMs } from "../view/aseprite";
+import {
+  animKey,
+  ART_MANIFEST_KEY,
+  artHitboxes,
+  type ArtManifest,
+  type AsepriteSheet,
+  sheetTags,
+  type TagFrame,
+  tagMs,
+} from "../view/aseprite";
 import { duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
 import {
   buttonHeld,
@@ -42,15 +51,19 @@ import {
 // After a stall, run at most this much time at once rather than lurching ahead.
 const MAX_FRAME_MS = 250;
 
-// PLACEHOLDER: flat colours until art's tiles land.
-const COLOURS = {
-  background: 0x262b44,
-  exit: 0x63c74d,
+// PLACEHOLDER: flat colours until art's tiles and sprites land: the terrain, and each object by
+// its collision.
+const BACKGROUND = 0x262b44;
+const TERRAIN = 0x8b9bb4;
+const OBJECT_COLOURS: Readonly<Record<Collision, number>> = {
   hazard: 0xe43b44,
   ledge: 0xc0cbdc,
-  mover: 0xe4a672,
-  solid: 0x8b9bb4,
+  none: 0xf6757a,
+  solid: 0xe4a672,
+  use: 0x63c74d,
 };
+// Going through a door fades to black and back, each way this long, with play held still.
+const FADE_MS = 250;
 
 const DUCK_SPRITE = "duck";
 const CONTROL_SPRITES: Readonly<Record<TouchControl, string>> = {
@@ -58,7 +71,7 @@ const CONTROL_SPRITES: Readonly<Record<TouchControl, string>> = {
   use: "ui-touch-use",
 };
 const LABEL_FONT = "font-body";
-// Drawn above the level and its moving platforms, which the level adds whenever it loads.
+// Drawn above the area and its objects, which are added whenever an area is drawn.
 const DUCK_DEPTH = 1;
 const OVERLAY_DEPTH = 2;
 const PALETTE = "palette";
@@ -87,8 +100,14 @@ export class LevelScene extends Scene {
   private landMs = 0;
   private layout!: LevelLayout;
   private levelIndex = startLevelIndex(window.location.search, TEST_LEVELS.length);
-  private levelArt!: GameObjects.Graphics;
-  private moverArt: { mover: MoverLayout; rectangle: GameObjects.Rectangle }[] = [];
+  private areaArt!: GameObjects.Graphics;
+  // The hit boxes art's sprites declare, by art key.
+  private hitboxes: Readonly<Record<string, Rect>> = {};
+  // The area drawn, and a rectangle for each of its objects.
+  private areaShown = "";
+  // Play holds still while a door fades.
+  private fading = false;
+  private objectArt: GameObjects.Rectangle[] = [];
   // When each held button's press began.
   private readonly presses = new Map<TouchControl, number>();
   private readonly tags = new Map<string, ReadonlyMap<string, readonly TagFrame[]>>();
@@ -98,9 +117,9 @@ export class LevelScene extends Scene {
   }
 
   create(): void {
-    this.cameras.main.setBackgroundColor(COLOURS.background);
+    this.cameras.main.setBackgroundColor(BACKGROUND);
     this.cameras.main.setRoundPixels(true);
-    this.levelArt = this.add.graphics();
+    this.areaArt = this.add.graphics();
 
     for (const key of [DUCK_SPRITE, ...Object.values(CONTROL_SPRITES)]) {
       this.tags.set(key, sheetTags(this.cache.json.get(key) as AsepriteSheet));
@@ -109,6 +128,7 @@ export class LevelScene extends Scene {
 
     this.duck = this.add.sprite(0, 0, DUCK_SPRITE).setOrigin(0).setDepth(DUCK_DEPTH);
     this.cameras.main.startFollow(this.focus, true);
+    this.hitboxes = artHitboxes(this.cache.json.get(ART_MANIFEST_KEY) as ArtManifest);
     this.loadLevel(this.levelIndex);
 
     const font = phaserBitmapFont(this.cache.bitmapFont.get(LABEL_FONT).data as PhaserFontData);
@@ -156,66 +176,87 @@ export class LevelScene extends Scene {
     this.clock = frame.clock;
     const touches = [...this.heldTouches.values()];
     const intent = combineIntents(keyIntent(this.heldKeys), touchIntent(TOUCH, touches));
-    for (let step = 0; step < frame.steps; step++) {
+    for (let step = 0; step < frame.steps && !this.fading; step++) {
       const before = this.level.duck;
       this.level = stepLevel(
         DUCK,
         this.layout,
         STEP_SECONDS,
-        { jumpHeld: intent.jump, move: intent.move },
+        { jumpHeld: intent.jump, move: intent.move, useHeld: intent.use },
         this.level,
       );
+      this.duckPose = stepPose(this.landMs, STEP_MS, before, this.level.duck, this.duckPose);
       // PLACEHOLDER: what clearing a level leads to. For now the next test level starts.
       if (this.level.cleared) {
         this.loadLevel(nextLevelIndex(this.levelIndex, TEST_LEVELS.length));
+      } else if (this.level.using) {
+        this.goThrough(this.level.using);
       }
-      this.duckPose = stepPose(this.landMs, STEP_MS, before, this.level.duck, this.duckPose);
     }
-    this.drawMovers();
+    if (this.level.area !== this.areaShown) {
+      this.drawArea();
+    }
+    this.drawObjects();
     this.drawDuck();
     this.drawControls(time, touches);
   }
 
-  // Starts the test level at index from its start, drawn in flat colours, with the camera kept
-  // inside it.
+  // Starts the test level at index from its start. Each load draws a fresh seed, so the random
+  // motion differs from one play to the next; ?seed=<n> fixes it.
   private loadLevel(index: number): void {
     const plan = TEST_LEVELS[index];
     if (!plan) {
       throw new Error(`No level ${index + 1}`);
     }
     this.levelIndex = index;
-    this.layout = levelLayout(TILE, plan);
-    this.level = startLevel(DUCK, this.layout);
-    this.cameras.main.setBounds(0, 0, this.layout.width, this.layout.height);
-    const art = this.levelArt.clear();
-    const fill = (rects: readonly Rect[], colour: number) => {
-      art.fillStyle(colour);
-      for (const rect of rects) {
-        art.fillRect(rect.x, rect.y, rect.width, rect.height);
-      }
-    };
-    fill(this.layout.solids, COLOURS.solid);
-    fill(this.layout.ledges, COLOURS.ledge);
-    fill(this.layout.hazards, COLOURS.hazard);
-    fill([this.layout.exit], COLOURS.exit);
-    for (const { rectangle } of this.moverArt) {
-      rectangle.destroy();
-    }
-    this.moverArt = [
-      ...this.layout.movers.map((mover) => [mover, COLOURS.mover] as const),
-      ...this.layout.movingHazards.map((hazard) => [hazard, COLOURS.hazard] as const),
-    ].map(([mover, colour]) => ({
-      mover,
-      rectangle: this.add.rectangle(0, 0, mover.width, mover.height, colour).setOrigin(0),
-    }));
+    this.layout = levelLayout(TILE, OBJECT_TYPES, this.hitboxes, plan);
+    const asked = Number(new URLSearchParams(window.location.search).get("seed"));
+    const seed = Number.isInteger(asked) && asked > 0 ? asked : Math.floor(Math.random() * 2 ** 31);
+    this.level = startLevel(DUCK, this.layout, seed);
+    this.drawArea();
   }
 
-  // Each moving platform and hazard where the rules put it, in whole pixels.
-  private drawMovers(): void {
-    for (const { mover, rectangle } of this.moverArt) {
-      const at = moverAt(mover, this.level.seconds);
-      rectangle.setPosition(Math.round(at.x), Math.round(at.y));
+  // Fades to black, takes her through the door to link, and fades back, play held still.
+  private goThrough(link: AreaLink): void {
+    this.fading = true;
+    const camera = this.cameras.main;
+    camera.fadeOut(FADE_MS, 0, 0, 0);
+    camera.once("camerafadeoutcomplete", () => {
+      this.level = enterArea(DUCK, this.layout, link, this.level);
+      this.drawArea();
+      this.drawObjects();
+      this.drawDuck();
+      camera.fadeIn(FADE_MS, 0, 0, 0);
+      camera.once("camerafadeincomplete", () => {
+        this.fading = false;
+      });
+    });
+  }
+
+  // Draws the area she is in, in flat colours, with the camera kept inside it.
+  private drawArea(): void {
+    const area = areaOf(this.layout, this.level.area);
+    this.areaShown = this.level.area;
+    this.cameras.main.setBounds(0, 0, area.width, area.height);
+    const art = this.areaArt.clear().fillStyle(TERRAIN);
+    for (const rect of area.solids) {
+      art.fillRect(rect.x, rect.y, rect.width, rect.height);
     }
+    for (const rectangle of this.objectArt) {
+      rectangle.destroy();
+    }
+    this.objectArt = area.objects.map((object) =>
+      this.add
+        .rectangle(0, 0, object.width, object.height, OBJECT_COLOURS[object.collision])
+        .setOrigin(0),
+    );
+  }
+
+  // Each object where the rules put it, in whole pixels.
+  private drawObjects(): void {
+    this.level.objects.forEach((at, index) => {
+      this.objectArt[index]?.setPosition(Math.round(at.x), Math.round(at.y));
+    });
   }
 
   private sheet(key: string): ReadonlyMap<string, readonly TagFrame[]> {

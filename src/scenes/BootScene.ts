@@ -3,14 +3,13 @@ import { Scene } from "phaser";
 import {
   animKey,
   ART_MANIFEST_FILE,
+  ART_MANIFEST_KEY,
   ART_PATH,
   type ArtManifest,
   type AsepriteSheet,
   sheetTags,
   tagRepeat,
 } from "../view/aseprite";
-
-const MANIFEST = "manifest";
 
 // First scene to run. Loads everything art's manifest lists, makes an animation of every sprite
 // tag, looping unless the manifest lists it as played once, then starts the test level and the
@@ -22,8 +21,8 @@ export class BootScene extends Scene {
 
   preload(): void {
     this.load.setPath(ART_PATH);
-    this.load.json(MANIFEST, ART_MANIFEST_FILE);
-    this.load.once(`filecomplete-json-${MANIFEST}`, () => {
+    this.load.json(ART_MANIFEST_KEY, ART_MANIFEST_FILE);
+    this.load.once(`filecomplete-json-${ART_MANIFEST_KEY}`, () => {
       const manifest = this.manifest();
       for (const { json, key, png } of manifest.sprites) {
         this.load.aseprite(key, png, json);
@@ -53,6 +52,6 @@ export class BootScene extends Scene {
   }
 
   private manifest(): ArtManifest {
-    return this.cache.json.get(MANIFEST) as ArtManifest;
+    return this.cache.json.get(ART_MANIFEST_KEY) as ArtManifest;
   }
 }

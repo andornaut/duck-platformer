@@ -83,35 +83,89 @@ export interface TilePoint {
   readonly row: number;
 }
 
-// A moving platform or hazard: a cols x rows block whose top-left tile goes from `from` to `to` and back,
-// at speed tiles per second, waiting pause seconds at each end (0 allowed). phase (0 to 1) is
-// where it is in the round trip at the level's start: 0 at `from` heading to `to`, 0.5 at `to`
-// heading back. The round trip is: travel to `to`, pause, travel back, pause.
-export interface MoverPlan {
-  readonly cols: number;
-  readonly from: TilePoint;
+export type Collision = "hazard" | "ledge" | "none" | "solid" | "use";
+export type Direction = "down" | "left" | "right" | "up";
+export type MotionAlgorithm = "ease" | "hop" | "linear" | "static" | "wander";
+export type ReactionKind = "approach" | "avoid" | "none";
+
+// How an object moves from where it is placed, in tiles and seconds (pixels in a layout). Its far
+// end is distance away in direction. linear: there at speed, pause, back, pause. ease: the same
+// legs, easing in and out (speed is the leg's average). hop: linear, plus an upward arc
+// hopHeight high on each leg. wander: each leg goes to a random point between the placed spot
+// and the far end. variance (0 to 1): each leg's speed, distance and pause vary by up to that
+// fraction.
+export interface Motion {
+  readonly algorithm: MotionAlgorithm;
+  readonly direction: Direction;
+  readonly distance: number;
+  readonly hopHeight: number;
   readonly pause: number;
-  readonly phase: number;
-  readonly rows: number;
   readonly speed: number;
-  readonly to: TilePoint;
+  readonly variance: number;
 }
 
-// One level on the tile grid, as authored: cols x rows tiles (rows is 60, two screens). solids
-// block from every side; ledges are one-way, solid only from above; movers are moving platforms;
-// touching a hazard or a moving hazard (moving as a mover does, but never solid) restarts the
-// level; reaching the exit clears it. She starts standing on the top edge of row start.row,
-// her collision box centred on the grid line at the left edge of column start.col.
-export interface LevelPlan {
+// Within range of her (centre to centre), an "avoid" object moves away from her and an
+// "approach" one toward her, along its motion's axis, at speed. Out of range, it goes back to its
+// path at that speed and follows it again. In tiles (pixels in a layout).
+export interface Reaction {
+  readonly kind: ReactionKind;
+  readonly range: number;
+  readonly speed: number;
+}
+
+// A kind of object, in tiles. collision: solid blocks her from every side; ledge only from above;
+// touching a hazard restarts the level; Use in a use zone goes through it; none is scenery.
+export interface ObjectType {
+  // The art key; a flat placeholder rectangle until the sprite exists.
+  readonly art: string;
+  readonly collision: Collision;
   readonly cols: number;
-  readonly exit: TileRect;
-  readonly hazards: readonly TileRect[];
-  readonly ledges: readonly TileRect[];
-  readonly movers: readonly MoverPlan[];
-  readonly movingHazards: readonly MoverPlan[];
+  readonly motion: Motion;
+  readonly reaction: Reaction;
+  readonly rows: number;
+}
+
+export interface AreaLink {
+  readonly area: string;
+  readonly entry: string;
+}
+
+// An object placed in an area: its type (a key of OBJECT_TYPES) with its top-left tile at col,
+// row, and cols x rows tiles in size when given, else its type's size, such as a ledge drawn at
+// any width. phase (0 to 1, default 0) is where it starts in its motion's round trip: 0 at the
+// placed spot heading out, 0.5 at the far end heading back. to: on a "use" object, the area and
+// entry that Use at it goes to; a "use" object with no `to` is the level's exit, and Use at it
+// clears the level.
+export interface PlacedObject {
+  readonly col: number;
+  readonly cols?: number;
+  readonly overrides?: {
+    readonly motion?: Partial<Motion>;
+    readonly reaction?: Partial<Reaction>;
+  };
+  readonly phase?: number;
+  readonly row: number;
+  readonly rows?: number;
+  readonly to?: AreaLink;
+  readonly type: string;
+}
+
+// One area of a level: cols x rows tiles (rows is 60, two screens). solids are the terrain.
+// entries are named points where she arrives: she stands on the top edge of row `row`, her
+// collision box centred on the grid line at the left edge of column `col`.
+export interface AreaPlan {
+  readonly cols: number;
+  readonly entries: Readonly<Record<string, TilePoint>>;
+  readonly objects: readonly PlacedObject[];
   readonly rows: number;
   readonly solids: readonly TileRect[];
-  readonly start: TilePoint;
+}
+
+// A level: its areas by name, and where she starts, its only checkpoint: a fall or a hazard
+// puts her back there.
+export interface LevelPlan {
+  readonly areas: Readonly<Record<string, AreaPlan>>;
+  readonly start: AreaLink;
 }
 
 // How far the duck can jump, in tiles, from the top of the ground she leaves to the top of the
@@ -123,29 +177,32 @@ export interface Reaches {
   readonly jump: number;
 }
 
-// A moving platform or hazard in base pixels: its size, the top-left corners it travels between, its
-// speed in pixels per second, and its pause and phase as in MoverPlan.
-export interface MoverLayout {
-  readonly from: Point;
+// A placed object in base pixels, its type and overrides resolved: its placed top-left corner,
+// size, motion and reaction in pixels. hitbox: where a hazard touches her, from its top-left
+// corner, when its art declares one; else its whole rectangle.
+export interface ObjectLayout {
+  readonly art: string;
+  readonly collision: Collision;
   readonly height: number;
-  readonly pause: number;
+  readonly hitbox: Rect | undefined;
+  readonly motion: Motion;
+  readonly origin: Point;
   readonly phase: number;
-  readonly speed: number;
-  readonly to: Point;
+  readonly reaction: Reaction;
+  readonly to: AreaLink | undefined;
   readonly width: number;
 }
 
-// One level's geometry, in base pixels, converted from its LevelPlan. Falling below its height
-// restarts the level.
-export interface LevelLayout {
-  readonly exit: Rect;
-  readonly hazards: readonly Rect[];
+// An area in base pixels. Falling below its height restarts the level.
+export interface AreaLayout {
+  readonly entries: Readonly<Record<string, Point>>;
   readonly height: number;
-  readonly ledges: readonly Rect[];
-  readonly movers: readonly MoverLayout[];
-  readonly movingHazards: readonly MoverLayout[];
+  readonly objects: readonly ObjectLayout[];
   readonly solids: readonly Rect[];
-  // Where her collision box's bottom centre starts.
-  readonly start: Point;
   readonly width: number;
+}
+
+export interface LevelLayout {
+  readonly areas: Readonly<Record<string, AreaLayout>>;
+  readonly start: AreaLink;
 }

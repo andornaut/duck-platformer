@@ -1,8 +1,16 @@
 import { assertNever } from "@andornaut/game-kit/assertNever";
 
-import type { DuckTuning, LevelLayout, LevelPlan, Reaches, Rect } from "../data/types";
-import type { DuckInput } from "../rules/duck";
-import { type LevelState, startLevel, stepLevel } from "../rules/level";
+import type {
+  AreaLayout,
+  DuckTuning,
+  LevelLayout,
+  LevelPlan,
+  Point,
+  Reaches,
+  Rect,
+  TileRect,
+} from "../data/types";
+import { type LevelInput, type LevelState, startLevel, stepLevel } from "../rules/level";
 import { STEP_SECONDS } from "../rules/step";
 import { levelLayout, tileRect } from "../rules/tiles";
 
@@ -18,41 +26,51 @@ const MAX_TILES = 60;
 const MAX_STEPS = Math.round(10 / STEP_SECONDS);
 // Steps she stands still first, so every try starts from her standing on the ground.
 const SETTLE_STEPS = 2;
-const STILL: DuckInput = { jumpHeld: false, move: 0 };
+const STILL: LevelInput = { jumpHeld: false, move: 0, useHeld: false };
 
 // One try: the level, the solid she must land on top of, and her input for each step given the
 // state so far.
 interface Course {
-  readonly input: (level: LevelState) => DuckInput;
+  readonly input: (level: LevelState) => LevelInput;
   readonly layout: LevelLayout;
   readonly target: Rect;
 }
 
 const ground = (cols: number) => ({ col: 0, cols, row: GROUND_ROW, rows: 2 });
 
+// One area of terrain, with nothing in it, where she starts at start (her box's bottom centre).
+function courseLayout(tile: number, cols: number, solids: TileRect[], start: Point): LevelLayout {
+  const plan: LevelPlan = {
+    areas: {
+      course: {
+        cols,
+        entries: { start: { col: 0, row: 0 } },
+        objects: [],
+        rows: GROUND_ROW + 2,
+        solids,
+      },
+    },
+    start: { area: "course", entry: "start" },
+  };
+  const layout = levelLayout(tile, {}, {}, plan);
+  const area = layout.areas.course as AreaLayout;
+  return { ...layout, areas: { course: { ...area, entries: { start } } } };
+}
+
 // A ledge tiles high, just right of where she stands still. She walks right, holding Jump for
 // jumpSteps from the first step she moves.
 function ledgeCourse(tuning: DuckTuning, tile: number, tiles: number, jumpSteps: number): Course {
   const ledge = { col: RUN_UP, cols: FAR_SIDE, row: GROUND_ROW - tiles, rows: tiles };
-  const plan: LevelPlan = {
-    cols: RUN_UP + FAR_SIDE,
-    exit: { col: 0, cols: 1, row: 0, rows: 1 },
-    hazards: [],
-    ledges: [],
-    movers: [],
-    movingHazards: [],
-    rows: GROUND_ROW + 2,
-    solids: [ground(RUN_UP + FAR_SIDE), ledge],
-    start: { col: 0, row: GROUND_ROW },
-  };
-  const layout = levelLayout(tile, plan);
   const target = tileRect(tile, ledge);
   return {
     input: (level) =>
       level.steps < SETTLE_STEPS
         ? STILL
-        : { jumpHeld: level.steps < SETTLE_STEPS + jumpSteps, move: 1 },
-    layout: { ...layout, start: { x: target.x - tuning.width / 2, y: layout.start.y } },
+        : { jumpHeld: level.steps < SETTLE_STEPS + jumpSteps, move: 1, useHeld: false },
+    layout: courseLayout(tile, RUN_UP + FAR_SIDE, [ground(RUN_UP + FAR_SIDE), ledge], {
+      x: target.x - tuning.width / 2,
+      y: GROUND_ROW * tile,
+    }),
     target,
   };
 }
@@ -63,19 +81,11 @@ function ledgeCourse(tuning: DuckTuning, tile: number, tiles: number, jumpSteps:
 function gapCourse(tuning: DuckTuning, tile: number, tiles: number): Course {
   const near = ground(RUN_UP);
   const far = { ...ground(FAR_SIDE), col: RUN_UP + tiles };
-  const plan: LevelPlan = {
-    cols: RUN_UP + tiles + FAR_SIDE,
-    exit: { col: 0, cols: 1, row: 0, rows: 1 },
-    hazards: [],
-    ledges: [],
-    movers: [],
-    movingHazards: [],
-    rows: GROUND_ROW + 2,
-    solids: [near, far],
-    start: { col: 2, row: GROUND_ROW },
-  };
-  const layout = levelLayout(tile, plan);
-  const run: DuckInput = { jumpHeld: false, move: 1 };
+  const layout = courseLayout(tile, RUN_UP + tiles + FAR_SIDE, [near, far], {
+    x: 2 * tile,
+    y: GROUND_ROW * tile,
+  });
+  const run: LevelInput = { jumpHeld: false, move: 1, useHeld: false };
   let jumped = false;
   return {
     input: (level) => {
@@ -83,7 +93,7 @@ function gapCourse(tuning: DuckTuning, tile: number, tiles: number): Course {
         return STILL;
       }
       jumped ||= !stepLevel(tuning, layout, STEP_SECONDS, run, level).duck.grounded;
-      return jumped ? { jumpHeld: true, move: 1 } : run;
+      return jumped ? { ...run, jumpHeld: true } : run;
     },
     layout,
     target: tileRect(tile, far),
@@ -107,7 +117,7 @@ function course(tuning: DuckTuning, tile: number, reach: Reach, tiles: number): 
 // restart or the time runs out.
 export function makes(tuning: DuckTuning, tile: number, reach: Reach, tiles: number): boolean {
   const { input, layout, target: solid } = course(tuning, tile, reach, tiles);
-  let level = startLevel(tuning, layout);
+  let level = startLevel(tuning, layout, 1);
   while (level.steps < MAX_STEPS && level.restarts === 0) {
     level = stepLevel(tuning, layout, STEP_SECONDS, input(level), level);
     const { duck } = level;

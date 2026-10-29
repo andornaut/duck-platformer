@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { animKey, type AsepriteSheet, sheetTags, tagMs, tagRepeat } from "./aseprite";
+import { animKey, artHitboxes, type AsepriteSheet, sheetTags, tagMs, tagRepeat } from "./aseprite";
 
 const tag = (name: string, from: number, to: number, direction = "forward") => ({
   direction,
@@ -65,5 +65,20 @@ describe("tagRepeat", () => {
 describe("animKey", () => {
   it("keeps one sprite's tag apart from another's", () => {
     expect(animKey("ui-touch-jump", "rest")).not.toBe(animKey("ui-touch-move", "rest"));
+  });
+});
+
+describe("artHitboxes", () => {
+  const sprite = { json: "s.json", key: "frog", once: [], png: "s.png" };
+  it.each([
+    ["no sprites", [], {}],
+    ["a sprite without one", [sprite], {}],
+    [
+      "a sprite with one",
+      [sprite, { ...sprite, hitbox: { height: 30, width: 48, x: 6, y: 6 }, key: "trap" }],
+      { trap: { height: 30, width: 48, x: 6, y: 6 } },
+    ],
+  ])("reads the hit boxes of %s", (_, sprites, hitboxes) => {
+    expect(artHitboxes({ data: [], fonts: [], sprites })).toEqual(hitboxes);
   });
 });
