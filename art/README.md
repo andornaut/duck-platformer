@@ -179,16 +179,23 @@ Two round buttons for the right thumb, Use above and to the left of Jump. Each i
 - Press: the ring turns white and thickens 1px and the face lifts a step, swelling 1px for the first frame (frame 0, then frame 1, 60ms each), then holds until release, which snaps back to rest.
 - Movement has no art: a touch anywhere off a button sets its own neutral point, and nothing marks it.
 
-### Pause card
+### Pause, settings and install cards
 
-A pause button at the top left opens a pause card over the game, which is dimmed by stepping every colour two ramp steps darker. The card's title reads "Paused". A "Touch controls" checkbox reads Shown or Hidden, and the overlay behind the card updates as it changes. A Quit row sits below it. Resume and a close X return to the game.
+A pause button at the top left opens the pause card over the game, which is dimmed by stepping every colour two ramp steps darker. The pause card reads Settings, Quit and Resume; Settings opens the settings card over the same dim, and Install opens the install steps card for browsers that install from their own menu. One card shows at a time. Every card is the same frame, 368 wide at 176,88, with a 36px header holding its title and a close X (hit area 500,88,44,44). Rows are 352x48 at x 184, 4px apart, each its own hit area, with a 16x16 icon at x 198 and a label origin at x 228.
 
 - Pause button: the Use and Jump disc, 33px across, with two pause bars and no label, centred at 26,26 with hit area 0,0,52,52 (reaching the screen's corner). It is a touch control: hidden on desktop and while a dialogue box is open, and its press matches Use and Jump.
-- Card 176,88,368,236 with a 36px header holding the title.
-- Close X hit area 500,88,44,44.
-- The "Touch controls" row, 184,136,352,48, is one hit area that toggles the checkbox (20x20 at 196,150).
-- The Quit row, 184,188,352,48, is one hit area. An exit icon (20x20 at 196,202) sits in the checkbox's column, so it reads as an action rather than a setting.
-- Resume 280,264,160,44, 16 above the card's bottom edge.
+
+| Card     | Rect           | Title    | Rows (y)                                         | Below the rows                             |
+| -------- | -------------- | -------- | ------------------------------------------------ | ------------------------------------------ |
+| Pause    | 176,88,368,236 | Paused   | Settings 136, Quit 188                           | Resume 280,264,160,44                      |
+| Settings | 176,88,368,184 | Settings | Touch controls 136, Install 188 (if installable) | build label centred on x 360, origin y 244 |
+| Steps    | 176,88,368,160 | Install  | none: two steps at y 144 and 196                 |                                            |
+
+- Settings card without Install: 368x132, the build label at origin y 192.
+- Touch controls row: its icon at 198,152, the checkbox (20x20) at 504,150, and Shown or Hidden ending at x 494, left of it. The checkbox stays: the user picked it, its two states differ in shape, and the state word reads it a second time.
+- Install row: its icon at 198,204 and a secondary button (`ui-button`, 72x28) at 452,198 whose label the game centres in it, at most 56 wide. The whole row is the hit area.
+- Build label: tan in `font-body`, centred on x 360.
+- Install steps: each step is a 16x16 glyph at x 198 and up to two lines of text at x 228 (20px pitch, at most 296 wide). Step 1 shows the iOS Share glyph or the browser-menu glyph, whichever the browser uses; step 2 the install glyph.
 
 ## Animation
 

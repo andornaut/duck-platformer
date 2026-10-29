@@ -53,21 +53,36 @@ Touch controls (two round buttons for the right thumb and a pause button at the 
   centre+12), origin 650,306. Cream at rest, white while pressed or held. Label room, the widest ink that keeps
   2px of face on each side when pressed: Use 45, Jump 53.
 
-Pause card (over the game dimmed two ramp steps)
+Pause card, settings card and install steps card (each over the game dimmed two ramp steps, one at a time)
 - ui-settings-card, nine-slice 16x48, margins 2,38,2,2: a cream border with cut corners, an ink header 36 high and
-  a navy body. Drawn 368x236 at 176,88. Title "Paused" (font-title, so PAUSED) cream, origin 190,93.
-- ui-close, 24x24, at 510,94 (hit 500,88,44,44). Tags normal (cream X), pressed (white X on dslate).
-- ui-settings-row, nine-slice 12x48, margins 2,2,2,2, dslate. Two rows, each the hit area for itself:
-  - Touch controls, drawn 352x48 at 184,136. Label "Touch controls" cream, origin 228,151; state Shown or Hidden
-    cream, its last glyph ending at x 524 (origin 526-A).
-  - Quit, drawn 352x48 at 184,188 (4 below). Label "Quit" cream, origin 228,203, white while pressed.
-- ui-checkbox, 20x20, at 196,150. Tags off (empty box), on (a green tick).
-- ui-quit, 20x20, at 196,202: a doorway with an arrow leaving it, in the checkbox's column. Tags normal (cream),
-  pressed (white, the arrow 2px further out).
-- ui-resume, 160x44, at 280,264 (the hit area). Tags normal, pressed (the face sinks 2px into its lip). A play
-  triangle is drawn in; label Resume ink, origin 339,275, or 339,277 when pressed.
+  a navy body. Every card is drawn 368 wide at 176,88; title cream in font-title, origin 190,93.
+- ui-close, 24x24, at 510,94 (hit 500,88,44,44) on every card. Tags normal (cream X), pressed (white X on dslate).
+- ui-settings-row, nine-slice 12x48, margins 2,2,2,2, dslate, drawn 352x48 at x 184; each row is its own hit area.
+  A row's 16x16 icon sits at 198,y+16 and its label (font-body, cream, white while pressed) at origin 228,y+15.
+- Pause card, 368x236, title "Paused". Rows: Settings at y 136 (icon-settings), Quit at y 188 (ui-quit, 20x20
+  at 196,202). Resume below.
+- Settings card, title "Settings": 368x184 with the Install row, 368x132 without it. Rows: Touch controls at y 136
+  (icon-touch-controls; ui-checkbox at 504,150; state Shown or Hidden cream, its last glyph ending at x 494, origin
+  496-A); Install at y 188, only while the app is installable (icon-install; ui-button drawn 72x28 at 452,198, label
+  ink, origin x 452 + (72 - ink width) / 2, y 201, or 203 when pressed; room 56). The build label, tan in
+  font-body, is centred on x 360 with its origin 28 above the card's foot: y 244, or 192 without Install.
+- Install steps card, 368x160, title "Install". Two steps, each a 16x16 glyph and up to two lines of cream
+  font-body at a 20px pitch, room 296: step 1's glyph (icon-ios-share on iOS, icon-browser-menu where the browser
+  installs from its menu) at 198,145, text origin 228,144; step 2's glyph (icon-install) at 198,197, text origin
+  228,196.
+- ui-checkbox, 20x20. Tags off (empty box), on (a green tick).
+- ui-quit, 20x20: a doorway with an arrow leaving it. Tags normal (cream), pressed (white, the arrow 2px further
+  out).
+- ui-button, nine-slice 16x28, margins 2,4,2,6: the secondary button, an ink line, a cream face with a white top
+  highlight and a tan lip 4px deep. Tags normal, pressed (the face sinks 2px, so its label moves down 2).
+- icon-settings (a cog), icon-touch-controls (a round touch button with the Jump caret), icon-install (an arrow
+  down into a tray), icon-ios-share (Safari's Share button) and icon-browser-menu (three stacked dots): 16x16, flat
+  cream in 2px strokes, one tag, rest.
+- ui-resume, 160x44, at 280,264 on the pause card (the hit area). Tags normal, pressed (the face sinks 2px into its
+  lip). A play triangle is drawn in; label Resume ink, origin 339,275, or 339,277 when pressed.
 """
 
+import math
 import os
 import sys
 
@@ -265,6 +280,63 @@ X = [(i, i) for i in range(12)] + [(i + 1, i) for i in range(11)] + [(11 - i, i)
     [(10 - i, i) for i in range(11)]
 
 
+def button(state):
+    """16x28 nine-slice for a secondary action (Install): an ink line with cut corners, a cream face with a white
+    top highlight, and a tan lip 4px deep; pressed, the face sinks 2px into the lip and loses its highlight."""
+    top = 0 if state == "normal" else 2
+    g = Grid(16, 28)
+    panel(g, 0, top, 16, 28 - top, "tan", rim=None)
+    g.rect(1, top + 1, 14, 22, "cream")
+    if state == "normal":
+        g.rect(2, 1, 12, 1, "white")
+    return g.px
+
+
+def icon(rows):
+    """A 16x16 icon from 16 strings ('#' is cream): flat, 2px strokes, like ui-quit and ui-close."""
+    g = Grid(16, 16)
+    stamp(g, bm(*rows), 0, 0, "cream")
+    return g.px
+
+
+DOT4 = (".##.", "####", "####", ".##.")
+ICONS = {
+    # a cog: a ring round a hole, four 4x2 teeth on the axes and four 2x2 on the diagonals
+    "icon-settings": ["......####......", "......####......", "..##..####..##..", "..############..",
+                      "...##########...", "...####..####...", "######....######", "#####......#####",
+                      "#####......#####", "######....######", "...####..####...", "...##########...",
+                      "..############..", "..##..####..##..", "......####......", "......####......"],
+    # a down arrow into a tray
+    "icon-install": [".......##.......", ".......##.......", ".......##.......", ".......##.......",
+                     "...##..##..##...", "....##.##.##....", ".....######.....", "......####......",
+                     ".......##.......", "................", "##............##", "##............##",
+                     "##............##", "##............##", "################", "################"],
+    # Safari's Share button: a box open at the top with an arrow rising out of it
+    "icon-ios-share": [".......##.......", "......####......", ".....##..##.....", "....##.##.##....",
+                       ".......##.......", ".......##.......", "..####.##.####..", "..##...##...##..",
+                       "..##...##...##..", "..##...##...##..", "..##........##..", "..##........##..",
+                       "..##........##..", "..##........##..", "..############..", "..############.."],
+    # the browser menu button: three round dots stacked on the centre line
+    "icon-browser-menu": ["......" + r + "......" for r in DOT4] + ["................"] * 2
+                         + ["......" + r + "......" for r in DOT4] + ["................"] * 2
+                         + ["......" + r + "......" for r in DOT4],
+}
+
+
+def touch_controls_icon():
+    """A touch button: a round 2px ring with the Jump caret (2px strokes) inside, centred on the frame."""
+    g = Grid(16, 16)
+    for y in range(16):
+        for x in range(16):
+            if 5.9 <= math.hypot(x - 7.5, y - 7.5) <= 7.9:
+                g.p(x, y, "cream")
+    g.rect(7, 6, 2, 1, "cream")
+    for i in range(3):
+        g.rect(6 - i, 7 + i, 2, 1, "cream")
+        g.rect(8 + i, 7 + i, 2, 1, "cream")
+    return g.px
+
+
 def quit_icon(state):
     """20x20: a doorway (2px strokes, open on the right) with an arrow leaving through it. Pressed, the arrow
     steps 2px further out and turns white."""
@@ -292,6 +364,7 @@ def close(state):
 
 SLICES = {
     "ui-name-tab": (2, 2, 2, 2),
+    "ui-button": (2, 4, 2, 6),
     "ui-quip-strip": (2, 2, 2, 2),
     "ui-settings-card": (2, 38, 2, 2),
     "ui-settings-row": (2, 2, 2, 2),
@@ -308,7 +381,11 @@ ONCE = {
 
 def sprites():
     one = lambda frame, tag="rest": [(tag, [frame], 100)]  # noqa: E731
+    for key in sorted(ICONS):
+        yield key, one(icon(ICONS[key]))
+    yield "icon-touch-controls", one(touch_controls_icon())
     yield "ui-answer", [(s, [answer(s)], 100) for s in ("normal", "selected", "pressed")]
+    yield "ui-button", [(s, [button(s)], 100) for s in ("normal", "pressed")]
     yield "ui-checkbox", [("off", [checkbox(False)], 100), ("on", [checkbox(True)], 100)]
     yield "ui-close", [(s, [close(s)], 100) for s in ("normal", "pressed")]
     yield "ui-dialogue-box", one(dialogue_box())

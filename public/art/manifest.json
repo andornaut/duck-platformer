@@ -62,6 +62,36 @@
       }
     },
     {
+      "key": "icon-browser-menu",
+      "png": "sprites/icon-browser-menu.png",
+      "json": "sprites/icon-browser-menu.json",
+      "once": []
+    },
+    {
+      "key": "icon-install",
+      "png": "sprites/icon-install.png",
+      "json": "sprites/icon-install.json",
+      "once": []
+    },
+    {
+      "key": "icon-ios-share",
+      "png": "sprites/icon-ios-share.png",
+      "json": "sprites/icon-ios-share.json",
+      "once": []
+    },
+    {
+      "key": "icon-settings",
+      "png": "sprites/icon-settings.png",
+      "json": "sprites/icon-settings.json",
+      "once": []
+    },
+    {
+      "key": "icon-touch-controls",
+      "png": "sprites/icon-touch-controls.png",
+      "json": "sprites/icon-touch-controls.json",
+      "once": []
+    },
+    {
       "key": "pedestrian-cat",
       "png": "sprites/pedestrian-cat.png",
       "json": "sprites/pedestrian-cat.json",
@@ -98,6 +128,18 @@
       "png": "sprites/ui-answer.png",
       "json": "sprites/ui-answer.json",
       "once": []
+    },
+    {
+      "key": "ui-button",
+      "png": "sprites/ui-button.png",
+      "json": "sprites/ui-button.json",
+      "once": [],
+      "slice": {
+        "left": 2,
+        "top": 4,
+        "right": 2,
+        "bottom": 6
+      }
     },
     {
       "key": "ui-checkbox",
