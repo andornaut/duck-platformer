@@ -171,7 +171,7 @@ Two round buttons for the right thumb, Use above and to the left of Jump. Each i
 
 | Control | Centre  | Hit area        | Disc      | Icon       | Label origin | Label room |
 | ------- | ------- | --------------- | --------- | ---------- | ------------ | ---------- |
-| Use     | 592,210 | 522,152,198,104 | 65px wide | three dots | 580,207      | 45         |
+| Use     | 592,210 | 522,152,198,104 | 73px wide | three dots | 580,207      | 55         |
 | Jump    | 667,307 | 522,256,198,104 | 73px wide | caret      | 650,306      | 53         |
 
 - The hit areas fill the right of the screen from y 152 down, Jump's in the bottom-right corner and Use's directly above it. Each disc sits inside its own hit area.

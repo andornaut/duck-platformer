@@ -94,7 +94,7 @@ Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with 
 | ui-skip             | sprite                                              | 78x20  | normal, pressed, disabled         |
 | ui-start            | sprite                                              | 192x52 | normal, pressed                   |
 | ui-touch-jump       | sprite                                              | 75x75  | rest, press, held                 |
-| ui-touch-use        | sprite                                              | 67x67  | rest, press, held                 |
+| ui-touch-use        | sprite                                              | 75x75  | rest, press, held                 |
 
 ## Tilesets
 

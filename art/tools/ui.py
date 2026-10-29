@@ -35,10 +35,10 @@ Quip
   line cream in font-body, origin x+15+An, y 11.
 
 Touch controls (two round buttons for the right thumb and a pause button at the top left; movement has no art)
-- ui-touch-use, 67x67, centre pixel 33,33: top-left 559,177 for the centre 592,210 (hit 522,152,198,104).
+- ui-touch-use, 75x75, centre pixel 37,37: top-left 555,173 for the centre 592,210 (hit 522,152,198,104).
 - ui-touch-jump, 75x75, centre pixel 37,37: top-left 630,270 for the centre 667,307 (hit 522,256,198,104, the
   bottom-right corner; Use's hit area sits directly above it).
-- Each is an opaque disc: an ink edge, a 3px cream ring and a navy face, 65px across for Use and 73px for Jump,
+- Each is an opaque disc: an ink edge, a 3px cream ring and a navy face, 73px across for both,
   with its icon above the centre in 2px strokes: three round dots (25x7) on Use with their top 10px above the
   centre, a caret (21x11) on Jump with its top 12px above. Tags rest (100ms); press, once (frame 0 the ring turns
   white and thickens to 4px, the face lifts to dslate and the whole disc swells 1px; frame 1 the same at rest
@@ -51,7 +51,7 @@ Touch controls (two round buttons for the right thumb and a pause button at the 
   minus half the label's visible width, rounded down), 4 rows below the icon. Use: origin y = centre y - 3 (the
   capitals on rows centre+1 to centre+10), origin 580,207. Jump: origin y = centre y - 1 (capitals on centre+3 to
   centre+12), origin 650,306. Cream at rest, white while pressed or held. Label room, the widest ink that keeps
-  2px of face on each side when pressed: Use 45, Jump 53.
+  2px of face on each side when pressed: Use 55, Jump 53.
 
 Button labels
 - Every button's label is font-body at 2x, mixed case ("Start", "Resume", "Continue", "Install"), set by the game.
@@ -227,7 +227,7 @@ def quip_strip():
 
 # ---------------------------------------------------------------- touch controls
 
-BUTTON_R = {"use": 32, "jump": 36, "pause": 16}  # disc radius: 65, 73 and 33px across
+BUTTON_R = {"use": 36, "jump": 36, "pause": 16}  # disc radius: 73, 73 and 33px across
 RING_W = {"use": 3, "jump": 3, "pause": 2}  # the cream ring at rest; pressed, it thickens 1px
 CARET = [(x, y) for y in range(11) for x in (10 - y, 11 - y, 9 + y, 10 + y)]  # 21x11, 2px strokes
 DOT = bm("..###..", ".#####.", "#######", "#######", "#######", ".#####.", "..###..")
