@@ -13,6 +13,11 @@ export interface Point {
   readonly y: number;
 }
 
+export interface Size {
+  readonly height: number;
+  readonly width: number;
+}
+
 // The duck's movement, in base pixels and seconds.
 export interface DuckTuning {
   // Speed gained per second while a direction is held, on the ground and in the air.
