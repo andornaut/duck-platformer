@@ -108,6 +108,14 @@
       }
     },
     {
+      "key": "ui-pause",
+      "png": "sprites/ui-pause.png",
+      "json": "sprites/ui-pause.json",
+      "once": [
+        "press"
+      ]
+    },
+    {
       "key": "ui-portrait-frame",
       "png": "sprites/ui-portrait-frame.png",
       "json": "sprites/ui-portrait-frame.json",
@@ -124,6 +132,12 @@
         "right": 2,
         "bottom": 2
       }
+    },
+    {
+      "key": "ui-quit",
+      "png": "sprites/ui-quit.png",
+      "json": "sprites/ui-quit.json",
+      "once": []
     },
     {
       "key": "ui-resume",

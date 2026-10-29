@@ -34,7 +34,7 @@ Quip
   centred on x 360 at y 8 (within 138..590). Name in font-title in the speaker's tab colour, origin x+9, y 7;
   line cream in font-body, origin x+15+An, y 11.
 
-Touch controls (two round buttons for the right thumb; movement has no art)
+Touch controls (two round buttons for the right thumb and a pause button at the top left; movement has no art)
 - ui-touch-use, 51x51, centre pixel 25,25: top-left 591,219 for the centre 616,244 (hit 568,200,152,80).
 - ui-touch-jump, 57x57, centre pixel 28,28: top-left 648,288 for the centre 676,316 (hit 568,280,152,80).
 - Each is an opaque disc: an ink edge, a 2px cream ring and a navy face, 49px across for Use and 55px for Jump,
@@ -42,20 +42,26 @@ Touch controls (two round buttons for the right thumb; movement has no art)
   Jump with its top 12px above. Tags rest (100ms); press, once (frame 0 the ring turns white and thickens to 3px,
   the face lifts to dslate and the whole disc swells 1px; frame 1 the same at rest size; 60ms each); held (as
   press frame 1, 100ms).
+- ui-pause, 35x35, centre pixel 17,17: top-left 9,9 for the centre 26,26 (hit 0,0,52,52, reaching the screen's
+  corner). The same disc, 33px across, with two pause bars (11x13, each 4 wide, 3 apart) centred on the centre;
+  no label. Tags as for Use and Jump: rest; press, once (2 frames at 60ms, frame 0 swells 1px); held.
 - Label "Use" or "Jump" in font-body at 2x, never baked in: centred on the button's centre x (origin x = centre x
   minus half the label's visible width, rounded down), origin y = centre y - 3, so the capitals sit on rows
   centre+1 to centre+10. Use: origin 604,241; Jump: origin 659,313. Cream at rest, white while pressed or held.
 
-Settings (a pause card over the game dimmed two ramp steps)
+Pause card (over the game dimmed two ramp steps)
 - ui-settings-card, nine-slice 16x48, margins 2,38,2,2: a cream border with cut corners, an ink header 36 high and
-  a navy body. Drawn 368x184 at 176,88. Title SETTINGS cream, origin 190,93.
+  a navy body. Drawn 368x236 at 176,88. Title "Paused" (font-title, so PAUSED) cream, origin 190,93.
 - ui-close, 24x24, at 510,94 (hit 500,88,44,44). Tags normal (cream X), pressed (white X on dslate).
-- ui-settings-row, nine-slice 12x48, margins 2,2,2,2, dslate. Drawn 352x48 at 184,136; the whole row is the hit
-  area. Label "Touch controls" cream, origin 228,151; state Shown or Hidden cream, its last glyph ending at x 524
-  (origin 526-A).
+- ui-settings-row, nine-slice 12x48, margins 2,2,2,2, dslate. Two rows, each the hit area for itself:
+  - Touch controls, drawn 352x48 at 184,136. Label "Touch controls" cream, origin 228,151; state Shown or Hidden
+    cream, its last glyph ending at x 524 (origin 526-A).
+  - Quit, drawn 352x48 at 184,188 (4 below). Label "Quit" cream, origin 228,203, white while pressed.
 - ui-checkbox, 20x20, at 196,150. Tags off (empty box), on (a green tick).
-- ui-resume, 160x44, at 280,212 (the hit area). Tags normal, pressed (the face sinks 2px into its lip). A play
-  triangle is drawn in; label Resume ink, origin 339,223, or 339,225 when pressed.
+- ui-quit, 20x20, at 196,202: a doorway with an arrow leaving it, in the checkbox's column. Tags normal (cream),
+  pressed (white, the arrow 2px further out).
+- ui-resume, 160x44, at 280,264 (the hit area). Tags normal, pressed (the face sinks 2px into its lip). A play
+  triangle is drawn in; label Resume ink, origin 339,275, or 339,277 when pressed.
 """
 
 import os
@@ -173,11 +179,12 @@ def quip_strip():
 
 # ---------------------------------------------------------------- touch controls
 
-BUTTON_R = {"use": 24, "jump": 27}  # disc radius: 49px and 55px across
+BUTTON_R = {"use": 24, "jump": 27, "pause": 16}  # disc radius: 49, 55 and 33px across
 CARET = [(x, y) for y in range(9) for x in (8 - y, 9 - y, 7 + y, 8 + y)]  # 17x9, 2px strokes
 DOT = bm(".###.", "#####", "#####", "#####", ".###.")
 DOTS = [(x + i * 7, y) for i in range(3) for x, y in DOT]  # 19x5
-ICON = {"use": (DOTS, -9), "jump": (CARET, -12)}  # the bitmap and its top row relative to the centre
+BARS = [(x + i * 7, y) for i in range(2) for x in range(4) for y in range(13)]  # 11x13, two pause bars
+ICON = {"use": (DOTS, -9), "jump": (CARET, -12), "pause": (BARS, -6)}  # bitmap, top row relative to the centre
 
 
 def disc(g, cx, cy, r, c):
@@ -253,6 +260,21 @@ X = [(i, i) for i in range(12)] + [(i + 1, i) for i in range(11)] + [(11 - i, i)
     [(10 - i, i) for i in range(11)]
 
 
+def quit_icon(state):
+    """20x20: a doorway (2px strokes, open on the right) with an arrow leaving through it. Pressed, the arrow
+    steps 2px further out and turns white."""
+    c, dx = ("white", 2) if state == "pressed" else ("cream", 0)
+    g = Grid(20, 20)
+    g.rect(1, 1, 12, 2, c)
+    g.rect(1, 17, 12, 2, c)
+    g.rect(1, 1, 2, 18, c)
+    g.rect(11, 1, 2, 5, c)
+    g.rect(11, 14, 2, 5, c)
+    g.rect(6 + dx, 9, 7, 2, c)
+    tri_right(g, 13 + dx, 5, 10, c)
+    return g.px
+
+
 def close(state):
     g = Grid(24, 24)
     if state == "pressed":
@@ -273,6 +295,7 @@ SLICES = {
 
 # Tags that play once and hold their last frame; every other tag loops.
 ONCE = {
+    "ui-pause": ("press",),
     "ui-touch-jump": ("press",),
     "ui-touch-use": ("press",),
 }
@@ -286,7 +309,9 @@ def sprites():
     yield "ui-dialogue-box", one(dialogue_box())
     yield "ui-forward-mark", [("idle", forward_mark(), [ms for _, ms in FORWARD_STEPS])]
     yield "ui-name-tab", [(c, [name_tab(c)], 100) for c in TAB_FILLS]
+    yield "ui-pause", touch_button("pause")
     yield "ui-portrait-frame", one(portrait_frame())
+    yield "ui-quit", [(s, [quit_icon(s)], 100) for s in ("normal", "pressed")]
     yield "ui-quip-strip", one(quip_strip())
     yield "ui-resume", [(s, [resume(s)], 100) for s in ("normal", "pressed")]
     yield "ui-settings-card", one(settings_card())

@@ -45,7 +45,9 @@ Plain PNGs and one ICO from `art/tools/icons.py`, not manifest entries.
 | ui-dialogue-box   | sprite                     | 640x96 | rest                            |
 | ui-forward-mark   | sprite                     | 10x14  | idle                            |
 | ui-name-tab       | nine-slice (2,2,2,2)       | 12x20  | amber, green, pink, tan         |
+| ui-pause          | sprite                     | 35x35  | rest, press, held               |
 | ui-portrait-frame | sprite                     | 68x68  | rest                            |
+| ui-quit           | sprite                     | 20x20  | normal, pressed                 |
 | ui-quip-strip     | nine-slice (2,2,2,2)       | 12x24  | rest                            |
 | ui-resume         | sprite                     | 160x44 | normal, pressed                 |
 | ui-settings-card  | nine-slice (2,38,2,2)      | 16x48  | rest                            |

@@ -167,14 +167,16 @@ Two round buttons for the right thumb, Use above and to the left of Jump. Each i
 - Press: the ring turns white and thickens to 3px and the face lifts a step, swelling 1px for the first frame (frame 0, then frame 1, 60ms each), then holds until release, which snaps back to rest.
 - Movement has no art: a touch anywhere off a button sets its own neutral point, and nothing marks it.
 
-### Settings
+### Pause card
 
-A pause card over the game, which is dimmed by stepping every colour two ramp steps darker. A "Touch controls" checkbox reads Shown or Hidden, and the overlay behind the card updates as it changes. Resume and a close X return to the game.
+A pause button at the top left opens a pause card over the game, which is dimmed by stepping every colour two ramp steps darker. The card's title reads "Paused". A "Touch controls" checkbox reads Shown or Hidden, and the overlay behind the card updates as it changes. A Quit row sits below it. Resume and a close X return to the game.
 
-- Card 176,88,368,184 with a 36px header holding the title.
+- Pause button: the Use and Jump disc, 33px across, with two pause bars and no label, centred at 26,26 with hit area 0,0,52,52 (reaching the screen's corner). It is a touch control: hidden on desktop and while a dialogue box is open, and its press matches Use and Jump.
+- Card 176,88,368,236 with a 36px header holding the title.
 - Close X hit area 500,88,44,44.
 - The "Touch controls" row, 184,136,352,48, is one hit area that toggles the checkbox (20x20 at 196,150).
-- Resume 280,212,160,44.
+- The Quit row, 184,188,352,48, is one hit area. An exit icon (20x20 at 196,202) sits in the checkbox's column, so it reads as an action rather than a setting.
+- Resume 280,264,160,44, 16 above the card's bottom edge.
 
 ## Animation
 
