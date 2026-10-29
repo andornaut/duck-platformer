@@ -75,7 +75,7 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 - **Areas:** a zone can have more than one area, joined by doors. Use at a door fades to the other area
 - **Camera:** on the ground she sits about two thirds down the screen. In an assembled zone, the ground line follows the chunk she is in. The camera rises only when she climbs above the middle, and never shows below the lowest ground
 - **Challenge:** platforming, hazards and choices. There is no combat
-- **Checkpoint:** the start of a zone is its only checkpoint. Falling or touching a hazard restarts the zone from its start. Progress is saved: entering a zone saves its start, and clearing it saves the map where she stands. Continue on the start screen resumes from the save, so a cleared zone never replays
+- **Checkpoint:** the start of a zone is its only checkpoint. Falling or touching a hazard restarts the zone from its start. Progress is saved: entering a zone saves its start, and clearing it saves the map where she stands, so a cleared zone never replays
 - **Crush:** a moving platform that pushes her sideways carries her to its leading edge. If it squeezes her into terrain or another solid, she is crushed and the zone restarts from its start, as a hazard does. Layouts leave room beside every moving platform's path so she is never pinned on a required route
 - **Exit:** Use at the zone's exit clears the zone
 - **Kinds:** indoor, outdoor, or a hybrid with both
@@ -144,10 +144,10 @@ Everything in a zone except its terrain is placed in data, in three layers.
 ### Start screen
 
 - **Back:** back with no card open leaves the game, the same way as Exit, wherever Exit shows; elsewhere back is the browser's own
-- **Boot:** the game opens on the start screen, in landscape
+- **Boot:** the game opens in landscape. With a saved zone start it opens straight into that zone with the pause card showing; with a saved map position it opens on the map at that point; with no save it opens on the start screen
 - **Exit:** at the top right, at the far end. In a browser tab it goes straight to the home page. In an installed app it closes the app, and it shows only in apps that can close themselves (Chrome's Android app, and Chrome or Edge desktop app windows); in every other installed app (iOS, Firefox for Android, Samsung Internet and Edge for Android) it is hidden, and Settings sits at the far right
 - **Settings:** at the top right, beside Exit. It opens the settings card
-- **Start:** the only other element. With saved progress it reads Continue and resumes from the save (a zone's start, or the map); with none it reads Start and opens the map, which at the beginning offers one place to go: the first zone
+- **Start:** the only other element. With saved progress (reached through Return home) it reads Continue and resumes from the save, a zone's start or the map; with none it reads Start and opens the map, which at the beginning offers one place to go: the first zone
 
 ### Settings
 
