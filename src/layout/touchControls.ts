@@ -8,13 +8,13 @@ export const TOUCH_CONTROLS: Readonly<
   Record<TouchControl, { centre: Point; hit: Rect; labelRoom: number }>
 > = {
   jump: {
-    centre: { x: 596, y: 316 },
-    hit: { height: 80, width: 152, x: 488, y: 280 },
+    centre: { x: 604, y: 316 },
+    hit: { height: 80, width: 152, x: 496, y: 280 },
     labelRoom: 41,
   },
   use: {
-    centre: { x: 536, y: 244 },
-    hit: { height: 80, width: 152, x: 488, y: 200 },
+    centre: { x: 544, y: 244 },
+    hit: { height: 80, width: 152, x: 496, y: 200 },
     labelRoom: 33,
   },
 };
