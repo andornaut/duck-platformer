@@ -52,7 +52,7 @@ function courseLayout(tile: number, cols: number, solids: TileRect[], start: Poi
     },
     start: { area: "course", entry: "start" },
   };
-  const layout = zoneLayout(tile, { archetypes: {}, characters: {} }, {}, new Set(), plan);
+  const layout = zoneLayout(tile, { archetypes: {}, characters: {} }, {}, {}, new Set(), plan);
   const area = layout.areas.course as AreaLayout;
   return { ...layout, areas: { course: { ...area, entries: { start } } } };
 }

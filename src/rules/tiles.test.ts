@@ -73,7 +73,7 @@ describe("zoneLayout", () => {
   const hitboxes = {
     lift: { frame: { height: 10, width: 40 }, hitbox: { height: 6, width: 30, x: 5, y: 2 } },
   };
-  const layout = zoneLayout(10, CATALOGUE, hitboxes, new Set(), PLAN);
+  const layout = zoneLayout(10, CATALOGUE, hitboxes, {}, new Set(), PLAN);
   const yard = layout.areas.yard;
   const [lift, special] = yard?.objects ?? [];
   it.each([
@@ -148,7 +148,7 @@ describe("zoneLayout", () => {
       ...PLAN,
       areas: { yard: { ...PLAN.areas.yard, objects: [instance] } },
     } as ZonePlan;
-    expect(() => zoneLayout(10, catalogue, {}, new Set(), bad)).toThrow(message);
+    expect(() => zoneLayout(10, catalogue, {}, {}, new Set(), bad)).toThrow(message);
   });
 });
 

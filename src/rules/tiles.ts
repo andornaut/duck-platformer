@@ -17,6 +17,7 @@ import type {
   ZoneLayout,
   ZonePlan,
 } from "../data/types";
+import { tileHitbox, type Tileset } from "../view/tiles";
 
 export function tileRect(tile: number, rect: TileRect): Rect {
   return {
@@ -57,11 +58,13 @@ export function resolveNames(
 
 // An instance resolved into one flat object, in pixels: its instance's overrides over its
 // character's tuning over its archetype, and the character's art, animations (a state left out
-// plays idle's), words and quirks, which an instance's own lines replace.
+// plays idle's), words and quirks, which an instance's own lines replace. Its hit box is its
+// sprite's, from hitboxes, or for art drawn from its area's tileset, its tiles'.
 export function objectLayout(
   tile: number,
   catalogue: Catalogue,
   hitboxes: Readonly<Record<string, ArtHitbox>>,
+  tileset: Tileset | undefined,
   instance: Instance,
 ): ObjectLayout {
   const { archetype, character } = resolveNames(catalogue, instance);
@@ -92,11 +95,13 @@ export function objectLayout(
     character: instance.character,
     collision: archetype.collision,
     height,
-    hitbox: art && {
-      ...art.hitbox,
-      x: art.hitbox.x + (width - art.frame.width) / 2,
-      y: art.hitbox.y + height - art.frame.height,
-    },
+    hitbox: art
+      ? {
+          ...art.hitbox,
+          x: art.hitbox.x + (width - art.frame.width) / 2,
+          y: art.hitbox.y + height - art.frame.height,
+        }
+      : tileset && tileHitbox(tile, tileset, character.art, width / tile, height / tile),
     interaction: { ...interaction, range: interaction.range * tile },
     lines: instance.lines ?? character.lines ?? [],
     motion: {
@@ -129,9 +134,11 @@ export function areaLayout(
   tile: number,
   catalogue: Catalogue,
   hitboxes: Readonly<Record<string, ArtHitbox>>,
+  tilesets: Readonly<Record<string, Tileset>>,
   flags: ReadonlySet<string>,
   area: AreaPlan,
 ): AreaLayout {
+  const tileset = area.tileset === undefined ? undefined : tilesets[area.tileset];
   return {
     chunks: (area.chunks ?? []).map(({ col, cols }) => ({ width: cols * tile, x: col * tile })),
     entries: Object.fromEntries(
@@ -140,7 +147,7 @@ export function areaLayout(
     height: area.rows * tile,
     objects: area.objects
       .filter((instance) => isPlaced(flags, instance))
-      .map((instance) => objectLayout(tile, catalogue, hitboxes, instance)),
+      .map((instance) => objectLayout(tile, catalogue, hitboxes, tileset, instance)),
     solids: area.solids.map((rect) => tileRect(tile, rect)),
     terrain: area.solids,
     tileset: area.tileset,
@@ -149,11 +156,13 @@ export function areaLayout(
 }
 
 // A zone plan in base pixels, for the rules: each instance resolved against the catalogue, with
-// the hit boxes art declares by art key, and only the instances the set flags place.
+// the hit boxes art declares by art key and in its tilesets by tile, and only the instances the
+// set flags place.
 export function zoneLayout(
   tile: number,
   catalogue: Catalogue,
   hitboxes: Readonly<Record<string, ArtHitbox>>,
+  tilesets: Readonly<Record<string, Tileset>>,
   flags: ReadonlySet<string>,
   plan: ZonePlan,
 ): ZoneLayout {
@@ -161,7 +170,7 @@ export function zoneLayout(
     areas: Object.fromEntries(
       Object.entries(plan.areas).map(([name, area]) => [
         name,
-        areaLayout(tile, catalogue, hitboxes, flags, area),
+        areaLayout(tile, catalogue, hitboxes, tilesets, flags, area),
       ]),
     ),
     start: plan.start,

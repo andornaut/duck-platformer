@@ -11,6 +11,7 @@ import type { TilePoint, ZoneLayout, ZonePlan } from "../data/types";
 import { zoneLayout } from "../rules/tiles";
 import { crosses, type Surface, surfaceAt, walkZone, type ZoneWalk } from "../sim/zoneWalk";
 import { artHitboxes, type ArtManifest } from "../view/aseprite";
+import type { Tileset } from "../view/tiles";
 
 const SHEETS = import.meta.glob<{
   readonly frames: Readonly<Record<string, { readonly sourceSize: { w: number; h: number } }>>;
@@ -20,6 +21,15 @@ export const HITBOXES = artHitboxes((key) => {
   return { height: frame?.sourceSize.h ?? 0, width: frame?.sourceSize.w ?? 0 };
 }, manifestJson as ArtManifest);
 export const CATALOGUE = { archetypes: ARCHETYPES, characters: CHARACTERS };
+// Art's tilesets by key.
+export const TILESETS: Readonly<Record<string, Tileset>> = Object.fromEntries(
+  Object.entries(
+    import.meta.glob<Tileset>("../../public/art/tilesets/*.json", {
+      eager: true,
+      import: "default",
+    }),
+  ).map(([path, tileset]) => [path.replace(/^.*\/(.*)\.json$/, "$1"), tileset]),
+);
 // The walk takes seconds on a large zone.
 export const WALK_MS = 120_000;
 
@@ -39,7 +49,7 @@ export function walkSuite(plan: ZonePlan): void {
   );
 
   beforeAll(() => {
-    layout = zoneLayout(TILE, CATALOGUE, HITBOXES, new Set(), plan);
+    layout = zoneLayout(TILE, CATALOGUE, HITBOXES, TILESETS, new Set(), plan);
     walk = walkZone(DUCK, layout);
   }, WALK_MS);
 

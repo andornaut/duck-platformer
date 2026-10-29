@@ -377,7 +377,10 @@ export class ZoneScene extends Scene {
 
   private loadPlan(plan: ZonePlan): void {
     // PLACEHOLDER: carried choices set no flags yet.
-    this.layout = zoneLayout(TILE, CATALOGUE, this.hitboxes, new Set(), plan);
+    const tilesets = Object.fromEntries(
+      this.manifest.tilesets.map(({ key }) => [key, this.cache.json.get(key) as Tileset]),
+    );
+    this.layout = zoneLayout(TILE, CATALOGUE, this.hitboxes, tilesets, new Set(), plan);
     const asked = Number(new URLSearchParams(window.location.search).get("seed"));
     const seed = Number.isInteger(asked) && asked > 0 ? asked : Math.floor(Math.random() * 2 ** 31);
     this.zone = startZone(DUCK, this.layout, seed);

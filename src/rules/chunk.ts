@@ -26,7 +26,7 @@ const inside = (rows: number, cols: number, rect: TileRect) =>
 // A placed thing in tiles: its collision, whether it moves, and the span it can be in over its
 // track (its rectangle swept along its motion's axis, its reaction's range and its hops).
 function thingOf(catalogue: Catalogue, instance: Instance) {
-  const object = objectLayout(1, catalogue, {}, instance);
+  const object = objectLayout(1, catalogue, {}, undefined, instance);
   const { direction, distance, hopHeight } = object.motion;
   const moves = object.motion.algorithm !== "static" || object.reaction.kind !== "none";
   const reach = distance + (object.reaction.kind === "none" ? 0 : object.reaction.range);

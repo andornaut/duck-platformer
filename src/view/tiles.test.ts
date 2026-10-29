@@ -8,6 +8,7 @@ import {
   objectTiles,
   type PlacedTile,
   terrainTiles,
+  tileHitbox,
   type Tileset,
 } from "./tiles";
 
@@ -227,5 +228,54 @@ describe("loadedTileset", () => {
 
   it("refuses one whose tiles are another size", () => {
     expect(() => loadedTileset(12, lookup, "big")).toThrow(/not 12 px/);
+  });
+});
+
+describe("tileHitbox", () => {
+  // The park's: a thorn hurts from 2 px down its row, a pond's water from 4 px down its top row,
+  // and its bed across the whole cell.
+  const boxed: Tileset = {
+    ...TILESET,
+    hitboxes: Object.fromEntries([
+      ...["hazard-thorn", "hazard-thorn-left", "hazard-thorn-right"].map(
+        (name) => [name, { height: 10, width: 12, x: 0, y: 2 }] as const,
+      ),
+      ...["hazard-pond", "hazard-pond-left", "hazard-pond-right"].map(
+        (name) => [name, { height: 8, width: 12, x: 0, y: 4 }] as const,
+      ),
+    ]),
+  };
+
+  it.each([
+    [
+      "a thorn hedge: 2 px lower at the top",
+      boxed,
+      "hazard-thorn",
+      3,
+      1,
+      { height: 10, width: 36, x: 0, y: 2 },
+    ],
+    [
+      "a pond: 4 px lower at its top row, its bed row full",
+      boxed,
+      "hazard-pond",
+      4,
+      2,
+      { height: 20, width: 48, x: 0, y: 4 },
+    ],
+    ["none for tiles without hit boxes", boxed, "planter", 2, 2, undefined],
+    ["none for a tileset without hit boxes", TILESET, "hazard-thorn", 3, 1, undefined],
+    ["none for a piece", boxed, "door", 2, 2, undefined],
+  ])("gives %s", (_, tileset, art, cols, rows, hitbox) => {
+    expect(tileHitbox(12, tileset, art, cols, rows)).toEqual(hitbox);
+  });
+
+  it("scales a tile's hit box to the layout's tile size", () => {
+    expect(tileHitbox(24, boxed, "hazard-thorn", 1, 1)).toEqual({
+      height: 20,
+      width: 24,
+      x: 0,
+      y: 4,
+    });
   });
 });
