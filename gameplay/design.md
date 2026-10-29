@@ -36,7 +36,7 @@ A landscape platformer: a duck falls out of her room at the top of a New York ho
 ### Screen and controls
 
 - Landscape, 720×360 base resolution. Phone browser first, with on-screen touch controls; keyboard on desktop
-- **Keyboard:** ←/→ or A/D to move; Space, ↑ or W to jump; E to use
+- **Keyboard:** ←/→ or A/D to move; Space, ↑ or W to jump; E to use; P or Esc to open or close the pause card
 - **Overlay:** the touch buttons show by default. Settings hides them, and hidden buttons still work
 - **Touch buttons** (right thumb): Use above, Jump below. Each is labelled with its name, reads clearly as a button and stands out against any background, while hiding little of the play area. A button animates subtly when pressed
 - **Touch movement:** a touch anywhere except on a button or other interactive element sets the neutral point where it lands. Dragging left or right from it past a small dead zone moves the duck that way at full speed; back inside the dead zone, she stops. Releasing ends the movement. Nothing marks the neutral point
@@ -107,4 +107,7 @@ A landscape platformer: a duck falls out of her room at the top of a New York ho
 
 ### Settings
 
-- A pause card over the dimmed game, which pauses play. Its rows: Touch controls (Shown or Hidden, Shown by default), then Resume
+- **Back:** back during play opens the pause card, and back with the card open closes it. Where the browser can't hand back to the game (Firefox for Android's installed app, and before the first tap or key in browsers without CloseWatcher), back is the browser's own
+- **Card:** a pause card titled Paused, over the dimmed game, which pauses play, with a close X. Its rows: Touch controls (Shown or Hidden, Shown by default), Resume, then Quit
+- **Open:** the pause button at the top left, P or Esc, or back
+- **Quit:** goes back past the game to the page before it, or, with none, closes the window where the browser allows
