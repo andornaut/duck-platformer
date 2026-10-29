@@ -8,14 +8,15 @@ import { AUTO, Game, Scale } from "phaser";
 // eslint-disable-next-line no-duplicate-imports -- the side-effect import above runs it first.
 import { CRASH_SCREEN } from "./crash/install";
 import { SCREEN } from "./data/screen";
-import { setupPhoneApp } from "./pwa";
+import { coverLevel, setupPhoneApp } from "./pwa";
 import { BootScene } from "./scenes/BootScene";
 import { LevelScene } from "./scenes/LevelScene";
 import { PauseScene } from "./scenes/PauseScene";
 
 // Scale.FIT: the base resolution stretches by whatever amount fills #game, keeping its aspect
-// ratio, with bars on the other axis. pixelArt keeps the stretch nearest-neighbour. The game
-// boots once a fresh load has checked for a newer version (setupPhoneApp).
+// ratio, with bars on the other axis. pixelArt keeps the stretch nearest-neighbour. The game is
+// constructed at once and loads while a fresh load checks for a newer version: BootScene holds
+// only the level for the check (launchReady).
 function startGame(): void {
   const game = new Game({
     height: SCREEN.height,
@@ -43,9 +44,17 @@ function startGame(): void {
     game.pause();
     game.sound.pauseAll();
   });
-  // The game pauses while main.css shows the turn-sideways notice over it.
+  // The game pauses while main.css shows the turn-sideways notice over it, and the update toast
+  // waits until the notice is gone.
   const portrait = window.matchMedia("(orientation: portrait) and (pointer: coarse)");
-  const followOrientation = () => (portrait.matches ? game.pause() : game.resume());
+  const followOrientation = () => {
+    coverLevel("sideways", portrait.matches);
+    if (portrait.matches) {
+      game.pause();
+    } else {
+      game.resume();
+    }
+  };
   portrait.addEventListener("change", followOrientation);
   followOrientation();
 }
@@ -65,4 +74,5 @@ if (buildLabel !== null) {
   .lock?.("landscape")
   .catch(() => undefined);
 
-void setupPhoneApp().then(startGame);
+setupPhoneApp();
+startGame();

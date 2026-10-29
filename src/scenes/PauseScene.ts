@@ -4,14 +4,21 @@ import {
   phaserBitmapFont,
   type PhaserFontData,
 } from "@andornaut/game-kit/text/phaser/phaserBitmapFont";
-import { type GameObjects, type Input, Scene } from "phaser";
+import { Core, type GameObjects, type Input, Scene } from "phaser";
 
 import { SCREEN } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
 import { CARD_TEXT_SCALE, PAUSE_BUTTON, PAUSE_CARD } from "../layout/pauseCard";
 import { type CardAction, cardBackAction, cardKeyAction } from "../pause/cardInput";
-import { leaveGame, PHONE_EVENTS, startWakeLock, stopWakeLock } from "../pwa";
+import {
+  coverLevel,
+  leaveGame,
+  levelShown,
+  PHONE_EVENTS,
+  startWakeLock,
+  stopWakeLock,
+} from "../pwa";
 import { setTouchControlsShown, touchControlsShown } from "../settings/touchControls";
 import { animKey, type ArtManifest } from "../view/aseprite";
 import { dimPixels, type Palette } from "../view/dim";
@@ -68,6 +75,8 @@ export class PauseScene extends Scene {
       window.removeEventListener(PHONE_EVENTS.backPressed, onBack);
     });
     startWakeLock();
+    // The level's first frame: the game page is now the home screen.
+    this.game.events.once(Core.Events.POST_RENDER, () => levelShown());
   }
 
   private act(action: CardAction | undefined): void {
@@ -87,6 +96,7 @@ export class PauseScene extends Scene {
     this.state = "opening";
     this.scene.pause(LEVEL);
     stopWakeLock();
+    coverLevel("pauseCard", true);
     const camera = this.cameras.main.setVisible(false);
     const level = this.scene.get(LEVEL) as LevelScene;
     level.showTouchControls(false);
@@ -108,6 +118,7 @@ export class PauseScene extends Scene {
     this.showCard(false);
     this.scene.resume(LEVEL);
     startWakeLock();
+    coverLevel("pauseCard", false);
   }
 
   // Closed first, so a page kept for back-forward caching comes back to the game in play.
