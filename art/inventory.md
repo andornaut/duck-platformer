@@ -20,7 +20,7 @@ Every served art asset. Sizes are in base pixels at 640x360. Tags are in frame o
 | Key               | Type                  | Size   | Tags                                                 |
 | ----------------- | --------------------- | ------ | ---------------------------------------------------- |
 | duck              | character             | 64x48  | idle, walk, jump, flutter, land                      |
-| ferret            | character             | 64x64  | idle, scheme, talk, tip-hat                          |
+| ferret            | character             | 64x80  | idle, scheme, talk                                   |
 | portrait-duck     | portrait              | 64x64  | neutral, happy, worried                              |
 | portrait-ferret   | portrait              | 64x64  | neutral, smug, annoyed                               |
 | ui-answer         | sprite                | 204x36 | normal, selected, pressed                            |

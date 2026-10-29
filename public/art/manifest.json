@@ -25,9 +25,7 @@
       "key": "ferret",
       "png": "sprites/ferret.png",
       "json": "sprites/ferret.json",
-      "once": [
-        "tip-hat"
-      ]
+      "once": []
     },
     {
       "key": "portrait-duck",

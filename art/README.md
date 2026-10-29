@@ -96,7 +96,7 @@ In order:
 | --------------- | ----- |
 | Duck            | 64x48 |
 | Duck portrait   | 64x64 |
-| Ferret          | 64x64 |
+| Ferret          | 64x80 |
 | Ferret portrait | 64x64 |
 
 ### Text
@@ -122,15 +122,15 @@ The protagonist is a cute, chibi, cream-coloured female duck, drawn facing right
 
 ## The ferret
 
-The villain is a chibi sable ferret in a top hat and bow tie, a talking animal that schemes against the duck's climb: in dialogue, in quips and through the hazards it sets. It is evil in a charming, cartoon way (a smug side-eye, a smirk, rubbed paws), never scary, and is never fought. `art/tools/ferret.py` draws it; its docstring gives every frame's pose and timing.
+The villain is a chibi sable ferret in a stovepipe hat and bow tie, a talking animal that schemes against the duck's climb: in dialogue, in quips and through the hazards it sets. It is sly and smug in a charming, cartoon way (a half-lidded side-eye, a smirk, steepled paws), never scary or cross, and is never fought. `art/tools/ferret.py` draws it; its docstring gives every frame's pose and timing.
 
-- Proportions: standing upright, its head is about 1.5x the area of its body. The tail curls up into a twirl behind it.
-- Fur: brown with a tan light rim and dark-brown cel crescents; a cream muzzle, cheek and belly; a dark-brown mask across a narrowed side-eye (cream sclera, the pupil at the front) under a plum brow.
-- Hat: black, with a plum rim light and a red band, tipped forward, its brim overhanging the head on both sides so the two never merge in silhouette.
+- Stance: slim and erect on short hind legs, a gentle S from the haunch up a long neck to a small wedge head with a narrow, pointed snout, and a long tail curling out behind along the ground. The S and the long neck are what keep it from reading as a dog.
+- Fur: brown with a tan light rim and dark-brown cel crescents; a cream belly, muzzle and cheek; a dark-brown mask through a half-lidded side-eye (cream sclera, the pupil at the front) under a level plum brow.
+- Hat: a tall, narrow plum stovepipe with a dark-brown rim light and a red band. Nothing touches it.
 - Colour: tan, brown, dark brown, plum and cream, with red (the band and bow tie) as the one accent. Ink outline; internal edges two ramp steps darker than the part in front.
-- Frame 64x64, facing left (mirrored for right), feet on rows 60 to 62 and the outline on row 63.
-- Anchor: the frame's bottom edge sits on the collision box's bottom edge, and its body-centre x, 32 (the frame's centre line, between columns 31 and 32), sits on the box centre, so mirroring it does not move it.
-- Portrait: 64x64, its head and shoulders facing right towards the text, as the duck's does, cut off by the bottom edge, with one ink outer line on a transparent ground.
+- Frame 64x80, facing left (mirrored for right), feet on rows 76 to 78 and the outline on row 79.
+- Anchor: the frame's bottom edge sits on the collision box's bottom edge, and its body-centre x, 32 (the spine's centre line and the frame's, between columns 31 and 32), sits on the box centre, so mirroring it does not move it.
+- Portrait: 64x64, its head and long neck facing right towards the text, as the duck's does, cut off by the bottom edge, with one ink outer line on a transparent ground.
 
 ## UI
 
