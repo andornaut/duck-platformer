@@ -29,9 +29,10 @@ const DIM_TEXTURES = { hidden: "pause-dim-hidden", shown: "pause-dim-shown" } as
 type Control = "close" | "pauseButton" | "quit" | "resume" | "touchControls";
 
 // The pause card over the dimmed zone, and the pause button that opens it, which shows on a
-// touch screen only. It runs beside the zone from the start. Opening the card pauses the zone
-// and lets the screen sleep; Resume, the close X, back, Escape and P close it. The Touch controls
-// row shows or hides the touch buttons, and Quit leaves the game (leaveGame).
+// touch screen while a zone plays, never on the map. It runs beside the zone from the start.
+// Opening the card pauses the zone and lets the screen sleep; Resume, the close X, back, Escape
+// and P close it. The Touch controls row shows or hides the touch buttons, and Quit leaves the
+// game (leaveGame).
 export class PauseScene extends Scene {
   private card!: GameObjects.Container;
   private checkbox!: GameObjects.Sprite;
@@ -144,7 +145,21 @@ export class PauseScene extends Scene {
   private showCard(open: boolean): void {
     this.card.setVisible(open);
     this.dim.setVisible(open);
-    this.pauseButton.setVisible(!open && window.matchMedia("(pointer: coarse)").matches);
+    this.showPauseButton();
+  }
+
+  // The pause button shows on a touch screen while a zone plays and the card is closed. The map
+  // between zones has nothing to pause, so it shows none.
+  private showPauseButton(): void {
+    this.pauseButton.setVisible(
+      this.state === "closed" &&
+        this.scene.isActive(ZONE) &&
+        window.matchMedia("(pointer: coarse)").matches,
+    );
+  }
+
+  override update(): void {
+    this.showPauseButton();
   }
 
   // The canvas as rendered at the end of the next frame, redrawn two steps down each colour's
