@@ -33,6 +33,8 @@ ignores:
   - AGENTS.md
   - CLAUDE.md
   - GEMINI.md
+  # The vendored kit is linted at its source.
+  - "vendor/**"
 
 # Every rule markdownlint has, then what is given up and why.
 config:

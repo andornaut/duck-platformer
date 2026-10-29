@@ -20,5 +20,5 @@
       "@andornaut/game-kit/*": ["./vendor/game-kit/src/*"]
     }
   },
-  "include": ["src", "*.ts"]
+  "include": ["src", "vendor/game-kit/src", "*.ts"]
 }
