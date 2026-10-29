@@ -3,13 +3,12 @@ import { describe, expect, it } from "vitest";
 import { DUCK } from "../data/duck";
 import { REACH } from "../data/reach";
 import { TILE } from "../data/screen";
-import { makes, type Reach } from "./reach";
+import { measureReaches } from "./reach";
 
-describe("makes", () => {
-  it.each(Object.keys(REACH) as Reach[])("makes the %s target and not one tile more", (reach) => {
-    expect([
-      makes(DUCK, TILE, reach, REACH[reach]),
-      makes(DUCK, TILE, reach, REACH[reach] + 1),
-    ]).toEqual([true, false]);
+const MEASURED = measureReaches(DUCK, TILE);
+
+describe("measureReaches", () => {
+  it(`measures gap ${MEASURED.gap}, hop ${MEASURED.hop} and jump ${MEASURED.jump}, as reach.ts sets them`, () => {
+    expect(MEASURED).toEqual(REACH);
   });
 });

@@ -76,9 +76,10 @@ function ledgeCourse(tuning: DuckTuning, tile: number, tiles: number, jumpSteps:
 }
 
 // A gap tiles wide between two runs of ground at the same height. She runs right from a
-// standstill and presses Jump, holding it, on the last step she stands on the near edge: the
-// step after which, without a jump, she would no longer stand on it.
-function gapCourse(tuning: DuckTuning, tile: number, tiles: number): Course {
+// standstill and presses Jump, holding it, press steps after the last step she stands on the
+// near edge (the step after which, without a jump, she would no longer stand on it): before it
+// for a negative press, in coyote time for a positive one.
+function gapCourse(tuning: DuckTuning, tile: number, tiles: number, press: number): Course {
   const near = ground(RUN_UP);
   const far = { ...ground(FAR_SIDE), col: RUN_UP + tiles };
   const layout = courseLayout(tile, RUN_UP + tiles + FAR_SIDE, [near, far], {
@@ -86,37 +87,63 @@ function gapCourse(tuning: DuckTuning, tile: number, tiles: number): Course {
     y: GROUND_ROW * tile,
   });
   const run: ZoneInput = { jumpHeld: false, move: 1, useHeld: false };
-  let jumped = false;
+  const runOn = (zone: ZoneState) => (zone.steps < SETTLE_STEPS ? STILL : run);
+  let last = startZone(tuning, layout, 1);
+  while (
+    last.steps < SETTLE_STEPS ||
+    stepZone(tuning, layout, STEP_SECONDS, run, last).duck.grounded
+  ) {
+    last = stepZone(tuning, layout, STEP_SECONDS, runOn(last), last);
+  }
   return {
-    input: (zone) => {
-      if (zone.steps < SETTLE_STEPS) {
-        return STILL;
-      }
-      jumped ||= !stepZone(tuning, layout, STEP_SECONDS, run, zone).duck.grounded;
-      return jumped ? { ...run, jumpHeld: true } : run;
-    },
+    input: (zone) => (zone.steps < last.steps + press ? runOn(zone) : { ...run, jumpHeld: true }),
     layout,
     target: tileRect(tile, far),
   };
 }
 
-function course(tuning: DuckTuning, tile: number, reach: Reach, tiles: number): Course {
+// The press timings tried, in steps from the gap course's last step on the edge: from as many
+// steps before it as coyote time lasts, through a step past the end of coyote time. The press
+// that makes the farthest gap may come at any of them. A ledge's height does not depend on when
+// she presses, standing on the ground, so it has one timing.
+export function pressTimings(tuning: DuckTuning, reach: Reach): number[] {
+  if (reach !== "gap") {
+    return [0];
+  }
+  const window = Math.ceil(tuning.coyoteTime / STEP_SECONDS);
+  return Array.from({ length: 2 * window + 2 }, (_, i) => i - window);
+}
+
+function course(
+  tuning: DuckTuning,
+  tile: number,
+  reach: Reach,
+  tiles: number,
+  press: number,
+): Course {
   switch (reach) {
     case "hop":
       return ledgeCourse(tuning, tile, tiles, 1);
     case "jump":
       return ledgeCourse(tuning, tile, tiles, MAX_STEPS);
     case "gap":
-      return gapCourse(tuning, tile, tiles);
+      return gapCourse(tuning, tile, tiles, press);
     default:
       return assertNever(reach);
   }
 }
 
-// Whether she makes a reach of tiles: she stands on top of the ledge or the far side before a
-// restart or the time runs out.
-export function makes(tuning: DuckTuning, tile: number, reach: Reach, tiles: number): boolean {
-  const { input, layout, target: solid } = course(tuning, tile, reach, tiles);
+// Whether she makes a reach of tiles with Jump pressed at the press timing given (see
+// pressTimings): she stands on top of the ledge or the far side before a restart or the time runs
+// out.
+function makesWith(
+  tuning: DuckTuning,
+  tile: number,
+  reach: Reach,
+  tiles: number,
+  press: number,
+): boolean {
+  const { input, layout, target: solid } = course(tuning, tile, reach, tiles, press);
   let zone = startZone(tuning, layout, 1);
   while (zone.steps < MAX_STEPS && zone.restarts === 0) {
     zone = stepZone(tuning, layout, STEP_SECONDS, input(zone), zone);
@@ -130,7 +157,12 @@ export function makes(tuning: DuckTuning, tile: number, reach: Reach, tiles: num
   return false;
 }
 
-// The largest reach of each kind she makes, in tiles, or 0.
+// Whether she makes a reach of tiles at any of its press timings.
+export function makes(tuning: DuckTuning, tile: number, reach: Reach, tiles: number): boolean {
+  return pressTimings(tuning, reach).some((press) => makesWith(tuning, tile, reach, tiles, press));
+}
+
+// The largest reach of each kind she makes, at any press timing, in tiles, or 0.
 export function measureReaches(tuning: DuckTuning, tile: number): Reaches {
   const largest = (reach: Reach) => {
     let best = 0;
