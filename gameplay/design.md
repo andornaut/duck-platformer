@@ -11,7 +11,7 @@ A landscape platformer: a duck falls out of her room at the top of a New York ho
 ## Setting
 
 - **Characters:** the duck is the one the player controls: a small, round, cream duck with tiny wings and feet, an orange bill and a dot eye. Her full design is in the [art plan](../art/README.md). Animals talk, and most interactions are with animals. PLACEHOLDER: whether there are humans (see [`ideas.md`](ideas.md))
-- **Ferret:** the villain, who schemes against the duck's climb: a brown ferret, about twice the duck's height, standing upright, with a dark eye mask, a tall plum stovepipe hat and a red bow tie. Its full design is in the [art plan](../art/README.md)
+- **Ferret:** the villain, who schemes against the duck's climb: a champagne (cream-coloured) ferret, about twice the duck's height, standing upright, with a tall plum stovepipe hat and a red bow tie. Its full design is in the [art plan](../art/README.md)
 - **Hotel:** the building is a hotel in New York City. Each floor of it is one level
 - **Levels:** level 1 is the ground floor: the street outside, then the lobby. Each later level is one everyday place in the hotel, such as a restaurant, pool or spa, and the whole level stays in that place. PLACEHOLDER: the later levels and their order
 - **World:** the modern day, mixing fantasy and reality
