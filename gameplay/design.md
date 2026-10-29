@@ -74,9 +74,13 @@ A landscape platformer: a duck falls out of her room at the top of a New York ho
 
 ### Objects
 
-- **Placement:** everything in a level except its terrain is an object: a type and a position, in data
-- **Types:** a type sets the object's art, size, collision (none, solid, one-way ledge, hazard or Use), movement and reaction
+Everything in a level except its terrain is placed in data, in three layers.
+
+- **Archetypes:** a behaviour: collision (none, solid, one-way ledge, hazard or Use), movement, reaction, interaction (such as talking on Use or a quip on approach) and default tuning
+- **Characters:** who something is: one archetype plus tuning overrides, its art and animations, hit box, size, its dialogue and quip lines, and quirks. No character inherits from another. Props (platforms, hazards, doors, exits and backdrops) are characters with art but no voice
+- **Instances:** one placement in a level: a character, a position, size and phase, last-word overrides, its own lines or dialogue scene, door targets, and flags for carried choices
 - **Movement:** an algorithm (static, linear, ease, hop or wander), a direction, a distance, a speed, a pause at each end, and a random variance that rolls fresh on every attempt
+- **Overrides:** flow one way: an instance overrides its character, which overrides its archetype. Everything resolves and is checked when the game loads
 - **Reaction:** none, avoiding the duck, or approaching her, within a range
 
 ### Level 1
