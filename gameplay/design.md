@@ -70,6 +70,7 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 ### Zones
 
 - **Areas:** a zone can have more than one area, joined by doors. Use at a door fades to the other area
+- **Camera:** on the ground she sits about two thirds down the screen. The camera rises only when she climbs above the middle, and never shows below the lowest ground
 - **Challenge:** platforming, hazards and choices. There is no combat
 - **Checkpoint:** the start of a zone is its only checkpoint. Falling or touching a hazard restarts the zone from its start
 - **Exit:** Use at the zone's exit clears the zone
@@ -93,7 +94,7 @@ Everything in a zone except its terrain is placed in data, in three layers.
 - **Exit:** PLACEHOLDER: what the exit at the street's end is
 - **Kind:** outdoor
 - **Length:** 4 screens (240 tiles)
-- **Street:** a day-time New York street past a row of shops: a café, a florist, a gift shop, a makeup store, a pet shop and two restaurants. Its hazards are open cellar hatches in the sidewalk, a frog courier riding a delivery bike back and forth along it, and the ferret's first trap, a giant snap trap with a quip. Pigeons in flocks flee from her, a pug approaches her, and pedestrians walk past
+- **Street:** a day-time New York street, 2 screens tall: she walks the sidewalk along the bottom and climbs fire escapes, awnings and ledges into the upper screen, past a row of shops: a café, a florist, a gift shop, a makeup store, a pet shop and two restaurants. Its hazards are open cellar hatches in the sidewalk, a frog courier riding a delivery bike back and forth along it, and the ferret's first trap, a giant snap trap with a quip. Pigeons in flocks flee from her, a pug approaches her, and pedestrians walk past
 
 ### Rooms
 
