@@ -1,5 +1,7 @@
 // The shapes of the game data. The value files beside this one fill them.
 
+import type { SEAM_ROWS } from "./chunks";
+
 // An axis-aligned rectangle in base pixels: x and y are its top-left corner, y grows downward.
 export interface Rect {
   readonly height: number;
@@ -250,20 +252,30 @@ export interface TerrainRect extends TileRect {
   readonly look?: string;
 }
 
+// A spot she must never reach from another in one move (a jump, or a walk off an edge): each
+// names a surface, given as an entry is.
+export interface NoCross {
+  readonly from: TilePoint;
+  readonly to: TilePoint;
+}
+
 // One area of a zone: cols x rows tiles (rows is 60, two screens). solids are the terrain.
 // entries are named points where she arrives: she stands on the top edge of row `row`, her
 // collision box centred on the grid line at the left edge of column `col`. tileset: the art
 // tileset its terrain and tile objects are drawn from; without one, both are flat rectangles.
 // noCross and outOfReach name surfaces by a spot on each, given as an entry is: noCross pairs a
-// spot with one she must never reach from it in one move (a jump, or a walk off an edge), and
-// outOfReach marks surfaces she must never reach from the start.
+// spot with one she must never reach from it in one move, and outOfReach marks surfaces she must
+// never reach from the start. An assembled zone's area also lists the chunks it is made of, left
+// to right, and its slots with what the seed put in each; a hand-built area has neither.
 export interface AreaPlan {
+  readonly chunks?: readonly PlacedChunk[];
   readonly cols: number;
   readonly entries: Readonly<Record<string, TilePoint>>;
-  readonly noCross?: readonly { readonly from: TilePoint; readonly to: TilePoint }[];
+  readonly noCross?: readonly NoCross[];
   readonly objects: readonly Instance[];
   readonly outOfReach?: readonly TilePoint[];
   readonly rows: number;
+  readonly slots?: readonly FilledSlot[];
   readonly solids: readonly TerrainRect[];
   readonly tileset?: string;
 }
@@ -273,6 +285,107 @@ export interface AreaPlan {
 export interface ZonePlan {
   readonly areas: Readonly<Record<string, AreaPlan>>;
   readonly start: AreaLink;
+}
+
+// A chunk's difficulty, 1 to 5, as gameplay/design.md's Chunks section grades it.
+export type Difficulty = 1 | 2 | 3 | 4 | 5;
+
+// A row a chunk's entry or exit stands on: one of SEAM_ROWS (src/data/chunks.ts).
+export type SeamRow = (typeof SEAM_ROWS)[number];
+
+// The ground at a chunk's left or right edge: its top is row `row`.
+export interface ChunkSeam {
+  readonly row: SeamRow;
+}
+
+export type SlotKind = "door" | "event";
+
+// A marked region of a chunk where the seed places an event or a door, in the chunk's tiles.
+// id: unique within its chunk.
+export interface ChunkSlot {
+  readonly area: TileRect;
+  readonly id: string;
+  readonly kind: SlotKind;
+}
+
+// The limits every chunk keeps (CHUNK_RULES, in src/data/chunks.ts). cols: its width range.
+// The seam rule: at its entry and exit, the seam surface runs at least footing tiles in from the
+// edge, with no gap, hazard or mover's path within them, and headroom rows clear of any solid,
+// ledge or hazard above them.
+export interface ChunkRules {
+  readonly cols: { readonly max: number; readonly min: number };
+  readonly footing: number;
+  readonly headroom: number;
+}
+
+// A hand-built piece of a zone (CHUNKS by id, in src/data/chunks.ts): cols wide and as tall as
+// a zone, its contents in its own tiles from its top-left. theme: the theme or themes it is drawn
+// in; each look its terrain names is a key of every such theme's looks. difficulty: 1 to 5.
+// weight (default 1): how likely the seed is to pick it over another that fits. maxPerZone: the
+// most times it appears in one zone, unlimited when left out. entry and exit: the ground at its
+// left and right edges, where it joins the chunks either side. backdrops: its own placed
+// scenery, drawn in front of the theme's repeated backdrops. slots: where the seed may place
+// events and doors; it must play with every slot empty.
+export interface ChunkPlan {
+  readonly backdrops?: readonly Instance[];
+  readonly cols: number;
+  readonly difficulty: Difficulty;
+  readonly entry: ChunkSeam;
+  readonly exit: ChunkSeam;
+  readonly maxPerZone?: number;
+  readonly noCross?: readonly NoCross[];
+  readonly objects: readonly Instance[];
+  readonly outOfReach?: readonly TilePoint[];
+  readonly slots?: readonly ChunkSlot[];
+  readonly solids: readonly TerrainRect[];
+  readonly theme: string | readonly string[];
+  readonly weight?: number;
+}
+
+// A repeated backdrop drawn across a whole assembled zone: its character, top at row.
+export interface ThemeBackdrop {
+  readonly character: string;
+  readonly row: number;
+}
+
+// What every chunk of a theme is drawn with, so seams never show (THEMES by key, in
+// src/data/chunks.ts). tileset: the art tileset. looks: each look a chunk's terrain names, as
+// the tileset's look it is drawn with. backdrops: its repeated backdrops, back to front.
+export interface ThemePlan {
+  readonly backdrops: readonly ThemeBackdrop[];
+  readonly looks: Readonly<Record<string, string>>;
+  readonly tileset: string;
+}
+
+// How a zone is assembled from chunks (RECIPES by key, in src/data/zones.ts): its theme, its
+// fixed start and finish chunks, and between them a seeded run of the theme's chunks. length:
+// the zone's whole width range in columns, start and finish chunks included. difficulty: a line
+// from `from` at the zone's left edge to `to` at its right; each chunk between start and finish
+// is within 1 of it at the chunk's centre. events and doors: what the seed places in the chunks'
+// slots, count of each.
+export interface ZoneRecipe {
+  readonly difficulty: { readonly from: Difficulty; readonly to: Difficulty };
+  readonly doors: readonly { readonly count: number; readonly room: string }[];
+  readonly events: readonly { readonly count: number; readonly id: string }[];
+  readonly finish: string;
+  readonly length: { readonly max: number; readonly min: number };
+  readonly start: string;
+  readonly theme: string;
+}
+
+// A chunk in an assembled zone: its id, and the zone columns it takes.
+export interface PlacedChunk {
+  readonly chunk: string;
+  readonly col: number;
+  readonly cols: number;
+}
+
+// A slot in an assembled zone, in zone tiles: the chunk it is in (an index into the area's
+// chunks), its id there, and what the seed put in it, the event's id or the door's room; empty
+// when the recipe asked for fewer.
+export interface FilledSlot extends ChunkSlot {
+  readonly chunk: number;
+  readonly fill?: string;
 }
 
 // How far the duck can jump, in tiles, from the top of the ground she leaves to the top of the
@@ -333,8 +446,8 @@ export interface ZoneLayout {
 }
 
 // A point on the map: a zone she plays, or a fork where paths split or join. at: where it is
-// drawn on the map screen, on its tile grid. zone: a zone node's key in ZONES; a zone not built
-// yet has none.
+// drawn on the map screen, on its tile grid. zone: a zone node's key in ZONES or RECIPES; a zone
+// not built yet has none.
 export interface MapNode {
   readonly at: TilePoint;
   readonly id: string;

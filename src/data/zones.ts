@@ -1,4 +1,4 @@
-import type { ZonePlan } from "./types";
+import type { ZonePlan, ZoneRecipe } from "./types";
 import { ZONE_1 } from "./zone1";
 
 // PLACEHOLDER: parkour test zones, until gameplay designs the real zones.
@@ -291,3 +291,7 @@ export const TEST_ZONES: readonly ZonePlan[] = [
 export const ZONES: Readonly<Record<string, ZonePlan>> = {
   street: ZONE_1,
 };
+
+// PLACEHOLDER: the zones assembled from chunks, by key, until gameplay writes the park's recipe.
+// A key here is never also a key in ZONES.
+export const RECIPES: Readonly<Record<string, ZoneRecipe>> = {};
