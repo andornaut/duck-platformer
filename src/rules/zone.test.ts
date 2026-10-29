@@ -53,6 +53,7 @@ function object(fields: Partial<ObjectLayout> & { origin: Point }): ObjectLayout
 
 function area(objects: readonly ObjectLayout[], fields: Partial<AreaLayout> = {}): AreaLayout {
   return {
+    chunks: [],
     entries: { start: { x: 100, y: GROUND.y } },
     height: 360,
     objects,

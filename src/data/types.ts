@@ -422,8 +422,10 @@ export interface ObjectLayout {
 }
 
 // An area in base pixels. Falling below its height restarts the zone. terrain and tileset are
-// its plan's, in tiles, for drawing.
+// its plan's, in tiles, for drawing. chunks: an assembled area's chunks, left to right, for the
+// camera; none in a hand-built one.
 export interface AreaLayout {
+  readonly chunks: readonly { readonly width: number; readonly x: number }[];
   readonly entries: Readonly<Record<string, Point>>;
   readonly height: number;
   readonly objects: readonly ObjectLayout[];

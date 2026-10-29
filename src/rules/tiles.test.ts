@@ -43,6 +43,10 @@ describe("zoneLayout", () => {
   const PLAN: ZonePlan = {
     areas: {
       yard: {
+        chunks: [
+          { chunk: "lawn", col: 0, cols: 24 },
+          { chunk: "pond", col: 24, cols: 40 },
+        ],
         cols: 64,
         entries: { gate: { col: 5, row: 33 } },
         objects: [
@@ -76,6 +80,14 @@ describe("zoneLayout", () => {
     ["the area's size", { height: yard?.height, width: yard?.width }, { height: 360, width: 640 }],
     ["its entries", yard?.entries, { gate: { x: 50, y: 330 } }],
     ["its terrain", yard?.solids, [{ height: 30, width: 640, x: 0, y: 330 }]],
+    [
+      "its chunks",
+      yard?.chunks,
+      [
+        { width: 240, x: 0 },
+        { width: 400, x: 240 },
+      ],
+    ],
     ["only the instances the set flags place", yard?.objects.length, 2],
     ["the archetype's collision", lift?.collision, "solid"],
     [

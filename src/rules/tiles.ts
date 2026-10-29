@@ -133,6 +133,7 @@ export function areaLayout(
   area: AreaPlan,
 ): AreaLayout {
   return {
+    chunks: (area.chunks ?? []).map(({ col, cols }) => ({ width: cols * tile, x: col * tile })),
     entries: Object.fromEntries(
       Object.entries(area.entries).map(([name, point]) => [name, tilePoint(tile, point)]),
     ),
