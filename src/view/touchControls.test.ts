@@ -104,7 +104,7 @@ describe("labelColour", () => {
 describe("centredAt, on art's buttons", () => {
   it.each([
     ["jump", 75, { x: 630, y: 270 }],
-    ["use", 67, { x: 559, y: 177 }],
+    ["use", 75, { x: 555, y: 173 }],
   ] as const)("puts the %s frame, %i square, at art's top-left", (control, size, at) => {
     expect(centredAt(TOUCH_CONTROLS[control].centre, { height: size, width: size })).toEqual(at);
   });

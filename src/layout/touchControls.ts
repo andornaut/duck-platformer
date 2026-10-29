@@ -18,7 +18,7 @@ export const TOUCH_CONTROLS: Readonly<
     centre: { x: 592, y: 210 },
     hit: { height: 104, width: 198, x: 522, y: 152 },
     labelRaise: 3,
-    labelRoom: 45,
+    labelRoom: 55,
   },
 };
 
