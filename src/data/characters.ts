@@ -157,6 +157,57 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
   },
   // Pedestrians walking past, back and forth, paying her no attention. React and talk fall back
   // to idle.
+  // PLACEHOLDER: the park's pieces, drawn as flat rectangles until art draws the park. Ledges are
+  // one-way: a bench's seat, a branch, the bandstand's roof. The boat is a moving platform whose
+  // motion each placement sets. The gate is the park's exit.
+  "park-bandstand": {
+    archetype: "scenery",
+    art: "placeholder-park-bandstand",
+    cols: 14,
+    rows: 10,
+  },
+  "park-bandstand-roof": {
+    archetype: "ledge",
+    art: "placeholder-park-bandstand-roof",
+    cols: 14,
+    rows: 1,
+  },
+  "park-bench": {
+    archetype: "ledge",
+    art: "placeholder-park-bench",
+    cols: 4,
+    rows: 1,
+  },
+  "park-boat": {
+    archetype: "platform",
+    art: "placeholder-park-boat",
+    cols: 6,
+    rows: 1,
+  },
+  "park-branch": {
+    archetype: "ledge",
+    art: "placeholder-park-branch",
+    cols: 4,
+    rows: 1,
+  },
+  "park-gate": {
+    archetype: "exit",
+    art: "placeholder-park-gate",
+    cols: 3,
+    rows: 5,
+  },
+  "park-lamp": {
+    archetype: "scenery",
+    art: "placeholder-park-lamp",
+    cols: 1,
+    rows: 6,
+  },
+  "park-tree": {
+    archetype: "scenery",
+    art: "placeholder-park-tree",
+    cols: 6,
+    rows: 14,
+  },
   "pedestrian-cat": {
     animations: { idle: "idle", move: "walk", react: "idle", talk: "idle" },
     archetype: "walker",
@@ -204,6 +255,14 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     rows: 2,
   },
   // A roofline capping a facade, repeated across its run: a cornice goes along its top.
+  // PLACEHOLDER: a shallow pond: touching the water restarts her. Placed with a width, between
+  // solid banks.
+  pond: {
+    archetype: "hazard",
+    art: "placeholder-park-pond",
+    cols: 3,
+    rows: 1,
+  },
   "roofline-brownstone": {
     archetype: "scenery",
     art: "roofline-brownstone",
@@ -325,6 +384,13 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
       motion: { direction: "right", distance: 8, speed: 3, variance: 0.3 },
       reaction: { range: 8, speed: 10 },
     },
+  },
+  // PLACEHOLDER: a thorny hedge: a hazard, not solid, placed with a width.
+  "thorn-hedge": {
+    archetype: "hazard",
+    art: "placeholder-park-thorn-hedge",
+    cols: 3,
+    rows: 2,
   },
   "walk-signal": {
     archetype: "scenery",

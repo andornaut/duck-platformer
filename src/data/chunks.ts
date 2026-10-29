@@ -9,8 +9,17 @@ export const CHUNK_RULES: ChunkRules = {
   headroom: 6,
 };
 
-// PLACEHOLDER: the park theme, until gameplay drafts it.
-export const THEMES: Readonly<Record<string, ThemePlan>> = {};
+// The themes chunks are drawn in, by key.
+export const THEMES: Readonly<Record<string, ThemePlan>> = {
+  // PLACEHOLDER: the park, outdoors in autumn. Its tileset and backdrops aren't drawn yet, so it
+  // names a placeholder tileset and no backdrops. Chunks name two looks: ground (the lawn, its
+  // top at row 50) and raised (the terraces above it).
+  park: {
+    backdrops: [],
+    looks: { ground: "ground", raised: "raised" },
+    tileset: "placeholder-park",
+  },
+};
 
 // PLACEHOLDER: the park's chunks, until gameplay drafts them.
 export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {};
