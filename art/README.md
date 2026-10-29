@@ -153,16 +153,16 @@ A one-line strip at the top centre, y 8, height 24, sized to its text and at mos
 
 ### Touch controls
 
-Dashed rings, light ink with a dark fringe so they hold 3:1 on light and dark ground. Hidden on desktop and when the setting is off.
+Two round buttons for the right thumb, Use above and to the left of Jump. Each is an opaque disc: an ink edge, a 2px cream ring and a navy face, so it holds 3:1 on light and dark ground, with its icon above its label. Hidden on desktop and when the setting is off.
 
-| Control  | Centre  | Hit area       | Mark  |
-| -------- | ------- | -------------- | ----- |
-| Interact | 528,268 | 488,224,76,136 | 31x31 |
-| Jump     | 600,304 | 564,224,76,136 | 39x39 |
-| Move     | 72,300  | 0,224,152,136  | 61x55 |
+| Control | Centre  | Hit area       | Disc      | Icon       |
+| ------- | ------- | -------------- | --------- | ---------- |
+| Use     | 536,244 | 488,200,152,80 | 49px wide | three dots |
+| Jump    | 596,316 | 488,280,152,80 | 55px wide | caret      |
 
-- Move: the direction is the sign of the touch's distance from the fixed centre, with a dead zone of 6px either side, so one rule covers a drag and a tap on either half. The knob shows the distance, capped at 12px. A held direction shows a doubled chevron.
-- Press: the ring turns solid and swells (frame 0, 60ms), ripples outward (frame 1, 60ms), then holds a solid ring until release, which snaps back to rest. On a drag it starts when the touch leaves the dead zone.
+- Labels: "Use" and "Jump" in `font-body` at 2x, set by the game from text data and never baked in. Each is centred on its button's centre x, with its origin 3px above the centre, so the capitals sit just below it.
+- Press: the ring turns white and thickens to 3px and the face lifts a step, swelling 1px for the first frame (frame 0, then frame 1, 60ms each), then holds until release, which snaps back to rest.
+- Movement has no art: a touch anywhere off a button sets its own neutral point, and nothing marks it.
 
 ### Settings
 

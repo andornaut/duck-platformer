@@ -136,14 +136,6 @@
       "once": []
     },
     {
-      "key": "ui-touch-interact",
-      "png": "sprites/ui-touch-interact.png",
-      "json": "sprites/ui-touch-interact.json",
-      "once": [
-        "press"
-      ]
-    },
-    {
       "key": "ui-touch-jump",
       "png": "sprites/ui-touch-jump.png",
       "json": "sprites/ui-touch-jump.json",
@@ -152,18 +144,11 @@
       ]
     },
     {
-      "key": "ui-touch-knob",
-      "png": "sprites/ui-touch-knob.png",
-      "json": "sprites/ui-touch-knob.json",
-      "once": []
-    },
-    {
-      "key": "ui-touch-move",
-      "png": "sprites/ui-touch-move.png",
-      "json": "sprites/ui-touch-move.json",
+      "key": "ui-touch-use",
+      "png": "sprites/ui-touch-use.png",
+      "json": "sprites/ui-touch-use.json",
       "once": [
-        "press-left",
-        "press-right"
+        "press"
       ]
     }
   ],

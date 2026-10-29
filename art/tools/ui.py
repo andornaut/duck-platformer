@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""UI art: the dialogue box, choices, quip strip, touch controls and settings card, at the 640x360 base resolution.
+"""UI art: the dialogue box, choices, quip strip, touch buttons and settings card, at the 640x360 base resolution.
 
 Usage:
   ui.py build             write art/ui/<key>.aseprite and public/art/sprites/<key>.png + .json, list them in the
@@ -11,9 +11,9 @@ origin below is a BitmapText's top-left at scale 2, and A is the text's advance 
 doubled). Positions are in base pixels, top-left of the frame, matching the layout in art/README.md.
 
 Nine-slice textures carry their margins (left, top, right, bottom) as an Aseprite slice named after the key and as
-"slice" in the manifest entry. Single-state art has one tag, "rest", at 100ms. The touch rings' press tags
-(press, press-left, press-right) play once and hold their last frame (the manifest's "once") until the game
-shows the held tag; every other tag loops.
+"slice" in the manifest entry. Single-state art has one tag, "rest", at 100ms. The touch buttons' press tag
+plays once and holds its last frame (the manifest's "once") until the game shows the held tag; every other tag
+loops.
 
 Dialogue
 - ui-dialogue-box, 624x96, at 8,256. Navy, ink border with cut corners, slate rim top-left, dslate bottom-right.
@@ -34,17 +34,17 @@ Quip
   centred at y 8. Name in font-title in the speaker's tab colour, origin x+9, y 7; line cream in font-body, origin
   x+15+An, y 11.
 
-Touch controls (dashed rings, light ink with a 1px ink fringe; white while pressed)
-- ui-touch-move, 77x67, centre pixel 38,33, so the top-left is 34,267 for the centre 72,300. Rest mark 61x55: a
-  dashed ring of radius 26, open at 3 and 9 o'clock for two chevrons. Tags rest; press-left and press-right (frame 0
-  the pressed half turns solid and swells to radius 28 with its chevron 2px out, frame 1 a dashed ripple at radius
-  32 and a doubled chevron, 60ms each); held-left and held-right (the solid half and the doubled chevron).
-- ui-touch-knob, 11x11, centre pixel 5,5: top-left 67+d,295, d the knob offset capped at 12. Tags rest (hollow),
-  held (solid white).
-- ui-touch-jump, 51x51, centre pixel 25,25: top-left 575,279. Rest mark 39x39 (radius 18) with a caret. Tags rest;
-  press (frame 0 solid, radius 20, caret 2px up; frame 1 solid, ripple at radius 24; 60ms each); held (solid).
-- ui-touch-interact, 43x43, centre pixel 21,21: top-left 507,247. Rest mark 31x31 (radius 14) with three dots.
-  Tags rest, press and held as for jump, without the caret's lift.
+Touch controls (two round buttons for the right thumb; movement has no art)
+- ui-touch-use, 51x51, centre pixel 25,25: top-left 511,219 for the centre 536,244 (hit 488,200,152,80).
+- ui-touch-jump, 57x57, centre pixel 28,28: top-left 568,288 for the centre 596,316 (hit 488,280,152,80).
+- Each is an opaque disc: an ink edge, a 2px cream ring and a navy face, 49px across for Use and 55px for Jump,
+  with its icon above the centre: three dots (19x5) on Use with their top 9px above the centre, a caret (17x9) on
+  Jump with its top 12px above. Tags rest (100ms); press, once (frame 0 the ring turns white and thickens to 3px,
+  the face lifts to dslate and the whole disc swells 1px; frame 1 the same at rest size; 60ms each); held (as
+  press frame 1, 100ms).
+- Label "Use" or "Jump" in font-body at 2x, never baked in: centred on the button's centre x (origin x = centre x
+  minus half the label's visible width, rounded down), origin y = centre y - 3, so the capitals sit on rows
+  centre+1 to centre+10. Use: origin 524,241; Jump: origin 579,313. Cream at rest, white while pressed or held.
 
 Settings (a pause card over the game dimmed two ramp steps)
 - ui-settings-card, nine-slice 16x48, margins 2,38,2,2: a cream border with cut corners, an ink header 36 high and
@@ -58,16 +58,14 @@ Settings (a pause card over the game dimmed two ramp steps)
   triangle is drawn in; label Resume ink, origin 299,223, or 299,225 when pressed.
 """
 
-import math
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pixel  # noqa: E402
-from pixel import K, Grid, darker  # noqa: E402
+from pixel import Grid, darker  # noqa: E402
 
 SRC = "art/ui"
-INK, NAVY, CREAM, WHITE = K["ink"], K["navy"], K["cream"], K["white"]
 
 # Name tab fills, one tag each: hues the panels do not use. Ink text holds at least 6.6:1 on each, and each
 # holds at least 5:1 as text on the navy panels, so the quip strip sets the speaker's name in the same colour.
@@ -77,12 +75,6 @@ TAB_FILLS = ("amber", "green", "pink", "tan")
 def bm(*rows):
     """A bitmap from strings: '#' is set."""
     return [(x, y) for y, r in enumerate(rows) for x, ch in enumerate(r) if ch == "#"]
-
-
-def mirror(pts):
-    """A bitmap flipped left to right within its own width."""
-    w = max(x for x, _ in pts)
-    return [(w - x, y) for x, y in pts]
 
 
 def stamp(g, pts, x, y, c):
@@ -181,167 +173,42 @@ def quip_strip():
 
 # ---------------------------------------------------------------- touch controls
 
-RING = dict(interact=14, jump=18, move=26)
-DASH = 4
-SWELL, RIPPLE = 2, 6
-DEAD, KNOB_TRAVEL = 6, 12
-
-CHEV = bm("....##", "...##.", "..##..", ".##...", "##....", ".##...", "..##..", "...##.", "....##")  # 6x9, left
-CHEV2 = bm("....##..##", "...##..##.", "..##..##..", ".##..##...", "##..##....", ".##..##...", "..##..##..",
-           "...##..##.", "....##..##")  # 10x9, left, doubled
+BUTTON_R = {"use": 24, "jump": 27}  # disc radius: 49px and 55px across
 CARET = [(x, y) for y in range(9) for x in (8 - y, 9 - y, 7 + y, 8 + y)]  # 17x9, 2px strokes
 DOT = bm(".###.", "#####", "#####", "#####", ".###.")
 DOTS = [(x + i * 7, y) for i in range(3) for x, y in DOT]  # 19x5
-KNOB_HOLLOW = bm("..#####..", ".#######.", "###...###", "##.....##", "##.....##", "##.....##", "###...###",
-                 ".#######.", "..#####..")  # 9x9
-KNOB_SOLID = bm("..#####..", ".#######.", "#########", "#########", "#########", "#########", "#########",
-                ".#######.", "..#####..")
+ICON = {"use": (DOTS, -9), "jump": (CARET, -12)}  # the bitmap and its top row relative to the centre
 
 
-def circle(r):
-    """Midpoint circle offsets, no duplicates."""
-    pts, x, y, d = set(), r, 0, 1 - r
-    while x >= y:
-        for a, b in ((x, y), (y, x), (-y, x), (-x, y), (-x, -y), (-y, -x), (y, -x), (x, -y)):
-            pts.add((a, b))
-        y += 1
-        if d < 0:
-            d += 2 * y + 1
-        else:
-            x -= 1
-            d += 2 * (y - x) + 1
-    return pts
+def disc(g, cx, cy, r, c):
+    for y in range(g.h):
+        for x in range(g.w):
+            if (x - cx) ** 2 + (y - cy) ** 2 <= (r + 0.5) ** 2:
+                g.p(x, y, c)
 
 
-class Layer:
-    """Light ink pixels around a centre (0, 0); frame() adds the 1px ink fringe and rasterises."""
-
-    def __init__(self):
-        self.px = {}
-
-    def put(self, x, y, c):
-        self.px[(x, y)] = c
-
-    def icon(self, pts, cx, cy, c):
-        """A bitmap centred on cx, cy (an even size sits half a pixel left or up)."""
-        w = max(x for x, _ in pts) + 1
-        h = max(y for _, y in pts) + 1
-        for x, y in pts:
-            self.put(cx - w // 2 + x, cy - h // 2 + y, c)
-
-    def ring(self, r, c, dash=None, arc=None, gap=None):
-        """A 1px ring. dash: dashes and gaps alternate by angle, a multiple of 4 so both axes are symmetric.
-        arc: +1 keeps the right half, -1 the left. gap: (half height, from |x|) left open for the chevrons."""
-        n = 4 * max(1, round(2 * math.pi * r / (4 * dash))) if dash else None
-        for dx, dy in circle(r):
-            a = math.degrees(math.atan2(dy, dx)) % 360
-            if n and int(((a + 180 / n) % 360) // (360 / n)) % 2:
-                continue
-            if arc and dx * arc <= 0:
-                continue
-            if gap and abs(dy) <= gap[0] and abs(dx) >= gap[1]:
-                continue
-            self.put(dx, dy, c)
-        if dash or gap:
-            self.prune(c)
-
-    def prune(self, c):
-        """Drop dash fragments of a single pixel (8-connected) in colour c."""
-        for (x, y) in [p for p, col in self.px.items() if col == c]:
-            if not any(self.px.get((x + i, y + j)) == c for i in (-1, 0, 1) for j in (-1, 0, 1) if i or j):
-                del self.px[(x, y)]
-
-    def fringe(self):
-        f = set()
-        for (x, y) in self.px:
-            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                if (x + dx, y + dy) not in self.px:
-                    f.add((x + dx, y + dy))
-        return f
-
-    def extent(self):
-        pts = set(self.px) | self.fringe()
-        return max(abs(x) for x, _ in pts), max(abs(y) for _, y in pts)
-
-    def frame(self, ex, ey):
-        g = Grid(2 * ex + 1, 2 * ey + 1)
-        for x, y in self.fringe():
-            g.p(ex + x, ey + y, INK)
-        for (x, y), c in self.px.items():
-            g.p(ex + x, ey + y, c)
-        return g.px
+def touch_button_frame(key, frame=None):
+    """frame None is rest; 0 and 1 the press; 2 held. Pressed, the ring turns white and thickens to 3px and the
+    face lifts to dslate; frame 0 swells the disc 1px."""
+    r = BUTTON_R[key] + (1 if frame == 0 else 0)
+    c = BUTTON_R[key] + 1
+    hot = frame is not None
+    g = Grid(2 * c + 1, 2 * c + 1)
+    disc(g, c, c, r, "ink")
+    disc(g, c, c, r - 1, "white" if hot else "cream")
+    disc(g, c, c, r - (4 if hot else 3), "dslate" if hot else "navy")
+    pts, top = ICON[key]
+    w = max(x for x, _ in pts) + 1
+    stamp(g, pts, c - w // 2, c + top, "white" if hot else "cream")
+    return g.px
 
 
-def button_control(key, icon, state, frame=None):
-    """Interact or jump: a dashed ring at rest; pressed, frame 0 swells, frame 1 ripples, then a solid ring holds."""
-    r = RING[key]
-    L = Layer()
-    if state == "rest":
-        L.ring(r, CREAM, dash=DASH)
-        L.icon(icon, 0, 0, CREAM)
-    else:
-        L.ring(r + (SWELL if frame == 0 else 0), WHITE)
-        if frame == 1:
-            L.ring(r + RIPPLE, WHITE, dash=DASH)
-        L.icon(icon, 0, -2 if (key == "jump" and frame == 0) else 0, WHITE)
-    return L
-
-
-def move_control(side=None, frame=None):
-    """The move ring: dashed, open at 3 and 9 o'clock for the chevrons. side (-1 left, 1 right) is pressed."""
-    r = RING["move"]
-    gap = (8, 20)
-    L = Layer()
-    L.ring(r, CREAM, dash=DASH, gap=gap)
-    if side:
-        for (x, y) in [p for p in L.px if p[0] * side > 0]:
-            del L.px[(x, y)]
-        L.ring(r + (SWELL if frame == 0 else 0), WHITE, arc=side, gap=gap)
-        if frame == 1:
-            L.ring(r + RIPPLE, WHITE, dash=DASH, arc=side, gap=gap)
-    for s in (-1, 1):
-        if s == side and frame != 0:
-            pts = CHEV2 if s < 0 else mirror(CHEV2)
-            L.icon(pts, s * (r + RIPPLE) + (1 if s > 0 else 0), 0, WHITE)
-        else:
-            pts = CHEV if s < 0 else mirror(CHEV)
-            out = SWELL if s == side else 0
-            L.icon(pts, s * (r + out) + (1 if s > 0 else 0), 0, WHITE if s == side else CREAM)
-    return L
-
-
-def control_tags(layers):
-    """[(tag, [Layer], ms)] -> tags with every frame on one canvas centred on the control's centre pixel."""
-    ex = max(L.extent()[0] for _, ls, _ in layers for L in ls)
-    ey = max(L.extent()[1] for _, ls, _ in layers for L in ls)
-    return [(tag, [L.frame(ex, ey) for L in ls], ms) for tag, ls, ms in layers]
-
-
-def touch_button(key, icon):
-    return control_tags([
-        ("rest", [button_control(key, icon, "rest")], 100),
-        ("press", [button_control(key, icon, "press", 0), button_control(key, icon, "press", 1)], 60),
-        ("held", [button_control(key, icon, "press", 2)], 100),
-    ])
-
-
-def touch_move():
-    return control_tags([
-        ("rest", [move_control()], 100),
-        ("press-left", [move_control(-1, 0), move_control(-1, 1)], 60),
-        ("held-left", [move_control(-1, 2)], 100),
-        ("press-right", [move_control(1, 0), move_control(1, 1)], 60),
-        ("held-right", [move_control(1, 2)], 100),
-    ])
-
-
-def touch_knob():
-    tags = []
-    for tag, pts, c in (("rest", KNOB_HOLLOW, CREAM), ("held", KNOB_SOLID, WHITE)):
-        L = Layer()
-        L.icon(pts, 0, 0, c)
-        tags.append((tag, [L], 100))
-    return control_tags(tags)
+def touch_button(key):
+    return [
+        ("rest", [touch_button_frame(key)], 100),
+        ("press", [touch_button_frame(key, 0), touch_button_frame(key, 1)], 60),
+        ("held", [touch_button_frame(key, 2)], 100),
+    ]
 
 
 # ---------------------------------------------------------------- settings
@@ -406,9 +273,8 @@ SLICES = {
 
 # Tags that play once and hold their last frame; every other tag loops.
 ONCE = {
-    "ui-touch-interact": ("press",),
     "ui-touch-jump": ("press",),
-    "ui-touch-move": ("press-left", "press-right"),
+    "ui-touch-use": ("press",),
 }
 
 
@@ -426,10 +292,8 @@ def sprites():
     yield "ui-settings-card", one(settings_card())
     yield "ui-settings-row", one(settings_row())
     yield "ui-skip", [(s, [skip(s)], 100) for s in ("normal", "pressed", "disabled")]
-    yield "ui-touch-interact", touch_button("interact", DOTS)
-    yield "ui-touch-jump", touch_button("jump", CARET)
-    yield "ui-touch-knob", touch_knob()
-    yield "ui-touch-move", touch_move()
+    yield "ui-touch-jump", touch_button("jump")
+    yield "ui-touch-use", touch_button("use")
 
 
 if __name__ == "__main__":

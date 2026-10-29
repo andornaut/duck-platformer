@@ -1,34 +1,34 @@
 { "frames": {
    "ui-touch-jump 0.aseprite": {
-    "frame": { "x": 0, "y": 0, "w": 51, "h": 51 },
+    "frame": { "x": 0, "y": 0, "w": 57, "h": 57 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 51, "h": 51 },
-    "sourceSize": { "w": 51, "h": 51 },
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 57, "h": 57 },
+    "sourceSize": { "w": 57, "h": 57 },
     "duration": 100
    },
    "ui-touch-jump 1.aseprite": {
-    "frame": { "x": 51, "y": 0, "w": 51, "h": 51 },
+    "frame": { "x": 57, "y": 0, "w": 57, "h": 57 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 51, "h": 51 },
-    "sourceSize": { "w": 51, "h": 51 },
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 57, "h": 57 },
+    "sourceSize": { "w": 57, "h": 57 },
     "duration": 60
    },
    "ui-touch-jump 2.aseprite": {
-    "frame": { "x": 102, "y": 0, "w": 51, "h": 51 },
+    "frame": { "x": 114, "y": 0, "w": 57, "h": 57 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 51, "h": 51 },
-    "sourceSize": { "w": 51, "h": 51 },
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 57, "h": 57 },
+    "sourceSize": { "w": 57, "h": 57 },
     "duration": 60
    },
    "ui-touch-jump 3.aseprite": {
-    "frame": { "x": 153, "y": 0, "w": 51, "h": 51 },
+    "frame": { "x": 171, "y": 0, "w": 57, "h": 57 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 51, "h": 51 },
-    "sourceSize": { "w": 51, "h": 51 },
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 57, "h": 57 },
+    "sourceSize": { "w": 57, "h": 57 },
     "duration": 100
    }
  },
@@ -37,7 +37,7 @@
   "version": "1.2.30-x64",
   "image": "ui-touch-jump.png",
   "format": "RGBA8888",
-  "size": { "w": 204, "h": 51 },
+  "size": { "w": 228, "h": 57 },
   "scale": "1",
   "frameTags": [
    { "name": "rest", "from": 0, "to": 0, "direction": "forward" },
