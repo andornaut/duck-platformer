@@ -6,20 +6,21 @@ The rulebook: every rule the game is built to. What's left to build and tune is 
 
 ## Pitch
 
-A landscape platformer: a lost duck travels zone to zone across a map to get home. Every path starts and ends the same way, and the story changes with the path she takes.
+A landscape platformer: a duck travels back to the apartment he shares with his best friend, a ferret, after the ferret mails him far away. V1 follows one linear route; branching routes are planned for Next.
 
 ## Setting
 
-- **Characters:** the duck is the one the player controls: a small, round, cream duck with tiny wings and feet, an orange bill and a dot eye. Her full design is in the [art plan](../art/README.md). Animals talk, and most interactions are with animals. PLACEHOLDER: whether there are humans (see [`ideas.md`](ideas.md))
-- **Ferret:** the villain, who schemes against the duck's journey home: a champagne (cream-coloured) ferret, about twice the duck's height, standing upright, with a tall plum stovepipe hat and a red bow tie. Its full design is in the [art plan](../art/README.md)
+- **Characters:** the male duck is the one the player controls: a small, round, cream duck with tiny wings and feet, an orange bill and a dot eye. His full design is in the [art plan](../art/README.md). Animals talk, and most interactions are with animals. PLACEHOLDER: whether there are humans (see [`ideas.md`](ideas.md))
+- **Ferret:** the duck's male best friend and apartment-mate: a champagne (cream-coloured) ferret, about twice the duck's height, standing upright, with a tall plum stovepipe hat and a red bow tie. His full design is in the [art plan](../art/README.md)
+- **Story:** the duck and ferret share an apartment in a big city. After a big fight, the ferret packages the sleeping duck and mails him far away. The duck knows the ferret is responsible and wants to get home. The cause of the fight and the outcome of their friendship are undecided
 - **World:** the modern day, mixing fantasy and reality
-- **Zones:** each zone is one place, indoors, outdoors or a hybrid of both. Zone 1 is a New York street; zone 2 is a park. PLACEHOLDER: the later zones, the beginning and where home is
+- **Zones:** each zone is one place, indoors, outdoors or a hybrid of both. The V1 route is listed below; only its first zone is being implemented now
 
 ## Core loop
 
-1. **A zone:** travel through one place, mostly left to right and bottom to top: platforming, talking with animals in rooms, and making choices that change the route.
-2. **The map:** clearing a zone opens the map, which moves her on to the next zone. At a fork she picks one path.
-3. **Home:** every path ends the same way: she outwits the ferret and gets home. PLACEHOLDER: the rest of the ending.
+1. **A zone:** travel through one place, mostly left to right and bottom to top: platforming and talking with animals. V1 follows a linear route.
+2. **The map:** clearing a zone opens the map, which moves him on to the next zone. V1 continues along its linear route; Next adds branching routes.
+3. **Home:** the duck returns to the shared apartment. The outcome of his friendship with the ferret is undecided.
 
 ## Voice
 
@@ -39,8 +40,8 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 - **Keyboard:** ←/→ or A/D to move; Space, ↑ or W to jump; E to use; P or Esc to open or close the pause card
 - **Overlay:** the move hint and the touch buttons show by default. Settings hides each set on its own, and hidden controls still work
 - **Touch buttons** (right thumb): Use above, Jump below. Each is an open ring with its icon and no label, reads clearly as a button and stands out against any background, while hiding little of the play area. Every control stays inside the game's view across, with its drawn edge at least 8 px from the edge it is placed against: Pause 8 px in from the view's top and left, Jump 8 px in from the view's right and 20 px up from the screen's bottom, and Use 100 px above Jump with its ring 85 px in from the view's right. On a screen taller than 2:1, Jump, Use and the move hint sit in the spare space below the game. Each presses within 100 base px of its centre (a clear circle of 63 plus the move hint's radius of 37, so the hint never reaches into the clear circle), the two cut along the line midway between them so they never overlap; Jump's also reaches into the bottom-right corner of the screen. A button animates subtly when pressed
-- **Touch movement:** a touch anywhere except on a button or other interactive element sets the neutral point where it lands. Dragging left or right from it past a small dead zone moves the duck that way at full speed; back inside the dead zone, she stops. Releasing ends the movement
-- **Move hint** (left thumb): a left and right marker that rests level with Jump, as far in from the view's left edge as Use is from its right edge. It is only a drawing and has no press area of its own. While a touch is moving her, it sits on the neutral point; on release it returns to rest.
+- **Touch movement:** a touch anywhere except on a button or other interactive element sets the neutral point where it lands. Dragging left or right from it past a small dead zone moves the duck that way at full speed; back inside the dead zone, he stops. Releasing ends the movement
+- **Move hint** (left thumb): a left and right marker that rests level with Jump, as far in from the view's left edge as Use is from its right edge. It is only a drawing and has no press area of its own. While a touch is moving him, it sits on the neutral point; on release it returns to rest.
 - **Use:** opens a room's door. PLACEHOLDER: what else it acts on
 
 ### Interface
@@ -54,40 +55,40 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 ### Grid
 
 - **Duck:** 2 tiles wide and 3 tall
-- **Reaches:** zones are built to the duck's reaches, measured in tiles from the top of the ground she leaves to the top of the ledge she lands on. A quick tap rises 1 tile (clearing a 1-tile ledge with a little room); a full jump rises 6; a full running jump with flutter crosses a 19-tile gap at the same height, with the jump pressed at its best moment, coyote time included. A ledge at a reach is always makeable, and one tile beyond it never is
+- **Reaches:** zones are built to the duck's reaches, measured in tiles from the top of the ground he leaves to the top of the ledge he lands on. A quick tap rises 1 tile (clearing a 1-tile ledge with a little room); a full jump rises 6; a full running jump with flutter crosses a 19-tile gap at the same height, with the jump pressed at its best moment, coyote time included. A ledge at a reach is always makeable, and one tile beyond it never is
 - **Tiles:** zones are built on a grid of 12 px tiles, so the screen is 60 columns by 30 rows. Every solid, ledge and door sits on whole tiles and spans whole tiles. Hazards follow the grid, except for the 2 to 3 px thickness of edge hazards
 
 ### The duck
 
-- **Flutter:** every fall flutters, after a jump or off a ledge: her fall is slow enough to use, and the player steers her in the air
-- **Jump height:** every press launches her at full speed, and she keeps rising while Jump is held, up to about 6.5 tiles with the top at about 0.3 s. Letting go within the first 0.12 s stops the rise where she is, so the quickest tap rises about 1.5 tiles and a 0.1 s press about 3.7; letting go later halves her upward speed. A buffered jump whose button was already released is the quickest tap. This lets a zone set obstacles only a tap clears, such as a low ledge beneath a ceiling with a red edge hazard
-- **Jump timing:** a jump pressed just after she leaves a ledge still jumps (coyote time), and a jump pressed just before she lands jumps as she lands (jump buffering)
-- **Movement:** she walks left and right and jumps. She is quick and responsive: about 0.1 s to reach full speed or stop, on the ground and in the air. Her speeds, jump, flutter and timing values are in `src/data/duck.ts`, tuned to the reaches under Grid
+- **Flutter:** every fall flutters, after a jump or off a ledge: his fall is slow enough to use, and the player steers him in the air
+- **Jump height:** every press launches him at full speed, and he keeps rising while Jump is held, up to about 6.5 tiles with the top at about 0.3 s. Letting go within the first 0.12 s stops the rise where he is, so the quickest tap rises about 1.5 tiles and a 0.1 s press about 3.7; letting go later halves his upward speed. A buffered jump whose button was already released is the quickest tap. This lets a zone set obstacles only a tap clears, such as a low ledge beneath a ceiling with a red edge hazard
+- **Jump timing:** a jump pressed just after he leaves a ledge still jumps (coyote time), and a jump pressed just before he lands jumps as he lands (jump buffering)
+- **Movement:** he walks left and right and jumps. He is quick and responsive: about 0.1 s to reach full speed or stop, on the ground and in the air. His speeds, jump, flutter and timing values are in `src/data/duck.ts`, tuned to the reaches under Grid
 
 ### Map
 
-- **Backtracking:** she can walk back to any open zone and replay any zone she has completed
-- **Between zones:** the map shows after the start screen's Start or Continue, and after she clears a zone, with her on that zone. The zones she has completed and the paths she has opened are marked
+- **Backtracking:** he can walk back to any open zone and replay any zone he has completed
+- **Between zones:** the map shows after the start screen's Start or Continue, and after he clears a zone, with him on that zone. The zones he has completed and the paths he has opened are marked
 - **Open zones:** the first zone is open from the start and must be completed before anything else opens. Completing a zone opens the paths past it, through forks, to the next zones; a zone not completed closes everything past it. Unbuilt paths and zones stay closed
-- **Celebration:** clearing the last zone, the one whose path leads on to home, shows a celebration screen every time, replays included (PLACEHOLDER: until it is designed). Continue returns to the map with her on that zone, where she can walk back and replay; Restart asks first, as on the start screen
-- **Walk:** she stands on a zone. Tapping any open zone's marker, or ←/→, walks her there, and Continue plays the zone she stands on
-- **Forks:** at a fork the path splits two or three ways, and completing the zone before it opens each of them. Paths split and rejoin, and every path reaches the same ending
-- **V1:** one path is built: the street, the corner fork, the park, then home. Its forks still show, with the unbuilt paths and zones marked as unbuilt and not selectable. Home is the end of the built path and leads nowhere further: there are no laps (PLACEHOLDER: until the ending exists). The map's look is in the [art plan](../art/README.md)
+- **Celebration:** clearing the last zone, the one whose path leads on to home, shows a celebration screen every time, replays included (PLACEHOLDER: until it is designed). Continue returns to the map with him on that zone, where he can walk back and replay; Restart asks first, as on the start screen
+- **Walk:** he stands on a zone. Tapping any open zone's marker, or ←/→, walks him there, and Continue plays the zone he stands on
+- **Forks:** planned for Next. At a fork the path splits two or three ways, and completing the zone before it opens each of them
+- **V1:** the target is one linear route through six groups of two zones, ending at the shared apartment, with no laps. This is the target plan, not a claim that the route is built. The map's look is in the [art plan](../art/README.md)
 
 ### Zones
 
-- **Camera:** on the ground she sits about two thirds down the screen. In an assembled zone, the ground line follows the chunk she is in, blending across half a screen at each seam. The camera rises only when she climbs above the middle, and never shows below the lowest ground. Decorative background layers use tunable parallax, with farther layers scrolling more slowly; ground props stay attached to the terrain
+- **Camera:** on the ground he sits about two thirds down the screen. In an assembled zone, the ground line follows the chunk he is in, blending across half a screen at each seam. The camera rises only when he climbs above the middle, and never shows below the lowest ground. Decorative background layers use tunable parallax, with farther layers scrolling more slowly; ground props stay attached to the terrain
 - **Challenge:** platforming, hazards and choices. Routes use ledges and cliffs, not ladders, with both short-press jumps beneath low ceilings and full jumps. There is no combat
-- **Checkpoint:** the start of a zone is its only checkpoint. Falling or touching a hazard restarts the zone from its start. Progress is saved: the zones she has completed and where she stands on the map. Clearing a zone marks it completed and returns her to the map on it; a zone left before its end is played again from its start
-- **Crush:** a moving platform that pushes her sideways carries her to its leading edge. If it squeezes her into terrain or another solid, she is crushed and the zone restarts from its start, as a hazard does. Layouts leave room beside every moving platform's path so she is never pinned on a required route
+- **Checkpoint:** the start of a zone is its only checkpoint. Falling or touching a hazard restarts the zone from its start. Progress is saved: the zones he has completed and where he stands on the map. Clearing a zone marks it completed and returns him to the map on it; a zone left before its end is played again from its start
+- **Crush:** a moving platform that pushes him sideways carries him to its leading edge. If it squeezes him into terrain or another solid, he is crushed and the zone restarts from its start, as a hazard does. Layouts leave room beside every moving platform's path so he is never pinned on a required route
 - **Difficulty:** zones use the same configurable difficulty target and variation band in `src/data/`, with variation inside it rather than guaranteed escalation between zones or from start to finish
-- **Doors:** doors lead only into rooms. Use enters a door when any part of her drawn frame overlaps the door's drawn art; where she overlaps more than one, the door whose centre is nearest hers wins
+- **Doors:** doors lead only into rooms. Use enters a door when any part of his drawn frame overlaps the door's drawn art; where he overlaps more than one, the door whose centre is nearest his wins
 - **Edge hazards:** a common red strip, 2 to 3 px thick, can cover the top, bottom, left or right edge of terrain. These are the lethal contact hazards in every real zone: other objects do not kill on contact, and there are no spikes. Touching any edge hazard restarts the zone from its start
 - **Exit:** reaching the end of the zone clears it, and the game moves straight on to the map
-- **Going back:** walking all the way back to the zone's left edge leaves it without completing it: the screen fades and the map shows with her on that zone, and nothing is saved. Every zone starts her clear of that edge and has no wall in front of it
+- **Going back:** walking all the way back to the zone's left edge leaves it without completing it: the screen fades and the map shows with him on that zone, and nothing is saved. Every zone starts him clear of that edge and has no wall in front of it
 - **Kinds:** indoor, outdoor, or a hybrid with both
 - **Layout:** zone 1 is hand-built as the tutorial. Every later zone, including the final zone, has a randomized layout assembled from hand-built chunks: a fixed start chunk, a seeded run of chunks whose entry and exit heights match, then a fixed finish chunk. The rules for chunks are under Chunks
-- **Reroll:** an assembled zone's layout changes each time she enters it from the map. Restarts within the zone keep it
+- **Reroll:** an assembled zone's layout changes each time he enters it from the map. Restarts within the zone keep it
 - **Scale:** outdoors, the scenery is drawn at a quarter of indoor scale; the duck, the tiles and the reaches stay the same everywhere
 - **Shape:** a zone is at most 2 screens (60 tiles, 720 px) tall and as wide as it needs, and scrolls sideways and up. Indoors, to a small duck the ceilings are high: a door is 15 tiles tall, half the screen
 
@@ -99,7 +100,7 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 - **Seams:** a chunk's entry and exit are the ground rows at its left and right edges: 50, 40 or 30. The seam surface is terrain and runs at least 4 tiles in from the edge, with no gap there, and nothing (no solid, ledge, hazard or moving platform) in the 6 rows above it
 - **Shape:** one or two screens wide (60 to 120 tiles) and at most 60 rows (720 px) tall
 - **Slots:** marked regions where the seed places an event or a door. A chunk must pass with every slot empty
-- **Themes:** a theme sets the tileset, terrain looks and repeated backdrops for every chunk of that theme, so seams never show. A chunk can still place its own scenery. The first theme is the park (outdoor)
+- **Themes:** a theme sets the tileset, terrain looks and repeated backdrops for every chunk of that theme, so seams never show. A chunk can still place its own scenery. The park is an outdoor prototype theme
 
 ### Objects
 
@@ -110,25 +111,27 @@ Everything in a zone except its terrain is placed in data, in three layers.
 - **Instances:** one placement in a zone: a character, a position, size and phase, last-word overrides, its own lines or dialogue scene, a door's room, and flags for carried choices
 - **Movement:** an algorithm (static, linear, ease, hop or wander), a direction, a distance, a speed, a pause at each end, and a random variance that rolls fresh on every attempt
 - **Overrides:** flow one way: an instance overrides its character, which overrides its archetype. Everything resolves and is checked when the game loads
-- **Reaction:** none, avoiding the duck, or approaching her, within a range
+- **Reaction:** none, avoiding the duck, or approaching him, within a range
 
-### Zone 1
+### V1 route
 
-- **Kind:** outdoor
-- **Length:** 4 screens (240 tiles)
-- **Rooms:** a door in the brownstone before the subway entrance leads to the test room
-- **Street:** a day-time New York street, 2 screens tall: she walks the sidewalk along the bottom and climbs fire escapes, awnings and ledges into the upper screen, past a row of shops: a café, a florist, a gift shop, a makeup store, a pet shop and two restaurants. Its lethal contact hazards are the common red edge strips. Pigeons in flocks flee from her, a pug approaches her, and pedestrians walk past
+The target play time is about 30 minutes across six groups of two zones, in this order. Only zone 1 is being implemented now. Its depot and streets form one fixed tutorial; every later zone, including the final climb, is randomized.
 
-### Zone 2
+| Group          | First zone                           | Second zone            |
+| -------------- | ------------------------------------ | ---------------------- |
+| Blue cityscape | Depot and streets, combined tutorial | City boundary          |
+| Industrial     | Warehouse                            | Freight terminal       |
+| Countryside    | Farmland                             | River crossing         |
+| Woodland       | Forest paths                         | Ravine                 |
+| Home city      | Outskirts                            | Familiar neighbourhood |
+| Apartment      | Entrance and lobby                   | Climb to the apartment |
 
-- **Kind:** outdoor, an autumn park
-- **Layout:** assembled from the park's chunks: 6 to 10 screens (360 to 600 tiles), difficulty varying within the shared configurable band. PLACEHOLDER: a basic test version until its events exist
-- **Rooms:** one door, in a door slot, leads to the test room
+The park is a prototype for randomized zones, not V1's second zone. The identities of the ferret's friends and the detailed encounters along the route are undecided.
 
 ### Rooms
 
 - **Contents:** usually dialogue, and any of: items to buy or sell, quests to take, rewards, threats, and talk that advances the story or adds flavour
-- **Enter:** Use at a room's door plays the door's opening animation, if it has one, with play held, then shows the room as a full-screen still scene with a little animation, such as a bartender behind his bar. Play pauses until she leaves, and leaving returns her to the door, shown closed. She leaves with the Leave button in a corner, back, or Esc
+- **Enter:** Use at a room's door plays the door's opening animation, if it has one, with play held, then shows the room as a full-screen still scene with a little animation, such as a bartender behind his bar. Play pauses until he leaves, and leaving returns him to the door, shown closed. He leaves with the Leave button in a corner, back, or Esc
 - **Per zone:** every zone has at least one room. PLACEHOLDER: each is an empty test room for now, showing only its name
 - **World:** the side-scrolling zones are the game world; rooms are the only other places, each reached through a door
 
@@ -146,24 +149,24 @@ Everything in a zone except its terrain is placed in data, in three layers.
 
 ### The ferret
 
-- **Appearances:** dialogue scenes in some zones, quips during play, and hazards it sets in zones
+- **Appearances:** the ferret enlists his friends as a favour. One friend or a group appears in person with dialogue overlays; their identities are undecided
 - **Calling card:** every trap it sets carries a badge of its stovepipe hat and bow tie
-- **Ending:** the ferret is outwitted, never fought: the carried choices set up how the final scene goes
+- **Ending:** the duck returns home; the outcome of their friendship is undecided. There is no combat
 
 ### Choices
 
-- **Effect:** a choice changes where the duck goes, what she does and what she sees
-- **Kinds:** dialogue answers, as two or three answer buttons in a row above the dialogue box, route forks in a zone, and forks on the map
-- **Reach:** most choices affect only the current zone. A few flagged choices carry on to later zones or the ending, where they set up how she outwits the ferret
+- **Effect:** a choice changes where the duck goes, what he does and what he sees
+- **Kinds:** dialogue answers, as two or three answer buttons in a row above the dialogue box. Route forks in zones and on the map are planned for Next
+- **Reach:** choice effects on later zones or the ending are undecided. Branching routes are planned for Next
 
 ### Start screen
 
 - **Back:** back with no card open leaves the game, the same way as Exit, wherever Exit shows; elsewhere back is the browser's own
-- **Boot:** the game opens in landscape. With saved progress it opens on the map where she stands; with no save it opens on the start screen. It never opens straight into a zone
+- **Boot:** the game opens in landscape. With saved progress it opens on the map where he stands; with no save it opens on the start screen. It never opens straight into a zone
 - **Exit:** at the top right, at the far end. In a browser tab it goes straight to the home page. In an installed app it closes the app, and it shows only in apps that can close themselves (Chrome's Android app, and Chrome or Edge desktop app windows); in every other installed app (iOS, Firefox for Android, Samsung Internet and Edge for Android) it is hidden, and Settings sits at the far right
-- **Restart:** on the start screen with a save, and on the celebration. It asks first on a card: a short question, Restart, which confirms, and Cancel; back and Esc cancel. Confirming clears only the saved progress and opens the map with her on the first zone and nothing completed. It never clears stats or achievements, which keep their own save
+- **Restart:** on the start screen with a save, and on the celebration. It asks first on a card: a short question, Restart, which confirms, and Cancel; back and Esc cancel. Confirming clears only the saved progress and opens the map with him on the first zone and nothing completed. It never clears stats or achievements, which keep their own save
 - **Settings:** at the top right, beside Exit. It opens the settings card
-- **Start:** with no save it reads Start and opens the map with her on the first zone. With a save (reached through Back to title) Start gives way to Continue, which opens the map where she stands, and Restart beside it. There is one save
+- **Start:** with no save it reads Start and opens the map with him on the first zone. With a save (reached through Back to title) Start gives way to Continue, which opens the map where he stands, and Restart beside it. There is one save
 
 ### Settings
 

@@ -24,6 +24,10 @@ Gameplay owns the rulebook and the values and content in the data value files (e
 - **Simulate before tuning:** every difficulty change is compared before and after against a baseline, with a headless simulator that plays the real rules with bots at three skills (novice, typical, expert) and reports the targets per zone. Simulate only what a decision needs, with the same seed before and after, and re-baseline after a change that reorders random draws. Results go to the user as tables with a recommendation. Only gameplay runs simulations at scale. PLACEHOLDER: the simulator and its command; tech builds it.
 - **Tune to the targets:** a result inside its band needs no tuning. The user declares when the goal is met.
 
+## V1 plan
+
+The target is about 30 minutes across six groups of two zones on a linear route back to the shared apartment. The ordered groups and agreed story are in [`design.md`](design.md). Only the first zone, a fixed depot-and-streets tutorial in the blue cityscape, is being implemented now. Every later zone, including the final zone, is randomized. The park remains a prototype, not the final second zone. Branching routes are planned for Next.
+
 ## Targets
 
 Each target is a band, not a point, that the simulator reports per zone and skill. PLACEHOLDER: every band, agreed with the user. The kinds of target:
@@ -36,17 +40,18 @@ Each target is a band, not a point, that the simulator reports per zone and skil
 
 ## Remaining for the first build
 
-**Done when:** PLACEHOLDER: the user's goal for the first build.
+**Current implementation scope:** the first zone only. The full V1 route and play-time target above are the plan, not completed content.
 
 Open questions:
 
-- **Beginning and home:** how she gets lost, and where home is
+- **Beginning:** the cause of the duck and ferret's fight
 - **Confirm, dialogue pauses play:** assumed, a dialogue box pauses play
 - **Confirm, keyboard has no overlay:** assumed, the touch control overlay shows only with touch
-- **Confirm, one-way ledges:** assumed, she jumps up through an awning or other one-way ledge from below and lands on top of it
+- **Confirm, one-way ledges:** assumed, he jumps up through an awning or other one-way ledge from below and lands on top of it
 - **Confirm, restarts reset choices:** assumed, a zone restart also resets the choices made in that zone
-- **Ending:** the rest of the ending, beyond outwitting the ferret
-- **Map:** how it looks, and how many zones and forks the V1 path has
+- **Ending:** the outcome of their friendship when the duck returns to the shared apartment
+- **Friends:** the identities of the friends the ferret enlists and their encounters
+- **Map:** the presentation of the linear V1 route and Next's branching routes
 - **Rooms:** the currency and what items do; what quests and rewards give and how they are tracked; what a threat leads to; whether a room can be revisited, and whether its dialogue changes
 - **Use:** what it acts on besides doors (assumed: talking to animals, and objects at route forks)
-- **Zones:** the V1 path's zones after zone 1, and which are indoor, outdoor or hybrid
+- **Zones:** detailed layouts and encounters for the planned zones after zone 1
