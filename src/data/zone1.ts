@@ -1,15 +1,9 @@
 import type { ZonePlan } from "./types";
 
-// Zone 1: a New York street, outdoors, in one area.
-//
-// The street is two screens tall. The sidewalk's top is row 50, with the sidewalk and the road
-// filling rows 50 to 59, so on the sidewalk she stands two thirds down the screen. A
-// red edge above a solid base in every opening restarts the zone when she drops onto it.
-// Awnings and the canopy sit on row 44, 6 above the sidewalk. Along the sidewalk, left to right,
-// it teaches: walk, hop, jump, a gap, a cellar hatch, then red contact edges before
-// the street's end, which clears the zone. Over the makeup store and its neighbour, a detour
-// climbs the buildings into the upper screen and drops back down: a fall onto the sidewalk is
-// safe, as every fall flutters.
+// Zone 1: a fixed parcel depot opening into the street, in one area.
+// The first screen teaches walking, a one-tile tap, a full six-tile jump and a short gap.
+// The street continues through shops and an optional upper route. A red ceiling over a
+// one-tile step teaches releasing Jump early; red contact edges restart the zone.
 export const ZONE_1: ZonePlan = {
   areas: {
     street: {
@@ -20,17 +14,9 @@ export const ZONE_1: ZonePlan = {
         { character: "street-sky", col: 0, cols: 240, parallax: { x: 0, y: 0 }, row: 0 },
         { character: "street-city-far", col: 0, cols: 240, parallax: { x: 0.15, y: 0.05 }, row: 0 },
         { character: "street-city-mid", col: 0, cols: 240, parallax: { x: 0.4, y: 0.15 }, row: 0 },
-        // The buildings behind the shops, standing on the sidewalk line, in runs a whole number
-        // of pieces wide. A two-storey building is its facade capped by a roofline at row 20; a
-        // three-storey one adds an upper storey (rows 9 to 23) and its roofline's top is row 5.
-        // Each roofline carries a cornice along its top. Left to right: a brownstone, the cross
-        // street's gap, one-storey brick, the walk-up whose fire escape the detour climbs, the
-        // brownstone with the water tower, one-storey brick, a second walk-up and a brownstone to
-        // the street's end.
-        { character: "facade-brownstone", col: 0, cols: 40, row: 24 },
-        { character: "roofline-brownstone", col: 0, cols: 40, row: 20 },
-        { character: "cornice", col: 1, cols: 39, row: 20 },
-        { character: "facade-one-storey", col: 52, cols: 12, row: 34 },
+        // The first screen is the depot; the street's shops begin beyond its exit.
+        { character: "facade-one-storey", col: 0, cols: 60, row: 34 },
+        { character: "facade-one-storey", col: 60, cols: 4, row: 34 },
         { character: "facade-walkup", col: 64, cols: 32, row: 24 },
         { character: "facade-walkup-upper", col: 64, cols: 32, row: 9 },
         { character: "roofline-walkup", col: 64, cols: 32, row: 5 },
@@ -44,21 +30,11 @@ export const ZONE_1: ZonePlan = {
         { character: "facade-brownstone", col: 192, cols: 48, row: 24 },
         { character: "roofline-brownstone", col: 192, cols: 48, row: 20 },
         { character: "cornice", col: 192, cols: 48, row: 20 },
-        // Walk: the café, with a flock of pigeons that flee as she comes near.
-        { character: "storefront-cafe", col: 6, row: 40 },
-        { character: "pigeon", col: 12, row: 48 },
-        { character: "pigeon", col: 14, phase: 0.3, row: 48 },
-        { character: "pigeon", col: 17, phase: 0.6, row: 48 },
-        { character: "pigeon", col: 19, phase: 0.1, row: 48 },
-        { character: "walk-signal", col: 24, row: 43 },
-        // Hop: a short press up 2 onto a planter in front of the florist; then down 1 into a cross
-        // street and a tap up 1 out of it.
-        { character: "planter", col: 28, cols: 4, row: 48 },
-        { character: "storefront-florist", col: 30, row: 40 },
-        { character: "cross-street", col: 40, row: 49 },
-        // Jump: a hot-dog cart, up 6 (or over it), level with the makeup store's awning.
-        { character: "storefront-gift-shop", col: 54, row: 40 },
-        { character: "awning", col: 54, cols: 8, row: 44 },
+        // Safe walking room precedes the tap step and full-jump block in the depot floor.
+        { character: "walk-signal", col: 62, row: 43 },
+        { character: "red-edge-top", col: 56, cols: 6, row: 54 },
+        { character: "red-edge-support", col: 56, cols: 6, row: 55, rows: 5 },
+        { character: "storefront-gift-shop", col: 62, row: 40 },
         { character: "hot-dog-cart", col: 66, row: 44 },
         { character: "storefront-makeup-store", col: 69, row: 40 },
         { character: "awning", col: 69, cols: 8, row: 44 },
@@ -120,9 +96,13 @@ export const ZONE_1: ZonePlan = {
         // A red edge on the sidewalk, below the noodle bar's awning.
         { character: "storefront-noodle-bar", col: 158, row: 40 },
         { character: "awning", col: 158, cols: 10, row: 44 },
-        { character: "pedestrian-cat", col: 172, row: 45 },
-        { character: "red-edge-top", col: 184, cols: 4, row: 49 },
-        { character: "red-edge-support", col: 184, cols: 4, row: 50, rows: 10 },
+        // Short presses pass the step under this ceiling; a full jump reaches its red edge.
+        { character: "red-edge-bottom", col: 172, cols: 18, row: 45 },
+        { character: "red-edge-left", col: 171, row: 43, rows: 2 },
+        { character: "red-edge-right", col: 190, row: 43, rows: 2 },
+        { character: "red-edge-top", col: 172, cols: 18, row: 42 },
+        { character: "red-edge-support", col: 172, cols: 18, row: 43, rows: 2 },
+        { character: "pedestrian-cat", col: 194, row: 45 },
         { character: "pedestrian-raccoon", col: 200, phase: 0.5, row: 45 },
         // Another red edge, then a canopy before the street's end.
         { character: "red-edge-top", col: 212, cols: 4, row: 49 },
@@ -130,24 +110,26 @@ export const ZONE_1: ZonePlan = {
         { character: "canopy", col: 218, cols: 12, row: 44 },
       ],
       // The roofs the detour doesn't reach: the second walk-up's and the last brownstone's
-      // cornices. The first brownstone's cornice is in reach, by a drop off the climbed walk-up's
-      // roof.
+      // cornices.
       outOfReach: [
         { col: 170, row: 5 },
         { col: 215, row: 20 },
       ],
       rows: 60,
       solids: [
-        { col: 0, cols: 40, look: "sidewalk", row: 50, rows: 10 },
-        // The cross street's road, one below the sidewalk.
-        { col: 40, cols: 10, look: "road", row: 51, rows: 9 },
-        { col: 50, cols: 58, look: "sidewalk", row: 50, rows: 10 },
+        { col: 0, cols: 20, look: "sidewalk", row: 50, rows: 10 },
+        { col: 20, cols: 4, look: "sidewalk", row: 49, rows: 11 },
+        { col: 24, cols: 16, look: "sidewalk", row: 50, rows: 10 },
+        { col: 40, cols: 6, look: "sidewalk", row: 44, rows: 16 },
+        { col: 46, cols: 10, look: "sidewalk", row: 50, rows: 10 },
+        { col: 62, cols: 46, look: "sidewalk", row: 50, rows: 10 },
         // The subway entrance: cols 108 to 117.
         { col: 118, cols: 16, look: "sidewalk", row: 50, rows: 10 },
         // Cellar hatches: cols 134 to 139 and 148 to 155, their edge tiles placed as objects.
         { col: 140, cols: 8, look: "sidewalk", row: 50, rows: 10 },
-        { col: 156, cols: 28, look: "sidewalk", row: 50, rows: 10 },
-        { col: 188, cols: 24, look: "sidewalk", row: 50, rows: 10 },
+        { col: 156, cols: 24, look: "sidewalk", row: 50, rows: 10 },
+        { col: 180, cols: 6, look: "sidewalk", row: 49, rows: 11 },
+        { col: 186, cols: 26, look: "sidewalk", row: 50, rows: 10 },
         { col: 216, cols: 24, look: "sidewalk", row: 50, rows: 10 },
       ],
       tileset: "tiles-street",
