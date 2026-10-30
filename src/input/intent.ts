@@ -1,6 +1,6 @@
 import type { Point, TouchTuning } from "../data/types";
-import { TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
-import { contains } from "../rules/rect";
+import { pressedArea } from "../layout/hitAreas";
+import { TOUCH_PRESS_AREAS, type TouchControl } from "../layout/touchControls";
 
 // What the player is asking for, from the keyboard and the touch controls together.
 export interface Intent {
@@ -30,11 +30,7 @@ export type TouchRole = TouchControl | "move";
 
 // The role a touch starting at point takes. It keeps that role until it lifts.
 export function touchRoleAt(point: Point): TouchRole {
-  return (
-    (Object.keys(TOUCH_CONTROLS) as TouchControl[]).find((control) =>
-      contains(TOUCH_CONTROLS[control].hit, point),
-    ) ?? "move"
-  );
+  return pressedArea(TOUCH_PRESS_AREAS, point) ?? "move";
 }
 
 // A move touch's direction from its x offset to where it started.

@@ -1,5 +1,4 @@
 import { animationKey } from "@andornaut/game-kit/art/aseprite";
-import { containsPoint } from "@andornaut/game-kit/rect";
 import {
   phaserBitmapFont,
   type PhaserFontData,
@@ -10,6 +9,7 @@ import { ZONE_MAP } from "../data/map";
 import { TILE } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { MapNode, Point, Rect } from "../data/types";
+import { pressedArea } from "../layout/hitAreas";
 import {
   forkChoiceRects,
   MAP_PATH,
@@ -53,6 +53,7 @@ const LOOK_ORDER: readonly PathLook[] = ["unbuilt", "built", "travelled", "selec
 type Control = "continue" | number;
 
 interface ChoiceButton {
+  readonly area: Rect;
   readonly arrow: GameObjects.Sprite;
   readonly art: GameObjects.Sprite;
   readonly hit: Rect;
@@ -210,9 +211,9 @@ export class MapScene extends Scene {
   }
 
   private addContinue(): void {
-    const { hit, labelY } = MAP_SCREEN.continue;
-    this.continueArt = this.add.sprite(hit.x, hit.y, "ui-resume").setOrigin(0);
-    this.continueLabel = addButtonLabel(this, hit, labelY, TEXT.map.continue, {
+    const { art, labelY } = MAP_SCREEN.continue;
+    this.continueArt = this.add.sprite(art.x, art.y, "ui-resume").setOrigin(0);
+    this.continueLabel = addButtonLabel(this, art, labelY, TEXT.map.continue, {
       colour: this.colour("ink"),
       marked: true,
     });
@@ -233,6 +234,7 @@ export class MapScene extends Scene {
       const name = TEXT.map.zones[route.zone.id] ?? "";
       return [
         {
+          area: art,
           arrow: this.add
             .sprite(art.x + arrow.x, art.y + arrow.y, "ui-fork-arrow")
             .setOrigin(0)
@@ -265,12 +267,17 @@ export class MapScene extends Scene {
   }
 
   private controlAt(pointer: Input.Pointer): Control | undefined {
-    if (this.continueArt && containsPoint(MAP_SCREEN.continue.hit, pointer.x, pointer.y)) {
-      return "continue";
-    }
-    const index = this.choices.findIndex(({ hit }) => containsPoint(hit, pointer.x, pointer.y));
-    if (index >= 0) {
-      return index;
+    const point = { x: pointer.x, y: pointer.y };
+    const { continue: go } = MAP_SCREEN;
+    const button = pressedArea<Control>(
+      [
+        ...(this.continueArt ? [{ art: go.art, hit: go.hit, key: "continue" as const }] : []),
+        ...this.choices.map(({ area, hit }, index) => ({ art: area, hit, key: index })),
+      ],
+      point,
+    );
+    if (button !== undefined) {
+      return button;
     }
     return routeAtTap(TILE, MAP_SCREEN.nodeHit, this.stand, {
       x: pointer.x,

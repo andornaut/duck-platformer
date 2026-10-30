@@ -1,12 +1,12 @@
 import { animationKey } from "@andornaut/game-kit/art/aseprite";
 import { browserExitPage, exitApp } from "@andornaut/game-kit/pwa/exitApp";
-import { containsPoint } from "@andornaut/game-kit/rect";
 import { snapshotRemapped } from "@andornaut/game-kit/view/phaser/snapshotRemap";
 import { type GameObjects, type Input, Scene } from "phaser";
 
 import { SCREEN } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
+import { type PressArea, pressedArea } from "../layout/hitAreas";
 import {
   type IconButtonLayout,
   type StartScreenLayout,
@@ -196,14 +196,12 @@ export class StartScene extends Scene implements SettingsOpener {
 
   private controlAt(pointer: Input.Pointer): Control | undefined {
     const { exit, settings, start } = this.layout;
-    const hits: [Control, Rect | undefined][] = [
-      ["exit", exit?.hit],
-      ["settings", settings.hit],
-      ["start", start.button],
+    const areas: PressArea<Control>[] = [
+      ...(exit === undefined ? [] : [{ art: exit.art, hit: exit.hit, key: "exit" as const }]),
+      { art: settings.art, hit: settings.hit, key: "settings" },
+      { art: start.button, hit: start.hit, key: "start" },
     ];
-    return hits.find(
-      ([, hit]) => hit !== undefined && containsPoint(hit, pointer.x, pointer.y),
-    )?.[0];
+    return pressedArea(areas, { x: pointer.x, y: pointer.y });
   }
 
   private watchPresses(): void {

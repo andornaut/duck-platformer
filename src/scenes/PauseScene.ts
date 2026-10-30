@@ -1,5 +1,4 @@
 import { animationKey } from "@andornaut/game-kit/art/aseprite";
-import { containsPoint } from "@andornaut/game-kit/rect";
 import { snapshotRemapped } from "@andornaut/game-kit/view/phaser/snapshotRemap";
 import { Core, type GameObjects, type Input, Scene } from "phaser";
 
@@ -7,6 +6,7 @@ import { SCREEN } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
 import { FRAME_TURN } from "../input/frameTurn";
+import { type PressArea, pressedArea } from "../layout/hitAreas";
 import { PAUSE_BUTTON, PAUSE_CARD } from "../layout/pauseCard";
 import { type CardAction, cardBackAction, cardKeyAction, cardTurnAction } from "../pause/cardInput";
 import { focusKeyAction, stepFocus } from "../pause/focusInput";
@@ -209,7 +209,7 @@ export class PauseScene extends Scene implements SettingsOpener {
     return {
       close: { height: this.closeX.height, width: this.closeX.width, ...close.at },
       home: home.row,
-      resume: resume.hit,
+      resume: resume.art,
       settings: settings.row,
     }[control];
   }
@@ -255,8 +255,8 @@ export class PauseScene extends Scene implements SettingsOpener {
     );
     this.homeLabel = this.text(BODY_FONT, home.label.x, home.label.y, words.home, cream);
     this.closeX = this.add.sprite(close.at.x, close.at.y, "ui-close").setOrigin(0);
-    this.resume = this.add.sprite(resume.hit.x, resume.hit.y, "ui-resume").setOrigin(0);
-    this.resumeLabel = addButtonLabel(this, resume.hit, resume.labelY, words.resume, {
+    this.resume = this.add.sprite(resume.art.x, resume.art.y, "ui-resume").setOrigin(0);
+    this.resumeLabel = addButtonLabel(this, resume.art, resume.labelY, words.resume, {
       colour: this.colour("ink"),
       marked: true,
     });
@@ -294,18 +294,19 @@ export class PauseScene extends Scene implements SettingsOpener {
   }
 
   private controlAt(pointer: Input.Pointer): Control | undefined {
-    const hits: [Control, Rect][] =
+    const { close, home, resume, settings } = PAUSE_CARD;
+    const areas: PressArea<Control>[] =
       this.state === "open"
         ? [
-            ["close", PAUSE_CARD.close.hit],
-            ["settings", PAUSE_CARD.settings.row],
-            ["home", PAUSE_CARD.home.row],
-            ["resume", PAUSE_CARD.resume.hit],
+            { art: close.art, hit: close.hit, key: "close" },
+            { art: settings.row, hit: settings.hit, key: "settings" },
+            { art: home.row, hit: home.hit, key: "home" },
+            { art: resume.art, hit: resume.hit, key: "resume" },
           ]
         : this.pauseButton.visible
-          ? [["pauseButton", PAUSE_BUTTON.hit]]
+          ? [{ art: PAUSE_BUTTON.art, hit: PAUSE_BUTTON.hit, key: "pauseButton" }]
           : [];
-    return hits.find(([, hit]) => containsPoint(hit, pointer.x, pointer.y))?.[0];
+    return pressedArea(areas, { x: pointer.x, y: pointer.y });
   }
 
   // A control acts when a press lands on it and lifts on it.

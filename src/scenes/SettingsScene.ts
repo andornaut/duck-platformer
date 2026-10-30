@@ -1,7 +1,6 @@
 import { animationKey, type AsepriteSheet, sheetTags } from "@andornaut/game-kit/art/aseprite";
 import { BUILD_LABEL } from "@andornaut/game-kit/build/buildLabel";
 import { type MenuInstallBrowser, offersInstall } from "@andornaut/game-kit/pwa/installState";
-import { containsPoint } from "@andornaut/game-kit/rect";
 import { type BitmapFont, inkWidth } from "@andornaut/game-kit/text/bitmapFont";
 import {
   phaserBitmapFont,
@@ -13,6 +12,7 @@ import { type GameObjects, type Input, Scene } from "phaser";
 import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
 import { centredLabel } from "../layout/buttonLabel";
+import { type PressArea, pressedArea } from "../layout/hitAreas";
 import { CARD_TEXT_SCALE } from "../layout/pauseCard";
 import { focusRingAround, SETTINGS_CARD, STEPS_CARD } from "../layout/settingsCard";
 import { focusKeyAction, stepFocus } from "../pause/focusInput";
@@ -295,19 +295,25 @@ export class SettingsScene extends Scene {
       const { x, y } = SETTINGS_CARD.close.at;
       return { height: this.closeX.height, width: this.closeX.width, x, y };
     }
-    return this.hitOf(target);
-  }
-
-  private hitOf(target: Target): Rect {
-    const { close, install, touchControls } = SETTINGS_CARD;
-    return { close: close.hit, install: install.row, touchControls: touchControls.row }[target];
+    return target === "install" ? SETTINGS_CARD.install.row : SETTINGS_CARD.touchControls.row;
   }
 
   private targetAt(pointer: Input.Pointer): Target | undefined {
+    const point = { x: pointer.x, y: pointer.y };
     if (this.steps !== undefined) {
-      return containsPoint(STEPS_CARD.close.hit, pointer.x, pointer.y) ? "close" : undefined;
+      const { close } = STEPS_CARD;
+      return pressedArea([{ art: close.art, hit: close.hit, key: "close" as const }], point);
     }
-    return this.targets().find((target) => containsPoint(this.hitOf(target), pointer.x, pointer.y));
+    const { close, install, touchControls } = SETTINGS_CARD;
+    const areas: Record<Target, PressArea<Target>> = {
+      close: { art: close.art, hit: close.hit, key: "close" },
+      install: { art: install.row, hit: install.hit, key: "install" },
+      touchControls: { art: touchControls.row, hit: touchControls.hit, key: "touchControls" },
+    };
+    return pressedArea(
+      this.targets().map((target) => areas[target]),
+      point,
+    );
   }
 
   // A control acts when a press lands on it and lifts on it; on the install steps card the

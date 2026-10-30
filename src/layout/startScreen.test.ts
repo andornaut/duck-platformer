@@ -1,14 +1,13 @@
-import { containsPoint, rectsOverlap } from "@andornaut/game-kit/rect";
+import { containsPoint } from "@andornaut/game-kit/rect";
 import { describe, expect, it } from "vitest";
 
 import buttonSheet from "../../public/art/sprites/ui-icon-button.json";
 import startSheet from "../../public/art/sprites/ui-start.json";
 import { SCREEN } from "../data/screen";
 import type { Rect } from "../data/types";
+import { MIN_TARGET, type PressArea, pressedArea } from "./hitAreas";
 import { type IconButtonLayout, startScreenLayout } from "./startScreen";
 
-// A touch target is at least this many base pixels on each side (art/README.md, UI).
-const MIN_TARGET = 44;
 // A nav icon's size (art/README.md, Start screen).
 const NAV_ICON = 20;
 const SCREEN_RECT: Rect = { ...SCREEN, x: 0, y: 0 };
@@ -39,8 +38,12 @@ describe.each([
     ...(layout.exit === undefined ? [] : [["exit", layout.exit] as [string, IconButtonLayout]]),
   ];
   const hits: [string, Rect][] = [
-    ["start", layout.start.button],
+    ["start", layout.start.hit],
     ...buttons.map(([name, button]): [string, Rect] => [name, button.hit]),
+  ];
+  const areas: PressArea<string>[] = [
+    { art: layout.start.button, hit: layout.start.hit, key: "start" },
+    ...buttons.map(([key, { art, hit }]) => ({ art, hit, key })),
   ];
 
   it.each(hits)("makes %s a touch target inside the screen", (__, hit) => {
@@ -50,14 +53,13 @@ describe.each([
     }).toEqual({ inside: true, large: true });
   });
 
-  it("has no two hit areas overlapping", () => {
-    const overlapping = hits.flatMap(([a, first], i) =>
-      hits
-        .slice(i + 1)
-        .filter(([, second]) => rectsOverlap(first, second))
-        .map(([b]) => `${a} and ${b}`),
-    );
-    expect(overlapping).toEqual([]);
+  // A press anywhere on a drawn button takes that button, however the press areas overlap.
+  it.each(areas)("takes every press on $key's drawn button as $key", ({ art, key }) => {
+    const corners = [
+      { x: art.x, y: art.y },
+      { x: art.x + art.width - 1, y: art.y + art.height - 1 },
+    ];
+    expect(corners.map((point) => pressedArea(areas, point))).toEqual([key, key]);
   });
 
   it("ends the nav with Exit, or with Settings in Exit's place where there is no Exit", () => {
@@ -66,7 +68,7 @@ describe.each([
     expect({
       lastIsExit: last === layout.exit,
       settingsBeforeExit:
-        layout.exit === undefined || right(layout.settings.hit) <= layout.exit.hit.x,
+        layout.exit === undefined || right(layout.settings.art) <= layout.exit.art.x,
       x: last.at.x,
     }).toEqual({ lastIsExit: exitShown, settingsBeforeExit: true, x: withExit?.at.x });
   });

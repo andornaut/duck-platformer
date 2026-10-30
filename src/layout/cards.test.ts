@@ -15,50 +15,62 @@ import quitSheet from "../../public/art/sprites/ui-quit.json";
 import { SCREEN } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { Point, Rect } from "../data/types";
+import { MIN_TARGET, type PressArea, pressedArea } from "./hitAreas";
 import { CARD_TEXT_SCALE, PAUSE_BUTTON, PAUSE_CARD } from "./pauseCard";
 import { focusRingAround, SETTINGS_CARD, STEPS_CARD } from "./settingsCard";
 
-// A touch target is at least this many base pixels on each side (art/README.md, UI).
-const MIN_TARGET = 44;
 const FONT = parseBitmapFont(fontBody);
 const SCREEN_RECT: Rect = { ...SCREEN, x: 0, y: 0 };
 
-// Each card's hit areas, by name, on its card: the pause button sits on the zone instead.
-const CARDS: [string, Rect, [string, Rect][]][] = [
+// Each card's buttons, by name: where each is drawn, on its card, and its press area. The pause
+// button sits on the zone instead.
+const CARDS: [string, Rect, PressArea<string>[]][] = [
   [
     "pause card",
     PAUSE_CARD.card,
     [
-      ["close", PAUSE_CARD.close.hit],
-      ["return home row", PAUSE_CARD.home.row],
-      ["resume", PAUSE_CARD.resume.hit],
-      ["settings row", PAUSE_CARD.settings.row],
+      { art: PAUSE_CARD.close.art, hit: PAUSE_CARD.close.hit, key: "close" },
+      { art: PAUSE_CARD.home.row, hit: PAUSE_CARD.home.hit, key: "return home row" },
+      { art: PAUSE_CARD.resume.art, hit: PAUSE_CARD.resume.hit, key: "resume" },
+      { art: PAUSE_CARD.settings.row, hit: PAUSE_CARD.settings.hit, key: "settings row" },
     ],
   ],
   [
     "settings card",
     SETTINGS_CARD.card,
     [
-      ["close", SETTINGS_CARD.close.hit],
-      ["install row", SETTINGS_CARD.install.row],
-      ["touch controls row", SETTINGS_CARD.touchControls.row],
+      { art: SETTINGS_CARD.close.art, hit: SETTINGS_CARD.close.hit, key: "close" },
+      { art: SETTINGS_CARD.install.row, hit: SETTINGS_CARD.install.hit, key: "install row" },
+      {
+        art: SETTINGS_CARD.touchControls.row,
+        hit: SETTINGS_CARD.touchControls.hit,
+        key: "touch controls row",
+      },
     ],
   ],
   [
     "settings card without Install",
     SETTINGS_CARD.cardWithoutInstall,
     [
-      ["close", SETTINGS_CARD.close.hit],
-      ["touch controls row", SETTINGS_CARD.touchControls.row],
+      { art: SETTINGS_CARD.close.art, hit: SETTINGS_CARD.close.hit, key: "close" },
+      {
+        art: SETTINGS_CARD.touchControls.row,
+        hit: SETTINGS_CARD.touchControls.hit,
+        key: "touch controls row",
+      },
     ],
   ],
-  ["install steps card", STEPS_CARD.card, [["close", STEPS_CARD.close.hit]]],
+  [
+    "install steps card",
+    STEPS_CARD.card,
+    [{ art: STEPS_CARD.close.art, hit: STEPS_CARD.close.hit, key: "close" }],
+  ],
 ];
 
 const HIT_AREAS: [string, Rect][] = [
   ["pause button", PAUSE_BUTTON.hit],
-  ...CARDS.flatMap(([card, , hits]) =>
-    hits.map(([name, hit]): [string, Rect] => [`${card}'s ${name}`, hit]),
+  ...CARDS.flatMap(([card, , areas]) =>
+    areas.map(({ hit, key }): [string, Rect] => [`${card}'s ${key}`, hit]),
   ),
 ];
 
@@ -87,16 +99,28 @@ describe("card layouts", () => {
     }).toEqual({ inside: true, large: true });
   });
 
-  it.each(CARDS)("the %s holds its hit areas, no two overlapping", (_, card, hits) => {
-    const outside = hits.filter(([, hit]) => !inside(card, hit)).map(([name]) => name);
-    const overlapping = hits.flatMap(([a, first], i) =>
-      hits
+  it.each(CARDS)("the %s holds its buttons, no two drawn overlapping", (_, card, areas) => {
+    const outside = areas.filter(({ art }) => !inside(card, art)).map(({ key }) => key);
+    const overlapping = areas.flatMap((first, i) =>
+      areas
         .slice(i + 1)
-        .filter(([, second]) => rectsOverlap(first, second))
-        .map(([b]) => `${a} and ${b}`),
+        .filter((second) => rectsOverlap(first.art, second.art))
+        .map((second) => `${first.key} and ${second.key}`),
     );
     expect({ outside, overlapping }).toEqual({ outside: [], overlapping: [] });
   });
+
+  // A press anywhere on a drawn button takes that button, however the press areas overlap.
+  it.each(CARDS.flatMap(([card, , areas]) => areas.map((area) => [card, area, areas] as const)))(
+    "on the %s, takes every press on its drawn %s as it",
+    (_, { art, key }, areas) => {
+      const corners = [
+        { x: art.x, y: art.y },
+        { x: art.x + art.width - 1, y: art.y + art.height - 1 },
+      ];
+      expect(corners.map((point) => pressedArea(areas, point))).toEqual([key, key]);
+    },
+  );
 
   // Each sprite's frame, at its point, lies inside the area that presses it.
   it.each([

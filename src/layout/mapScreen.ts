@@ -1,17 +1,29 @@
 import type { MapNode, Point, Rect, Size } from "../data/types";
 import type { Arrowhead, PathStroke } from "../view/mapPath";
+import { HIT_MARGINS, hitAround } from "./hitAreas";
 
 // Art's paper map (art/README.md, Map), in base pixels. Offsets marked "from the centre" are from
 // a node's centre. The paper fills the screen; each marker's centre pixel sits on its node's
 // centre; a zone's icon sits centred over its marker; the duck stands on the current marker's
 // ring. Continue's label, centred with its play mark, starts at labelY, sinking to pressedLabelY
 // while Continue is pressed. At a fork, a choice button per route on, gap apart and centred on
-// middle at y, takes Continue's place; its press area starts hitAbove px above it, and its label
-// (at most labelWidth wide) and arrow sit at their offsets inside it. A tap on a zone marker
-// lands within nodeHit, centred on its node: at least a touch button's 44 square.
+// middle at y, takes Continue's place, and its label (at most labelWidth wide) and arrow sit at
+// their offsets inside it. Each button's press area, hit, is its drawn button grown by
+// hitAreas.ts's button margin; a tap on a zone marker lands within nodeHit, centred on its node,
+// the zone marker's frame (ZONE_MARKER square) grown the same way.
+const CONTINUE_ART: Rect = { height: 44, width: 160, x: 280, y: 300 };
+const ZONE_MARKER = 35;
+const NODE_HIT = hitAround(HIT_MARGINS.button, {
+  height: ZONE_MARKER,
+  width: ZONE_MARKER,
+  x: 0,
+  y: 0,
+});
+
 export const MAP_SCREEN = {
   continue: {
-    hit: { height: 44, width: 160, x: 280, y: 300 } satisfies Rect,
+    art: CONTINUE_ART,
+    hit: hitAround(HIT_MARGINS.button, CONTINUE_ART),
     labelY: 311,
     pressedLabelY: 313,
   },
@@ -23,8 +35,6 @@ export const MAP_SCREEN = {
     arrow: { x: 140, y: 11 } satisfies Point,
     gap: 8,
     height: 36,
-    hitAbove: 4,
-    hitHeight: 44,
     label: { x: 19, y: 9 } satisfies Point,
     labelWidth: 112,
     middle: 360,
@@ -36,7 +46,7 @@ export const MAP_SCREEN = {
     fork: { x: -14, y: -14 } satisfies Point,
     zone: { x: -17, y: -17 } satisfies Point,
   },
-  nodeHit: { height: 44, width: 44 } satisfies Size,
+  nodeHit: { height: NODE_HIT.height, width: NODE_HIT.width } satisfies Size,
   paper: { height: 360, width: 720, x: 0, y: 0 } satisfies Rect,
   textScale: 2,
   title: { x: 24, y: 16 } satisfies Point,
@@ -86,13 +96,11 @@ export function mapLabel(advance: number, centre: Point): { knockout: Rect; orig
 // The fork-choice buttons for count routes on: where each is drawn, and the area a press on it
 // must land in.
 export function forkChoiceRects(count: number): { art: Rect; hit: Rect }[] {
-  const { gap, height, hitAbove, hitHeight, middle, width, y } = MAP_SCREEN.forkChoice;
+  const { gap, height, middle, width, y } = MAP_SCREEN.forkChoice;
   const left = middle - (count * width + (count - 1) * gap) / 2;
   return Array.from({ length: count }, (_, i) => {
     const x = left + i * (width + gap);
-    return {
-      art: { height, width, x, y },
-      hit: { height: hitHeight, width, x, y: y - hitAbove },
-    };
+    const art = { height, width, x, y };
+    return { art, hit: hitAround(HIT_MARGINS.button, art) };
   });
 }

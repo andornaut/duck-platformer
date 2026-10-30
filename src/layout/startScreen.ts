@@ -1,11 +1,13 @@
 import type { Point, Rect } from "../data/types";
+import { HIT_MARGINS, hitAround } from "./hitAreas";
 
 // Art's start screen (art/README.md, Start screen), in base pixels: the nav bar across the top,
-// with 36x36 icon buttons at its right end, each in a 44x44 hit area with its 20x20 icon 8 in and
-// 6 down (8 down while pressed), and the logo with Start under it. Start's label origin is 15
-// below its top, 2 lower while pressed.
+// with 36x36 icon buttons at its right end, each with its 20x20 icon 8 in and 6 down (8 down
+// while pressed), and the logo with Start under it. Start's label origin is 15 below its top, 2
+// lower while pressed. Each button's press area, hit, is its drawn button grown by hitAreas.ts's
+// button margin.
 
-const ICON_BUTTON = { hitInset: 4, icon: { x: 8, y: 6 }, size: 36, y: 6 } as const;
+const ICON_BUTTON = { icon: { x: 8, y: 6 }, size: 36, y: 6 } as const;
 // A pressed button's icon or label sinks this far.
 const PRESSED_SINK = 2;
 // The last icon button's x at the nav's right end; each one before it is a slot further left.
@@ -14,6 +16,7 @@ const BUTTON_SLOT = 44;
 const START = { height: 52, labelDy: 15, width: 192, x: 264, y: 268 } as const;
 
 export interface IconButtonLayout {
+  readonly art: Rect;
   readonly at: Point;
   readonly hit: Rect;
   readonly icon: Point;
@@ -28,6 +31,7 @@ export interface StartScreenLayout {
   readonly settings: IconButtonLayout;
   readonly start: {
     readonly button: Rect;
+    readonly hit: Rect;
     readonly labelY: number;
     readonly pressedLabelY: number;
   };
@@ -35,12 +39,13 @@ export interface StartScreenLayout {
 
 // The icon button in slot from the nav's right end, 0 the last.
 function iconButton(slot: number): IconButtonLayout {
-  const { hitInset, icon, size, y } = ICON_BUTTON;
+  const { icon, size, y } = ICON_BUTTON;
   const x = RIGHT_BUTTON_X - slot * BUTTON_SLOT;
-  const side = size + 2 * hitInset;
+  const art = { height: size, width: size, x, y };
   return {
+    art,
     at: { x, y },
-    hit: { height: side, width: side, x: x - hitInset, y: y - hitInset },
+    hit: hitAround(HIT_MARGINS.button, art),
     icon: { x: x + icon.x, y: y + icon.y },
     pressedIcon: { x: x + icon.x, y: y + icon.y + PRESSED_SINK },
   };
@@ -57,6 +62,7 @@ export function startScreenLayout(exitShown: boolean): StartScreenLayout {
     settings: iconButton(exitShown ? 1 : 0),
     start: {
       button,
+      hit: hitAround(HIT_MARGINS.button, button),
       labelY: button.y + labelDy,
       pressedLabelY: button.y + labelDy + PRESSED_SINK,
     },
