@@ -1,6 +1,6 @@
 import type { MapNode, Point, Rect, Size } from "../data/types";
 import type { Arrowhead, PathStroke } from "../view/mapPath";
-import { HIT_MARGINS, hitAround } from "./hitAreas";
+import { hitAround } from "./hitAreas";
 
 // Art's paper map (art/README.md, Map), in base pixels. Offsets marked "from the centre" are from
 // a node's centre. The paper fills the screen; each marker's centre pixel sits on its node's
@@ -9,11 +9,11 @@ import { HIT_MARGINS, hitAround } from "./hitAreas";
 // while Continue is pressed. At a fork, a choice button per route on, gap apart and centred on
 // middle at y, takes Continue's place, and its label (at most labelWidth wide) and arrow sit at
 // their offsets inside it. Each button's press area, hit, is its drawn button grown by
-// hitAreas.ts's button margin; a tap on a zone marker lands within nodeHit, centred on its node,
+// hitAreas.ts's rule; a tap on a zone marker lands within nodeHit, centred on its node,
 // the zone marker's frame (ZONE_MARKER square) grown the same way.
 const CONTINUE_ART: Rect = { height: 44, width: 160, x: 280, y: 300 };
 const ZONE_MARKER = 35;
-const NODE_HIT = hitAround(HIT_MARGINS.button, {
+const NODE_HIT = hitAround({
   height: ZONE_MARKER,
   width: ZONE_MARKER,
   x: 0,
@@ -23,7 +23,7 @@ const NODE_HIT = hitAround(HIT_MARGINS.button, {
 export const MAP_SCREEN = {
   continue: {
     art: CONTINUE_ART,
-    hit: hitAround(HIT_MARGINS.button, CONTINUE_ART),
+    hit: hitAround(CONTINUE_ART),
     labelY: 311,
     pressedLabelY: 313,
   },
@@ -101,6 +101,6 @@ export function forkChoiceRects(count: number): { art: Rect; hit: Rect }[] {
   return Array.from({ length: count }, (_, i) => {
     const x = left + i * (width + gap);
     const art = { height, width, x, y };
-    return { art, hit: hitAround(HIT_MARGINS.button, art) };
+    return { art, hit: hitAround(art) };
   });
 }

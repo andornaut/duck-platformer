@@ -1,5 +1,5 @@
 import type { Point, Rect } from "../data/types";
-import { HIT_MARGINS, hitAround } from "./hitAreas";
+import { hitAround } from "./hitAreas";
 
 // Art's settings card (art/README.md, Pause, settings and install cards), in base pixels: the
 // pause card's frame, title and close X, then the Touch controls row and, while the game can be
@@ -12,12 +12,12 @@ const CLOSE_ART: Rect = { height: 24, width: 24, x: 510, y: 94 };
 const CLOSE = {
   art: CLOSE_ART,
   at: { x: CLOSE_ART.x, y: CLOSE_ART.y } satisfies Point,
-  hit: hitAround(HIT_MARGINS.button, CLOSE_ART),
+  hit: hitAround(CLOSE_ART),
 };
 const INSTALL_ROW: Rect = { height: 48, width: 352, x: 184, y: 188 };
 const TOUCH_ROW: Rect = { height: 48, width: 352, x: 184, y: 136 };
 
-// Each row's press area, hit, is the row grown by hitAreas.ts's button margin.
+// Each row's press area, hit, is the row grown by hitAreas.ts's rule.
 export const SETTINGS_CARD = {
   buildLabel: { centreX: 360, y: 244, yWithoutInstall: 192 },
   card: { height: 184, width: 368, x: 176, y: 88 } satisfies Rect,
@@ -26,7 +26,7 @@ export const SETTINGS_CARD = {
   install: {
     button: { height: 28, width: 72, x: 452, y: 198 } satisfies Rect,
     buttonLabel: { pressedY: 203, room: 56, y: 201 },
-    hit: hitAround(HIT_MARGINS.button, INSTALL_ROW),
+    hit: hitAround(INSTALL_ROW),
     icon: { x: 198, y: 204 } satisfies Point,
     label: { x: 228, y: 203 } satisfies Point,
     row: INSTALL_ROW,
@@ -34,7 +34,7 @@ export const SETTINGS_CARD = {
   title: { x: 190, y: 93 } satisfies Point,
   touchControls: {
     checkbox: { x: 504, y: 150 } satisfies Point,
-    hit: hitAround(HIT_MARGINS.button, TOUCH_ROW),
+    hit: hitAround(TOUCH_ROW),
     icon: { x: 198, y: 152 } satisfies Point,
     label: { x: 228, y: 151 } satisfies Point,
     row: TOUCH_ROW,

@@ -5,7 +5,7 @@ import buttonSheet from "../../public/art/sprites/ui-icon-button.json";
 import startSheet from "../../public/art/sprites/ui-start.json";
 import { SCREEN } from "../data/screen";
 import type { Rect } from "../data/types";
-import { MIN_TARGET, type PressArea, pressedArea } from "./hitAreas";
+import { HIT_RULE, type PressArea, pressedArea } from "./hitAreas";
 import { type IconButtonLayout, startScreenLayout } from "./startScreen";
 
 // A nav icon's size (art/README.md, Start screen).
@@ -46,12 +46,14 @@ describe.each([
     ...buttons.map(([key, { art, hit }]) => ({ art, hit, key })),
   ];
 
-  it.each(hits)("makes %s a touch target inside the screen", (__, hit) => {
-    expect({
-      inside: inside(SCREEN_RECT, hit),
-      large: hit.width >= MIN_TARGET && hit.height >= MIN_TARGET,
-    }).toEqual({ inside: true, large: true });
-  });
+  it.each(hits)(
+    "makes %s a touch target, its part on the screen at least the least size",
+    (__, hit) => {
+      const width = Math.min(SCREEN_RECT.width, hit.x + hit.width) - Math.max(0, hit.x);
+      const height = Math.min(SCREEN_RECT.height, hit.y + hit.height) - Math.max(0, hit.y);
+      expect(Math.min(width, height)).toBeGreaterThanOrEqual(HIT_RULE.minTarget);
+    },
+  );
 
   // A press anywhere on a drawn button takes that button, however the press areas overlap.
   it.each(areas)("takes every press on $key's drawn button as $key", ({ art, key }) => {

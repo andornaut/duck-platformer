@@ -1,11 +1,11 @@
 import type { Point, Rect } from "../data/types";
-import { HIT_MARGINS, hitAround } from "./hitAreas";
+import { hitAround } from "./hitAreas";
 
 // Art's start screen (art/README.md, Start screen), in base pixels: the nav bar across the top,
 // with 36x36 icon buttons at its right end, each with its 20x20 icon 8 in and 6 down (8 down
 // while pressed), and the logo with Start under it. Start's label origin is 15 below its top, 2
 // lower while pressed. Each button's press area, hit, is its drawn button grown by hitAreas.ts's
-// button margin.
+// rule.
 
 const ICON_BUTTON = { icon: { x: 8, y: 6 }, size: 36, y: 6 } as const;
 // A pressed button's icon or label sinks this far.
@@ -45,7 +45,7 @@ function iconButton(slot: number): IconButtonLayout {
   return {
     art,
     at: { x, y },
-    hit: hitAround(HIT_MARGINS.button, art),
+    hit: hitAround(art),
     icon: { x: x + icon.x, y: y + icon.y },
     pressedIcon: { x: x + icon.x, y: y + icon.y + PRESSED_SINK },
   };
@@ -62,7 +62,7 @@ export function startScreenLayout(exitShown: boolean): StartScreenLayout {
     settings: iconButton(exitShown ? 1 : 0),
     start: {
       button,
-      hit: hitAround(HIT_MARGINS.button, button),
+      hit: hitAround(button),
       labelY: button.y + labelDy,
       pressedLabelY: button.y + labelDy + PRESSED_SINK,
     },

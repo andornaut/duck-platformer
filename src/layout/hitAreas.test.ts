@@ -1,33 +1,78 @@
 import { describe, expect, it } from "vitest";
 
-import { HIT_MARGINS, hitAround, MIN_TARGET, pressArea, pressedArea } from "./hitAreas";
+import { SCREEN } from "../data/screen";
+import { HIT_RULE, hitAround, hitMargin, pressArea, pressedArea } from "./hitAreas";
+import { MAP_SCREEN } from "./mapScreen";
+import { PAUSE_BUTTON, PAUSE_CARD } from "./pauseCard";
+import { SETTINGS_CARD } from "./settingsCard";
+import { startScreenLayout } from "./startScreen";
+import { TOUCH_CONTROLS } from "./touchControls";
+
+const square = (side: number) => ({ height: side, width: side, x: 100, y: 100 });
+
+describe("hitMargin", () => {
+  it.each([
+    ["a quarter of a mid-sized button's shorter side", { height: 40, width: 200, x: 0, y: 0 }, 10],
+    ["no less than the least margin", square(16), HIT_RULE.leastMargin],
+    ["no more than the most margin", square(200), HIT_RULE.mostMargin],
+  ])("is %s", (_, art, margin) => {
+    expect(hitMargin(art)).toBe(margin);
+  });
+});
 
 describe("hitAround", () => {
-  const BIG = { height: 60, width: 100, x: 200, y: 100 };
-  const SMALL = { height: 24, width: 24, x: 500, y: 90 };
-  it.each([
-    ["a big button by the margin", BIG, { height: 72, width: 112, x: 194, y: 94 }],
-    [
-      "a small one to the least size about its centre",
-      SMALL,
-      { height: MIN_TARGET, width: MIN_TARGET, x: 490, y: 80 },
-    ],
-  ])("grows %s", (_, art, hit) => {
-    expect(hitAround(HIT_MARGINS.button, art)).toEqual(hit);
+  // Each button's press area, by the rule, from its drawn size.
+  const { start } = startScreenLayout(true);
+  it.each<[string, { height: number; width: number }, { height: number; width: number }]>([
+    ["Use, a 75 px disc", TOUCH_CONTROLS.use.art, { height: 107, width: 107 }],
+    ["the pause button, a 35 px frame", PAUSE_BUTTON.art, { height: 52.5, width: 52.5 }],
+    ["the close X, at the least size", PAUSE_CARD.close.art, { height: 48, width: 48 }],
+    ["a 16 px icon, at the least size", square(16), { height: 48, width: 48 }],
+    ["a card row", SETTINGS_CARD.touchControls.row, { height: 72, width: 376 }],
+    ["Resume", PAUSE_CARD.resume.art, { height: 66, width: 182 }],
+    ["Start", start.button, { height: 78, width: 218 }],
+    ["a nav icon button", startScreenLayout(true).settings.art, { height: 54, width: 54 }],
+    ["a map zone marker", square(35), MAP_SCREEN.nodeHit],
+  ])("grows %s", (_, art, size) => {
+    const hit = hitAround({ ...art, x: 0, y: 0 });
+    expect({ height: hit.height, width: hit.width }).toEqual(size);
+  });
+
+  it("grows a small button evenly about its centre to the least size", () => {
+    const art = square(16);
+    const hit = hitAround(art);
+    expect({
+      centre: { x: hit.x + hit.width / 2, y: hit.y + hit.height / 2 },
+      size: hit.width,
+    }).toEqual({ centre: { x: 108, y: 108 }, size: HIT_RULE.minTarget });
+  });
+
+  it("takes in a nav icon button's map marker size", () => {
+    expect(MAP_SCREEN.nodeHit).toEqual({ height: 52.5, width: 52.5 });
   });
 });
 
 describe("pressedArea", () => {
-  // Two buttons 50 apart whose grown areas overlap by 12 between them.
-  const LEFT = pressArea("left", 6, { height: 40, width: 50, x: 0, y: 0 });
-  const RIGHT = pressArea("right", 6, { height: 40, width: 50, x: 50, y: 0 });
+  // Two 40 px tall buttons side by side, each grown by 10 (a quarter of 40), overlapping by 20.
+  const LEFT = pressArea("left", { height: 40, width: 50, x: 0, y: 0 });
+  const RIGHT = pressArea("right", { height: 40, width: 50, x: 50, y: 0 });
   it.each([
-    ["inside the left margin", { x: -6, y: 20 }, "left"],
-    ["just outside the left margin", { x: -7, y: 20 }, undefined],
+    ["just inside the left margin", { x: -10, y: 20 }, "left"],
+    ["just outside the left margin", { x: -11, y: 20 }, undefined],
+    ["just inside the top margin", { x: 25, y: -10 }, "left"],
+    ["just outside the top margin", { x: 25, y: -11 }, undefined],
+    ["just inside the bottom margin", { x: 25, y: 49 }, "left"],
+    ["just outside the bottom margin", { x: 25, y: 50 }, undefined],
+    ["just inside the right margin", { x: 109, y: 20 }, "right"],
+    ["just outside the right margin", { x: 110, y: 20 }, undefined],
     ["in the overlap, nearer the left button", { x: 49, y: 20 }, "left"],
     ["in the overlap, nearer the right button", { x: 51, y: 20 }, "right"],
-    ["just outside the bottom margin", { x: 25, y: 46 }, undefined],
   ])("takes a press %s as %s", (_, point, key) => {
     expect(pressedArea([LEFT, RIGHT], point)).toBe(key);
+  });
+
+  it("keeps the screen's bottom-right corner in Jump's area", () => {
+    const { hit } = TOUCH_CONTROLS.jump;
+    expect([hit.x + hit.width, hit.y + hit.height]).toEqual([SCREEN.width, SCREEN.height]);
   });
 });

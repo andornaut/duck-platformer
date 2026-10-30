@@ -1,21 +1,30 @@
 import type { Point, Rect } from "../data/types";
 
-// How far each kind of button's press area reaches past its drawn button, in base pixels: the
-// touch buttons Use and Jump and the pause button by touchControl (Jump further, by jumpReach,
-// toward Use and the game, and out to the screen's right and bottom edges), and every other
-// button (card rows and buttons, Start, the nav's icon buttons, the map's buttons and markers) by
-// button. Every press area is at least MIN_TARGET on each side.
-export const HIT_MARGINS = { button: 6, jumpReach: 16, touchControl: 8 } as const;
+// Every button's press area reaches past its drawn button on every side by marginShare of the
+// button's shorter side, but never less than leastMargin or more than mostMargin, in base
+// pixels, and is at least minTarget on each side, grown evenly about the button's centre where
+// it would be smaller. Jump's reaches on to the screen's right and bottom edges as well
+// (touchControls.ts).
+export const HIT_RULE = {
+  leastMargin: 6,
+  marginShare: 0.25,
+  minTarget: 48,
+  mostMargin: 16,
+} as const;
 
-// A touch target's least size on each side (art/README.md, UI).
-export const MIN_TARGET = 44;
+// How far a drawn button's press area reaches past it on every side.
+export function hitMargin(art: Rect): number {
+  const { leastMargin, marginShare, mostMargin } = HIT_RULE;
+  return Math.min(mostMargin, Math.max(leastMargin, marginShare * Math.min(art.width, art.height)));
+}
 
-// A drawn button's press area: art grown by margin on every side, then to MIN_TARGET on each
+// A drawn button's press area: art grown by hitMargin on every side, then to minTarget on each
 // axis where it is still smaller, about its centre.
-export function hitAround(margin: number, art: Rect): Rect {
+export function hitAround(art: Rect): Rect {
+  const margin = hitMargin(art);
   const grow = (start: number, size: number) => {
     const grown = size + 2 * margin;
-    const side = Math.max(grown, MIN_TARGET);
+    const side = Math.max(grown, HIT_RULE.minTarget);
     return { size: side, start: start - margin - (side - grown) / 2 };
   };
   const x = grow(art.x, art.width);
@@ -58,7 +67,7 @@ export function pressedArea<K>(areas: readonly PressArea<K>[], point: Point): K 
   return best?.key;
 }
 
-// A button's press area with its drawn button, grown by margin (hitAround).
-export function pressArea<K>(key: K, margin: number, art: Rect): PressArea<K> {
-  return { art, hit: hitAround(margin, art), key };
+// A button's press area with its drawn button (hitAround).
+export function pressArea<K>(key: K, art: Rect): PressArea<K> {
+  return { art, hit: hitAround(art), key };
 }

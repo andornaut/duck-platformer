@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { HIT_MARGINS, hitAround } from "./hitAreas";
+import { hitAround } from "./hitAreas";
 import { forkChoiceRects, MAP_SCREEN, mapLabel } from "./mapScreen";
 
 describe("mapLabel", () => {
@@ -28,7 +28,7 @@ describe("forkChoiceRects", () => {
       expect(art.x - ((before?.x ?? 0) + (before?.width ?? 0))).toBe(gap);
     });
     for (const { art, hit } of rects) {
-      expect(hit).toEqual(hitAround(HIT_MARGINS.button, art));
+      expect(hit).toEqual(hitAround(art));
     }
   });
 });

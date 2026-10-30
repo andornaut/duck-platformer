@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { SCREEN } from "../data/screen";
 import { TOUCH } from "../data/touch";
-import { HIT_MARGINS } from "../layout/hitAreas";
+import { hitMargin } from "../layout/hitAreas";
 import { TOUCH_CONTROLS } from "../layout/touchControls";
 import {
   combineIntents,
@@ -36,38 +36,35 @@ describe("keyIntent", () => {
 
 describe("touchRoleAt", () => {
   const { jump, use } = TOUCH_CONTROLS;
-  const { jumpReach, touchControl } = HIT_MARGINS;
+  const useMargin = hitMargin(use.art);
+  const jumpMargin = hitMargin(jump.art);
   const right = (rect: { width: number; x: number }) => rect.x + rect.width;
   const bottom = (rect: { height: number; y: number }) => rect.y + rect.height;
   it.each<[string, { x: number; y: number }, string]>([
     ["Use's centre", use.centre, "use"],
-    ["just inside Use's left margin", { x: use.art.x - touchControl, y: use.centre.y }, "use"],
-    [
-      "just outside Use's left margin",
-      { x: use.art.x - touchControl - 1, y: use.centre.y },
-      "move",
-    ],
-    ["just inside Use's top margin", { x: use.centre.x, y: use.art.y - touchControl }, "use"],
-    ["just outside Use's top margin", { x: use.centre.x, y: use.art.y - touchControl - 1 }, "move"],
-    [
-      "just outside Use's right margin",
-      { x: right(use.art) + touchControl, y: use.centre.y },
-      "move",
-    ],
+    ["just inside Use's left margin", { x: use.art.x - useMargin, y: use.centre.y }, "use"],
+    ["just outside Use's left margin", { x: use.art.x - useMargin - 1, y: use.centre.y }, "move"],
+    ["just inside Use's top margin", { x: use.centre.x, y: use.art.y - useMargin }, "use"],
+    ["just outside Use's top margin", { x: use.centre.x, y: use.art.y - useMargin - 1 }, "move"],
+    ["just outside Use's right margin", { x: right(use.art) + useMargin, y: use.centre.y }, "move"],
     ["Jump's centre", jump.centre, "jump"],
-    ["just inside Jump's left reach", { x: jump.art.x - jumpReach, y: jump.centre.y }, "jump"],
-    ["just outside Jump's left reach", { x: jump.art.x - jumpReach - 1, y: jump.centre.y }, "move"],
+    ["just inside Jump's left reach", { x: jump.art.x - jumpMargin, y: jump.centre.y }, "jump"],
+    [
+      "just outside Jump's left reach",
+      { x: jump.art.x - jumpMargin - 1, y: jump.centre.y },
+      "move",
+    ],
     ["the screen's bottom-right corner", { x: SCREEN.width - 1, y: SCREEN.height - 1 }, "jump"],
-    // Above Jump and right of Use, which the old Use area took.
-    ["just above Jump's reach", { x: jump.centre.x, y: jump.art.y - jumpReach - 1 }, "move"],
+    // Above Jump's area and right of Use's.
+    ["just above Jump's reach", { x: jump.centre.x, y: jump.art.y - jumpMargin - 1 }, "move"],
     [
       "in both areas, nearer Use",
-      { x: jump.art.x - jumpReach, y: bottom(use.art) + touchControl - 1 },
+      { x: jump.art.x - jumpMargin, y: bottom(use.art) + useMargin - 1 },
       "use",
     ],
     [
       "in both areas, nearer Jump",
-      { x: right(use.art) + touchControl - 1, y: jump.art.y - jumpReach },
+      { x: right(use.art) + useMargin - 1, y: jump.art.y - jumpMargin },
       "jump",
     ],
     ["the open middle", { x: 320, y: 180 }, "move"],

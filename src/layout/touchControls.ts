@@ -1,6 +1,6 @@
 import { SCREEN } from "../data/screen";
 import type { Point, Rect } from "../data/types";
-import { HIT_MARGINS, hitAround, type PressArea } from "./hitAreas";
+import { hitAround, type PressArea } from "./hitAreas";
 
 export type TouchControl = "jump" | "use";
 
@@ -19,13 +19,14 @@ const JUMP_CENTRE = { x: 667, y: 307 };
 const USE_ART = buttonArt(USE_CENTRE);
 const JUMP_ART = buttonArt(JUMP_CENTRE);
 
-// Jump's press area: its button grown by jumpReach toward Use and the game (left and up), and out
-// to the screen's right and bottom edges, where a thumb reaching for it lands.
+// Jump's press area: its button grown by the rule (hitAround), and on out to the screen's right
+// and bottom edges, where a thumb reaching for it lands.
+const JUMP_GROWN = hitAround(JUMP_ART);
 const JUMP_HIT: Rect = {
-  height: SCREEN.height - (JUMP_ART.y - HIT_MARGINS.jumpReach),
-  width: SCREEN.width - (JUMP_ART.x - HIT_MARGINS.jumpReach),
-  x: JUMP_ART.x - HIT_MARGINS.jumpReach,
-  y: JUMP_ART.y - HIT_MARGINS.jumpReach,
+  height: SCREEN.height - JUMP_GROWN.y,
+  width: SCREEN.width - JUMP_GROWN.x,
+  x: JUMP_GROWN.x,
+  y: JUMP_GROWN.y,
 };
 
 // Art's touch buttons, in base pixels: each button's centre, where it is drawn, the area a touch
@@ -41,7 +42,7 @@ export const TOUCH_CONTROLS: Readonly<
   use: {
     art: USE_ART,
     centre: USE_CENTRE,
-    hit: hitAround(HIT_MARGINS.touchControl, USE_ART),
+    hit: hitAround(USE_ART),
     labelRaise: 3,
     labelRoom: 55,
   },

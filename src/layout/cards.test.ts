@@ -15,7 +15,7 @@ import quitSheet from "../../public/art/sprites/ui-quit.json";
 import { SCREEN } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { Point, Rect } from "../data/types";
-import { MIN_TARGET, type PressArea, pressedArea } from "./hitAreas";
+import { HIT_RULE, type PressArea, pressedArea } from "./hitAreas";
 import { CARD_TEXT_SCALE, PAUSE_BUTTON, PAUSE_CARD } from "./pauseCard";
 import { focusRingAround, SETTINGS_CARD, STEPS_CARD } from "./settingsCard";
 
@@ -92,12 +92,14 @@ const textRect = (at: Point, text: string): Rect => ({
 });
 
 describe("card layouts", () => {
-  it.each(HIT_AREAS)("%s is a touch target inside the screen", (_, hit) => {
-    expect({
-      inside: inside(SCREEN_RECT, hit),
-      large: hit.width >= MIN_TARGET && hit.height >= MIN_TARGET,
-    }).toEqual({ inside: true, large: true });
-  });
+  it.each(HIT_AREAS)(
+    "%s is a touch target, its part on the screen at least the least size",
+    (_, hit) => {
+      const width = Math.min(SCREEN_RECT.width, hit.x + hit.width) - Math.max(0, hit.x);
+      const height = Math.min(SCREEN_RECT.height, hit.y + hit.height) - Math.max(0, hit.y);
+      expect(Math.min(width, height)).toBeGreaterThanOrEqual(HIT_RULE.minTarget);
+    },
+  );
 
   it.each(CARDS)("the %s holds its buttons, no two drawn overlapping", (_, card, areas) => {
     const outside = areas.filter(({ art }) => !inside(card, art)).map(({ key }) => key);
