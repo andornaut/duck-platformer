@@ -17,11 +17,11 @@ export const THEMES: Readonly<Record<string, ThemePlan>> = {
   // each standing where art puts its bottom edge.
   park: {
     backdrops: [
-      { character: "park-sky", row: 0 },
+      { character: "park-sky", parallax: { x: 0, y: 0 }, row: 0 },
       { character: "park-clouds", row: 3 },
-      { character: "park-city", row: 28 },
+      { character: "park-city", parallax: { x: 0.15, y: 0.05 }, row: 28 },
       { character: "park-far-trees", row: 40 },
-      { character: "park-treetops", row: 15 },
+      { character: "park-treetops", parallax: { x: 0.4, y: 0.15 }, row: 15 },
     ],
     door: "park-gate",
     looks: { ground: "grass", raised: "grass" },
@@ -77,7 +77,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     solids: [{ col: 0, cols: 60, look: "ground", row: 50, rows: 10 }],
     theme: "park",
   },
-  // Difficulty 3, along the high terrace (30): gaps of 12 and 16, with thorns 4 below the edges.
+  // Difficulty 3, along the high terrace (30): gaps of 12 and 16, with red edges below the gaps.
   "park-high-walk": {
     backdrops: [
       { character: "park-lamp", col: 8, row: 23 },
@@ -88,10 +88,16 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     entry: { row: 30 },
     exit: { row: 30 },
     objects: [
-      { character: "thorn-hedge", col: 20, cols: 12, row: 34 },
-      { character: "thorn-hedge", col: 46, cols: 16, row: 34 },
+      { character: "red-edge-top", col: 20, cols: 12, row: 34 },
+      { character: "red-edge-top", col: 46, cols: 16, row: 34 },
+    ],
+    outOfReach: [
+      { col: 20, row: 35 },
+      { col: 46, row: 35 },
     ],
     solids: [
+      { col: 20, cols: 12, look: "raised", row: 35, rows: 25 },
+      { col: 46, cols: 16, look: "raised", row: 35, rows: 25 },
       { col: 0, cols: 20, look: "raised", row: 30, rows: 30 },
       { col: 32, cols: 14, look: "raised", row: 30, rows: 30 },
       { col: 62, cols: 28, look: "raised", row: 30, rows: 30 },
@@ -119,6 +125,28 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { col: 26, cols: 6, look: "raised", row: 48, rows: 12 },
       { col: 32, cols: 8, look: "raised", row: 49, rows: 11 },
       { col: 40, cols: 32, look: "ground", row: 50, rows: 10 },
+    ],
+    theme: "park",
+  },
+  // A short press clears the one-tile step beneath the red ceiling; a full jump hits it.
+  // The overhead block is seven tiles above the lawn, beyond the full jump's reach.
+  "park-low-ceiling": {
+    cols: 72,
+    difficulty: 3,
+    entry: { row: 50 },
+    exit: { row: 50 },
+    objects: [
+      { character: "red-edge-bottom", col: 20, cols: 18, row: 45 },
+      { character: "red-edge-left", col: 19, row: 43, rows: 2 },
+      { character: "red-edge-right", col: 38, row: 43, rows: 2 },
+      { character: "red-edge-top", col: 20, cols: 18, row: 42 },
+    ],
+    outOfReach: [{ col: 20, row: 43 }],
+    solids: [
+      { col: 0, cols: 26, look: "ground", row: 50, rows: 10 },
+      { col: 20, cols: 18, look: "raised", row: 43, rows: 2 },
+      { col: 26, cols: 6, look: "raised", row: 49, rows: 11 },
+      { col: 32, cols: 40, look: "ground", row: 50, rows: 10 },
     ],
     theme: "park",
   },
@@ -150,14 +178,14 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     theme: "park",
   },
   // Difficulty 2, down from the high terrace (30) to the lawn (50) in drops of 6, 7 and 7, then a
-  // thorny hedge to jump.
+  // red edge to jump.
   "park-slope-down": {
     backdrops: [{ character: "park-lamp", col: 24, row: 29 }],
     cols: 80,
     difficulty: 2,
     entry: { row: 30 },
     exit: { row: 50 },
-    objects: [{ character: "thorn-hedge", col: 60, cols: 3, row: 49 }],
+    objects: [{ character: "red-edge-top", col: 60, cols: 3, row: 49 }],
     solids: [
       { col: 0, cols: 20, look: "raised", row: 30, rows: 30 },
       { col: 20, cols: 14, look: "raised", row: 36, rows: 24 },
@@ -187,8 +215,8 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     ],
     theme: "park",
   },
-  // Difficulty 2, down from the high terrace (30) to the middle terrace (40), then two thorny
-  // hedges to jump.
+  // Difficulty 2, down from the high terrace (30) to the middle terrace (40), then two red
+  // edges to jump.
   "park-steps-down": {
     backdrops: [{ character: "park-tree", col: 4, row: 17 }],
     cols: 70,
@@ -196,8 +224,8 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     entry: { row: 30 },
     exit: { row: 40 },
     objects: [
-      { character: "thorn-hedge", col: 36, cols: 3, row: 39 },
-      { character: "thorn-hedge", col: 52, cols: 2, row: 39 },
+      { character: "red-edge-top", col: 36, cols: 3, row: 39 },
+      { character: "red-edge-top", col: 52, cols: 2, row: 39 },
     ],
     solids: [
       { col: 0, cols: 22, look: "raised", row: 30, rows: 30 },
@@ -225,7 +253,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     ],
     theme: "park",
   },
-  // Difficulty 2, up from the lawn (50) to the middle terrace (40): a thorny hedge to jump, then
+  // Difficulty 2, up from the lawn (50) to the middle terrace (40): a red edge to jump, then
   // two rises of 5.
   "park-terrace-up": {
     backdrops: [
@@ -237,7 +265,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     entry: { row: 50 },
     exit: { row: 40 },
     objects: [
-      { character: "thorn-hedge", col: 12, cols: 3, row: 49 },
+      { character: "red-edge-top", col: 12, cols: 3, row: 49 },
       { character: "park-bench", col: 50, row: 38 },
     ],
     solids: [
@@ -247,7 +275,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     ],
     theme: "park",
   },
-  // Difficulty 2, up from the middle terrace (40) to the high terrace (30): a thorny hedge to jump,
+  // Difficulty 2, up from the middle terrace (40) to the high terrace (30): a red edge to jump,
   // then two rises of 5. A tree's branch over the high terrace, 6 up, for a look out.
   "park-upper-terrace": {
     backdrops: [{ character: "park-tree", col: 46, row: 17 }],
@@ -256,7 +284,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     entry: { row: 40 },
     exit: { row: 30 },
     objects: [
-      { character: "thorn-hedge", col: 12, cols: 3, row: 39 },
+      { character: "red-edge-top", col: 12, cols: 3, row: 39 },
       { character: "park-branch", col: 48, row: 24 },
     ],
     solids: [

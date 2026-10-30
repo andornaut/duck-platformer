@@ -296,6 +296,34 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 3,
     rows: 2,
   },
+  "red-edge-bottom": {
+    archetype: "hazard",
+    art: "hazard-bottom",
+    cols: 1,
+    rows: 1,
+    tileset: "tiles-platforming",
+  },
+  "red-edge-left": {
+    archetype: "hazard",
+    art: "hazard-left",
+    cols: 1,
+    rows: 1,
+    tileset: "tiles-platforming",
+  },
+  "red-edge-right": {
+    archetype: "hazard",
+    art: "hazard-right",
+    cols: 1,
+    rows: 1,
+    tileset: "tiles-platforming",
+  },
+  "red-edge-top": {
+    archetype: "hazard",
+    art: "hazard-top",
+    cols: 1,
+    rows: 1,
+    tileset: "tiles-platforming",
+  },
   "roofline-brownstone": {
     archetype: "scenery",
     art: "roofline-brownstone",
@@ -351,6 +379,18 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     rows: 10,
   },
   // A street door to a room, drawn with the street's door art.
+  "street-city-far": {
+    archetype: "backdrop",
+    art: "street-city-far",
+    cols: 60,
+    rows: 50,
+  },
+  "street-city-mid": {
+    archetype: "backdrop",
+    art: "street-city-mid",
+    cols: 60,
+    rows: 50,
+  },
   "street-door": {
     archetype: "door",
     art: "door",
