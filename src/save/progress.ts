@@ -51,21 +51,6 @@ export function progressProblem(
   return open.includes(stand) ? undefined : `she stands on ${stand}, not an open zone`;
 }
 
-// CLEANUP (added 2026-10-30): version 2 saved this lap's route and where it resumed. Its zones
-// count as completed, except a final zone she was only entering, and she stands on its last
-// node. Remove once every player's version 2 save has loaded and been written as version 3.
-function fromLapRoute(map: ZoneMap, save: StoredObject): StoredObject {
-  const { at, route } = save;
-  if (at === "beginning" || !isNames(route)) {
-    return save;
-  }
-  const zones = route.filter((id) =>
-    map.nodes.some((node) => node.id === id && node.kind === "zone"),
-  );
-  const completed = at === "zone" ? zones.slice(0, -1) : zones;
-  return { at: "map", completed: [...new Set(completed)], stand: route.at(-1) };
-}
-
 // The progress save's format on map and zones: a save that no longer fits them (a renamed node, a
 // path not built, a zone removed) is refused, and the player starts from the beginning.
 export function progressFormat(
@@ -100,7 +85,7 @@ export function progressFormat(
       return valid.ok ? { ok: true, value: { ...valid.value } } : valid;
     },
     fresh: () => BEGINNING,
-    migrations: { 2: (save) => fromLapRoute(map, save) },
+    migrations: {},
     version: PROGRESS_VERSION,
   };
 }

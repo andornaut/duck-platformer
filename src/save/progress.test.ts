@@ -63,7 +63,8 @@ describe("progressFormat", () => {
   it.each([
     ["not JSON", "{not json"],
     ["no version", JSON.stringify({ at: "map", completed: [], stand: "start" })],
-    ["a version older than 2", stored({ at: "map", route: ["start"], seed: 7 }, 1)],
+    ["version 1", stored({ at: "map", route: ["start"] }, 1)],
+    ["version 2", stored({ at: "map", route: ["start"], seed: 7 }, 2)],
     ["an unknown place", stored({ at: "shop", completed: [], stand: "start" })],
     [
       "completed zones that are not a list",
@@ -88,26 +89,6 @@ describe("progressFormat", () => {
   it("leaves a later version's save alone and starts from the beginning", () => {
     const raw = stored({ at: "map", completed: [], stand: "start" }, PROGRESS_VERSION + 1);
     expect(loadSave(FORMAT, raw)).toMatchObject({ save: BEGINNING, status: "newer" });
-  });
-
-  // A version 2 save's route: its zones completed, but a final zone she was only entering, and
-  // she stands on its last node.
-  it.each<[string, object, Progress]>([
-    ["the beginning", { at: "beginning" }, BEGINNING],
-    ["entering the first zone", { at: "zone", route: ["start"], seed: 7 }, at("start")],
-    [
-      "entering a zone past the fork",
-      { at: "zone", route: ["start", "fork", "built"], seed: 7 },
-      at("built", ["start"]),
-    ],
-    [
-      "on the map after clearing a zone past the fork",
-      { at: "map", route: ["start", "fork", "built"], seed: 7 },
-      at("built", ["start", "built"]),
-    ],
-  ])("migrates a version 2 save %s", (_, fields, progress) => {
-    const raw = JSON.stringify({ ...fields, version: 2 });
-    expect(loadSave(FORMAT, raw)).toEqual({ save: progress, status: "loaded" });
   });
 
   it("refuses to store a stand that is not open", () => {
