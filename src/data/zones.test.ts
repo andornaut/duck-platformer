@@ -4,13 +4,16 @@ import { describe, expect, it } from "vitest";
 import manifestJson from "../../public/art/manifest.json";
 import lobbyTiles from "../../public/art/tilesets/tiles-lobby.json";
 import streetTiles from "../../public/art/tilesets/tiles-street.json";
-import { resolveNames } from "../rules/tiles";
+import { resolveNames, zoneLayout } from "../rules/tiles";
+import { startZone } from "../rules/zone";
 import { zonePlanFor } from "../rules/zonePlans";
 import type { ArtManifest } from "../view/aseprite";
+import { DUCK_FRAME } from "../view/duck";
 import { artKind } from "../view/objectArt";
 import { lookTiles, type Tileset } from "../view/tiles";
 import { ARCHETYPES, NO_INTERACTION, NO_REACTION, STATIC_MOTION } from "./archetypes";
 import { CHARACTERS } from "./characters";
+import { DUCK } from "./duck";
 import { ZONE_MAP } from "./map";
 import { ROOMS } from "./rooms";
 import { SCREEN, TILE } from "./screen";
@@ -176,6 +179,32 @@ describe("the real zones", () => {
     for (const seed of DOOR_SEEDS) {
       expect(doorsOf(zonePlanFor(seed, key)).length, `seed ${seed}`).toBeGreaterThan(0);
     }
+  });
+});
+
+// Seeds each recipe is assembled for, to check where she starts.
+const START_SEEDS = [1, 2, 3, 4, 5];
+
+// Her collision box where a plan starts her: it must start clear of the first column, or she
+// would turn back (rules/zone's turnedBack) on arrival.
+const startsClear = (plan: ZonePlan) => {
+  const layout = zoneLayout(TILE, DUCK_FRAME, CATALOGUE, {}, {}, new Set(), plan);
+  const start = startZone(DUCK, layout, 1);
+  const area = layout.areas[start.area];
+  return area !== undefined && start.duck.x >= area.backX && !start.turnedBack;
+};
+
+describe("every zone's start", () => {
+  it.each([
+    ...Object.entries(ZONES_BY_KEY),
+    ...TEST_ZONES.map((plan, index): [string, ZonePlan] => [`test zone ${index + 1}`, plan]),
+  ])("starts %s clear of its first column", (_, plan) => {
+    expect(startsClear(plan)).toBe(true);
+  });
+
+  it.each(Object.keys(RECIPES))("starts recipe %s clear of its first column", (key) => {
+    const failing = START_SEEDS.filter((seed) => !startsClear(zonePlanFor(seed, key)));
+    expect(failing).toEqual([]);
   });
 });
 

@@ -104,7 +104,7 @@ const OBJECT_COLOURS: Readonly<Record<Collision, number>> = {
   solid: 0xe4a672,
   use: 0x63c74d,
 };
-// Leaving a cleared zone fades to black, and where the next zone plays in this scene, back, each
+// Leaving an ended zone fades to black, and where the next zone plays in this scene, back, each
 // way this long, with play held still.
 const FADE_MS = 250;
 
@@ -355,7 +355,7 @@ export class ZoneScene extends Scene {
       this.openRoom();
     }
     for (let step = 0; step < frame.steps; step++) {
-      const action = stepAction(this.hold, this.zone.cleared);
+      const action = stepAction(this.hold, this.zone.cleared || this.zone.turnedBack);
       if (action === "hold") {
         break;
       }
@@ -386,7 +386,7 @@ export class ZoneScene extends Scene {
     this.drawMoveHint(touches);
   }
 
-  // Fades out of the cleared zone, play held still, then leaves it.
+  // Fades out of the ended zone, play held still, then leaves it.
   private fadeOut(): void {
     this.hold = "fade";
     const camera = this.cameras.main;
@@ -438,12 +438,18 @@ export class ZoneScene extends Scene {
     this.scene.pause();
   }
 
-  // Leaves the cleared zone completed, with her standing on it on the map, play held until the
-  // next screen takes over: the celebration after a last zone (isLastZone), else the map. Without
-  // a map node, plays the recipe ?zone=<key> names assembled again, or the next zone in the
-  // chain, fading back in.
+  // Leaves the ended zone, play held until the next screen takes over, with her standing on it on
+  // the map. Cleared, it is completed, and after a last zone (isLastZone) the celebration shows
+  // first; turned back, it is left as it was and the save is unchanged. Without a map node, plays
+  // the recipe ?zone=<key> names assembled again, or the next zone in the chain (the same one,
+  // turned back), fading back in.
   private leave(): void {
+    const { turnedBack } = this.zone;
     if (this.mapNode !== undefined) {
+      if (turnedBack) {
+        this.scene.start("map");
+        return;
+      }
       saveCompleted(this.mapNode);
       this.scene.start(isLastZone(ZONE_MAP, this.mapNode) ? "celebration" : "map");
       return;
@@ -452,7 +458,7 @@ export class ZoneScene extends Scene {
       const seed = askedAssemblySeed(window.location.search) ?? newAssemblySeed();
       this.loadPlan(zonePlanFor(seed, this.trial));
     } else {
-      this.loadZone(nextZoneIndex(this.zoneIndex, CHAIN.length));
+      this.loadZone(turnedBack ? this.zoneIndex : nextZoneIndex(this.zoneIndex, CHAIN.length));
     }
     this.drawObjects();
     this.drawDuck();

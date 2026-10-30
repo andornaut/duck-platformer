@@ -8,10 +8,10 @@ describe("stepAction", () => {
     [undefined, true, "leave"],
     ["door", false, "hold"],
     ["fade", false, "hold"],
-    // Fading out of the cleared zone, or faded out and waiting for the map: the scene must not
+    // Fading out of the ended zone, or faded out and waiting for the map: the scene must not
     // leave the zone again.
     ["fade", true, "hold"],
-  ])("with play held for %s and the zone cleared %s: %s", (hold, cleared, action) => {
-    expect(stepAction(hold, cleared)).toBe(action);
+  ])("with play held for %s and the zone ended %s: %s", (hold, ended, action) => {
+    expect(stepAction(hold, ended)).toBe(action);
   });
 });

@@ -154,6 +154,7 @@ export function areaLayout(
 ): AreaLayout {
   const tileset = area.tileset === undefined ? undefined : tilesets[area.tileset];
   return {
+    backX: tile,
     chunks: (area.chunks ?? []).map(({ col, cols }) => ({ width: cols * tile, x: col * tile })),
     entries: Object.fromEntries(
       Object.entries(area.entries).map(([name, point]) => [name, tilePoint(tile, point)]),

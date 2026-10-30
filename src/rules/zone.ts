@@ -32,8 +32,9 @@ export interface ZoneInput extends DuckInput {
 // motion, so a restart does not replay it. objects: each of the area's objects' top-left corner.
 // seconds: time since she entered the area, which places the objects on their tracks. door: the
 // index among the area's objects of the door she used, which holds the zone still while it
-// opens and its room shows, until leaveRoom. cleared: she reached the area's last column, which
-// holds it still for good.
+// opens and its room shows, until leaveRoom. cleared: she reached the area's last column, and
+// turnedBack: she went back into its first column; either holds it still for good, cleared
+// completing the zone and turnedBack leaving it as it was.
 export interface ZoneState {
   readonly area: string;
   readonly attempt: number;
@@ -46,6 +47,7 @@ export interface ZoneState {
   readonly seed: number;
   readonly steps: number;
   readonly tracks: readonly Track[];
+  readonly turnedBack: boolean;
   readonly useHeld: boolean;
 }
 
@@ -95,6 +97,7 @@ export function enterArea(
     objects: area.objects.map((object, index) => pathAt(object, tracks[index] as Track, 0)),
     seconds: 0,
     tracks,
+    turnedBack: false,
     // Use must go down after she arrives, so a press held from before does not act.
     useHeld: true,
   };
@@ -228,7 +231,8 @@ export function pushedAside(
 // she moves with it, and leaving it by a jump or a walk off its edge she keeps its speed along x
 // until she lands. A solid one running into her side pushes her ahead of it. Touching a hazard,
 // being pushed into a solid or falling out of the area restarts the zone at its start, the next
-// attempt. Her collision box reaching the area's last column, at any height, clears the zone.
+// attempt. Her collision box reaching the area's last column, at any height, clears the zone, and
+// reaching back into its first column ends it uncleared (turnedBack).
 // Use with her drawn frame over a door sets `door` (doorAt), and the zone holds still until
 // leaveRoom.
 export function stepZone(
@@ -238,7 +242,7 @@ export function stepZone(
   input: ZoneInput,
   zone: ZoneState,
 ): ZoneState {
-  if (zone.cleared || zone.door !== undefined) {
+  if (zone.cleared || zone.turnedBack || zone.door !== undefined) {
     return zone;
   }
   const area = areaOf(layout, zone.area);
@@ -318,6 +322,7 @@ export function stepZone(
     objects: objects.map(({ after }) => ({ x: after.x, y: after.y })),
     seconds: time,
     steps,
+    turnedBack: box.x < area.backX,
     useHeld: input.useHeld,
   };
 }

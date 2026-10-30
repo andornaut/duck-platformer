@@ -64,7 +64,10 @@ function courseLayout(tile: number, cols: number, solids: TileRect[], start: Poi
     plan,
   );
   const area = layout.areas.course as AreaLayout;
-  return { ...layout, areas: { course: { ...area, entries: { start }, exitX: Infinity } } };
+  return {
+    ...layout,
+    areas: { course: { ...area, backX: -Infinity, entries: { start }, exitX: Infinity } },
+  };
 }
 
 // A ledge tiles high, just right of where she stands still. She walks right, holding Jump for

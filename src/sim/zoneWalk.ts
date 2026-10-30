@@ -271,14 +271,15 @@ interface Try {
 
 const trailing = (tuning: DuckTuning, dir: -1 | 1, x: number) => (dir > 0 ? x : x + tuning.width);
 
-// Runs zone on one step at a time; step returns false once she restarts.
+// Runs zone on one step at a time; step returns false once she restarts or turns back into the
+// area's first column, which would end the zone, so no try counts a spot past it.
 function runner(tuning: DuckTuning, layout: ZoneLayout, start: ZoneState) {
   const run = {
     step: (input: ZoneInput) => {
       const before = run.zone.restarts;
       run.zone = stepZone(tuning, layout, STEP_SECONDS, input, run.zone);
       run.steps++;
-      return run.zone.restarts === before;
+      return run.zone.restarts === before && !run.zone.turnedBack;
     },
     steps: 0,
     zone: start,
@@ -623,7 +624,8 @@ function targetsFrom(
 // tries each stretch in range that she has not reached yet: a walk along her own surface, then
 // every jump at it, at every wait where something moves near. From a spot near the area's last
 // column on a surface that runs into it, she walks right to clear the zone. It never presses
-// Use, so doors and their rooms play no part. It stops when no try finds a new spot.
+// Use, so doors and their rooms play no part, and a try that takes her back into the first
+// column, which would end the zone, fails. It stops when no try finds a new spot.
 export function walkZone(tuning: DuckTuning, layout: ZoneLayout): ZoneWalk {
   const surfaces = zoneSurfaces(tuning, layout);
   const seen = new Map<string, Spot>();

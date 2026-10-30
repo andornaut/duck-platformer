@@ -23,6 +23,7 @@ const SEED = 42;
 const GROUND = { height: 40, width: 1100, x: 0, y: 300 };
 const STILL: ZoneInput = { jumpHeld: false, move: 0, useHeld: false };
 const RIGHT: ZoneInput = { ...STILL, move: 1 };
+const LEFT: ZoneInput = { ...STILL, move: -1 };
 const STATIC: Motion = {
   algorithm: "static",
   direction: "right",
@@ -63,6 +64,7 @@ function object(fields: Partial<ObjectLayout> & { origin: Point }): ObjectLayout
 
 function area(objects: readonly ObjectLayout[], fields: Partial<AreaLayout> = {}): AreaLayout {
   return {
+    backX: 12,
     chunks: [],
     entries: { start: { x: 100, y: GROUND.y } },
     exitX: GROUND.width - 12,
@@ -259,6 +261,36 @@ describe("clearing", () => {
     const first = states.findIndex((state) => state.cleared);
     expect(first).toBeGreaterThan(0);
     expect(states.at(-1)).toBe(states[first]);
+  });
+});
+
+describe("turning back", () => {
+  // Her box's left edge at x, standing on the ground.
+  const at = (x: number) => {
+    const start = startZone(DUCK, zone(area([])), SEED);
+    return { ...start, duck: { ...start.duck, x } };
+  };
+  const backX = 12;
+  it.each([
+    ["her box reaching back past the first column's right edge", backX - 1, true],
+    ["her box starting at the first column's right edge", backX, false],
+  ])("standing still with %s: turned back %s", (_, left, turnedBack) => {
+    const next = stepZone(DUCK, zone(area([])), STEP, STILL, at(left));
+    expect({ cleared: next.cleared, turnedBack: next.turnedBack }).toEqual({
+      cleared: false,
+      turnedBack,
+    });
+  });
+
+  it("runs left to the edge, turns back, and then holds still", () => {
+    const states = run(zone(area([])), 6, LEFT);
+    const first = states.findIndex((state) => state.turnedBack);
+    expect(first).toBeGreaterThan(0);
+    expect(states.at(-1)).toBe(states[first]);
+  });
+
+  it("starts each attempt afresh, not turned back", () => {
+    expect(startZone(DUCK, zone(area([])), SEED).turnedBack).toBe(false);
   });
 });
 

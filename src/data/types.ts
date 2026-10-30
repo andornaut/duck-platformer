@@ -482,11 +482,13 @@ export interface ObjectLayout {
   readonly width: number;
 }
 
-// An area in base pixels. Falling below its height restarts the zone, and her collision box
-// reaching past exitX, the left edge of its last column, clears it. terrain and tileset are its
+// An area in base pixels. Falling below its height restarts the zone, her collision box
+// reaching past exitX, the left edge of its last column, clears it, and reaching back past backX,
+// the right edge of its first column, ends it without clearing it. terrain and tileset are its
 // plan's, in tiles, for drawing. chunks: an assembled area's chunks, left to right, for the
 // camera; none in a hand-built one.
 export interface AreaLayout {
+  readonly backX: number;
   readonly chunks: readonly { readonly width: number; readonly x: number }[];
   readonly entries: Readonly<Record<string, Point>>;
   readonly exitX: number;
