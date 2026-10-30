@@ -9,6 +9,21 @@ The art plan and pipeline for Duck Platformer. Art owns `art/` and the served ar
 - Chibi proportions: the head at least as big as the body, so a character reads from head shape and markings alone.
 - Style decisions are the user's (see Options and decisions).
 
+## Zone design guide
+
+- Accents: reserve amber for doors and small points of interest. Other hues add restrained foliage, signs and character details. Red contact edges always mean danger in every theme.
+- Colour: each zone has one dominant family, carried through its atmosphere and architecture. The street uses pale blue and slate; the park uses peach and tan. Keep distant colours close to the sky and spend saturation on a few useful accents.
+- Detail: distant scenery uses broad silhouettes without window grids. Near architecture uses sparse window groups and quiet surfaces. Avoid repeated stripes and single-pixel texture that compete with the duck.
+- Layouts: the first level has a fixed layout. Every subsequent level is randomized, including the final level. Reusable tiles, scenery and gameplay chunks assemble independently; a background image never encodes a required route. Levels are at most two screens tall (720px, 60 rows).
+- Obstacles: use ledges, cliffs, walls and ceilings. Short-clearance jumps and full-height jumps share the same visual vocabulary. Ladders are not part of the obstacle set. Difficulty and jump requirements belong to gameplay data, with variation around a common configurable difficulty.
+- Readability: safe walkable tops use a dark edge and a bright two-pixel lip. On darker scenery the lip holds at least 2:1 against its backdrop; against a pale sky the dark edge supplies the separation, so retain both parts of the edge. Dangerous faces instead use the shared red band, without spikes or a safe light lip. Text keeps 4.5:1 and meaningful UI marks 3:1 contrast.
+
+### Parallax building blocks
+
+Sky, distant skyline and middle-distance scenery are separate repeating images. Architecture that supports a ledge, and every attached door, railing or other prop, stays on the same plane as terrain. All physical surfaces move together, so the art never suggests that a landing slides away from its building.
+
+The design starts with horizontal camera factors of 0 for sky, 0.15 for the far skyline, 0.4 for middle scenery and 1 for play. Gameplay owns the runtime values; initial far and middle vertical factors are 0.05 and 0.15. Vertical movement should be weaker on distant layers to keep climbs legible. Windows between near buildings reveal the distant layers; do not fill every opening with foreground decoration. Repeating layers must cover camera travel without exposing an empty edge.
+
 ## Process: critique and revise
 
 Every asset goes through 2 to 4 loops of render, critique against the checklist, and revise, until nothing on the checklist fails. A higher quality bar means more loops, not one bigger pass.
@@ -317,15 +332,37 @@ Every environment theme (a zone's street, a chunk theme's park) follows these ru
 
 - One sky hue and a limited, tonal palette built around it. Every background layer is a step or two along that hue's ramp, and saturated colour is kept for the few things that matter. Park: a skin1 (`#e8b796`) sky, stepping to tan (`#e4a672`) from y 200 behind play.
 - Background layers read as atmosphere: the far city, the distant trees and the tall treetops sit close to the sky's value and saturation, low in contrast, and step down in value only slightly as they come nearer. Park: the city and the treetops' base skin2 (`#c28569`, 1.46:1 against the tan sky), shaded brown (`#b86f50`), lit tan; no windows in the far city.
-- Walkable tops are the brightest edges in the scene: a 2px light lip under a 1px dark edge, the lip at least 2:1 against whatever is directly behind it, measured in greyscale. Cream (`#ead4aa`) is the default lip; use white where cream falls short. Park: cream on grass, paths, benches and branches (2.12:1 against skin2); white on the stone stairs and the bandstand roof, which stand against the tan treetops (2.10:1, where cream would be 1.45:1); dark edges dark green, dark brown or plum.
+- Walkable tops are the brightest edges in the scene: a 2px light lip under a 1px dark edge. Against darker scenery the lip holds at least 2:1 in greyscale; against pale sky the dark edge carries separation. Cream (`#ead4aa`) is the default lip; use white where cream falls short. Park: cream on grass, paths, benches and branches (2.12:1 against skin2); white on the stone stairs and the bandstand roof, which stand against the tan treetops (2.10:1, where cream would be 1.45:1); dark edges dark green, dark brown or plum.
 - Ground is a bright top band two or three rows deep over a soft, low-contrast fill, never a busy or dark mass. Clusters in the fill are 2px and sparse (about one tile in five), and an exposed side shows a narrow band of a darker step. Park: a grass top (dark-green edge, cream lip, green body) over a green turf row with 2px dark-green roots, then brown soil with dark-brown 2px pebbles; a 3px dark-brown band and a plum edge on an exposed side.
 - Tree crowns are lobed and cel-shaded, never round blobs: a mass of overlapping lobes in the shade colour, the base colour over it a little up and left, then a few small lit lobes on the top-left only, so the edge is broken and no colour sits as a round blob inside another (a round orange or gold blob reads as a coin). Park: near crowns rust over dark brown with ochre lit lobes; background crowns skin2 over brown, unlit.
 - Steps are soft: a step of 1 or 2 rows is a tap's walk-up, drawn as a rounded grass lip with a stone stair tread on about every other step; a taller terrace face is turf over soil, any height. Collision is the full tile, and there are no slopes. Park: steps 2 columns deep and 2 rows high; terrace faces run `soil-left` or `soil-right` down under the turf.
 - Saturation is spent where it matters: the walkable lips, the hazards, the accents that guide the eye (an awning, a lit door, a crown in the foreground). Props and backdrops otherwise stay within the palette's tones.
-- Hazards read as hazards, never as ledges or pickups: no light lip on a hazard, a spiky or watery silhouette, and its own accent. Park: the thorns' dark-red tips; the pond's water surface 4px below the ground line with white ripples.
-- Zone 1, the street, is the cool counterpart: a pale steel morning. Its sky is lgrey (`#c0cbdc`) for the top 48px and grey (`#8b9bb4`) behind the whole street; faded downtown skyscrapers stand in two layers, grey shaded slate (`#5a6988`) and then slate shaded dslate (`#3a4466`); buildings and shopfronts are slate, dslate and grey with navy windows; the sidewalk is a white-lipped pale concrete band (lgrey slabs) over a slate face; every ledge's lip is white, at least 2.82:1 against the grey behind it (the rooftop cornices and the water tank) and 5.51:1 against the facades; the warm accents are the ochre-and-cream awnings, the cream sign icons and the amber door and cab. `floor1.py` draws the pieces with warm ramp names and recolours them through its `COOL_*` maps.
+- Hazard surfaces use the same flat red contact band in every zone, never spikes, a safe light lip or a pickup shape. The pond and thorn images remain in the asset catalogue for compatibility; new contact-edge obstacles use the shared strips.
+- Zone 1, the street, is the cool counterpart: a pale steel morning. Its sky is flat lgrey (`#c0cbdc`); separate window-free city silhouettes use grey (`#8b9bb4`) and slate (`#5a6988`); buildings and shopfronts are slate, dslate and grey with quiet dslate windows; the sidewalk is a white-lipped pale concrete band (lgrey slabs) over a slate face; every ledge pairs a navy edge with a white lip: white holds 2.82:1 against grey and 5.51:1 against slate; navy holds 8.48:1 against the pale sky; the warm accents are the ochre-and-cream awnings, the cream sign icons and the amber door and cab. `floor1.py` draws the pieces with warm ramp names and recolours them through its `COOL_*` maps.
 - Repeating backdrops tile at widths that divide 720, so seams never show.
 - Every scene is checked in greyscale: each walkable top separates from what is behind it, the ground band reads over its fill, and the background stays behind play.
+
+## Modular platforming tiles
+
+`art/tools/obstacles.py` builds `tiles-platforming`: 17 tiles, each 12x12, packed into a 96x36 PNG with eight columns. Solid blue blocks and one-way ledges assemble independently of scenery. A level chooses the terrain look `platform`; individual characters can choose this tileset while their area uses a different theme.
+
+- `one-way-ledge-left`, `one-way-ledge-middle`, `one-way-ledge-right`: thin safe ledges, transparent underneath. Only falling onto the top lands on them.
+- `platform-bottom`, `platform-bottom-left`, `platform-bottom-right`: solid underside and lower corners for floating blocks and ceilings.
+- `platform-face`, `platform-face-left`, `platform-face-right`: solid fill and exposed cliff or wall edges, repeated to any height.
+- `platform-top`, `platform-top-joint`, `platform-top-left`, `platform-top-right`: solid safe tops, repeated to any width.
+
+### Shared red contact edges
+
+For a dangerous top, use a plain solid face under the hazard instead of a safe white-lipped top. All themes use the same flat strip: two pixels of Endesga red (`#e43b44`) with a one-pixel ink backing. No spikes. Contact with any part of the three-pixel strip restarts the level at its beginning. These tiles are hazards with no solid collision; place them in the cell immediately outside the supporting solid, which retains its ordinary collision. Repeat horizontally for floors and ceilings, vertically for walls. The orientation names describe the face of the supporting solid, not the edge of the hazard's own cell.
+
+| Tile            | Placement relative to solid | Hit box within its 12x12 cell (x, y, width, height) |
+| --------------- | --------------------------- | --------------------------------------------------- |
+| `hazard-bottom` | below                       | 0, 0, 12, 3                                         |
+| `hazard-left`   | left                        | 9, 0, 3, 12                                         |
+| `hazard-right`  | right                       | 0, 0, 3, 12                                         |
+| `hazard-top`    | above                       | 0, 9, 12, 3                                         |
+
+Red strips never carry the bright safe lip. Red is a consistent danger cue across zones; the contrasting ink backing keeps the thin edge visible against both pale and dark scenery. Gameplay chooses the placement and clearance, including dangerous ceilings over short-jump routes and dangerous sides beside landings.
 
 ## Zone 1: New York street
 
@@ -335,9 +372,7 @@ A lost duck travels zone to zone across a map with forks. Zone 1 is a downtown N
 - The street is 720px (60 tiles) tall: the sidewalk's top is y 600 (row 50), with sidewalk and road filling rows 50 to 59 below it so the camera can hold her feet two thirds down the screen. The ground storey runs from y 420 to the sidewalk, and storeys stack every 180px above: a two-storey roof is at y 240 (row 20) and a three-storey roof at y 60 (row 5), the tallest that fits. A water tower (its tank top 6 tiles above its roof) fits on a two-storey roof, not a three-storey one. Every street piece's bottom y below is in that frame.
 - Street tiles (`tiles-street`): a pale concrete sidewalk (tops alternating with a 2px joint every 24px, ends, a slate face), a pale stone kerb where it meets a cross street, the road one tile lower, an ochre-and-cream one-way shop awning, a dark-brown one-way canopy with a white lip, a 2-tile planter with a hedge top, the cellar hatch and its pit, and the door as a 3x4 piece: a pair of lit amber glass doors, 36x48, the brightest thing at the door, for a room's door where the level has one.
 - Climbing tiles, appended so every earlier index holds: one-way fire-escape landings (black iron), window sills, a rooftop cornice and a water tower's flat top, each with left, middle and right tiles at any width. Every ledge's top carries the same 2px white lip under a 1px dark edge, so it reads against any facade in greyscale.
-- Climbing backdrops: an upper storey for each tall facade (48x180, stacking above the facade piece every 180px with no seam), a roofline to cap it (the cornice tiles go along its top), a fire-escape railing to stand on each landing, a ladder between landings, and a water tower whose tank top is 6 tiles above its roof. Gameplay places them at the reaches (a tap rises 4 tiles, a full hold 6).
-- Ladders come in one piece per landing spacing: `fire-escape-ladder-4`, `-5`, `-6`, `-7` and `fire-escape-ladder` (8 rows). Place the one whose rows equal the spacing, with its bottom on the lower landing's top edge (y = lower row x 12) and its left edge on the landing's ladder column; its top meets the upper landing, which covers it.
-- Landings 6 apart read best on a walk-up: from row 39 they fall on 39, 33, 27, 21, 15 and 9, and 33 sits on the second storey's window sills. Only 15 crosses a window (the third storey's), so 18, on its sills, reads better there. Landings 4 apart stack their railings into a lattice and crowd the shop signs, so keep them for short runs.
+- Climbing backdrops: upper storeys and rooflines stack as reusable facade pieces. Standable ledges and solid faces come from modular tiles, placed independently of the scenery. Existing fire-escape ladder images remain available for compatibility; new platforming layouts use ledges and cliffs instead.
 - Backdrops are modular: a sky and a far skyline of faded downtown skyscrapers in two layers that cover both screens and rise above the near roofs, one repeating facade per building type (one-storey, walk-up, brownstone, and a tall stone building), facade pieces, one storefront per shop, and street furniture placed singly (a cab, a hot-dog cart, a subway railing, a street tree, a walk signal, the doorman's podium, the canopy's poles). A cross street is a gap with no facade, where the skyline shows over the far avenue.
 - The door, the canopy, `facade-hotel`, `hotel-crest`, `hotel-window` and the doorman's podium are generic building pieces, kept from the hotel this street used to belong to.
 - Signs are icons, never text: a cup, a flower, a gift box, a lipstick, a paw, a fork and knife, a noodle bowl, and a crest.
@@ -383,6 +418,8 @@ A lost duck travels zone to zone across a map with forks. Zone 1 is a downtown N
 | cross-street            | 120x26  | 600      | none   |
 
 Below the sidewalk's top, the sidewalk and road tiles fill rows 50 to 59.
+
+The separate atmosphere layers `street-city-far` and `street-city-mid` are each 720x600, bottom-left anchored at y 600 and repeating in x. Place them with the flat `street-sky`, back to front in that order. The legacy `street-skyline` is a composite compatibility asset: do not place it alongside the two separate layers. Physical facades, doors and attached ledges remain on the play plane.
 
 ### Kept for a later indoor zone: the boutique lobby
 

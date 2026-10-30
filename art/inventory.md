@@ -176,3 +176,16 @@ Pieces placed from level data by their bottom-left corner at the bottom y given,
 | subway-railing          | street furniture                                                     | 72x62   | 600, none        |
 | walk-signal             | street furniture                                                     | 12x82   | 600, none        |
 | water-tower             | climbing, water tower (top one-way tiles)                            | 48x84   | 240, none        |
+
+## Modular platforming
+
+| Key               | Type                               | Size  | Contents                                                                               |
+| ----------------- | ---------------------------------- | ----- | -------------------------------------------------------------------------------------- |
+| tiles-platforming | tileset, 12px cells, eight columns | 96x36 | 17 tiles: solid faces and corners, one-way ledges, four directional red contact strips |
+
+## Street atmosphere layers
+
+| Key             | Type               | Size    | Placement                                    |
+| --------------- | ------------------ | ------- | -------------------------------------------- |
+| street-city-far | repeating backdrop | 720x600 | bottom-left, y 600, repeat x; far skyline    |
+| street-city-mid | repeating backdrop | 720x600 | bottom-left, y 600, repeat x; middle skyline |
