@@ -167,16 +167,15 @@ A one-line strip at the top centre (x 360), y 8, height 24, sized to its text an
 
 ### Touch controls
 
-Two round buttons for the right thumb, Use above and to the left of Jump. Each is an opaque disc: an ink edge, a 3px cream ring and a navy face, so it holds 3:1 on light and dark ground, with its icon above its label. Hidden on desktop and when the setting is off.
+Two round buttons for the right thumb, Use above and to the left of Jump. Each is the move hint's open ring, 73px across with no face: a 2px cream band between 1px ink lines, with its icon centred and fringed in ink, so it holds 3:1 on any ground, the sky and any character. No label. Hidden on desktop and when the setting is off.
 
-| Control | Centre, as drawn | Frame | Disc      | Icon       | Label origin, as drawn | Label room |
-| ------- | ---------------- | ----- | --------- | ---------- | ---------------------- | ---------- |
-| Use     | 592,210          | 75x75 | 73px wide | three dots | 580,207                | 55         |
-| Jump    | 667,307          | 75x75 | 73px wide | caret      | 650,306                | 53         |
+| Control | Centre, as drawn | Frame | Ring      | Icon       |
+| ------- | ---------------- | ----- | --------- | ---------- |
+| Use     | 592,210          | 75x75 | 73px wide | three dots |
+| Jump    | 667,307          | 75x75 | 73px wide | caret      |
 
-- Centres and label origins are the base 720x360 layout, as drawn. At runtime the game anchors Jump, Use and the pause button to the screen's corners, so on a wide or tall screen they sit in the spare space outside the game. The label keeps its offset from its button's centre.
-- Labels: "Use" and "Jump" in `font-body` at 2x, set by the game from text data and never baked in. Each is centred on its button's centre x, 4 rows below the icon. Label room is the widest ink that keeps 2px of face on each side while pressed.
-- Press: the ring turns white and thickens 1px and the face lifts a step, swelling 1px for the first frame (frame 0, then frame 1, 60ms each), then holds until release, which snaps back to rest.
+- Centres are the base 720x360 layout, as drawn. At runtime the game anchors Jump, Use and the pause button to the screen's corners, so on a wide or tall screen they sit in the spare space outside the game.
+- Press: the band and icon turn white and the ring swells 1px for the first frame (frame 0, then frame 1, 60ms each), then hold until release, which snaps back to rest.
 - Movement: a touch anywhere off a button sets its own neutral point. The move hint (`ui-move-hint`, 75x75) shows where to put the left thumb: an open ring 73px across with no face, a 2px cream band between 1px ink lines and an ink-fringed chevron each side, so it reads on any ground, the sky and any character. It is a drawing only, with no press area. At rest its centre is level with Jump's and as far in from the left edge as Use's centre is from the right: 127,307 at 720 wide. It is anchored to the bottom-left corner as the buttons are to the bottom-right, so the mirroring holds on any canvas. While a touch moves her, the game draws it on that touch's neutral point, anywhere on screen, lights the dragged side's chevron (`held-left`, `held-right`) and slides its knob (`ui-move-knob`, 11x11) up to 12px left or right; on release it returns to rest.
 
 ### Start screen
@@ -193,7 +192,7 @@ The game boots into the start screen; Start goes to the map. A nav bar runs acro
 
 A pause button at the top left opens the pause card over the game, which is dimmed by stepping every colour two ramp steps darker. The pause card reads Settings, Return home and Resume; Settings opens the settings card over the same dim, and Install opens the install steps card for browsers that install from their own menu. One card shows at a time. Every card is the same frame, 368 wide at 176,88, with a 36px header holding its title and a close X (24x24 at 510,94). Rows are 352x48 at x 184, 4px apart, each pressed as a whole, with a 16x16 icon at x 198 and a label origin at x 228.
 
-- Pause button: the Use and Jump disc, 33px across, with two pause bars and no label, centred at 26,26 as drawn (35x35 frame), anchored to the top-left corner at runtime, as Use and Jump are to theirs. It is a touch control: hidden on desktop and while a dialogue box is open. Its press area is the drawn frame grown by the rect rule above.
+- Pause button: a disc 33px across (an ink edge, a 2px cream ring and a navy face, the ring white and 1px thicker and the face a step lighter while pressed), with two pause bars and no label, centred at 26,26 as drawn (35x35 frame), anchored to the top-left corner at runtime, as Use and Jump are to theirs. It is a touch control: hidden on desktop and while a dialogue box is open. Its press area is the drawn frame grown by the rect rule above.
 
 | Card     | Rect           | Title    | Rows (y)                                                            | Below the rows                             |
 | -------- | -------------- | -------- | ------------------------------------------------------------------- | ------------------------------------------ |
