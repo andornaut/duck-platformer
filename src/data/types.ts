@@ -110,7 +110,6 @@ export interface GameText {
     readonly moveControls: string;
     readonly shown: string;
     readonly title: string;
-    readonly touchControls: string;
   };
 }
 
