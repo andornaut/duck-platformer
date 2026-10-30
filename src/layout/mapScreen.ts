@@ -1,4 +1,4 @@
-import type { MapNode, Point, Rect } from "../data/types";
+import type { MapNode, Point, Rect, Size } from "../data/types";
 import type { Arrowhead, PathStroke } from "../view/mapPath";
 
 // Art's paper map (art/README.md, Map), in base pixels. Offsets marked "from the centre" are from
@@ -7,7 +7,8 @@ import type { Arrowhead, PathStroke } from "../view/mapPath";
 // ring. Continue's label, centred with its play mark, starts at labelY, sinking to pressedLabelY
 // while Continue is pressed. At a fork, a choice button per route on, gap apart and centred on
 // middle at y, takes Continue's place; its press area starts hitAbove px above it, and its label
-// (at most labelWidth wide) and arrow sit at their offsets inside it.
+// (at most labelWidth wide) and arrow sit at their offsets inside it. A tap on a zone marker
+// lands within nodeHit, centred on its node: at least a touch button's 44 square.
 export const MAP_SCREEN = {
   continue: {
     hit: { height: 44, width: 160, x: 280, y: 300 } satisfies Rect,
@@ -35,6 +36,7 @@ export const MAP_SCREEN = {
     fork: { x: -14, y: -14 } satisfies Point,
     zone: { x: -17, y: -17 } satisfies Point,
   },
+  nodeHit: { height: 44, width: 44 } satisfies Size,
   paper: { height: 360, width: 720, x: 0, y: 0 } satisfies Rect,
   textScale: 2,
   title: { x: 24, y: 16 } satisfies Point,

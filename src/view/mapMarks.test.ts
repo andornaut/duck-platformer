@@ -2,8 +2,9 @@ import type { BitmapFont, BitmapGlyph } from "@andornaut/game-kit/text/bitmapFon
 import { describe, expect, it } from "vitest";
 
 import type { MapEdge, ZoneMap } from "../data/types";
+import { MAP_SCREEN } from "../layout/mapScreen";
 import { mapStand, nodeOf } from "../rules/map";
-import { advanceWidth, forkArrow, markerState, nodeCentre, pathLook } from "./mapMarks";
+import { advanceWidth, forkArrow, markerState, nodeCentre, pathLook, routeAtTap } from "./mapMarks";
 
 // a, then a fork f a row down with built paths to b, up a row, and c, level, and an unbuilt one to
 // d, all three joining at the finish z, a fork.
@@ -85,6 +86,40 @@ describe("pathLook", () => {
     ["f", "b", "built"],
   ])("draws %s to %s before she plays the start as %s", (from, to, look) => {
     expect(pathLook(AT_START, 0, edge(from, to))).toBe(look);
+  });
+});
+
+describe("routeAtTap", () => {
+  // Tiles wide enough that no two nodes' hit areas meet.
+  const WIDE = 100;
+  const { nodeHit } = MAP_SCREEN;
+  const at = (id: string, dx = 0, dy = 0) => {
+    const centre = nodeCentre(WIDE, nodeOf(MAP, id));
+    return { x: centre.x + dx, y: centre.y + dy };
+  };
+  const edgeX = nodeHit.width / 2;
+  const edgeY = nodeHit.height / 2;
+
+  it.each([
+    ["b's centre, its route", AT_FORK, at("b"), 0],
+    ["c's centre, its route", AT_FORK, at("c"), 1],
+    ["the corner of b's hit area", AT_FORK, at("b", edgeX, edgeY), 0],
+    ["just past c's hit area", AT_FORK, at("c", edgeX + 1), undefined],
+    ["the unbuilt d", AT_FORK, at("d"), undefined],
+    ["the fork she stands on", AT_FORK, at("f"), undefined],
+    ["a, behind her", AT_FORK, at("a"), undefined],
+    ["b, before she plays a", AT_START, at("b"), undefined],
+  ])("picks, for a tap on %s, route %s", (_name, stand, point, route) => {
+    expect(routeAtTap(WIDE, nodeHit, stand, point)).toBe(route);
+  });
+
+  // Nodes a row apart on 30 px tiles: their hit areas overlap between them.
+  it.each([
+    ["nearer b", -1, 0],
+    ["nearer c", 1, 1],
+  ])("picks the nearer node where hit areas overlap: %s", (_name, offset, route) => {
+    const between = { x: nodeCentre(30, nodeOf(MAP, "b")).x, y: 15 + 30 * 4.5 + offset };
+    expect(routeAtTap(30, nodeHit, AT_FORK, between)).toBe(route);
   });
 });
 

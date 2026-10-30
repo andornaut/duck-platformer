@@ -28,6 +28,7 @@ import {
   markerState,
   nodeCentre,
   pathLook,
+  routeAtTap,
 } from "../view/mapMarks";
 import { bentCurve, pathRects } from "../view/mapPath";
 import { addButtonLabel, type ButtonLabel, placeButtonLabel } from "./cardParts";
@@ -46,7 +47,8 @@ const CONTINUE_KEYS = ["ArrowUp", "Enter", "KeyE", "KeyW", "Space"];
 // Paths are drawn in this order, so the ones that matter more lie on top.
 const LOOK_ORDER: readonly PathLook[] = ["unbuilt", "built", "travelled", "selectable", "selected"];
 
-// A control on the map: Continue, or a fork-choice button by its route's index.
+// A control on the map: Continue, or a route on by its index, through its fork-choice button or
+// a tap on its zone's node.
 type Control = "continue" | number;
 
 interface ChoiceButton {
@@ -60,7 +62,7 @@ interface ChoiceButton {
 // zone's name, and the duck on the node she stands on. Before she plays the node she is at,
 // Continue plays it. After, she walks on to where the routes on split and chooses among them
 // with a button each (Left and Right, or a tap); with one route on, Continue takes it, to the
-// start again after the finish.
+// start again after the finish. A tap on the zone node a route on leads to takes that route.
 export class MapScene extends Scene {
   private chosen = 0;
   private choices: ChoiceButton[] = [];
@@ -264,7 +266,13 @@ export class MapScene extends Scene {
       return "continue";
     }
     const index = this.choices.findIndex(({ hit }) => containsPoint(hit, pointer.x, pointer.y));
-    return index >= 0 ? index : undefined;
+    if (index >= 0) {
+      return index;
+    }
+    return routeAtTap(TILE, MAP_SCREEN.nodeHit, this.stand, {
+      x: pointer.x,
+      y: pointer.y,
+    });
   }
 
   private key(code: string): void {

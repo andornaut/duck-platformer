@@ -1,6 +1,6 @@
 import type { BitmapFont } from "@andornaut/game-kit/text/bitmapFont";
 
-import type { MapEdge, MapNode, Point, ZoneMap } from "../data/types";
+import type { MapEdge, MapNode, Point, Size, ZoneMap } from "../data/types";
 import type { PathLook } from "../layout/mapScreen";
 import type { MapRoute, MapStand } from "../rules/map";
 
@@ -21,6 +21,27 @@ export function markerState(map: ZoneMap, stand: MapStand, node: MapNode): Marke
     return "current";
   }
   return stand.walked.includes(node.id) ? "visited" : "normal";
+}
+
+// The route on that a tap at point picks: the one whose zone node's hit area, hit centred on the
+// node, takes in the point, the nearest where they overlap. None for a tap on any other node:
+// routes on run only along built paths, so never to an unbuilt one.
+export function routeAtTap(
+  tile: number,
+  hit: Size,
+  stand: MapStand,
+  point: Point,
+): number | undefined {
+  const picks = stand.routes.flatMap((route, index) => {
+    const centre = nodeCentre(tile, route.zone);
+    const dx = Math.abs(point.x - centre.x);
+    const dy = Math.abs(point.y - centre.y);
+    return dx <= hit.width / 2 && dy <= hit.height / 2
+      ? [{ distance: Math.hypot(dx, dy), index }]
+      : [];
+  });
+  picks.sort((a, b) => a.distance - b.distance);
+  return picks[0]?.index;
 }
 
 // The node a route on goes to first from where she stands.
