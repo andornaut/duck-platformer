@@ -276,18 +276,6 @@
       }
     },
     {
-      "key": "ui-fork-arrow",
-      "png": "sprites/ui-fork-arrow.png",
-      "json": "sprites/ui-fork-arrow.json",
-      "once": []
-    },
-    {
-      "key": "ui-fork-choice",
-      "png": "sprites/ui-fork-choice.png",
-      "json": "sprites/ui-fork-choice.json",
-      "once": []
-    },
-    {
       "key": "ui-forward-mark",
       "png": "sprites/ui-forward-mark.png",
       "json": "sprites/ui-forward-mark.json",
