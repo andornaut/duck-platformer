@@ -279,12 +279,15 @@ export const ZONES: Readonly<Record<string, ZonePlan>> = {
   street: ZONE_1,
 };
 
+// The shared difficulty band for every randomized real zone, centred on 2 with variation of 1.
+export const ZONE_DIFFICULTY = { max: 3, min: 1 } as const;
+
 // The zones assembled from chunks, by key. A key here is never also a key in ZONES.
 export const RECIPES: Readonly<Record<string, ZoneRecipe>> = {
-  // The park: 6 to 10 screens, from difficulty 1 at its start to 3 at its end, with one door to
-  // the test room. No events exist yet.
+  // The park: 6 to 10 screens within the shared difficulty band, with one door to the test room.
+  // No events exist yet.
   park: {
-    difficulty: { max: 3, min: 1 },
+    difficulty: ZONE_DIFFICULTY,
     doors: [{ count: 1, room: "test" }],
     events: [],
     finish: "park-finish",

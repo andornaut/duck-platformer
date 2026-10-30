@@ -3,10 +3,10 @@ import type { ZonePlan } from "./types";
 // Zone 1: a New York street, outdoors, in one area.
 //
 // The street is two screens tall. The sidewalk's top is row 50, with the sidewalk and the road
-// filling rows 50 to 59, so on the sidewalk she stands two thirds down the screen. A pit-floor
-// hazard 4 below the sidewalk's top in every opening restarts the zone soon after she drops in.
+// filling rows 50 to 59, so on the sidewalk she stands two thirds down the screen. A
+// red edge above a solid base in every opening restarts the zone when she drops onto it.
 // Awnings and the canopy sit on row 44, 6 above the sidewalk. Along the sidewalk, left to right,
-// it teaches: walk, hop, jump, a gap, a cellar hatch, the courier, then the ferret's trap before
+// it teaches: walk, hop, jump, a gap, a cellar hatch, then red contact edges before
 // the street's end, which clears the zone. Over the makeup store and its neighbour, a detour
 // climbs the buildings into the upper screen and drops back down: a fall onto the sidewalk is
 // safe, as every fall flutters.
@@ -99,30 +99,34 @@ export const ZONE_1: ZonePlan = {
         { character: "street-door", col: 97, room: "test", row: 46 },
         // A gap: a subway entrance, 10 across.
         { character: "subway-railing", col: 102, row: 45 },
-        { character: "pit-floor", col: 108, cols: 10, row: 54 },
+        { character: "red-edge-top", col: 108, cols: 10, row: 54 },
+        { character: "red-edge-support", col: 108, cols: 10, row: 55, rows: 5 },
         // A cellar hatch open 4 across, past the pet shop's dog; then one open 6 across. Each
         // has a steel leaf 2 up at each edge.
         { character: "storefront-pet-shop", col: 120, row: 40 },
         { character: "dog-pug", col: 122, row: 47 },
         { character: "hatch-left", col: 134, row: 48 },
         { character: "pit-opening", col: 135, cols: 4, row: 50 },
-        { character: "pit-floor", col: 135, cols: 4, row: 54 },
+        { character: "red-edge-top", col: 135, cols: 4, row: 54 },
+        { character: "red-edge-support", col: 135, cols: 4, row: 55, rows: 5 },
         { character: "hatch-right", col: 139, row: 48 },
         { character: "storefront-diner", col: 140, row: 40 },
         { character: "awning", col: 140, cols: 9, row: 44 },
         { character: "hatch-left", col: 148, row: 48 },
         { character: "pit-opening", col: 149, cols: 6, row: 50 },
-        { character: "pit-floor", col: 149, cols: 6, row: 54 },
+        { character: "red-edge-top", col: 149, cols: 6, row: 54 },
+        { character: "red-edge-support", col: 149, cols: 6, row: 55, rows: 5 },
         { character: "hatch-right", col: 155, row: 48 },
-        // The courier: rides from col 186 to as far as col 166 and back. Wait left of col 164
-        // or on the noodle bar's awning, then jump it.
+        // A red edge on the sidewalk, below the noodle bar's awning.
         { character: "storefront-noodle-bar", col: 158, row: 40 },
         { character: "awning", col: 158, cols: 10, row: 44 },
         { character: "pedestrian-cat", col: 172, row: 45 },
-        { character: "frog-courier", col: 186, row: 47 },
+        { character: "red-edge-top", col: 184, cols: 4, row: 49 },
+        { character: "red-edge-support", col: 184, cols: 4, row: 50, rows: 10 },
         { character: "pedestrian-raccoon", col: 200, phase: 0.5, row: 45 },
-        // The ferret's trap, then a canopy before the street's end.
-        { character: "ferret-trap-snap", col: 212, row: 48 },
+        // Another red edge, then a canopy before the street's end.
+        { character: "red-edge-top", col: 212, cols: 4, row: 49 },
+        { character: "red-edge-support", col: 212, cols: 4, row: 50, rows: 10 },
         { character: "canopy", col: 218, cols: 12, row: 44 },
       ],
       // The roofs the detour doesn't reach: the second walk-up's and the last brownstone's
@@ -142,7 +146,9 @@ export const ZONE_1: ZonePlan = {
         { col: 118, cols: 16, look: "sidewalk", row: 50, rows: 10 },
         // Cellar hatches: cols 134 to 139 and 148 to 155, their edge tiles placed as objects.
         { col: 140, cols: 8, look: "sidewalk", row: 50, rows: 10 },
-        { col: 156, cols: 84, look: "sidewalk", row: 50, rows: 10 },
+        { col: 156, cols: 28, look: "sidewalk", row: 50, rows: 10 },
+        { col: 188, cols: 24, look: "sidewalk", row: 50, rows: 10 },
+        { col: 216, cols: 24, look: "sidewalk", row: 50, rows: 10 },
       ],
       tileset: "tiles-street",
     },
