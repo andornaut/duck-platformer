@@ -1,4 +1,5 @@
 import type { Point, Rect } from "../data/types";
+import { TEXT_BUTTON } from "./buttonLabel";
 import { CARD_FRAME, cardRect } from "./cardFrame";
 import { hitAround } from "./hitAreas";
 import { CONTROL_EDGE } from "./playView";
@@ -9,7 +10,7 @@ import { type LabelledButton, labelledButton } from "./restartCard";
 // its first row down, the settings rows' size and pitch: Resume, the primary, then Settings and
 // Back to title. Each button's label is centred across it, labelDy below its top and 2 lower
 // while pressed. Each button's press area, hit, is its drawn button grown by hitAreas.ts's rule.
-const BUTTON = { gap: 4, height: 48, labelDy: 13, width: 352, x: 184 } as const;
+const BUTTON = { ...TEXT_BUTTON, gap: 4, width: 352, x: 184 } as const;
 // The button at index down the stack.
 const button = (index: number): LabelledButton =>
   labelledButton(

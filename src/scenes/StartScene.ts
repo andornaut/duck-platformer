@@ -19,15 +19,13 @@ import { savedProgress } from "../save";
 import { setTouchSettingShown, type TouchSetting } from "../settings/touchControls";
 import { dimColour } from "../view/dim";
 import {
-  addButtonLabel,
   addSlice,
   addTextButton,
-  type ButtonLabel,
   captureTab,
   palette,
   paletteColour,
-  placeButtonLabel,
   pressTextButton,
+  PRIMARY_BUTTON,
   ringFocus,
   type TextButton,
 } from "./cardParts";
@@ -71,8 +69,7 @@ export class StartScene extends Scene implements RestartOpener, SettingsOpener {
   private focus: Control | undefined;
   private focusRing: GameObjects.NineSlice | undefined;
   private card: Card | undefined;
-  private startButton!: GameObjects.Sprite;
-  private startLabel!: ButtonLabel;
+  private startButton!: TextButton;
   private restartButton: TextButton | undefined;
   private street!: GameObjects.Image;
 
@@ -134,16 +131,11 @@ export class StartScene extends Scene implements RestartOpener, SettingsOpener {
       ["settings", this.iconButton(settings, "icon-settings-nav")],
       ...(exit === undefined ? [] : [["exit", this.iconButton(exit, "ui-quit")] as const]),
     ]);
-    this.startButton = this.add.sprite(start.button.x, start.button.y, "ui-start").setOrigin(0);
-    this.startLabel = addButtonLabel(
+    this.startButton = addTextButton(
       this,
-      start.button,
-      start.labelY,
+      start,
       restart === undefined ? TEXT.start.start : TEXT.start.continue,
-      {
-        colour: this.colour("ink"),
-        marked: true,
-      },
+      { style: PRIMARY_BUTTON },
     );
     this.restartButton =
       restart === undefined ? undefined : addTextButton(this, restart, TEXT.start.restart);
@@ -201,9 +193,7 @@ export class StartScene extends Scene implements RestartOpener, SettingsOpener {
   // and a nav button's face sinks with its icon.
   private showPressed(control: Control | undefined): void {
     this.pressed = control;
-    const { start } = this.layout;
-    this.startButton.play(animationKey("ui-start", control === "start" ? "pressed" : "normal"));
-    placeButtonLabel(this.startLabel, control === "start" ? start.pressedLabelY : start.labelY);
+    pressTextButton(this.startButton, control === "start");
     if (this.restartButton) {
       pressTextButton(this.restartButton, control === "restart");
     }

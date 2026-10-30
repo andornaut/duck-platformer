@@ -1,5 +1,8 @@
 import type { Rect } from "../data/types";
 
+// Standard menu action geometry, shared by start-screen and card buttons.
+export const TEXT_BUTTON = { gap: 8, height: 48, labelDy: 13 } as const;
+
 // A mark drawn just before a button's label, such as Resume's play triangle: its width, and the
 // gap from it to the label's ink.
 export interface LabelMark {
@@ -7,8 +10,8 @@ export interface LabelMark {
   readonly width: number;
 }
 
-// Art's play mark, which leads Start's, Resume's and Continue's labels (art/README.md, Start
-// screen): 5 wide, 6 from the label's ink, its top MARK_DROP below the label's origin.
+// Art's optional play mark: 5 wide, 6 from the label's ink, its top MARK_DROP below the label's
+// origin. Its ink colour suits a light button face.
 export const PLAY_MARK: LabelMark = { gap: 6, width: 5 };
 export const MARK_DROP = 4;
 

@@ -2,10 +2,10 @@ import { containsPoint } from "@andornaut/game-kit/rect";
 import { describe, expect, it } from "vitest";
 
 import buttonSheet from "../../public/art/sprites/ui-icon-button.json";
-import startSheet from "../../public/art/sprites/ui-start.json";
 import { SCREEN } from "../data/screen";
 import type { Rect } from "../data/types";
 import { HIT_RULE, type PressArea, pressedArea } from "./hitAreas";
+import { PAUSE_CARD } from "./pauseCard";
 import type { LabelledButton } from "./restartCard";
 import { type IconButtonLayout, startScreenLayout } from "./startScreen";
 
@@ -93,13 +93,16 @@ describe.each([
     }).toEqual({ face: true, icon: true });
   });
 
-  it.each(texts)("sizes %s to Start's art, under the nav bar, on the screen", (__, { button }) => {
-    expect({
-      below: button.y >= layout.nav.y + layout.nav.height,
-      onScreen: inside(SCREEN_RECT, button),
-      size: { height: button.height, width: button.width },
-    }).toEqual({ below: true, onScreen: true, size: frameOf(startSheet) });
-  });
+  it.each(texts)(
+    "sizes %s like standard card actions, under the nav bar, on the screen",
+    (__, { button }) => {
+      expect({
+        below: button.y >= layout.nav.y + layout.nav.height,
+        height: button.height,
+        onScreen: inside(SCREEN_RECT, button),
+      }).toEqual({ below: true, height: PAUSE_CARD.resume.button.height, onScreen: true });
+    },
+  );
 
   it("shows Restart only with a save, beside Continue in Start's row, the two centred on Start", () => {
     const alone = startScreenLayout(exitShown, false).start.button;
@@ -107,10 +110,15 @@ describe.each([
     const row = restart && {
       centre: (start.button.x + right(restart.button)) / 2,
       clear: right(start.button) < restart.button.x,
+      matchingSize:
+        start.button.width === restart.button.width &&
+        start.button.height === restart.button.height,
       y: restart.button.y,
     };
     expect(row).toEqual(
-      saved ? { centre: alone.x + alone.width / 2, clear: true, y: alone.y } : undefined,
+      saved
+        ? { centre: alone.x + alone.width / 2, clear: true, matchingSize: true, y: alone.y }
+        : undefined,
     );
   });
 });

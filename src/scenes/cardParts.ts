@@ -130,7 +130,6 @@ export function captureTab(scene: Scene, captured: boolean): void {
   }
 }
 
-// Art's buttons: the normal one, and the green primary, which a card leads with.
 // Art's buttons, each with its label's palette colour: the normal one, grey with an ink label, and
 // the primary, which a card leads with, dslate with a white label.
 export const BUTTON = { art: "ui-button", label: "ink" } as const;
