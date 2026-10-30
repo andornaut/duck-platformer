@@ -34,7 +34,7 @@ Quip
   centred on x 360 at y 8 (within 138..590). Name in font-title in the speaker's tab colour, origin x+9, y 7;
   line cream in font-body, origin x+15+An, y 11.
 
-Touch controls (two round buttons for the right thumb and a pause button at the top left; movement has no art)
+Touch controls (two round buttons for the right thumb, a pause button at the top left and the move hint at the left)
 - Positions here are the base 720x360 layout as drawn. At runtime the game anchors Use, Jump and ui-pause to the
   screen's corners and sizes their hit areas from the drawn button plus a margin; each label keeps its offset from
   its button's centre.
@@ -55,6 +55,14 @@ Touch controls (two round buttons for the right thumb and a pause button at the 
   capitals on rows centre+1 to centre+10), origin 580,207. Jump: origin y = centre y - 1 (capitals on centre+3 to
   centre+12), origin 650,306. Cream at rest, white while pressed or held. Label room, the widest ink that keeps
   2px of face on each side when pressed: Use 55, Jump 53.
+- ui-move-hint, 75x75, centre pixel 37,37: a drawing only, with no press area. An open ring 73px across with no
+  face, a 2px cream band between 1px ink lines, and a 2x chevron (8x10) each side, 22px from the centre, fringed in
+  ink, so it reads on any ground, sky, character or prop. At rest it sits at centre 53,258 (top-left 16,221), its
+  left edge mirroring Jump's right inset. While a touch moves her, the game draws it centred on that touch's neutral
+  point (where the drag began), anywhere on screen, and puts it back on release. Tags rest; held-left and
+  held-right (the dragged side's chevron white); one frame each.
+- ui-move-knob, 11x11, centre pixel 5,5: a 9px knob fringed in ink, drawn on the hint's centre and offset by the
+  drag's distance from its neutral point, capped at 12px. Tags rest (cream), held (white).
 
 Button labels
 - Every button's label is font-body at 2x, mixed case ("Start", "Resume", "Continue", "Install"), set by the game.
@@ -85,11 +93,12 @@ Pause card, settings card and install steps card (each over the game dimmed two 
   A row's 16x16 icon sits at 198,y+16 and its label (font-body, cream, white while pressed) at origin 228,y+15.
 - Pause card, 368x236, title "Paused". Rows: Settings at y 136 (icon-settings), Return home at y 188
   (icon-home). Resume below.
-- Settings card, title "Settings": 368x184 with the Install row, 368x132 without it. Rows: Touch controls at y 136
-  (icon-touch-controls; ui-checkbox at 504,150; state Shown or Hidden cream, its last glyph ending at x 494, origin
-  496-A); Install at y 188, only while the app is installable (icon-install; ui-button drawn 72x28 at 452,198,
-  centred on x 488, label ink, origin y 201; room 56). The build label, tan in font-body (for example
-  "v0.0.1 · dev"), is centred on x 360 with its origin 28 above the card's foot: y 244, or 192 without Install.
+- Settings card, title "Settings": 368x236 with the Install row, 368x184 without it. Rows: "Move controls" at
+  y 136 (icon-move-controls) and "Action buttons" at y 188 (icon-touch-controls), each with ui-checkbox at
+  504,y+14 and its state Shown or Hidden cream, its last glyph ending at x 494 (origin 496-A), both Shown by
+  default; Install at y 240, only while the app is installable (icon-install; ui-button drawn 72x28 at 452,250,
+  centred on x 488, label ink, origin y 253; room 56). The build label, tan in font-body (for example
+  "v0.0.1 · dev"), is centred on x 360 with its origin 28 above the card's foot: y 296, or 244 without Install.
 - Install steps card, 368x160, title "Install". Two steps, each a 16x16 glyph and up to two lines of cream
   font-body at a 20px pitch, room 296: step 1's glyph (icon-ios-share on iOS, icon-browser-menu where the browser
   installs from its menu) at 198,145, text origin 228,144; step 2's glyph (icon-install) at 198,197, text origin
@@ -107,8 +116,8 @@ Pause card, settings card and install steps card (each over the game dimmed two 
   round a ring with a round hole), icon-home (dog-walker's solid house: a 1:1 pitched roof, a chimney on the right
   slope and a door gap, cream with tan on its lower-right edges), icon-exit (ui-quit's doorway and arrow, 12 rows
   tall), icon-touch-controls (a round touch button with the Jump caret), icon-install (an arrow down into a tray),
-  icon-ios-share (Safari's Share button) and icon-browser-menu (three stacked dots). All but icon-home are flat
-  cream in 2px strokes.
+  icon-ios-share (Safari's Share button), icon-browser-menu (three stacked dots) and icon-move-controls (the move
+  hint in small: a round ring with a chevron each side). All but icon-home are flat cream in 2px strokes.
 - ui-resume, 160x44, at 280,264 on the pause card (the hit area). Tags normal, pressed (the face sinks 2px into its
   lip). Label origin y 275 (277 pressed), ui-play-mark's top y 279: "Resume" puts the triangle at x 329 and the label
   at 340.
@@ -355,6 +364,70 @@ ICONS = {
 }
 
 
+MOVE_R = 36  # ui-move-hint's ring: 73 across, like Use and Jump
+CHEVRON_2X = ["..##", ".##.", "##..", ".##.", "..##"]  # a 4x5 design at 2x: 8x10, pointing left
+
+
+def fringed(g, marks):
+    """Stamp marks (a Grid of fills) onto g with a 1px ink fringe round them, so they hold on any ground."""
+    n_h, n_w = len(marks.px), len(marks.px[0])
+    for y in range(n_h):
+        for x in range(n_w):
+            if marks.px[y][x]:
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    xx, yy = x + dx, y + dy
+                    if 0 <= xx < n_w and 0 <= yy < n_h and not marks.px[yy][xx]:
+                        g.p(xx, yy, "ink")
+    for y in range(n_h):
+        for x in range(n_w):
+            if marks.px[y][x]:
+                g.p(x, y, marks.px[y][x])
+
+
+def move_hint(lit=0):
+    """75x75, centre pixel 37,37: an open ring with no face, a 2px cream band between 1px ink lines, and a 2x chevron
+    each side with an ink fringe. lit is the dragged side (-1 left, 1 right), whose chevron turns white."""
+    n = 2 * (MOVE_R + 1) + 1
+    c = n // 2
+    g = Grid(n, n)
+    for y in range(n):
+        for x in range(n):
+            d = math.hypot(x - c, y - c)
+            if MOVE_R - 3.5 < d <= MOVE_R + 0.5:
+                g.p(x, y, "ink" if d > MOVE_R - 0.5 or d <= MOVE_R - 2.5 else "cream")
+    marks = Grid(n, n)
+    for side in (-1, 1):
+        for y, row in enumerate(CHEVRON_2X):
+            for x, ch in enumerate(row):
+                if ch == "#":
+                    xx = 3 - x if side > 0 else x
+                    marks.rect(c + side * 22 - 4 + xx * 2, c - 5 + y * 2, 2, 2, "white" if side == lit else "cream")
+    fringed(g, marks)
+    return g.px
+
+
+def move_knob(held):
+    """11x11, centre pixel 5,5: a round 9px knob (cream at rest, white while held) with an ink fringe."""
+    g = Grid(11, 11)
+    marks = Grid(11, 11)
+    disc(marks, 5, 5, 4, "white" if held else "cream")
+    fringed(g, marks)
+    return g.px
+
+
+def move_controls_icon():
+    """icon-move-controls, 16x16: the move hint in small, a round 2px ring with a chevron each side."""
+    g = Grid(16, 16)
+    for y in range(16):
+        for x in range(16):
+            if 5.9 <= math.hypot(x - 7.5, y - 7.5) <= 7.9:
+                g.p(x, y, "cream")
+    for x, y in ((5, 5), (4, 6), (3, 7), (3, 8), (4, 9), (5, 10)):
+        g.rect(x, y, 2, 1, "cream")
+        g.rect(14 - x, y, 2, 1, "cream")
+    return g.px
+
+
 def touch_controls_icon():
     """A touch button: a round 2px ring with the Jump caret (2px strokes) inside, centred on the frame."""
     g = Grid(16, 16)
@@ -522,6 +595,7 @@ def sprites():
     yield "icon-home", one(home(16))
     yield "icon-home-nav", one(home(20))
     yield "icon-settings-nav", one(cog_20())
+    yield "icon-move-controls", one(move_controls_icon())
     yield "icon-touch-controls", one(touch_controls_icon())
     yield "ui-answer", [(s, [answer(s)], 100) for s in ("normal", "selected", "pressed")]
     yield "ui-button", [(s, [button(s)], 100) for s in ("normal", "pressed")]
@@ -531,6 +605,9 @@ def sprites():
     yield "ui-focus", one(focus())
     yield "ui-icon-button", [(s, [icon_button(s)], 100) for s in ("normal", "pressed")]
     yield "ui-forward-mark", [("idle", forward_mark(), [ms for _, ms in FORWARD_STEPS])]
+    yield "ui-move-hint", [("rest", [move_hint()], 100), ("held-left", [move_hint(-1)], 100),
+                           ("held-right", [move_hint(1)], 100)]
+    yield "ui-move-knob", [("rest", [move_knob(False)], 100), ("held", [move_knob(True)], 100)]
     yield "ui-name-tab", [(c, [name_tab(c)], 100) for c in TAB_FILLS]
     yield "ui-nav-bar", one(nav_bar())
     yield "ui-pause", touch_button("pause")

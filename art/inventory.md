@@ -54,6 +54,7 @@ Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with 
 | icon-home-nav       | sprite                                                     | 20x20  | rest                              |
 | icon-install        | sprite                                                     | 16x16  | rest                              |
 | icon-ios-share      | sprite                                                     | 16x16  | rest                              |
+| icon-move-controls  | sprite                                                     | 16x16  | rest                              |
 | icon-settings       | sprite                                                     | 16x16  | rest                              |
 | icon-settings-nav   | sprite                                                     | 20x20  | rest                              |
 | icon-touch-controls | sprite                                                     | 16x16  | rest                              |
@@ -83,6 +84,8 @@ Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with 
 | ui-fork-choice      | sprite                                                     | 160x36 | normal, selected, pressed         |
 | ui-forward-mark     | sprite                                                     | 10x14  | idle                              |
 | ui-icon-button      | sprite                                                     | 36x36  | normal, pressed                   |
+| ui-move-hint        | sprite                                                     | 75x75  | rest, held-left, held-right       |
+| ui-move-knob        | sprite                                                     | 11x11  | rest, held                        |
 | ui-name-tab         | nine-slice (2,2,2,2)                                       | 12x20  | amber, green, pink, tan           |
 | ui-nav-bar          | nine-slice (1,1,1,3)                                       | 12x48  | rest                              |
 | ui-pause            | sprite                                                     | 35x35  | rest, press, held                 |

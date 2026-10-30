@@ -98,6 +98,12 @@
       "once": []
     },
     {
+      "key": "icon-move-controls",
+      "png": "sprites/icon-move-controls.png",
+      "json": "sprites/icon-move-controls.json",
+      "once": []
+    },
+    {
       "key": "icon-settings",
       "png": "sprites/icon-settings.png",
       "json": "sprites/icon-settings.json",
@@ -291,6 +297,18 @@
       "key": "ui-icon-button",
       "png": "sprites/ui-icon-button.png",
       "json": "sprites/ui-icon-button.json",
+      "once": []
+    },
+    {
+      "key": "ui-move-hint",
+      "png": "sprites/ui-move-hint.png",
+      "json": "sprites/ui-move-hint.json",
+      "once": []
+    },
+    {
+      "key": "ui-move-knob",
+      "png": "sprites/ui-move-knob.png",
+      "json": "sprites/ui-move-knob.json",
       "once": []
     },
     {

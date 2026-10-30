@@ -177,7 +177,7 @@ Two round buttons for the right thumb, Use above and to the left of Jump. Each i
 - Centres and label origins are the base 720x360 layout, as drawn. At runtime the game anchors Jump, Use and the pause button to the screen's corners, so on a wide or tall screen they sit in the spare space outside the game. The label keeps its offset from its button's centre.
 - Labels: "Use" and "Jump" in `font-body` at 2x, set by the game from text data and never baked in. Each is centred on its button's centre x, 4 rows below the icon. Label room is the widest ink that keeps 2px of face on each side while pressed.
 - Press: the ring turns white and thickens 1px and the face lifts a step, swelling 1px for the first frame (frame 0, then frame 1, 60ms each), then holds until release, which snaps back to rest.
-- Movement has no art: a touch anywhere off a button sets its own neutral point, and nothing marks it.
+- Movement: a touch anywhere off a button sets its own neutral point. The move hint (`ui-move-hint`, 75x75) shows where to put the left thumb: an open ring 73px across with no face, a 2px cream band between 1px ink lines and an ink-fringed chevron each side, so it reads on any ground, the sky and any character. It is a drawing only, with no press area. At rest it sits at centre 53,258, its left edge mirroring Jump's inset from the right. While a touch moves her, the game draws it on that touch's neutral point, anywhere on screen, lights the dragged side's chevron (`held-left`, `held-right`) and slides its knob (`ui-move-knob`, 11x11) up to 12px in the drag's direction; on release it returns to rest.
 
 ### Start screen
 
@@ -195,15 +195,15 @@ A pause button at the top left opens the pause card over the game, which is dimm
 
 - Pause button: the Use and Jump disc, 33px across, with two pause bars and no label, centred at 26,26 as drawn (35x35 frame), anchored to the top-left corner at runtime, as Use and Jump are to theirs. It is a touch control: hidden on desktop and while a dialogue box is open, and its press matches Use and Jump.
 
-| Card     | Rect           | Title    | Rows (y)                                         | Below the rows                             |
-| -------- | -------------- | -------- | ------------------------------------------------ | ------------------------------------------ |
-| Pause    | 176,88,368,236 | Paused   | Settings 136, Return home 188                    | Resume 280,264,160,44                      |
-| Settings | 176,88,368,184 | Settings | Touch controls 136, Install 188 (if installable) | build label centred on x 360, origin y 244 |
-| Steps    | 176,88,368,160 | Install  | none: two steps at y 144 and 196                 |                                            |
+| Card     | Rect           | Title    | Rows (y)                                                            | Below the rows                             |
+| -------- | -------------- | -------- | ------------------------------------------------------------------- | ------------------------------------------ |
+| Pause    | 176,88,368,236 | Paused   | Settings 136, Return home 188                                       | Resume 280,264,160,44                      |
+| Settings | 176,88,368,236 | Settings | Move controls 136, Action buttons 188, Install 240 (if installable) | build label centred on x 360, origin y 296 |
+| Steps    | 176,88,368,160 | Install  | none: two steps at y 144 and 196                                    |                                            |
 
-- Settings card without Install: 368x132, the build label at origin y 192.
-- Touch controls row: its icon at 198,152, the checkbox (20x20) at 504,150, and Shown or Hidden ending at x 494, left of it. The checkbox stays: the user picked it, its two states differ in shape, and the state word reads it a second time.
-- Install row: its icon at 198,204 and a secondary button (`ui-button`, 72x28) at 452,198 whose label the game centres in it, at most 56 wide. The whole row presses it.
+- Settings card without Install: 368x184, the build label at origin y 244.
+- Move controls and Action buttons rows: two independent toggles, the left hint and the right buttons (Use and Jump), both Shown by default; hiding the hint hides only its drawing. Each row has its icon at 198,y+16 (`icon-move-controls`, `icon-touch-controls`), the checkbox (20x20) at 504,y+14 and Shown or Hidden ending at x 494, left of it. The checkbox stays: the user picked it, its two states differ in shape, and the state word reads it a second time.
+- Install row: its icon at 198,256 and a secondary button (`ui-button`, 72x28) at 452,250 whose label the game centres in it, at most 56 wide. The whole row presses it.
 - Build label: tan in `font-body`, centred on x 360, for example "v0.0.1 · dev".
 - Keyboard focus: `ui-focus`, a nine-slice ring (margins 4) drawn 4px outside the focused element on every side, at (x-4, y-4, w+8, h+8): a 2px yellow band between 1px ink lines, so it holds 3:1 on the card, the rows, the buttons and the dim. It rings the focused element's face: a settings row (the Install row included), Resume, Start, an answer button, a nav button or the close X (round its 24x24 mark).
 - Install steps: each step is a 16x16 glyph at x 198 and up to two lines of text at x 228 (20px pitch, at most 296 wide). Step 1 shows the iOS Share glyph or the browser-menu glyph, whichever the browser uses; step 2 the install glyph.
