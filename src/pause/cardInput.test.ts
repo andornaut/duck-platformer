@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { cardBackAction, cardKeyAction, startBackAction } from "./cardInput";
+import { cardBackAction, cardKeyAction, cardTurnAction, startBackAction } from "./cardInput";
 
 describe("cardKeyAction", () => {
   it.each([
@@ -39,4 +39,13 @@ describe("startBackAction", () => {
       expect(startBackAction(settingsOpen, canExit)).toBe(action);
     },
   );
+});
+
+describe("cardTurnAction", () => {
+  it.each([
+    { action: "open", open: false },
+    { action: undefined, open: true },
+  ])("with the card open $open: $action", ({ action, open }) => {
+    expect(cardTurnAction(open)).toBe(action);
+  });
 });

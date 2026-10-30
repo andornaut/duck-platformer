@@ -17,6 +17,12 @@ export function cardBackAction(open: boolean): CardAction {
   return open ? "close" : "open";
 }
 
+// A change of the page frame's turn (unturned to turned, back, or the direction flipping) opens
+// the card during play, as P does, and leaves an open card as it is.
+export function cardTurnAction(open: boolean): CardAction | undefined {
+  return open ? undefined : "open";
+}
+
 // What back does on the start screen.
 export type StartBackAction = "closeSettings" | "exit";
 

@@ -6,8 +6,9 @@ import { Core, type GameObjects, type Input, Scene } from "phaser";
 import { SCREEN } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
+import { FRAME_TURN } from "../input/frameTurn";
 import { PAUSE_BUTTON, PAUSE_CARD } from "../layout/pauseCard";
-import { type CardAction, cardBackAction, cardKeyAction } from "../pause/cardInput";
+import { type CardAction, cardBackAction, cardKeyAction, cardTurnAction } from "../pause/cardInput";
 import { focusKeyAction, stepFocus } from "../pause/focusInput";
 import { coverZone, PHONE_EVENTS, startWakeLock, stopWakeLock, zoneShown } from "../pwa";
 import { setTouchControlsShown, touchControlsShown } from "../settings/touchControls";
@@ -84,8 +85,11 @@ export class PauseScene extends Scene implements SettingsOpener {
       }
     };
     window.addEventListener(PHONE_EVENTS.backPressed, onBack);
+    // The page frame turning mid-play pauses it, as P does; open only while the zone plays.
+    const stopTurns = FRAME_TURN.onChange(() => this.act(cardTurnAction(this.state !== "closed")));
     this.events.once("shutdown", () => {
       window.removeEventListener(PHONE_EVENTS.backPressed, onBack);
+      stopTurns();
     });
     startWakeLock();
     // The zone's first frame: the game page is now the home screen.
