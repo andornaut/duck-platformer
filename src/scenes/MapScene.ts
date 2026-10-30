@@ -158,13 +158,14 @@ export class MapScene extends Scene {
     }
     for (const node of ZONE_MAP.nodes) {
       const centre = this.centre(node);
-      const state = markerState(ZONE_MAP, this.completed, this.stand, node);
+      const state = markerState(ZONE_MAP, this.open, this.completed, this.stand, node);
       const key = `map-${node.kind}`;
       this.add
         .sprite(centre.x + marker[node.kind].x, centre.y + marker[node.kind].y, key)
         .setOrigin(0)
         .play(animationKey(key, state));
-      if (node.kind === "zone" && state !== "unbuilt") {
+      // A locked zone shows art's padlock in place of its icon.
+      if (node.kind === "zone" && state !== "unbuilt" && state !== "locked") {
         const own = `map-icon-${node.zone ?? ""}`;
         const art = this.textures.exists(own) ? own : ICON_FALLBACK;
         this.add

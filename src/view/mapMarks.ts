@@ -4,7 +4,7 @@ import type { MapEdge, MapNode, Point, Size, ZoneMap } from "../data/types";
 import type { PathLook } from "../layout/mapScreen";
 import { nodeOf, type OpenMap } from "../rules/map";
 
-export type MarkerState = "current" | "normal" | "unbuilt" | "visited";
+export type MarkerState = "current" | "locked" | "normal" | "unbuilt" | "visited";
 
 // A node's centre on the map, on its grid of tile px tiles.
 export function nodeCentre(tile: number, node: MapNode): Point {
@@ -12,9 +12,10 @@ export function nodeCentre(tile: number, node: MapNode): Point {
 }
 
 // A node's marker: unbuilt where no built path touches it; else current where she stands,
-// visited where she has completed its zone, and normal elsewhere.
+// visited where she has completed its zone, locked on a zone node not open, and normal elsewhere.
 export function markerState(
   map: ZoneMap,
+  open: OpenMap,
   completed: ReadonlySet<string>,
   stand: string,
   node: MapNode,
@@ -25,7 +26,10 @@ export function markerState(
   if (node.id === stand) {
     return "current";
   }
-  return completed.has(node.id) ? "visited" : "normal";
+  if (completed.has(node.id)) {
+    return "visited";
+  }
+  return node.kind === "zone" && !open.zones.includes(node.id) ? "locked" : "normal";
 }
 
 // The open zone node a tap at point lands on: the one whose hit area, hit centred on the node,

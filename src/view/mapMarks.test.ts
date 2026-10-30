@@ -65,8 +65,19 @@ describe("markerState", () => {
     ["b", "c", "normal"],
     ["f", "c", "normal"],
     ["d", "c", "unbuilt"],
-  ])("marks %s, standing on %s, %s", (id, stand, state) => {
-    expect(markerState(MAP, new Set(["a"]), stand, nodeOf(MAP, id))).toBe(state);
+  ])("marks %s, standing on %s with a completed, %s", (id, stand, state) => {
+    expect(markerState(MAP, DONE_A, new Set(["a"]), stand, nodeOf(MAP, id))).toBe(state);
+  });
+
+  // With nothing completed, standing on the finish fork z, only a is open: b and c lie past it,
+  // and the fork f never locks.
+  it.each([
+    ["a", "normal"],
+    ["b", "locked"],
+    ["c", "locked"],
+    ["f", "normal"],
+  ])("marks %s, with nothing completed, %s", (id, state) => {
+    expect(markerState(MAP, NONE, new Set(), "z", nodeOf(MAP, id))).toBe(state);
   });
 });
 
