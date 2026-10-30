@@ -169,6 +169,29 @@ describe("assembleZone", () => {
     expect(runs(lib, zone).size).toBeGreaterThan(1);
   });
 
+  it("preserves theme and placed backdrop parallax across chunk assembly", () => {
+    const lib = library({
+      a: chunk(50, 50, {
+        backdrops: [{ character: "tree", col: 3, parallax: { x: 0.4, y: 0.2 }, row: 20 }],
+      }),
+    });
+    const theme = lib.themes.t;
+    if (!theme) {
+      throw new Error("no theme");
+    }
+    const withParallax = {
+      ...lib,
+      themes: {
+        t: { ...theme, backdrops: [{ character: "sky", parallax: { x: 0, y: 0 }, row: 0 }] },
+      },
+    };
+    const area = areaOf(assembleZone(withParallax, 1, "z", recipe(1)));
+    expect(area.objects).toEqual([
+      { character: "sky", col: 0, cols: area.cols, parallax: { x: 0, y: 0 }, row: 0 },
+      { character: "tree", col: 63, parallax: { x: 0.4, y: 0.2 }, row: 20 },
+    ]);
+  });
+
   it("moves each chunk's contents to its zone columns, drawn in the theme, with its doors", () => {
     const lib = library({
       a: chunk(50, 50, {

@@ -94,6 +94,27 @@ export function objectLayout(
     ...character.tuning?.interaction,
     ...instance.overrides?.interaction,
   };
+  const parallax = instance.parallax;
+  if (parallax) {
+    if (
+      [parallax.x, parallax.y].some(
+        (factor) => !Number.isFinite(factor) || factor < 0 || factor > 1,
+      )
+    ) {
+      throw new Error(`Invalid parallax for ${instance.character}: factors must be from 0 to 1`);
+    }
+    if (
+      (parallax.x !== 1 || parallax.y !== 1) &&
+      (archetype.collision !== "none" ||
+        interaction.kind !== "none" ||
+        motion.algorithm !== "static" ||
+        reaction.kind !== "none")
+    ) {
+      throw new Error(
+        `Parallax on ${instance.character} requires static scenery without interaction`,
+      );
+    }
+  }
   const width = (instance.cols ?? character.cols) * tile;
   const height = (instance.rows ?? character.rows) * tile;
   const art = hitboxes[character.art];
@@ -126,6 +147,7 @@ export function objectLayout(
       speed: motion.speed * tile,
     },
     origin: tilePoint(tile, instance),
+    ...(parallax && { parallax }),
     phase: instance.phase ?? 0,
     quips: character.quips ?? [],
     quirks: character.quirks ?? [],

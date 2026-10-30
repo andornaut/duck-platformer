@@ -279,7 +279,7 @@ export function zonePlanOf(
           })),
         ),
         objects: [
-          ...theme.backdrops.map(({ character, row }) => ({ character, col: 0, cols, row })),
+          ...theme.backdrops.map((backdrop) => ({ ...backdrop, col: 0, cols })),
           ...chunks.flatMap((chunk, index) =>
             (chunk.backdrops ?? []).map((instance) => shiftInstance(at(index), instance)),
           ),

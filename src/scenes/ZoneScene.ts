@@ -67,7 +67,7 @@ import { characterState, nextQuirkAt } from "../view/character";
 import { doorPhase } from "../view/doorOpen";
 import { DUCK_FRAME, duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
 import { moveHintView } from "../view/moveHint";
-import { type ArtKind, artKind, artOffset } from "../view/objectArt";
+import { type ArtKind, artKind, artOffset, artScrollFactor } from "../view/objectArt";
 import { type PlayHold, stepAction } from "../view/playHold";
 import { loadedTileset, objectTiles, terrainTiles, type Tileset } from "../view/tiles";
 import { buttonHeld, centredAt, controlTag, trackPress } from "../view/touchControls";
@@ -557,6 +557,7 @@ export class ZoneScene extends Scene {
     index: number,
   ): ObjectArt {
     const kind = artKind(this.manifest, tileset, object.art);
+    const parallax = artScrollFactor(kind, object.parallax);
     const rect = { height: object.height, width: object.width };
     switch (kind) {
       case "tiles": {
@@ -572,7 +573,11 @@ export class ZoneScene extends Scene {
         return { item, offset: { x: 0, y: 0 }, sprite: undefined };
       }
       case "backdrop": {
-        const item = this.add.image(0, 0, object.art).setOrigin(0).setDepth(DEPTHS.backdrop);
+        const item = this.add
+          .image(0, 0, object.art)
+          .setOrigin(0)
+          .setScrollFactor(parallax.x, parallax.y)
+          .setDepth(DEPTHS.backdrop);
         return { item, offset: artOffset(kind, rect, item), sprite: undefined };
       }
       case "repeated-backdrop": {
@@ -580,6 +585,7 @@ export class ZoneScene extends Scene {
         const item = this.add
           .tileSprite(0, 0, rect.width, height, object.art)
           .setOrigin(0)
+          .setScrollFactor(parallax.x, parallax.y)
           .setDepth(DEPTHS["repeated-backdrop"]);
         return {
           item,

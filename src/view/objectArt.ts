@@ -7,6 +7,15 @@ import { drawsFrom, type Tileset } from "./tiles";
 // art named placeholder-* or art the game does not have.
 export type ArtKind = "backdrop" | "placeholder" | "repeated-backdrop" | "sprite" | "tiles";
 
+// Only backdrop art may scroll at a different speed from its placement in the world.
+export function artScrollFactor(kind: ArtKind, parallax?: Point): Point {
+  const factors = parallax ?? { x: 1, y: 1 };
+  if ((factors.x !== 1 || factors.y !== 1) && kind !== "backdrop" && kind !== "repeated-backdrop") {
+    throw new Error(`Parallax requires backdrop art, not ${kind}`);
+  }
+  return factors;
+}
+
 export function artKind(manifest: ArtManifest, tileset: Tileset | undefined, art: string): ArtKind {
   if (art.startsWith("placeholder-")) {
     return "placeholder";

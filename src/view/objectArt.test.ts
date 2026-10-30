@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { ArtManifest } from "./aseprite";
-import { artKind } from "./objectArt";
+import { type ArtKind, artKind, artScrollFactor } from "./objectArt";
 import type { Tileset } from "./tiles";
 
 const MANIFEST = {
@@ -30,4 +30,24 @@ describe("artKind", () => {
   ])("draws %s as %s", (_, tileset, art, kind) => {
     expect(artKind(MANIFEST, tileset, art)).toBe(kind);
   });
+});
+
+describe("artScrollFactor", () => {
+  it.each<ArtKind>(["backdrop", "placeholder", "repeated-backdrop", "sprite", "tiles"])(
+    "keeps %s at world speed by default",
+    (kind) => {
+      expect(artScrollFactor(kind)).toEqual({ x: 1, y: 1 });
+    },
+  );
+
+  it.each<ArtKind>(["backdrop", "repeated-backdrop"])("applies both axes to %s", (kind) => {
+    expect(artScrollFactor(kind, { x: 0.2, y: 0 })).toEqual({ x: 0.2, y: 0 });
+  });
+
+  it.each<ArtKind>(["placeholder", "sprite", "tiles"])(
+    "rejects detached parallax for %s",
+    (kind) => {
+      expect(() => artScrollFactor(kind, { x: 0, y: 1 })).toThrow("requires backdrop art");
+    },
+  );
 });

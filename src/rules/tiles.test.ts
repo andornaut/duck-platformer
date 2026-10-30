@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { Archetype, Character, Instance, ZonePlan } from "../data/types";
 import { DUCK_FRAME } from "../view/duck";
-import { type Catalogue, isPlaced, tileRect, zoneLayout } from "./tiles";
+import { type Catalogue, isPlaced, objectLayout, tileRect, zoneLayout } from "./tiles";
 
 describe("tileRect", () => {
   it.each([
@@ -161,6 +161,63 @@ describe("zoneLayout", () => {
       areas: { yard: { ...PLAN.areas.yard, objects: [instance] } },
     } as ZonePlan;
     expect(() => zoneLayout(10, DUCK_FRAME, catalogue, {}, {}, new Set(), bad)).toThrow(message);
+  });
+});
+
+describe("backdrop parallax", () => {
+  const scenery: Archetype = {
+    collision: "none",
+    interaction: { kind: "none", range: 0 },
+    motion: {
+      algorithm: "static",
+      direction: "right",
+      distance: 0,
+      hopHeight: 0,
+      pause: 0,
+      speed: 0,
+      variance: 0,
+    },
+    reaction: { kind: "none", range: 0, speed: 0 },
+  };
+  const resolve = (instance: Partial<Instance>, archetype: Archetype = scenery) =>
+    objectLayout(
+      12,
+      {
+        archetypes: { scenery: archetype },
+        characters: { sky: { archetype: "scenery", art: "sky", cols: 1, rows: 50 } },
+      },
+      {},
+      undefined,
+      { character: "sky", col: 0, row: 0, ...instance },
+    );
+
+  it.each([undefined, { x: 0, y: 0 }, { x: 0.4, y: 0.2 }, { x: 1, y: 1 }])(
+    "preserves optional factors %j without scaling them to pixels",
+    (parallax) => {
+      expect(resolve(parallax ? { parallax } : {}).parallax).toEqual(parallax);
+    },
+  );
+
+  it.each([-1, 1.1, Infinity, NaN])("rejects invalid factor %s on either axis", (factor) => {
+    for (const parallax of [
+      { x: factor, y: 1 },
+      { x: 1, y: factor },
+    ]) {
+      expect(() => resolve({ parallax })).toThrow("factors must be from 0 to 1");
+    }
+  });
+
+  it.each<Partial<Archetype>>([
+    { collision: "solid" },
+    { collision: "hazard" },
+    { collision: "ledge" },
+    { interaction: { kind: "talk", range: 1 } },
+    { motion: { ...scenery.motion, algorithm: "linear" } },
+    { reaction: { ...scenery.reaction, kind: "avoid" } },
+  ])("refuses parallax on gameplay objects %j", (extra) => {
+    expect(() => resolve({ parallax: { x: 0.5, y: 1 } }, { ...scenery, ...extra })).toThrow(
+      "requires static scenery without interaction",
+    );
   });
 });
 

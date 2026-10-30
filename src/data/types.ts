@@ -265,6 +265,8 @@ export interface Instance {
   readonly excludes?: readonly string[];
   readonly lines?: readonly string[];
   readonly overrides?: Tuning;
+  // Decorative backdrop scroll factors, from 0 (fixed) to 1 (world speed), on each axis.
+  readonly parallax?: Point;
   readonly phase?: number;
   readonly requires?: readonly string[];
   readonly room?: string;
@@ -374,6 +376,7 @@ export interface ChunkPlan {
 // A repeated backdrop drawn across a whole assembled zone: its character, top at row.
 export interface ThemeBackdrop {
   readonly character: string;
+  readonly parallax?: Point;
   readonly row: number;
 }
 
@@ -476,6 +479,7 @@ export interface ObjectLayout {
   readonly lines: readonly string[];
   readonly motion: Motion;
   readonly origin: Point;
+  readonly parallax?: Point;
   readonly phase: number;
   readonly quips: readonly string[];
   readonly quirks: readonly Quirk[];
