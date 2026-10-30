@@ -155,7 +155,8 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     exit: { row: 40 },
     noCross: [{ from: { col: 10, row: 40 }, to: { col: 80, row: 40 } }],
     objects: [
-      { character: "pond", col: 20, cols: 40, row: 44 },
+      { character: "red-edge-top", col: 20, cols: 40, row: 45 },
+      { character: "red-edge-support", col: 20, cols: 40, row: 46, rows: 14 },
       {
         character: "park-boat",
         col: 22,
@@ -167,7 +168,6 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     slots: [{ area: { col: 80, cols: 4, row: 35, rows: 5 }, id: "far-bank", kind: "door" }],
     solids: [
       { col: 0, cols: 20, look: "raised", row: 40, rows: 20 },
-      { col: 20, cols: 40, look: "raised", row: 46, rows: 14 },
       { col: 60, cols: 40, look: "raised", row: 40, rows: 20 },
     ],
     theme: "park",
