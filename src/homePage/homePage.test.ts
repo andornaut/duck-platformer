@@ -62,8 +62,7 @@ const startCharacters = new Set(START_AREA?.objects.map(({ character }) => chara
 describe("the home page's zone 1", () => {
   it.each([
     ["open cellar hatches", "hatch-left"],
-    ["a frog courier on a bike", "frog-courier"],
-    ["the ferret's snap trap", "ferret-trap-snap"],
+    ["red contact edges", "red-edge-top"],
   ])("states %s, which zone 1 starts beside", async (phrase, character) => {
     expect({
       placed: startCharacters.has(character),
