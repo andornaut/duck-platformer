@@ -17,8 +17,9 @@ export const ZONE_1: ZonePlan = {
       entries: { start: { col: 4, row: 50 } },
       objects: [
         // The sky and the far skyline behind the whole street, down to the sidewalk.
-        { character: "street-sky", col: 0, cols: 240, row: 0 },
-        { character: "street-skyline", col: 0, cols: 240, row: 0 },
+        { character: "street-sky", col: 0, cols: 240, parallax: { x: 0, y: 0 }, row: 0 },
+        { character: "street-city-far", col: 0, cols: 240, parallax: { x: 0.15, y: 0.05 }, row: 0 },
+        { character: "street-city-mid", col: 0, cols: 240, parallax: { x: 0.4, y: 0.15 }, row: 0 },
         // The buildings behind the shops, standing on the sidewalk line, in runs a whole number
         // of pieces wide. A two-storey building is its facade capped by a roofline at row 20; a
         // three-storey one adds an upper storey (rows 9 to 23) and its roofline's top is row 5.
@@ -64,30 +65,23 @@ export const ZONE_1: ZonePlan = {
         // The detour, matching art's climbing pieces. On the walk-up: from the makeup store's
         // awning (row 44), fire-escape landings at rows 39, 33, 27, 23, 18, 13 and 9 (up 5, 6, 6,
         // 4, 5, 5 and 4; 33 and 18 on the window sills), then up 4 to the walk-up's cornice on its
-        // roof (row 5), the street's highest top. Each landing has its railing, and a ladder as
-        // tall as the spacing climbs to it from the one below. On the brownstone beside it: two
+        // roof (row 5), the street's highest top. Each landing has its railing, with open jumps
+        // between the ledges. On the brownstone beside it: two
         // window sills level with the landing at row 33, its cornice at row 20 (up 3 and across
         // from the landing at row 23), and the water tower's tank top at row 14 (up 6 from that
         // cornice).
-        { character: "fire-escape-ladder-5", col: 79, row: 39 },
         { character: "fire-escape-landing", col: 74, cols: 8, row: 39 },
         { character: "fire-escape-railing", col: 74, cols: 8, row: 37 },
-        { character: "fire-escape-ladder-6", col: 79, row: 33 },
         { character: "fire-escape-landing", col: 74, cols: 8, row: 33 },
         { character: "fire-escape-railing", col: 74, cols: 8, row: 31 },
-        { character: "fire-escape-ladder-6", col: 79, row: 27 },
         { character: "fire-escape-landing", col: 74, cols: 8, row: 27 },
         { character: "fire-escape-railing", col: 74, cols: 8, row: 25 },
-        { character: "fire-escape-ladder-4", col: 79, row: 23 },
         { character: "fire-escape-landing", col: 74, cols: 8, row: 23 },
         { character: "fire-escape-railing", col: 74, cols: 8, row: 21 },
-        { character: "fire-escape-ladder-5", col: 79, row: 18 },
         { character: "fire-escape-landing", col: 74, cols: 8, row: 18 },
         { character: "fire-escape-railing", col: 74, cols: 8, row: 16 },
-        { character: "fire-escape-ladder-5", col: 79, row: 13 },
         { character: "fire-escape-landing", col: 74, cols: 8, row: 13 },
         { character: "fire-escape-railing", col: 74, cols: 8, row: 11 },
-        { character: "fire-escape-ladder-4", col: 79, row: 9 },
         { character: "fire-escape-landing", col: 74, cols: 8, row: 9 },
         { character: "fire-escape-railing", col: 74, cols: 8, row: 7 },
         { character: "cornice", col: 64, cols: 32, row: 5 },
