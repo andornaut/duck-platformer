@@ -65,18 +65,20 @@ describe.each(ALL_CHUNKS)("chunk %s", (_, library, chunk) => {
     expect(chunkProblems(library, CATALOGUE, chunk)).toEqual([]);
   });
 
-  it("fits each of its themes' doors in each door slot", () => {
-    const tooSmall = themesOf(chunk).flatMap((key) => {
-      const door = CHARACTERS[library.themes[key]?.door ?? ""];
-      return (chunk.slots ?? [])
-        .filter(
-          ({ area, kind }) =>
-            kind === "door" && (!door || area.cols < door.cols || area.rows < door.rows),
-        )
-        .map(({ id }) => `${id} for ${key}`);
+  if ((chunk.slots ?? []).some(({ kind }) => kind === "door")) {
+    it("fits each of its themes' doors in each door slot", () => {
+      const tooSmall = themesOf(chunk).flatMap((key) => {
+        const door = CHARACTERS[library.themes[key]?.door ?? ""];
+        return (chunk.slots ?? [])
+          .filter(
+            ({ area, kind }) =>
+              kind === "door" && (!door || area.cols < door.cols || area.rows < door.rows),
+          )
+          .map(({ id }) => `${id} for ${key}`);
+      });
+      expect(tooSmall).toEqual([]);
     });
-    expect(tooSmall).toEqual([]);
-  });
+  }
 });
 
 describe("the seam rule", () => {

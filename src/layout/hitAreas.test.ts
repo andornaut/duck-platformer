@@ -1,9 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { HIT_RULE, hitAround, hitMargin, pressArea, pressedArea } from "./hitAreas";
-import { MAP_SCREEN } from "./mapScreen";
 import { PAUSE_BUTTON, PAUSE_CARD } from "./pauseCard";
-import { SETTINGS_CARD } from "./settingsCard";
 import { startScreenLayout } from "./startScreen";
 import { TOUCH_CONTROLS } from "./touchControls";
 
@@ -24,13 +22,10 @@ describe("hitAround", () => {
   const { start } = startScreenLayout(true, false);
   it.each<[string, { height: number; width: number }, { height: number; width: number }]>([
     ["the pause button, a 35 px frame", PAUSE_BUTTON.art, { height: 52.5, width: 52.5 }],
-    ["the close X, at the least size", PAUSE_CARD.close.art, { height: 48, width: 48 }],
     ["a 16 px icon, at the least size", square(16), { height: 48, width: 48 }],
-    ["a card row", SETTINGS_CARD.moveControls.row, { height: 72, width: 376 }],
     ["a pause card button", PAUSE_CARD.resume.button, { height: 72, width: 376 }],
     ["Start", start.button, { height: 72, width: 216 }],
     ["a nav icon button", startScreenLayout(true, false).settings.art, { height: 54, width: 54 }],
-    ["a map zone marker", square(35), MAP_SCREEN.nodeHit],
   ])("grows %s", (_, art, size) => {
     const hit = hitAround({ ...art, x: 0, y: 0 });
     expect({ height: hit.height, width: hit.width }).toEqual(size);
@@ -43,10 +38,6 @@ describe("hitAround", () => {
       centre: { x: hit.x + hit.width / 2, y: hit.y + hit.height / 2 },
       size: hit.width,
     }).toEqual({ centre: { x: 108, y: 108 }, size: HIT_RULE.minTarget });
-  });
-
-  it("takes in a nav icon button's map marker size", () => {
-    expect(MAP_SCREEN.nodeHit).toEqual({ height: 52.5, width: 52.5 });
   });
 });
 

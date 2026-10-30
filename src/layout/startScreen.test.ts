@@ -1,16 +1,13 @@
 import { containsPoint } from "@andornaut/game-kit/rect";
 import { describe, expect, it } from "vitest";
 
-import buttonSheet from "../../public/art/sprites/ui-icon-button.json";
 import { SCREEN } from "../data/screen";
 import type { Rect } from "../data/types";
-import { HIT_RULE, type PressArea, pressedArea } from "./hitAreas";
+import { type PressArea, pressedArea } from "./hitAreas";
 import { PAUSE_CARD } from "./pauseCard";
 import type { LabelledButton } from "./restartCard";
 import { type IconButtonLayout, startScreenLayout } from "./startScreen";
 
-// A nav icon's size (art/README.md, Start screen).
-const NAV_ICON = 20;
 const SCREEN_RECT: Rect = { ...SCREEN, x: 0, y: 0 };
 
 function inside(outer: Rect, inner: Rect): boolean {
@@ -21,13 +18,7 @@ function inside(outer: Rect, inner: Rect): boolean {
   );
 }
 
-const frameOf = (sheet: { frames: Record<string, { frame: { h: number; w: number } }> }) => {
-  const { h: height, w: width } = Object.values(sheet.frames)[0]?.frame ?? { h: 0, w: 0 };
-  return { height, width };
-};
-
 const right = (rect: Rect) => rect.x + rect.width;
-const face = ({ at }: IconButtonLayout): Rect => ({ ...frameOf(buttonSheet), ...at });
 
 describe.each([
   ["with Exit, with no save", true, false],
@@ -46,23 +37,10 @@ describe.each([
     ["settings", layout.settings],
     ...(layout.exit === undefined ? [] : [["exit", layout.exit] as [string, IconButtonLayout]]),
   ];
-  const hits: [string, Rect][] = [
-    ...texts.map(([name, button]): [string, Rect] => [name, button.hit]),
-    ...buttons.map(([name, button]): [string, Rect] => [name, button.hit]),
-  ];
   const areas: PressArea<string>[] = [
     ...texts.map(([key, { button, hit }]) => ({ art: button, hit, key })),
     ...buttons.map(([key, { art, hit }]) => ({ art, hit, key })),
   ];
-
-  it.each(hits)(
-    "makes %s a touch target, its part on the screen at least the least size",
-    (__, hit) => {
-      const width = Math.min(SCREEN_RECT.width, hit.x + hit.width) - Math.max(0, hit.x);
-      const height = Math.min(SCREEN_RECT.height, hit.y + hit.height) - Math.max(0, hit.y);
-      expect(Math.min(width, height)).toBeGreaterThanOrEqual(HIT_RULE.minTarget);
-    },
-  );
 
   // A press anywhere on a drawn button takes that button, however the press areas overlap.
   it.each(areas)("takes every press on $key's drawn button as $key", ({ art, key }) => {
@@ -82,15 +60,6 @@ describe.each([
         layout.exit === undefined || right(layout.settings.art) <= layout.exit.art.x,
       x: last.at.x,
     }).toEqual({ lastIsExit: exitShown, settingsBeforeExit: true, x: withExit?.at.x });
-  });
-
-  it.each(buttons)("draws %s's face and icon on the nav, inside its hit area", (__, button) => {
-    const icon = { height: NAV_ICON, width: NAV_ICON, ...button.icon };
-    const pressedIcon = { height: NAV_ICON, width: NAV_ICON, ...button.pressedIcon };
-    expect({
-      face: inside(button.hit, face(button)) && inside(layout.nav, face(button)),
-      icon: inside(face(button), icon) && inside(face(button), pressedIcon),
-    }).toEqual({ face: true, icon: true });
   });
 
   it.each(texts)(

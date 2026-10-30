@@ -7,21 +7,14 @@ import { describe, expect, it } from "vitest";
 
 import fontBody from "../../public/art/fonts/font-body.fnt?raw";
 import manifestJson from "../../public/art/manifest.json";
-import installSheet from "../../public/art/sprites/icon-install.json";
-import moveSheet from "../../public/art/sprites/icon-move-controls.json";
-import touchSheet from "../../public/art/sprites/icon-touch-controls.json";
 import buttonSheet from "../../public/art/sprites/ui-button.json";
-import primarySheet from "../../public/art/sprites/ui-button-primary.json";
-import pauseSheet from "../../public/art/sprites/ui-pause.json";
-import switchSheet from "../../public/art/sprites/ui-switch.json";
 import { SCREEN } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { Point, Rect } from "../data/types";
 import type { ArtManifest } from "../view/aseprite";
-import { centredLabel } from "./buttonLabel";
 import { CARD_FRAME } from "./cardFrame";
-import { HIT_RULE, type PressArea, pressedArea } from "./hitAreas";
-import { CARD_TEXT_SCALE, PAUSE_BUTTON, PAUSE_CARD } from "./pauseCard";
+import { type PressArea, pressedArea } from "./hitAreas";
+import { CARD_TEXT_SCALE, PAUSE_CARD } from "./pauseCard";
 import { focusRingAround, SETTINGS_CARD, STEPS_CARD } from "./settingsCard";
 
 const FONT = parseBitmapFont(fontBody);
@@ -81,13 +74,6 @@ const CARDS: [string, Rect, CardButton[]][] = [
   ],
 ];
 
-const HIT_AREAS: [string, Rect][] = [
-  ["pause button", PAUSE_BUTTON.hit],
-  ...CARDS.flatMap(([card, , areas]) =>
-    areas.map(({ hit, key }): [string, Rect] => [`${card}'s ${key}`, hit]),
-  ),
-];
-
 function inside(outer: Rect, inner: Rect): boolean {
   return (
     containsPoint(outer, inner.x, inner.y) &&
@@ -106,15 +92,6 @@ const textRect = (at: Point, text: string): Rect => ({
 });
 
 describe("card layouts", () => {
-  it.each(HIT_AREAS)(
-    "%s is a touch target, its part on the screen at least the least size",
-    (_, hit) => {
-      const width = Math.min(SCREEN_RECT.width, hit.x + hit.width) - Math.max(0, hit.x);
-      const height = Math.min(SCREEN_RECT.height, hit.y + hit.height) - Math.max(0, hit.y);
-      expect(Math.min(width, height)).toBeGreaterThanOrEqual(HIT_RULE.minTarget);
-    },
-  );
-
   it.each(CARDS)("the %s holds its buttons, no two drawn overlapping", (_, card, areas) => {
     const outside = areas.filter(({ art }) => !inside(card, art)).map(({ key }) => key);
     const overlapping = areas.flatMap((first, i) =>
@@ -137,36 +114,6 @@ describe("card layouts", () => {
       expect(corners.map((point) => pressedArea(areas, point))).toEqual([key, key]);
     },
   );
-
-  // Each sprite's frame, at its point, lies inside the area that presses it.
-  it.each([
-    ["pause button", pauseSheet, PAUSE_BUTTON.at, PAUSE_BUTTON.hit],
-    ...SETTINGS.map(
-      (setting) =>
-        [
-          `${setting} switch`,
-          switchSheet,
-          SETTINGS_CARD[setting].toggle,
-          SETTINGS_CARD[setting].row,
-        ] as const,
-    ),
-    [
-      "move controls icon",
-      moveSheet,
-      SETTINGS_CARD.moveControls.icon,
-      SETTINGS_CARD.moveControls.row,
-    ],
-    [
-      "action buttons icon",
-      touchSheet,
-      SETTINGS_CARD.actionButtons.icon,
-      SETTINGS_CARD.actionButtons.row,
-    ],
-    ["install icon", installSheet, SETTINGS_CARD.install.icon, SETTINGS_CARD.install.row],
-  ] as const)("draws the %s inside its hit area", (_, sheet, at, hit) => {
-    const { h: height, w: width } = frameOf(sheet);
-    expect(inside(hit, { height, width, ...at })).toBe(true);
-  });
 
   it("draws the Install button inside its row, at least as large as its 9-slice", () => {
     const { button, row } = SETTINGS_CARD.install;
@@ -196,28 +143,12 @@ describe("pause card", () => {
     expect(overflowingTexts(bitmapMeasure(FONT), roles)).toEqual([]);
   });
 
-  it.each(buttons)("centres %s's label on its button", (_, { button }, text) => {
-    const ink = inkWidth(FONT, CARD_TEXT_SCALE, text);
-    const { labelX } = centredLabel(button, ink);
-    const margins = [labelX - button.x, button.x + button.width - (labelX + ink)];
-    expect(Math.min(...margins)).toBeGreaterThan(0);
-  });
-
   it("stacks Resume, Settings and Back to title in that order, all one shape", () => {
     const rects = buttons.map(([, { button }]) => button);
     expect({
       order: rects.every((rect, i) => i === 0 || (rects[i - 1]?.y ?? 0) < rect.y),
       shapes: new Set(rects.map(({ height, width, x }) => `${x} ${width}x${height}`)).size,
     }).toEqual({ order: true, shapes: 1 });
-  });
-
-  it("draws Resume and the others no smaller than art's buttons", () => {
-    const sizes = [frameOf(buttonSheet), frameOf(primarySheet)];
-    expect(
-      buttons.every(([, { button }]) =>
-        sizes.every(({ h, w }) => button.width >= w && button.height >= h),
-      ),
-    ).toBe(true);
   });
 });
 

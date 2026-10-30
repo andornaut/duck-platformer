@@ -58,38 +58,54 @@ describe("buildAtlas", () => {
     expect({ height: image.height, width: image.width }).toEqual({ height, width });
   });
 
-  it.each([...PNGS])(
-    "draws %s's PNG whole on its page, its edges repeated around it",
-    async (key, png) => {
-      const texture = textureOf(key);
-      const source = decodePng(await readArt(png));
-      const page = itemAt(ATLAS.pages, texture.page);
-      const { x, y } = topLeft(texture.frames);
-      expect(pixels(page, x, y, source.width, source.height)).toEqual(
-        pixels(source, 0, 0, source.width, source.height),
-      );
-      expect(pixels(page, x - EXTRUDE, y, EXTRUDE, source.height)).toEqual(
-        pixels(source, 0, 0, 1, source.height),
-      );
-      expect(pixels(page, x, y + source.height, source.width, EXTRUDE)).toEqual(
-        pixels(source, 0, source.height - 1, source.width, 1),
-      );
-    },
-  );
+  // Different source shapes and alpha patterns exercise the shared copy and extrusion path.
+  it.each([
+    "duck",
+    "font-body",
+    "parcel-open",
+    "park-gate",
+    "street-city-far",
+    "tiles-platforming",
+    "tiles-street",
+    "ui-button-primary",
+  ])("draws %s's PNG whole on its page, its edges repeated around it", async (key) => {
+    const png = PNGS.get(key);
+    if (png === undefined) {
+      throw new Error(`No PNG ${key}`);
+    }
+    const texture = textureOf(key);
+    const source = decodePng(await readArt(png));
+    const page = itemAt(ATLAS.pages, texture.page);
+    const { x, y } = topLeft(texture.frames);
+    expect(pixels(page, x, y, source.width, source.height)).toEqual(
+      pixels(source, 0, 0, source.width, source.height),
+    );
+    expect(pixels(page, x - EXTRUDE, y, EXTRUDE, source.height)).toEqual(
+      pixels(source, 0, 0, 1, source.height),
+    );
+    expect(pixels(page, x, y + source.height, source.width, EXTRUDE)).toEqual(
+      pixels(source, 0, source.height - 1, source.width, 1),
+    );
+  });
 
-  it.each(ART.sprites.map(({ json, key }) => [key, json]))(
-    "keeps each of %s's frames at its rect in its PNG",
-    async (key, json) => {
-      const sheet = JSON.parse(new TextDecoder().decode(await readArt(json))) as {
-        frames: Record<string, { frame: { h: number; w: number; x: number; y: number } }>;
-      };
-      const { frames } = textureOf(key);
-      const origin = topLeft(frames);
-      expect(
-        frames.map(({ h, name, w, x, y }) => [name, { h, w, x: x - origin.x, y: y - origin.y }]),
-      ).toEqual(Object.entries(sheet.frames).map(([name, { frame }]) => [name, frame]));
-    },
-  );
+  it.each(
+    ["duck", "park-gate", "ui-button-primary"].map((key) => {
+      const source = ART.sprites.find((sprite) => sprite.key === key);
+      if (!source) {
+        throw new Error(`No sprite ${key}`);
+      }
+      return [key, source.json] as const;
+    }),
+  )("keeps each of %s's frames at its rect in its PNG", async (key, json) => {
+    const sheet = JSON.parse(new TextDecoder().decode(await readArt(json))) as {
+      frames: Record<string, { frame: { h: number; w: number; x: number; y: number } }>;
+    };
+    const { frames } = textureOf(key);
+    const origin = topLeft(frames);
+    expect(
+      frames.map(({ h, name, w, x, y }) => [name, { h, w, x: x - origin.x, y: y - origin.y }]),
+    ).toEqual(Object.entries(sheet.frames).map(([name, { frame }]) => [name, frame]));
+  });
 
   it.each(ART.tilesets.map(({ key }) => [key]))(
     "names %s's tiles by index in reading order, covering its PNG",

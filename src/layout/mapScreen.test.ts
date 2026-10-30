@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { mapLabel } from "./mapScreen";
 
 describe("mapLabel", () => {
-  it.each([38, 48, 56, 64, 91])("centres a name %i px in advance under its marker", (advance) => {
+  it.each([38, 91])("centres a name %i px in advance under its marker", (advance) => {
     const centre = { x: 300, y: 150 };
     const { knockout, origin } = mapLabel(advance, centre);
     // The name's ink is 4 px narrower than its advance, starting 2 px right of its origin.

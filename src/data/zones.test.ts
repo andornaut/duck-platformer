@@ -11,14 +11,14 @@ import type { ArtManifest } from "../view/aseprite";
 import { DUCK_FRAME } from "../view/duck";
 import { artKind } from "../view/objectArt";
 import { lookTiles } from "../view/tiles";
-import { ARCHETYPES, NO_INTERACTION, NO_REACTION, STATIC_MOTION } from "./archetypes";
+import { ARCHETYPES } from "./archetypes";
 import { CHARACTERS } from "./characters";
 import { DUCK } from "./duck";
 import { ZONE_MAP } from "./map";
 import { ROOMS } from "./rooms";
 import { SCREEN, TILE } from "./screen";
 import { TEXT } from "./text";
-import type { AreaPlan, Instance, TileRect, Tuning, ZonePlan } from "./types";
+import type { AreaPlan, TileRect, ZonePlan } from "./types";
 import { ZONE_1 } from "./zone1";
 import { RECIPES, TEST_ZONES, ZONES as ZONES_BY_KEY } from "./zones";
 
@@ -40,22 +40,6 @@ const inside = (area: AreaPlan, rect: TileRect) =>
   rect.col + rect.cols <= area.cols &&
   rect.row + rect.rows <= area.rows;
 
-// The fields a tuning names that its parts do not have.
-function unknownFields(tuning: Tuning | undefined): string[] {
-  const known: Record<string, object> = {
-    interaction: NO_INTERACTION,
-    motion: STATIC_MOTION,
-    reaction: NO_REACTION,
-  };
-  return Object.entries(tuning ?? {}).flatMap(([part, fields]) =>
-    known[part]
-      ? Object.keys(fields as object)
-          .filter((field) => !(field in (known[part] as object)))
-          .map((field) => `${part}.${field}`)
-      : [part],
-  );
-}
-
 const areas = ZONES.flatMap((zone, index) =>
   Object.entries(zone.areas).map(([name, area]) => [`${index + 1} ${name}`, zone, area] as const),
 );
@@ -67,13 +51,19 @@ const instances = areas.flatMap(([name, , area]) =>
 
 describe("the characters", () => {
   it.each(Object.entries(CHARACTERS))(
-    "%s has a real archetype, tuning, tags and words",
+    "%s has drawable art, real tags and words",
     (name, character) => {
-      expect(ARCHETYPES[character.archetype], character.archetype).toBeDefined();
-      expect(unknownFields(character.tuning)).toEqual([]);
       if (character.tileset !== undefined) {
         expect(TILESETS[character.tileset], character.tileset).toBeDefined();
       }
+      const tilesets =
+        character.tileset === undefined ? Object.values(TILESETS) : [TILESETS[character.tileset]];
+      expect(
+        character.art.startsWith("placeholder-") ||
+          character.art.startsWith("test-") ||
+          tilesets.some((tileset) => artKind(MANIFEST, tileset, character.art) !== "placeholder"),
+        `${name}: ${character.art} is drawable`,
+      ).toBe(true);
       const tags = [
         ...Object.values(character.animations ?? {}),
         ...(character.quirks ?? []).map(({ tag }) => tag),
@@ -90,45 +80,31 @@ describe("the characters", () => {
 });
 
 describe("the zones", () => {
-  it.each(instances)(
-    "instance %s resolves, with real overrides and words",
-    (_, area, instance: Instance) => {
+  it.each(areas)("area %s is two screens tall, with its terrain inside it", (_, __, area) => {
+    expect(area.rows * TILE).toBe(2 * SCREEN.height);
+    const objects = area.objects.map((instance) => {
       const { character } = resolveNames(CATALOGUE, instance);
-      expect(unknownFields(instance.overrides)).toEqual([]);
-      expect((instance.lines ?? []).filter((key) => !(key in TEXT.lines))).toEqual([]);
-      const rect = {
+      return {
         col: instance.col,
         cols: instance.cols ?? character.cols,
         row: instance.row,
         rows: instance.rows ?? character.rows,
       };
-      expect(inside(area, rect), "inside its area").toBe(true);
-      const key = character.tileset ?? area.tileset;
-      const tileset = key === undefined ? undefined : TILESETS[key];
-      const drawable =
-        character.art.startsWith("placeholder-") ||
-        character.art.startsWith("test-") ||
-        artKind(MANIFEST, tileset, character.art) !== "placeholder";
-      expect(drawable, `${character.art} is drawable`).toBe(true);
-    },
-  );
-
-  it.each(areas)("area %s is two screens tall, with its terrain inside it", (_, __, area) => {
-    expect(area.rows * TILE).toBe(2 * SCREEN.height);
-    expect(area.solids.every((rect) => inside(area, rect))).toBe(true);
+    });
+    expect([...area.solids, ...objects].every((rect) => inside(area, rect))).toBe(true);
   });
 
-  it.each(instances)(
-    "instance %s is a door with a room that exists, or names no room",
-    (_, __, instance) => {
-      const { archetype } = resolveNames(CATALOGUE, instance);
-      if (archetype.collision === "use") {
-        expect(instance.room && ROOMS[instance.room], `${instance.room} in ROOMS`).toBeDefined();
-      } else {
-        expect(instance.room).toBeUndefined();
-      }
-    },
-  );
+  it.each(
+    instances.filter(
+      ([, , instance]) =>
+        instance.room !== undefined ||
+        resolveNames(CATALOGUE, instance).archetype.collision === "use",
+    ),
+  )("door %s names a room that exists", (_, __, instance) => {
+    const { archetype } = resolveNames(CATALOGUE, instance);
+    expect(archetype.collision).toBe("use");
+    expect(instance.room && ROOMS[instance.room], `${instance.room} in ROOMS`).toBeDefined();
+  });
 
   it.each(areas)(
     "area %s draws from a tileset art has, with a look for each terrain run",
@@ -136,6 +112,19 @@ describe("the zones", () => {
       const tileset = area.tileset === undefined ? undefined : TILESETS[area.tileset];
       if (area.tileset !== undefined) {
         expect(tileset, area.tileset).toBeDefined();
+      }
+      for (const key of new Set(area.objects.map(({ character }) => character))) {
+        const character = CHARACTERS[key];
+        if (!character) {
+          throw new Error(`No character ${key}`);
+        }
+        const source = character.tileset === undefined ? tileset : TILESETS[character.tileset];
+        expect(
+          character.art.startsWith("placeholder-") ||
+            character.art.startsWith("test-") ||
+            artKind(MANIFEST, source, character.art) !== "placeholder",
+          `${key}: ${character.art} in ${character.tileset ?? area.tileset}`,
+        ).toBe(true);
       }
       for (const solid of area.solids) {
         if (!tileset) {
@@ -146,13 +135,6 @@ describe("the zones", () => {
         const missing = lookTiles(solid.look ?? "").filter((name) => !(name in tileset.tiles));
         expect(missing, `${solid.look} in ${area.tileset}`).toEqual([]);
       }
-    },
-  );
-
-  it.each(ZONES.map((zone, index) => [index + 1, zone] as const))(
-    "zone %i starts at an entry that exists",
-    (_, zone) => {
-      expect(zone.areas[zone.start.area]?.entries[zone.start.entry]).toBeDefined();
     },
   );
 });

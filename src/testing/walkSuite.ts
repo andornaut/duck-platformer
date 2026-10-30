@@ -69,30 +69,34 @@ export function walkSuite(plan: ZonePlan): void {
     expect(unreached.map(named)).toEqual([]);
   });
 
-  it("marks out of reach only surfaces she never reaches", () => {
-    const wrong = marks.filter(({ area, spot }) => {
-      const surface = surfaceAt(TILE, walk.surfaces, area, spot);
-      return surface === undefined || walk.reached.has(surface.key);
+  if (marks.length > 0) {
+    it("marks out of reach only surfaces she never reaches", () => {
+      const wrong = marks.filter(({ area, spot }) => {
+        const surface = surfaceAt(TILE, walk.surfaces, area, spot);
+        return surface === undefined || walk.reached.has(surface.key);
+      });
+      expect(wrong.map(({ area, spot }) => spotName(area, spot))).toEqual([]);
     });
-    expect(wrong.map(({ area, spot }) => spotName(area, spot))).toEqual([]);
-  });
+  }
 
-  it(
-    "can't be crossed at a no-cross spot in one move",
-    () => {
-      const crossed = areas.flatMap(([area, { noCross = [] }]) =>
-        noCross.flatMap(({ from, to }) => {
-          const start = surfaceAt(TILE, walk.surfaces, area, from);
-          const end = surfaceAt(TILE, walk.surfaces, area, to);
-          const pair = `${spotName(area, from)} to ${spotName(area, to)}`;
-          if (!start || !end) {
-            return [`${pair}: not both surfaces`];
-          }
-          return crosses(DUCK, layout, walk.surfaces, start, end) ? [pair] : [];
-        }),
-      );
-      expect(crossed).toEqual([]);
-    },
-    WALK_MS,
-  );
+  if (areas.some(([, area]) => (area.noCross?.length ?? 0) > 0)) {
+    it(
+      "can't be crossed at a no-cross spot in one move",
+      () => {
+        const crossed = areas.flatMap(([area, { noCross = [] }]) =>
+          noCross.flatMap(({ from, to }) => {
+            const start = surfaceAt(TILE, walk.surfaces, area, from);
+            const end = surfaceAt(TILE, walk.surfaces, area, to);
+            const pair = `${spotName(area, from)} to ${spotName(area, to)}`;
+            if (!start || !end) {
+              return [`${pair}: not both surfaces`];
+            }
+            return crosses(DUCK, layout, walk.surfaces, start, end) ? [pair] : [];
+          }),
+        );
+        expect(crossed).toEqual([]);
+      },
+      WALK_MS,
+    );
+  }
 }
