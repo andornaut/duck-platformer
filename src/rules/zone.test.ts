@@ -8,6 +8,7 @@ import {
   enterArea,
   leaveRoom,
   objectStep,
+  roomOf,
   standsOn,
   startZone,
   stepZone,
@@ -32,7 +33,13 @@ const STATIC: Motion = {
 
 function object(fields: Partial<ObjectLayout> & { origin: Point }): ObjectLayout {
   return {
-    animations: { idle: undefined, move: undefined, react: undefined, talk: undefined },
+    animations: {
+      idle: undefined,
+      move: undefined,
+      open: undefined,
+      react: undefined,
+      talk: undefined,
+    },
     art: "block",
     character: "block",
     collision: "solid",
@@ -277,12 +284,13 @@ describe("doors", () => {
       undefined,
     ],
   ])("%s", (_, objects, input, room) => {
-    expect(run(zone(area(objects)), 0.5, input).at(-1)?.room).toBe(room);
+    const layout = zone(area(objects));
+    expect(roomOf(layout, run(layout, 0.5, input).at(-1) as ZoneState)).toBe(room);
   });
 
   it("holds the zone still while the room shows", () => {
     const states = run(zone(area([door])), 0.5, press);
-    const opened = states.findIndex((state) => state.room !== undefined);
+    const opened = states.findIndex((state) => state.door !== undefined);
     expect(states.at(-1)).toBe(states[opened]);
   });
 
@@ -290,14 +298,14 @@ describe("doors", () => {
     const layout = zone(area([door]));
     const inside = run(layout, 0.5, press).at(-1) as ZoneState;
     const back = leaveRoom(inside);
-    expect([back.room, back.duck, back.objects, back.seconds]).toEqual([
+    expect([back.door, back.duck, back.objects, back.seconds]).toEqual([
       undefined,
       inside.duck,
       inside.objects,
       inside.seconds,
     ]);
     const next = stepZone(DUCK, layout, STEP, { ...STILL, useHeld: true }, back);
-    expect([next.room, next.seconds]).toEqual([undefined, inside.seconds + STEP]);
+    expect([next.door, next.seconds]).toEqual([undefined, inside.seconds + STEP]);
   });
 });
 

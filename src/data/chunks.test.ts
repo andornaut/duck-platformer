@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ASSEMBLED_AREA, assembleZone, CURVE_SLACK, curveAt } from "../rules/assemble";
+import { ASSEMBLED_AREA, assembleZone, CURVE_SLACK, curveAt, themesOf } from "../rules/assemble";
 import { chunkProblems, recipeProblems } from "../rules/chunk";
 import { ALL_CHUNKS, ALL_RECIPES, ALL_THEMES, FIXTURE_LIBRARY } from "../testing/chunks";
 import { lookTiles, type Tileset } from "../view/tiles";
@@ -63,6 +63,19 @@ describe.each(ALL_THEMES)("theme %s", (_, theme) => {
 describe.each(ALL_CHUNKS)("chunk %s", (_, library, chunk) => {
   it("keeps the chunk rules and the seam rule", () => {
     expect(chunkProblems(library, CATALOGUE, chunk)).toEqual([]);
+  });
+
+  it("fits each of its themes' doors in each door slot", () => {
+    const tooSmall = themesOf(chunk).flatMap((key) => {
+      const door = CHARACTERS[library.themes[key]?.door ?? ""];
+      return (chunk.slots ?? [])
+        .filter(
+          ({ area, kind }) =>
+            kind === "door" && (!door || area.cols < door.cols || area.rows < door.rows),
+        )
+        .map(({ id }) => `${id} for ${key}`);
+    });
+    expect(tooSmall).toEqual([]);
   });
 });
 

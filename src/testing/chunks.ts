@@ -1,5 +1,6 @@
 // Small chunks, a theme and a recipe for the chunk tests, which run on these as well as on
 // gameplay's chunks and recipes.
+import { CHARACTERS } from "../data/characters";
 import { CHUNK_RULES, CHUNKS, SEAM_ROWS, THEMES } from "../data/chunks";
 import { ZONE_ROWS } from "../data/screen";
 import type { ChunkPlan, TerrainRect, ThemePlan, ZoneRecipe } from "../data/types";
@@ -142,6 +143,7 @@ const FIXTURE_CHUNKS: Readonly<Record<string, ChunkPlan>> = {
 };
 
 export const FIXTURE_LIBRARY: ChunkLibrary = {
+  characters: CHARACTERS,
   chunks: FIXTURE_CHUNKS,
   rows: ZONE_ROWS,
   rules: CHUNK_RULES,

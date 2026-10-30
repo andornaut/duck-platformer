@@ -39,6 +39,8 @@ export interface Catalogue {
 }
 
 const STATES: readonly CharacterState[] = ["idle", "move", "react", "talk"];
+// The tag a door's open state plays when its character names none.
+const OPEN_TAG = "open";
 
 // The character and archetype an instance names, or an error naming what is missing.
 export function resolveNames(
@@ -58,9 +60,9 @@ export function resolveNames(
 
 // An instance resolved into one flat object, in pixels: its instance's overrides over its
 // character's tuning over its archetype, and the character's art, animations (a state left out
-// plays idle's), words and quirks, which an instance's own lines replace. Its hit box is its
-// sprite's, from hitboxes, or for art drawn from its area's tileset, its tiles'. A door without a
-// room, or a room on anything but a door, is refused.
+// plays idle's, and open the tag named "open"), words and quirks, which an instance's own lines
+// replace. Its hit box is its sprite's, from hitboxes, or for art drawn from its area's tileset,
+// its tiles'. A door without a room, or a room on anything but a door, is refused.
 export function objectLayout(
   tile: number,
   catalogue: Catalogue,
@@ -96,9 +98,12 @@ export function objectLayout(
   const art = hitboxes[character.art];
   const idle = character.animations?.idle;
   return {
-    animations: Object.fromEntries(
-      STATES.map((state) => [state, character.animations?.[state] ?? idle]),
-    ) as Record<CharacterState, string | undefined>,
+    animations: {
+      ...(Object.fromEntries(
+        STATES.map((state) => [state, character.animations?.[state] ?? idle]),
+      ) as Record<Exclude<CharacterState, "open">, string | undefined>),
+      open: character.animations?.open ?? OPEN_TAG,
+    },
     art: character.art,
     character: instance.character,
     collision: archetype.collision,

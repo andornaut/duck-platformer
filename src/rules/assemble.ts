@@ -1,6 +1,7 @@
 import { type Random, randomInt, randomStream, shuffled } from "@andornaut/game-kit/random";
 
 import type {
+  Character,
   ChunkPlan,
   ChunkRules,
   FilledSlot,
@@ -15,8 +16,9 @@ import type {
 } from "../data/types";
 
 // What zones are assembled from: the chunks and themes by key, the chunk rules, the seam rows,
-// and a zone's height in rows.
+// a zone's height in rows, and the characters by key, for the size of each theme's door.
 export interface ChunkLibrary {
+  readonly characters: Readonly<Record<string, Pick<Character, "cols" | "rows">>>;
   readonly chunks: Readonly<Record<string, ChunkPlan>>;
   readonly rows: number;
   readonly rules: ChunkRules;
@@ -232,7 +234,9 @@ const shiftInstance = (col: number, instance: Instance): Instance => ({
 // A zone of chunks ids, left to right, drawn in theme: each chunk's contents moved to its zone
 // columns, each terrain look as the theme's tileset draws it, the theme's repeated backdrops
 // across the whole zone, and fills (event ids, then door rooms, by kind) placed in its slots by
-// random. A filled door slot places the theme's door, sized to the slot, leading to its room.
+// random. A filled door slot places the theme's door at its own size, centred across the slot
+// (half a tile in where the two widths differ by an odd number of tiles) and standing on its
+// floor, leading to its room.
 // She starts on the first chunk's entry seam, half its footing in.
 export function zonePlanOf(
   library: ChunkLibrary,
@@ -282,11 +286,24 @@ export function zonePlanOf(
     }
     want.forEach((fill, index) => filled.set(open[index] as FilledSlot, fill));
   }
+  const door = library.characters[theme.door];
   const doors = slots.flatMap((slot): Instance[] => {
     const room = filled.get(slot);
-    return slot.kind === "door" && room !== undefined
-      ? [{ character: theme.door, ...slot.area, room }]
-      : [];
+    if (slot.kind !== "door" || room === undefined) {
+      return [];
+    }
+    if (!door) {
+      throw new Error(`No character ${theme.door} for theme ${themeKey}'s doors`);
+    }
+    const { area } = slot;
+    return [
+      {
+        character: theme.door,
+        col: area.col + (area.cols - door.cols) / 2,
+        room,
+        row: area.row + area.rows - door.rows,
+      },
+    ];
   });
   const first = chunks[0];
   return {

@@ -55,7 +55,7 @@ import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchC
 import { nodeOf } from "../rules/map";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
 import { zoneLayout } from "../rules/tiles";
-import { areaOf, leaveRoom, startZone, stepZone, type ZoneState } from "../rules/zone";
+import { areaOf, leaveRoom, roomOf, startZone, stepZone, type ZoneState } from "../rules/zone";
 import { askedLapSeed, askedRecipe, nextZoneIndex, startZoneIndex } from "../rules/zoneChain";
 import { zonePlanFor } from "../rules/zonePlans";
 import { newLapSeed, saveClearedZone, saveZoneStart } from "../save";
@@ -63,6 +63,7 @@ import { touchControlsShown } from "../settings/touchControls";
 import { ART_MANIFEST_KEY, artHitboxes, type ArtManifest } from "../view/aseprite";
 import { cameraScroll } from "../view/camera";
 import { characterState, nextQuirkAt } from "../view/character";
+import { doorPhase } from "../view/doorOpen";
 import { duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
 import { type ArtKind, artKind, artOffset } from "../view/objectArt";
 import { type PlayHold, stepAction } from "../view/playHold";
@@ -197,6 +198,13 @@ export class ZoneScene extends Scene {
   private attemptShown = 0;
   // Why play holds still, if it does.
   private hold: PlayHold;
+  // The door she used, by its index among the area's objects, while it opens: when Use went down,
+  // in ms, and how long its open tag runs (undefined without one). drawObjects leaves its tag
+  // alone meanwhile.
+  private opening:
+    { readonly at: number; readonly index: number; readonly ms?: number } | undefined;
+  // Whether a room shows over the paused zone.
+  private inRoom = false;
   private objectArt: ObjectArt[] = [];
   private terrainMap: Tilemaps.Tilemap | undefined;
   // When each held button's press began.
@@ -224,6 +232,8 @@ export class ZoneScene extends Scene {
     this.heldTouches.clear();
     this.presses.clear();
     this.hold = undefined;
+    this.opening = undefined;
+    this.inRoom = false;
     this.clock = startStepClock;
     this.duckPose = startPose;
   }
@@ -300,11 +310,14 @@ export class ZoneScene extends Scene {
       });
     }
     // Paused under the pause card or a room: keys and time while it was open count for nothing.
-    // Back from a room, she stands at its door with nothing held.
+    // Back from a room, she stands at its door with nothing held, and the door shows closed.
     this.events.on("resume", () => {
       this.clock = startStepClock;
       this.heldKeys.clear();
-      if (this.zone.room !== undefined) {
+      if (this.inRoom) {
+        this.inRoom = false;
+        this.hold = undefined;
+        this.closeDoor(this.zone.door);
         this.zone = leaveRoom(this.zone);
         this.heldTouches.clear();
       }
@@ -352,6 +365,9 @@ export class ZoneScene extends Scene {
     this.clock = frame.clock;
     const touches = [...this.heldTouches.values()];
     const intent = combineIntents(keyIntent(this.heldKeys), touchIntent(TOUCH, touches));
+    if (this.opening && doorPhase(this.opening.ms, time - this.opening.at) === "room") {
+      this.openRoom();
+    }
     for (let step = 0; step < frame.steps; step++) {
       const action = stepAction(this.hold, this.zone.cleared);
       if (action === "hold") {
@@ -370,8 +386,8 @@ export class ZoneScene extends Scene {
         this.zone,
       );
       this.duckPose = stepPose(this.landMs, STEP_MS, before, this.zone.duck, this.duckPose);
-      if (this.zone.room !== undefined) {
-        this.openRoom(this.zone.room);
+      if (this.zone.door !== undefined) {
+        this.openDoor(time, this.zone.door);
         break;
       }
     }
@@ -391,8 +407,46 @@ export class ZoneScene extends Scene {
     camera.once("camerafadeoutcomplete", () => this.leave());
   }
 
+  // Plays the open tag of the door she used, where its art has one, play held still; the room
+  // shows once it has run (update), or at once without one.
+  private openDoor(nowMs: number, index: number): void {
+    this.hold = "door";
+    const sprite = this.objectArt[index]?.sprite;
+    const tag = areaOf(this.layout, this.zone.area).objects[index]?.animations.open;
+    const sheet = sprite && this.sheet(sprite.texture.key);
+    const ms = tag !== undefined && sheet?.has(tag) ? tagMs(sheet, tag) : undefined;
+    this.opening = { at: nowMs, index, ...(ms !== undefined && { ms }) };
+    if (sprite && tag !== undefined && ms !== undefined) {
+      sprite.play(animationKey(sprite.texture.key, tag));
+    }
+    if (doorPhase(ms, 0) === "room") {
+      this.openRoom();
+    }
+  }
+
+  // Shows a door's closed look again, its idle tag or its sheet's first, after its open tag.
+  private closeDoor(index: number | undefined): void {
+    const sprite = index === undefined ? undefined : this.objectArt[index]?.sprite;
+    const object =
+      index === undefined ? undefined : areaOf(this.layout, this.zone.area).objects[index];
+    if (!sprite || !object) {
+      return;
+    }
+    const tag = object.animations.idle ?? [...this.sheet(object.art).keys()][0];
+    if (tag !== undefined) {
+      show(sprite, tag);
+    }
+  }
+
   // Shows the room behind the door she used, the zone paused under it until she leaves.
-  private openRoom(room: string): void {
+  private openRoom(): void {
+    const room = roomOf(this.layout, this.zone);
+    this.opening = undefined;
+    if (room === undefined) {
+      this.hold = undefined;
+      return;
+    }
+    this.inRoom = true;
     this.scene.launch("room", { room } satisfies RoomData);
     this.scene.pause();
   }
@@ -575,7 +629,7 @@ export class ZoneScene extends Scene {
       const x = Math.round(at.x + art.offset.x);
       const y = Math.round(at.y + art.offset.y);
       const moved = x !== art.item.x || y !== art.item.y;
-      if (art.sprite) {
+      if (art.sprite && index !== this.opening?.index) {
         if (x !== art.item.x) {
           art.sprite.setFlipX(x < art.item.x);
         }

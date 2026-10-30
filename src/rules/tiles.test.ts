@@ -117,9 +117,9 @@ describe("zoneLayout", () => {
     ["the instance's reaction override", special?.reaction.kind, "none"],
     ["the character's interaction, in pixels", lift?.interaction, { kind: "quip", range: 40 }],
     [
-      "animations, a missing state playing idle's",
+      "animations, a missing state playing idle's, and open the tag named open",
       lift?.animations,
-      { idle: "rest", move: "rise", react: "rest", talk: "rest" },
+      { idle: "rest", move: "rise", open: "open", react: "rest", talk: "rest" },
     ],
     ["the character's words", [lift?.lines, lift?.quips], [["lift-hello"], ["lift-quip"]]],
     [

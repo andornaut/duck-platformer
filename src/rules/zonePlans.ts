@@ -1,3 +1,4 @@
+import { CHARACTERS } from "../data/characters";
 import { CHUNK_RULES, CHUNKS, SEAM_ROWS, THEMES } from "../data/chunks";
 import { ZONE_ROWS } from "../data/screen";
 import type { ZonePlan } from "../data/types";
@@ -6,6 +7,7 @@ import { assembleZone, type ChunkLibrary } from "./assemble";
 
 // The game's chunks and themes.
 export const CHUNK_LIBRARY: ChunkLibrary = {
+  characters: CHARACTERS,
   chunks: CHUNKS,
   rows: ZONE_ROWS,
   rules: CHUNK_RULES,

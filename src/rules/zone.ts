@@ -21,17 +21,18 @@ export interface ZoneInput extends DuckInput {
 
 // area: the area she is in. attempt: 0, and one more after each restart; it reseeds the random
 // motion, so a restart does not replay it. objects: each of the area's objects' top-left corner.
-// seconds: time since she entered the area, which places the objects on their tracks. room: the
-// room of the door she used, which holds the zone still until leaveRoom. cleared: she reached
-// the area's last column, which holds it still for good.
+// seconds: time since she entered the area, which places the objects on their tracks. door: the
+// index among the area's objects of the door she used, which holds the zone still while it
+// opens and its room shows, until leaveRoom. cleared: she reached the area's last column, which
+// holds it still for good.
 export interface ZoneState {
   readonly area: string;
   readonly attempt: number;
   readonly cleared: boolean;
+  readonly door: number | undefined;
   readonly duck: DuckState;
   readonly objects: readonly Point[];
   readonly restarts: number;
-  readonly room: string | undefined;
   readonly seconds: number;
   readonly seed: number;
   readonly steps: number;
@@ -80,9 +81,9 @@ export function enterArea(
     ...zone,
     area: link.area,
     cleared: false,
+    door: undefined,
     duck: startDuck(tuning, entry),
     objects: area.objects.map((object, index) => pathAt(object, tracks[index] as Track, 0)),
-    room: undefined,
     seconds: 0,
     tracks,
     // Use must go down after she arrives, so a press held from before does not act.
@@ -93,7 +94,12 @@ export function enterArea(
 // She leaves the room she is in for its door, standing where she was, the zone going on from
 // where it held still. Use must go down again before it acts.
 export function leaveRoom(zone: ZoneState): ZoneState {
-  return { ...zone, room: undefined, useHeld: true };
+  return { ...zone, door: undefined, useHeld: true };
+}
+
+// The room behind the door she used, if she used one.
+export function roomOf(layout: ZoneLayout, zone: ZoneState): string | undefined {
+  return zone.door === undefined ? undefined : areaOf(layout, zone.area).objects[zone.door]?.room;
 }
 
 export function startZone(tuning: DuckTuning, layout: ZoneLayout, seed: number): ZoneState {
@@ -182,7 +188,7 @@ export function pushedAside(
 // until she lands. A solid one running into her side pushes her ahead of it. Touching a hazard,
 // being pushed into a solid or falling out of the area restarts the zone at its start, the next
 // attempt. Her collision box reaching the area's last column, at any height, clears the zone.
-// Use at a door sets `room`, and the zone holds still until leaveRoom.
+// Use at a door sets `door`, and the zone holds still until leaveRoom.
 export function stepZone(
   tuning: DuckTuning,
   layout: ZoneLayout,
@@ -190,7 +196,7 @@ export function stepZone(
   input: ZoneInput,
   zone: ZoneState,
 ): ZoneState {
-  if (zone.cleared || zone.room !== undefined) {
+  if (zone.cleared || zone.door !== undefined) {
     return zone;
   }
   const area = areaOf(layout, zone.area);
@@ -254,14 +260,14 @@ export function stepZone(
   }
   const usePressed = input.useHeld && !zone.useHeld;
   const door = usePressed
-    ? objects.find(({ after, object }) => object.collision === "use" && overlaps(box, after))
-    : undefined;
+    ? objects.findIndex(({ after, object }) => object.collision === "use" && overlaps(box, after))
+    : -1;
   return {
     ...zone,
     cleared: box.x + box.width > area.exitX,
+    door: door < 0 ? undefined : door,
     duck,
     objects: objects.map(({ after }) => ({ x: after.x, y: after.y })),
-    room: door?.object.room,
     seconds: time,
     steps,
     useHeld: input.useHeld,

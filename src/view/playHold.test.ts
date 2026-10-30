@@ -6,6 +6,7 @@ describe("stepAction", () => {
   it.each<[PlayHold, boolean, ReturnType<typeof stepAction>]>([
     [undefined, false, "step"],
     [undefined, true, "leave"],
+    ["door", false, "hold"],
     ["fade", false, "hold"],
     // Fading out of the cleared zone, or faded out and waiting for the map: the scene must not
     // leave the zone again.

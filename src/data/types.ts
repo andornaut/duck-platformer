@@ -195,8 +195,8 @@ export interface Archetype {
   readonly reaction: Reaction;
 }
 
-// The states an animation tag can play for.
-export type CharacterState = "idle" | "move" | "react" | "talk";
+// The states an animation tag can play for. open: a door as she uses it, before its room shows.
+export type CharacterState = "idle" | "move" | "open" | "react" | "talk";
 
 // An idle tic: tag plays once every `every` seconds, give or take variance (0 to 1) of that,
 // rolled fresh each attempt like random motion.
@@ -209,8 +209,9 @@ export interface Quirk {
 // Who or what a placed thing is (CHARACTERS by name, in src/data/characters.ts): one archetype
 // plus tuning, cols x rows tiles unless a placement sizes it. art: a tile or piece of the area's
 // tileset, a backdrop or a sprite, or placeholder-<name>. animations: the sprite tag each state
-// plays; a state left out plays idle's. Its hit box comes from art's manifest. lines and quips
-// are keys into TEXT.lines and TEXT.quips; a prop has none.
+// plays; a state left out plays idle's, except open, which plays the tag named "open". Its hit
+// box comes from art's manifest. lines and quips are keys into TEXT.lines and TEXT.quips; a prop
+// has none.
 export interface Character {
   readonly animations?: Readonly<Partial<Record<CharacterState, string>>>;
   readonly archetype: string;
@@ -359,7 +360,8 @@ export interface ThemeBackdrop {
 // What every chunk of a theme is drawn with, so seams never show (THEMES by key, in
 // src/data/chunks.ts). tileset: the art tileset. looks: each look a chunk's terrain names, as
 // the tileset's look it is drawn with. backdrops: its repeated backdrops, back to front. door:
-// the character, a door, each filled door slot places, sized to the slot.
+// the character, a door, each filled door slot places at its own size, centred across the slot
+// and standing on its floor.
 export interface ThemePlan {
   readonly backdrops: readonly ThemeBackdrop[];
   readonly door: string;

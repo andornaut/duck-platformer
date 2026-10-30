@@ -25,6 +25,7 @@ function chunk(entry: 30 | 40 | 50, exit: 30 | 40 | 50, extra: Partial<ChunkPlan
 
 function library(chunks: Readonly<Record<string, ChunkPlan>>): ChunkLibrary {
   return {
+    characters: { door: { cols: 2, rows: 3 } },
     chunks: { finish: chunk(50, 50), start: chunk(50, 50), ...chunks },
     rows: ROWS,
     rules: { cols: { max: 120, min: 60 }, footing: 4, headroom: 6 },
@@ -163,7 +164,7 @@ describe("assembleZone", () => {
         { character: "sky", col: 0, cols: 180, row: 0 },
         { character: "tree", col: 63, row: 20 },
         { character: "bench", col: 65, row: 48 },
-        { character: "door", col: 66, cols: 2, room: "r", row: 40, rows: 4 },
+        { character: "door", col: 66, room: "r", row: 41 },
       ],
       outOfReach: [{ col: 62, row: 10 }],
       rows: ROWS,
@@ -209,28 +210,43 @@ describe("assembleZone", () => {
     expect(new Set(fills.map((each) => each.join())).size).toBeGreaterThan(1);
   });
 
-  it.each([0, 1, 2])(
-    "places the theme's door in each of %i filled door slots, sized to it",
-    (count) => {
-      const slot = (id: string, col: number) => ({
-        area: { col, cols: 4, row: 45, rows: 5 },
-        id,
-        kind: "door" as const,
-      });
-      const lib = library({
-        a: chunk(50, 50, { slots: [slot("d1", 10)] }),
-        b: chunk(50, 50, { slots: [slot("d2", 20)] }),
-      });
-      const zone = recipe(2, { doors: count === 0 ? [] : [{ count, room: "r" }] });
-      for (const seed of SEEDS) {
-        const area = areaOf(assembleZone(lib, seed, "z", zone));
-        const doors = area.objects.filter(({ character }) => character === "door");
-        const filled = (area.slots ?? []).filter(({ fill }) => fill !== undefined);
-        expect(doors).toEqual(
-          filled.map(({ area: rect }) => ({ character: "door", ...rect, room: "r" })),
-        );
-        expect(doors).toHaveLength(count);
-      }
-    },
-  );
+  it.each([0, 1, 2])("places the theme's door in each of %i filled door slots", (count) => {
+    const slot = (id: string, col: number) => ({
+      area: { col, cols: 4, row: 45, rows: 5 },
+      id,
+      kind: "door" as const,
+    });
+    const lib = library({
+      a: chunk(50, 50, { slots: [slot("d1", 10)] }),
+      b: chunk(50, 50, { slots: [slot("d2", 20)] }),
+    });
+    const zone = recipe(2, { doors: count === 0 ? [] : [{ count, room: "r" }] });
+    for (const seed of SEEDS) {
+      const area = areaOf(assembleZone(lib, seed, "z", zone));
+      const doors = area.objects.filter(({ character }) => character === "door");
+      const filled = (area.slots ?? []).filter(({ fill }) => fill !== undefined);
+      expect(doors.map(({ col }) => col - 1)).toEqual(filled.map(({ area: rect }) => rect.col));
+      expect(doors).toHaveLength(count);
+    }
+  });
+
+  // A slot 4 wide and 5 tall at col 10 and row 45 of the middle chunk (zone col 70), its floor at
+  // row 50.
+  it.each([
+    ["one narrower by an odd count, half a tile in", { cols: 3, rows: 5 }, { col: 70.5, row: 45 }],
+    ["one narrower by an even count, a tile in", { cols: 2, rows: 3 }, { col: 71, row: 47 }],
+    ["one as wide, flush", { cols: 4, rows: 4 }, { col: 70, row: 46 }],
+  ])("centres %s and stands it on the slot's floor", (_, size, at) => {
+    const lib = {
+      ...library({
+        a: chunk(50, 50, {
+          slots: [{ area: { col: 10, cols: 4, row: 45, rows: 5 }, id: "d", kind: "door" }],
+        }),
+      }),
+      characters: { door: size },
+    };
+    const area = areaOf(assembleZone(lib, 1, "z", recipe(1, { doors: [{ count: 1, room: "r" }] })));
+    const door = area.objects.find(({ character }) => character === "door");
+    expect(door && { col: door.col, row: door.row }).toEqual(at);
+  });
 });
