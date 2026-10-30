@@ -93,7 +93,7 @@ Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with 
 | ui-quip-strip       | nine-slice (2,2,2,2)                                       | 12x24  | rest                                      |
 | ui-quit             | sprite                                                     | 20x20  | normal, pressed                           |
 | ui-resume           | sprite                                                     | 160x44 | normal, pressed                           |
-| ui-settings-card    | nine-slice (2,38,2,2)                                      | 16x48  | rest                                      |
+| ui-settings-card    | nine-slice (2,2,2,2)                                       | 16x16  | rest                                      |
 | ui-settings-row     | nine-slice (2,2,2,2)                                       | 12x48  | rest                                      |
 | ui-skip             | sprite                                                     | 78x20  | normal, pressed, disabled                 |
 | ui-start            | sprite                                                     | 192x52 | normal, pressed                           |

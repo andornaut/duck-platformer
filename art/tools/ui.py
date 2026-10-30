@@ -83,9 +83,12 @@ Start screen (720x360, over the street)
   "Start" puts the triangle at x 338 and the label at 349.
 
 Pause card, settings card and install steps card (each over the game dimmed two ramp steps, one at a time)
-- ui-settings-card, nine-slice 16x48, margins 2,38,2,2: a cream border with cut corners, an ink header 36 high and
-  a navy body. Every card is drawn 368 wide at 176,88; title cream in font-title, origin 190,93.
-- ui-close, 24x24, at 510,94 (hit 500,88,44,44) on every card. Tags normal (cream X), pressed (white X on dslate).
+- ui-settings-card, nine-slice 16x16, margins 2,2,2,2: an ink border with cut corners round a skin1 face (the
+  park's peach), a cream rim on the top and left and a skin2 rim on the bottom and right; no header. Every card is
+  drawn 368 wide at 176,88. Title ink in font-title (9.99:1 on skin1), centred on x 360: origin x = 358 minus
+  floor((A - 4) / 2), where A is its advance width at 2x, origin y 96.
+- ui-close, 24x24, at 510,94 (hit 500,88,44,44), the card's top right, on every card. Tags normal (ink X), pressed
+  (white X on dslate).
 - ui-settings-row, nine-slice 12x48, margins 2,2,2,2, dslate, drawn 352x48 at x 184; each row is its own hit area.
   A row's 16x16 icon sits at 198,y+16 and its label (font-body, cream, white while pressed) at origin 228,y+15.
 - Pause card, 368x236, title "Paused". Rows: Settings at y 136 (icon-settings), Back to title at y 188
@@ -94,9 +97,10 @@ Pause card, settings card and install steps card (each over the game dimmed two 
   y 136 (icon-move-controls) and "Action buttons" at y 188 (icon-touch-controls), each with ui-checkbox at
   504,y+14 and its state Shown or Hidden cream, its last glyph ending at x 494 (origin 496-A), both Shown by
   default; Install at y 240, only while the app is installable (icon-install; ui-button drawn 72x28 at 452,250,
-  centred on x 488, label ink, origin y 253; room 56). The build label, tan in font-body (for example
-  "v0.0.1 · dev"), is centred on x 360 with its origin 28 above the card's foot: y 296, or 244 without Install.
-- Install steps card, 368x160, title "Install". Two steps, each a 16x16 glyph and up to two lines of cream
+  centred on x 488, label ink, origin y 253; room 56). The build label, dbrown in font-body (4.7:1 on skin1), for
+  example "v0.0.1 · dev", is centred on x 360 with its origin 28 above the card's foot: y 296, or 244 without
+  Install.
+- Install steps card, 368x160, title "Install". Two steps, each a 16x16 glyph and up to two lines of ink
   font-body at a 20px pitch, room 296: step 1's glyph (icon-ios-share on iOS, icon-browser-menu where the browser
   installs from its menu) at 198,145, text origin 228,144; step 2's glyph (icon-install) at 198,197, text origin
   228,196.
@@ -294,9 +298,10 @@ def touch_button(key):
 # ---------------------------------------------------------------- settings
 
 def settings_card():
-    g = Grid(16, 48)
-    panel(g, 0, 0, 16, 48, "navy", rim=None, border="cream")
-    g.rect(1, 1, 14, 36, "ink")
+    """16x16 nine-slice: an ink border with cut corners round a skin1 face (the park's peach), lit top-left: a cream
+    rim on the top and left, a skin2 rim on the bottom and right. No header."""
+    g = Grid(16, 16)
+    panel(g, 0, 0, 16, 16, "skin1", rim=("cream", "skin2"))
     return g.px
 
 
@@ -584,7 +589,7 @@ def close(state):
     g = Grid(24, 24)
     if state == "pressed":
         panel(g, 0, 0, 24, 24, "dslate", rim=None, border="dslate")
-    stamp(g, X, 6, 6, "white" if state == "pressed" else "cream")
+    stamp(g, X, 6, 6, "white" if state == "pressed" else "ink")
     return g.px
 
 
@@ -597,7 +602,7 @@ SLICES = {
     "ui-button-primary": (2, 4, 2, 6),
     "ui-focus": (4, 4, 4, 4),
     "ui-quip-strip": (2, 2, 2, 2),
-    "ui-settings-card": (2, 38, 2, 2),
+    "ui-settings-card": (2, 2, 2, 2),
     "ui-settings-row": (2, 2, 2, 2),
 }
 
