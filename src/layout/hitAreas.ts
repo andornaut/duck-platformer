@@ -15,7 +15,7 @@ export const HIT_RULE = {
 // The circle about each of the touch buttons Use and Jump that the move hint never reaches into:
 // each presses within this plus the hint's radius of its centre, so a drag starts only where
 // the hint, drawn on the drag's start, stays clear of it (touchControls.ts).
-export const TOUCH_CIRCLE_RADIUS = 60;
+export const TOUCH_CIRCLE_RADIUS = 63;
 
 // How far a drawn button's press area reaches past it on every side.
 export function hitMargin(art: Rect): number {

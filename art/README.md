@@ -149,7 +149,7 @@ The villain is a champagne ferret standing up on its hind legs in a stovepipe ha
 
 ## UI
 
-All positions are in base pixels (x, y, w, h) of the 720x360 layout as drawn. The game derives every press area from the drawn button at runtime: the button plus 25% of its shorter side on each side, clamped between 6 and 16px, and at least 48x48. Use and Jump instead press within 97 of each one's centre (a clear circle of 60 plus the move hint's radius of 37), cut along the line midway between their centres so the two never overlap; Jump's also reaches the screen's bottom-right corner, as the rect from its centre to the corner. Art gives only the drawn rects and centres.
+All positions are in base pixels (x, y, w, h) of the 720x360 layout as drawn. The game derives every press area from the drawn button at runtime: the button plus 25% of its shorter side on each side, clamped between 6 and 16px, and at least 48x48. Use and Jump instead press within 100 of each one's centre (a clear circle of 63 plus the move hint's radius of 37), cut along the line midway between their centres so the two never overlap; Jump's also reaches the screen's bottom-right corner, as the rect from its centre to the corner. Art gives only the drawn rects and centres.
 
 ### Dialogue box
 
@@ -176,7 +176,7 @@ Two round buttons for the right thumb, Use above and to the left of Jump. Each i
 
 - Centres are the base 720x360 layout, as drawn. At runtime the game anchors Jump, Use and the pause button to the screen's corners, so on a wide or tall screen they sit in the spare space outside the game.
 - Press: the band and icon turn white and the ring swells 1px for the first frame (frame 0, then frame 1, 60ms each), then hold until release, which snaps back to rest.
-- Movement: a touch anywhere off a button sets its own neutral point. The move hint (`ui-move-hint`, 75x75) shows where to put the left thumb: an open ring 73px across with no face, a 2px cream band between 1px ink lines and an ink-fringed chevron each side, so it reads on any ground, the sky and any character. It is a drawing only, with no press area. At rest its centre is level with Jump's and its ring as far in from the view's left as Use's is from its right: 119,303 at 720 wide. While a touch moves her, the game draws it on that touch's neutral point, anywhere on screen, lights the dragged side's chevron (`held-left`, `held-right`) and slides its knob (`ui-move-knob`, 11x11) up to 12px left or right; on release it returns to rest.
+- Movement: a touch anywhere off a button sets its own neutral point. The move hint (`ui-move-hint`, 75x75) shows where to put the left thumb: an open ring 73px across with no face, a 2px cream band between 1px ink lines and an ink-fringed chevron each side, so it reads on any ground, the sky and any character. It is a drawing only, with no press area. At rest its centre is level with Jump's and its ring as far in from the view's left as Use's is from its right: 121,303 at 720 wide. While a touch moves her, the game draws it on that touch's neutral point, anywhere on screen, lights the dragged side's chevron (`held-left`, `held-right`) and slides its knob (`ui-move-knob`, 11x11) up to 12px left or right; on release it returns to rest.
 
 ### Start screen
 

@@ -19,14 +19,18 @@ function buttonArt(centre: Point): Rect {
 // drawn edge on each side.
 const DRAWN_HALF = (BUTTON_FRAME - 1) / 2 - 1;
 
-// Jump at the view's right, CONTROL_EDGE in, and CONTROL_BOTTOM above the bottom; Use above and
-// left of Jump by art's spacing.
+// Jump at the view's right, CONTROL_EDGE in, and CONTROL_BOTTOM above the bottom; Use's ring
+// USE_RIGHT in from the view's right, its centre USE_ABOVE_JUMP above Jump's.
 const JUMP_CENTRE = {
   x: SCREEN.width - 1 - CONTROL_EDGE - DRAWN_HALF,
   y: SCREEN.height - 1 - CONTROL_BOTTOM - DRAWN_HALF,
 };
-const USE_FROM_JUMP = { x: -75, y: -97 };
-const USE_CENTRE = { x: JUMP_CENTRE.x + USE_FROM_JUMP.x, y: JUMP_CENTRE.y + USE_FROM_JUMP.y };
+const USE_RIGHT = 85;
+const USE_ABOVE_JUMP = 100;
+const USE_CENTRE = {
+  x: SCREEN.width - 1 - USE_RIGHT - DRAWN_HALF,
+  y: JUMP_CENTRE.y - USE_ABOVE_JUMP,
+};
 const USE_ART = buttonArt(USE_CENTRE);
 const JUMP_ART = buttonArt(JUMP_CENTRE);
 
