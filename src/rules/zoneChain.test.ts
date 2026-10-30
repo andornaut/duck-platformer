@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { askedLapSeed, askedRecipe, nextZoneIndex, startZoneIndex } from "./zoneChain";
+import { askedAssemblySeed, askedRecipe, nextZoneIndex, startZoneIndex } from "./zoneChain";
 
 describe("startZoneIndex", () => {
   it.each([
@@ -30,19 +30,19 @@ describe("askedRecipe", () => {
   });
 });
 
-describe("askedLapSeed", () => {
+describe("askedAssemblySeed", () => {
   it.each([
     ["", undefined],
-    ["?lap=", undefined],
-    ["?lap=0", 0],
-    ["?lap=42", 42],
-    ["?lap=4294967295", 2 ** 32 - 1],
-    ["?lap=4294967296", undefined],
-    ["?lap=-1", undefined],
-    ["?lap=1.5", undefined],
-    ["?lap=one", undefined],
+    ["?assembly=", undefined],
+    ["?assembly=0", 0],
+    ["?assembly=42", 42],
+    ["?assembly=4294967295", 2 ** 32 - 1],
+    ["?assembly=4294967296", undefined],
+    ["?assembly=-1", undefined],
+    ["?assembly=1.5", undefined],
+    ["?assembly=one", undefined],
   ])("reads %j as %s", (search, seed) => {
-    expect(askedLapSeed(search)).toBe(seed);
+    expect(askedAssemblySeed(search)).toBe(seed);
   });
 });
 

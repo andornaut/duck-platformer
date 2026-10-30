@@ -164,7 +164,7 @@ const doorsOf = (plan: ZonePlan) =>
     ),
   );
 
-// Lap seeds each recipe is assembled for.
+// Seeds each recipe is assembled for.
 const DOOR_SEEDS = [1, 2, 3];
 
 describe("the real zones", () => {

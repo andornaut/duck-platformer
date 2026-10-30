@@ -129,11 +129,6 @@ export class PauseScene extends Scene implements SettingsOpener {
     }
   }
 
-  // Opens the card over the zone, as P does, for a zone the game reopens at.
-  openCard(): void {
-    void this.open();
-  }
-
   // Pauses the zone, reads it back once for each mix of the touch settings (DIM_MIXES) to dim
   // each, and
   // shows the card over the dim. Nothing of this scene shows while the zone is read back.

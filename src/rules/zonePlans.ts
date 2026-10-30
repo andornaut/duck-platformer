@@ -15,8 +15,8 @@ export const CHUNK_LIBRARY: ChunkLibrary = {
   themes: THEMES,
 };
 
-// The zone key names on the lap with seed: hand-built in ZONES, or assembled from its recipe in
-// RECIPES, the same for the same seed.
+// The zone key names: hand-built in ZONES, or assembled from its recipe in RECIPES for seed, the
+// same for the same seed.
 export function zonePlanFor(seed: number, key: string): ZonePlan {
   const plan = ZONES[key];
   if (plan) {

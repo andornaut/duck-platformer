@@ -79,50 +79,33 @@ describe("dashInks", () => {
 });
 
 describe("pathRects", () => {
-  it.each([MAP_PATH_LOOKS.travelled.stroke, MAP_PATH_LOOKS.unbuilt.stroke])(
+  it.each([MAP_PATH_LOOKS.open.stroke, MAP_PATH_LOOKS.unbuilt.stroke])(
     "stops %j short of each centre",
     (stroke) => {
-      const centres = pathRects(MAP_PATH.step, stroke, undefined, ENDS, LEVEL).map(centreOf);
+      const centres = pathRects(MAP_PATH.step, stroke, ENDS, LEVEL).map(centreOf);
       const xs = centres.map(({ x }) => x);
       expect(Math.min(...xs)).toBeCloseTo(ENDS.fromTrim, 0);
       expect(Math.max(...xs)).toBeCloseTo(ENDS.to.x - ENDS.toTrim, 0);
     },
   );
 
-  it.each([MAP_PATH_LOOKS.built.stroke, MAP_PATH_LOOKS.selected.stroke])(
+  it.each([MAP_PATH_LOOKS.built.stroke])(
     "dashes %j as on + width inked, off - width clear",
     (stroke) => {
-      const { gaps, inked } = runs(pathRects(MAP_PATH.step, stroke, undefined, ENDS, LEVEL));
+      const { gaps, inked } = runs(pathRects(MAP_PATH.step, stroke, ENDS, LEVEL));
       expect(new Set(inked.slice(0, -1))).toEqual(new Set([stroke.on + stroke.width]));
       expect(new Set(gaps)).toEqual(new Set([stroke.off - stroke.width]));
     },
   );
 
   it("inks a solid path end to end", () => {
-    const { stroke } = MAP_PATH_LOOKS.travelled;
-    expect(runs(pathRects(MAP_PATH.step, stroke, undefined, ENDS, LEVEL)).gaps).toEqual([]);
+    const { stroke } = MAP_PATH_LOOKS.open;
+    expect(runs(pathRects(MAP_PATH.step, stroke, ENDS, LEVEL)).gaps).toEqual([]);
   });
 
   it("spaces dots evenly about every px apart, one on each end", () => {
     const stroke: PathStroke = MAP_PATH_LOOKS.unbuilt.stroke;
-    const rects = pathRects(MAP_PATH.step, stroke, undefined, ENDS, LEVEL);
+    const rects = pathRects(MAP_PATH.step, stroke, ENDS, LEVEL);
     expect(rects).toHaveLength(Math.floor(TRIMMED / stroke.every) + 1);
   });
-
-  it.each([MAP_PATH_LOOKS.selectable.arrow, MAP_PATH_LOOKS.selected.arrow])(
-    "points the arrowhead %j ahead, at its share of the path",
-    (arrow) => {
-      const { stroke } = MAP_PATH_LOOKS.travelled;
-      const head = pathRects(MAP_PATH.step, stroke, arrow, ENDS, LEVEL).filter(
-        (rect) => rect.width === 1,
-      );
-      const at = ENDS.fromTrim + arrow.along * TRIMMED;
-      const back = arrow.back * Math.cos((arrow.spread * Math.PI) / 180);
-      const xs = head.map(({ x }) => x);
-      expect([Math.min(...xs), Math.max(...xs)]).toEqual([
-        Math.floor(at + back),
-        Math.floor(at + arrow.tip),
-      ]);
-    },
-  );
 });

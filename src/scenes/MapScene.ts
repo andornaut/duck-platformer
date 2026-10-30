@@ -10,101 +10,75 @@ import { TILE } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { MapNode, Point, Rect } from "../data/types";
 import { pressedArea } from "../layout/hitAreas";
-import {
-  forkChoiceRects,
-  MAP_PATH,
-  MAP_PATH_LOOKS,
-  MAP_SCREEN,
-  mapLabel,
-  type PathLook,
-} from "../layout/mapScreen";
-import { type MapStand, mapStand, nodeOf, startsLap, walkOn } from "../rules/map";
-import { newLapSeed } from "../save";
+import { MAP_PATH, MAP_PATH_LOOKS, MAP_SCREEN, mapLabel, type PathLook } from "../layout/mapScreen";
+import { nodeOf, type OpenMap, openMap } from "../rules/map";
+import { savedMap, saveStand } from "../save";
 import { ART_MANIFEST_KEY, type ArtManifest } from "../view/aseprite";
 import {
   advanceWidth,
-  choosing,
-  firstStep,
-  forkArrow,
   markerState,
   nodeCentre,
   pathLook,
-  routeAtTap,
+  steppedZone,
+  zoneAtTap,
 } from "../view/mapMarks";
 import { bentCurve, pathRects } from "../view/mapPath";
 import { addButtonLabel, type ButtonLabel, placeButtonLabel } from "./cardParts";
 import { fitPlayCamera, playPoint } from "./playCamera";
+import type { ZoneData } from "./ZoneScene";
 
 const PALETTE = "palette";
-const BODY_FONT = "font-body";
 const TITLE_FONT = "font-title";
 const ICON_FALLBACK = "map-icon-zone";
-const CHOOSE_KEYS: Readonly<Record<string, -1 | 1>> = {
+const STEP_KEYS: Readonly<Record<string, -1 | 1>> = {
   ArrowLeft: -1,
   ArrowRight: 1,
   KeyA: -1,
   KeyD: 1,
 };
 const CONTINUE_KEYS = ["ArrowUp", "Enter", "KeyE", "KeyW", "Space"];
-// Paths are drawn in this order, so the ones that matter more lie on top.
-const LOOK_ORDER: readonly PathLook[] = ["unbuilt", "built", "travelled", "selectable", "selected"];
+// Paths are drawn in this order, so the open ones lie on top.
+const LOOK_ORDER: readonly PathLook[] = ["unbuilt", "built", "open"];
 
-// A control on the map: Continue, or a route on by its index, through its fork-choice button or
-// a tap on its zone's node.
-type Control = "continue" | number;
-
-interface ChoiceButton {
-  readonly area: Rect;
-  readonly arrow: GameObjects.Sprite;
-  readonly art: GameObjects.Sprite;
-  readonly hit: Rect;
-  readonly label: GameObjects.BitmapText;
-}
+// A control on the map: Continue, or an open zone node by its id.
+type Control = { readonly kind: "continue" } | { readonly kind: "node"; readonly id: string };
 
 // The map between zones, drawn as art's paper map: its pen marks, every path and node, each
-// zone's name, and the duck on the node she stands on. Before she plays the node she is at,
-// Continue plays it. After, she walks on to where the routes on split and chooses among them
-// with a button each (Left and Right, or a tap); with one route on, Continue takes it, to the
-// start again after the finish. A tap on the zone node a route on leads to takes that route.
+// zone's name, and the duck on the zone node she stands on. The zones she has completed open the
+// paths past them (openMap): she may stand on any open zone node, back or on, and play it. A tap
+// on an open zone node, or Left and Right through them in the map's order, walks her there;
+// Continue plays the zone she stands on. Where she stands is saved as it changes.
 export class MapScene extends Scene {
-  private chosen = 0;
-  private choices: ChoiceButton[] = [];
   private colours: Readonly<Record<string, string>> = {};
-  private continueArt: GameObjects.Sprite | undefined;
-  private continueLabel: ButtonLabel | undefined;
-  private paths!: GameObjects.Graphics;
-  private played = false;
+  private completed: ReadonlySet<string> = new Set();
+  private continueArt!: GameObjects.Sprite;
+  private continueLabel!: ButtonLabel;
+  private open!: OpenMap;
   private pressed: Control | undefined;
-  private route: readonly string[] = [];
-  private seed = 0;
-  private stand!: MapStand;
+  private stand = ZONE_MAP.start;
 
   constructor() {
     super("map");
   }
 
-  // data.route: the nodes she has walked this lap, ending at the node she is at; data.played:
-  // whether she has played it; data.seed: the lap's seed. Without a seed, a new lap begins.
-  init(data: { played?: boolean; route?: readonly string[]; seed?: number }): void {
-    this.played = data.played ?? false;
-    this.route = data.route ?? [ZONE_MAP.start];
-    this.seed = data.seed ?? newLapSeed();
-    this.chosen = 0;
-    this.choices = [];
-    this.continueArt = undefined;
-    this.continueLabel = undefined;
+  // Where she is comes from the saved progress: the map's start with nothing completed from the
+  // beginning.
+  init(): void {
+    const { completed, stand } = savedMap();
+    this.completed = new Set(completed);
+    this.open = openMap(ZONE_MAP, this.completed);
+    this.stand = this.open.zones.includes(stand) ? stand : ZONE_MAP.start;
     this.pressed = undefined;
   }
 
   create(): void {
     fitPlayCamera(this);
+    saveStand(this.stand);
     this.colours = (this.cache.json.get(PALETTE) as { colours: Record<string, string> }).colours;
-    this.stand = mapStand(ZONE_MAP, this.played, this.route);
     this.slice("map-paper", MAP_SCREEN.paper);
     for (const { art, at } of ZONE_MAP.decorations) {
       this.add.sprite(at.x, at.y, art).setOrigin(0).play(animationKey(art, "rest"));
     }
-    this.paths = this.add.graphics();
     this.drawPaths();
     this.drawNodes();
     const { textScale, title } = MAP_SCREEN;
@@ -112,11 +86,7 @@ export class MapScene extends Scene {
       .bitmapText(title.x, title.y, TITLE_FONT, TEXT.map.title)
       .setScale(textScale)
       .setTint(this.colour("plum"));
-    if (choosing(this.stand)) {
-      this.addChoices();
-    } else {
-      this.addContinue();
-    }
+    this.addContinue();
     this.showPressed(undefined);
     this.input.keyboard?.on("keydown", (event: KeyboardEvent) => this.key(event.code));
     this.input.on("pointerdown", (pointer: Input.Pointer) => {
@@ -125,8 +95,14 @@ export class MapScene extends Scene {
     this.input.on("pointerup", (pointer: Input.Pointer) => {
       const control = this.pressed;
       this.showPressed(undefined);
-      if (control !== undefined && control === this.controlAt(pointer)) {
-        this.goOn(control === "continue" ? this.chosen : control);
+      const lifted = this.controlAt(pointer);
+      if (control === undefined || lifted === undefined || !sameControl(control, lifted)) {
+        return;
+      }
+      if (control.kind === "continue") {
+        this.play();
+      } else {
+        this.walkTo(control.id);
       }
     });
   }
@@ -136,15 +112,14 @@ export class MapScene extends Scene {
   }
 
   private drawPaths(): void {
-    const paths = this.paths.clear();
+    const paths = this.add.graphics();
     const edges = ZONE_MAP.edges.map((edge, index) => ({
       edge,
       index,
-      look: pathLook(this.stand, this.chosen, edge),
+      look: pathLook(this.open, edge),
     }));
     for (const look of LOOK_ORDER) {
-      const { colour, stroke, ...rest } = MAP_PATH_LOOKS[look];
-      const arrow = "arrow" in rest ? rest.arrow : undefined;
+      const { colour, stroke } = MAP_PATH_LOOKS[look];
       paths.fillStyle(this.colour(colour));
       for (const { edge, index } of edges.filter((each) => each.look === look)) {
         const from = nodeOf(ZONE_MAP, edge.from);
@@ -156,7 +131,7 @@ export class MapScene extends Scene {
           toTrim: MAP_PATH.trim[to.kind],
         };
         const curve = bentCurve(MAP_PATH.bend, ends.from, ends.to, index);
-        for (const rect of pathRects(MAP_PATH.step, stroke, arrow, ends, curve)) {
+        for (const rect of pathRects(MAP_PATH.step, stroke, ends, curve)) {
           paths.fillRect(rect.x, rect.y, rect.width, rect.height);
         }
       }
@@ -183,7 +158,7 @@ export class MapScene extends Scene {
     }
     for (const node of ZONE_MAP.nodes) {
       const centre = this.centre(node);
-      const state = markerState(ZONE_MAP, this.stand, node);
+      const state = markerState(ZONE_MAP, this.completed, this.stand, node);
       const key = `map-${node.kind}`;
       this.add
         .sprite(centre.x + marker[node.kind].x, centre.y + marker[node.kind].y, key)
@@ -204,7 +179,7 @@ export class MapScene extends Scene {
         .setScale(textScale)
         .setTint(this.colour("plum"));
     }
-    const at = nodeOf(ZONE_MAP, this.stand.at);
+    const at = nodeOf(ZONE_MAP, this.stand);
     const centre = this.centre(at);
     this.add
       .sprite(centre.x + duck[at.kind].x, centre.y + duck[at.kind].y, "map-duck")
@@ -221,92 +196,45 @@ export class MapScene extends Scene {
     });
   }
 
-  private addChoices(): void {
-    const { arrow, label } = MAP_SCREEN.forkChoice;
-    const from = nodeOf(ZONE_MAP, this.stand.at);
-    const rects = forkChoiceRects(this.stand.routes.length);
-    this.choices = this.stand.routes.flatMap((route, i) => {
-      const rect = rects[i];
-      if (!rect) {
-        return [];
-      }
-      const { art, hit } = rect;
-      const direction = forkArrow(from, nodeOf(ZONE_MAP, firstStep(route)));
-      const button = this.add.sprite(art.x, art.y, "ui-fork-choice").setOrigin(0);
-      const name = TEXT.map.zones[route.zone.id] ?? "";
-      return [
-        {
-          area: art,
-          arrow: this.add
-            .sprite(art.x + arrow.x, art.y + arrow.y, "ui-fork-arrow")
-            .setOrigin(0)
-            .play(animationKey("ui-fork-arrow", direction)),
-          art: button,
-          hit,
-          label: this.add
-            .bitmapText(art.x + label.x, art.y + label.y, BODY_FONT, name)
-            .setScale(MAP_SCREEN.textScale),
-        },
-      ];
-    });
-  }
-
-  // A pressed control shows its pressed look until the press lifts: Continue's label sinks, and
-  // a fork-choice button turns tan; otherwise the chosen one shows selected.
+  // A pressed Continue shows its pressed look until the press lifts: its face and label sink.
   private showPressed(control: Control | undefined): void {
     this.pressed = control;
     const { labelY, pressedLabelY } = MAP_SCREEN.continue;
-    const pressed = control === "continue";
-    this.continueArt?.play(animationKey("ui-resume", pressed ? "pressed" : "normal"));
-    if (this.continueLabel) {
-      placeButtonLabel(this.continueLabel, pressed ? pressedLabelY : labelY);
-    }
-    this.choices.forEach((choice, i) => {
-      const tag = control === i ? "pressed" : i === this.chosen ? "selected" : "normal";
-      choice.art.play(animationKey("ui-fork-choice", tag));
-      choice.label.setTint(this.colour(tag === "normal" ? "cream" : "ink"));
-    });
+    const pressed = control?.kind === "continue";
+    this.continueArt.play(animationKey("ui-resume", pressed ? "pressed" : "normal"));
+    placeButtonLabel(this.continueLabel, pressed ? pressedLabelY : labelY);
   }
 
   private controlAt(pointer: Input.Pointer): Control | undefined {
     const point = playPoint(this, pointer);
     const { continue: go } = MAP_SCREEN;
-    const button = pressedArea<Control>(
-      [
-        ...(this.continueArt ? [{ art: go.art, hit: go.hit, key: "continue" as const }] : []),
-        ...this.choices.map(({ area, hit }, index) => ({ art: area, hit, key: index })),
-      ],
-      point,
-    );
-    if (button !== undefined) {
-      return button;
+    if (pressedArea([{ art: go.art, hit: go.hit, key: "continue" }], point) !== undefined) {
+      return { kind: "continue" };
     }
-    return routeAtTap(TILE, MAP_SCREEN.nodeHit, this.stand, point);
+    const id = zoneAtTap(TILE, MAP_SCREEN.nodeHit, ZONE_MAP, this.open, point);
+    return id === undefined ? undefined : { id, kind: "node" };
   }
 
   private key(code: string): void {
-    const step = CHOOSE_KEYS[code];
-    const count = this.stand.routes.length;
-    if (step !== undefined && choosing(this.stand)) {
-      this.chosen = (this.chosen + step + count) % count;
-      this.drawPaths();
-      this.showPressed(this.pressed);
+    const step = STEP_KEYS[code];
+    if (step !== undefined) {
+      this.walkTo(steppedZone(this.open, this.stand, step));
     } else if (CONTINUE_KEYS.includes(code)) {
-      this.goOn(this.chosen);
+      this.play();
     }
   }
 
-  // Plays the node she is at, or after it, the zone at the end of route choice, or with no route
-  // on, the start again. Past the finish, a new lap draws a new seed.
-  private goOn(choice: number): void {
-    const route = this.stand.routes[choice];
-    const walked = !this.played
-      ? this.stand.walked
-      : route
-        ? walkOn(ZONE_MAP, this.stand, route)
-        : [ZONE_MAP.start];
-    const lap = this.played && (route ? startsLap(ZONE_MAP, route) : true);
-    this.scene.start("zone", { route: walked, seed: lap ? newLapSeed() : this.seed });
+  // She walks to an open zone node: the map shows her there, and saves it.
+  private walkTo(id: string): void {
+    if (id !== this.stand) {
+      saveStand(id);
+      this.scene.restart();
+    }
+  }
+
+  // Plays the zone she stands on.
+  private play(): void {
+    this.scene.start("zone", { node: this.stand } satisfies ZoneData);
   }
 
   private slice(key: string, rect: Rect): GameObjects.NineSlice {
@@ -330,4 +258,8 @@ export class MapScene extends Scene {
     }
     return Number.parseInt(hex.slice(1), 16);
   }
+}
+
+function sameControl(a: Control, b: Control): boolean {
+  return a.kind === b.kind && (a.kind === "continue" || a.id === (b as { id: string }).id);
 }

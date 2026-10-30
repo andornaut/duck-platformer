@@ -209,16 +209,16 @@ A pause button at the top left opens the pause card over the game, which is dimm
 
 ## Map
 
-The map screen shows the zones and the forks between them as a paper map, before Zone 1 and after each zone is cleared. `art/tools/map.py` draws it; its docstring gives every sprite's states, anchor and placement, and the drawing rules below in full. The game lays the nodes out from the map data, on the 60x30 grid of 12px tiles, centred at (12 col + 6, 12 row + 6).
+The map screen shows the zones and the forks between them as a paper map, after the start screen and after each zone is cleared, with the duck on a zone she may play: the first from the start, then any zone the ones she has completed open, back or on. `art/tools/map.py` draws it; its docstring gives every sprite's states, anchor and placement, and the drawing rules below in full. The game lays the nodes out from the map data, on the 60x30 grid of 12px tiles, centred at (12 col + 6, 12 row + 6).
 
 - Paper: `map-paper`, a nine-slice drawn 720x360 at 0,0: cream with a brown rule 6px in and a tan rule 11px in. The pen marks (`map-hill`, `map-wave`, `map-compass`) are tan sprites the map data places, at least a tile clear of every node, path and label, since the node layout varies with the map.
 - Ink is dbrown, the accent dred, unbuilt slate; the pen marks are tan, below the 3:1 of anything that carries meaning.
 - Zone marker `map-zone`, 35x35 centred on the node: normal (a cream disc in a dbrown ring), current (a second dred ring outside), visited (a solid dbrown disc with a tick badge) and unbuilt (a broken slate ring round a question mark). Over every state but unbuilt the zone's icon, `map-icon-<zone>` (14x14, tag `normal` or `visited`), sits centred; a zone without one shows `map-icon-zone`, so a new zone needs only its icon.
 - Fork marker `map-fork`, 29x29: a hollow dbrown diamond, ringed in dred when current, solid when visited, four slate corner dots when unbuilt. A fork has no label.
 - The duck's marker `map-duck` (26x22, `idle` 2 x 400ms) stands on the current node's ring.
-- Paths have no art. The game draws each from node to node as a gentle curve (a quadratic Bezier bent 8% of its length, alternating sides), trimmed 3px outside the markers, by stamping squares along it: built a 2px dbrown dash (6 on, 4 off), travelled a 4px solid dred line, unbuilt 2x2 slate dots every 6px. At a fork the paths she can take carry an arrowhead, and the selected one turns to 4px dred dashes.
+- Paths have no art. The game draws each from node to node as a gentle curve (a quadratic Bezier bent 8% of its length, alternating sides), trimmed 3px outside the markers, by stamping squares along it: built a 2px dbrown dash (6 on, 4 off), opened (by the zones she has completed) a 4px solid dred line, unbuilt 2x2 slate dots every 6px.
 - Labels: the zone's name in `font-title` at 2x, plum, centred under its marker: origin (cx - floor((A - 4) / 2) - 2, cy + 12), where A is its advance width at 2x, over a cream knock-out (ox - 2, cy + 17, A + 4, 16) that hides the paths behind it.
-- Continue is `ui-resume` at 280,300. At a fork, one `ui-fork-choice` (160x36, as `ui-answer`) per path replaces it, 8 apart and centred on x 360 at y 304, each with the zone's name and a `ui-fork-arrow` (up, level or down) for the direction the path leaves the fork.
+- Continue is `ui-resume` at 280,300 and plays the zone she stands on; a tap on an open zone's marker walks her there. The game no longer draws `ui-fork-choice` or `ui-fork-arrow`.
 
 ## Animation
 
@@ -405,7 +405,7 @@ The lobby set is no longer in Zone 1. It is kept, unchanged, for a later indoor 
 
 ## Park theme
 
-The first chunk theme: an autumn park. Later zones are built from hand-built chunks, each a screen or two wide, in a seeded order that rerolls each lap; a theme carries one tileset, its terrain and its repeated backdrops, drawn across the whole zone so seams never show, and chunks add their own props. `art/tools/park.py` draws it; its docstring lists every tile and piece.
+The first chunk theme: an autumn park. Later zones are built from hand-built chunks, each a screen or two wide, in a seeded order that rerolls each time she enters the zone; a theme carries one tileset, its terrain and its repeated backdrops, drawn across the whole zone so seams never show, and chunks add their own props. `art/tools/park.py` draws it; its docstring lists every tile and piece.
 
 - Frame and scale as the street: outdoor scale, 12px tiles, zones 60 rows (720px) tall.
 - Chunk seams sit at ground rows 50, 40 and 30 (y 600, 480 and 360): a chunk's left and right edges meet the next chunk's at one of those heights. A step of 1 or 2 rows is a tap's walk-up; a taller terrace face is turf over soil (`soil-left` or `soil-right` running down the face), any height. There are no slopes.

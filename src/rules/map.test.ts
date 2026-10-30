@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { ZoneMap } from "../data/types";
-import { type MapRoute, mapStand, pathsFrom, routesOn, startsLap, walkOn } from "./map";
+import { openMap, pathsFrom } from "./map";
 
 // a, then a fork f with built paths to b and c and an unbuilt one to d, all three joining at the
 // finish z, a fork.
@@ -39,64 +39,44 @@ describe("pathsFrom", () => {
   });
 });
 
-// A route as the forks it passes and the zone it reaches, by id.
-const ids = (routes: readonly MapRoute[]) => routes.map(({ via, zone }) => [via, zone.id]);
+describe("openMap", () => {
+  // With c's path on to e, a zone node with no zone yet.
+  const WITH_E: ZoneMap = {
+    ...MAP,
+    edges: [...MAP.edges, { built: true, from: "c", to: "e" }],
+    nodes: [...MAP.nodes, { at: { col: 0, row: 0 }, id: "e", kind: "zone" }],
+  };
+  const path = (from: string, to: string) => `${from}-${to}`;
 
-describe("routesOn", () => {
   it.each([
+    ["nothing completed: the first zone alone", MAP, [], ["a"], []],
     [
-      "a, through the fork, to its built zones",
-      "a",
-      [
-        [["f"], "b"],
-        [["f"], "c"],
-      ],
-    ],
-    [
-      "the fork, to its built zones",
-      "f",
-      [
-        [[], "b"],
-        [[], "c"],
-      ],
-    ],
-    ["b, past the finish, to the start", "b", [[["z"], "a"]]],
-    ["d, with no built path on, nowhere", "d", []],
-  ])("leads from %s", (_, at, routes) => {
-    expect(ids(routesOn(MAP, at))).toEqual(routes);
-  });
-});
-
-describe("mapStand", () => {
-  it.each([
-    ["on a before she plays it", false, ["a"], "a", ["a"], []],
-    ["at the start before she walks", false, [], "a", ["a"], []],
-    [
-      "on the fork its routes share, after a",
-      true,
+      "the first zone completed: on through the fork to its built zones",
+      MAP,
       ["a"],
-      "f",
-      ["a", "f"],
-      [
-        [[], "b"],
-        [[], "c"],
-      ],
+      ["a", "b", "c"],
+      ["a-f", "f-b", "f-c"],
     ],
-    ["on b, with one route on", true, ["a", "f", "b"], "b", ["a", "f", "b"], [[["z"], "a"]]],
-    ["on d, with none", true, ["d"], "d", ["d"], []],
-  ])("stands %s", (_, played, route, at, walked, routes) => {
-    const stand = mapStand(MAP, played, route);
-    expect([stand.at, stand.walked, ids(stand.routes)]).toEqual([at, walked, routes]);
-  });
-});
-
-describe("walkOn", () => {
-  it.each([
-    ["from the fork after a, to c", ["a"], "c", ["a", "f", "c"], false],
-    ["from b, past the finish, to a new lap", ["a", "f", "b"], "a", ["a"], true],
-  ])("walks %s", (_, route, zone, walked, lap) => {
-    const stand = mapStand(MAP, true, route);
-    const taken = stand.routes.find((each) => each.zone.id === zone);
-    expect(taken && [walkOn(MAP, stand, taken), startsLap(MAP, taken)]).toEqual([walked, lap]);
+    [
+      "a zone past the fork completed: on to the finish",
+      MAP,
+      ["a", "b"],
+      ["a", "b", "c"],
+      ["a-f", "f-b", "f-c", "b-z"],
+    ],
+    ["a later zone completed but not the first: the first blocks it", MAP, ["b"], ["a"], []],
+    [
+      "a path on to a zone node with no zone yet: closed",
+      WITH_E,
+      ["a", "c"],
+      ["a", "b", "c"],
+      ["a-f", "f-b", "f-c", "c-z"],
+    ],
+  ])("%s", (_, map, completed, zones, edges) => {
+    const open = openMap(map, new Set(completed));
+    expect({
+      edges: open.edges.map(({ from, to }) => path(from, to)),
+      zones: open.zones,
+    }).toEqual({ edges, zones });
   });
 });

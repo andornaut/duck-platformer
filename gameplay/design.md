@@ -66,23 +66,24 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 
 ### Map
 
-- **Between zones:** the map shows before the first zone and after she clears each zone. She walks on to the next fork where she must choose, or stays at her place when only one path leads on. Where she has been and the paths she has travelled are marked
-- **Choose:** tapping a zone's marker that she can go to picks it and starts it; at a fork, the fork buttons or ←/→ also pick a path. Where only one path leads on, Continue moves her on
-- **Forks:** at a fork she picks one of two or three paths. Paths split and rejoin, and every path reaches the same ending
-- **No backtracking:** she only moves forward on the map, and never returns to a zone she has left
-- **V1:** one path is built: the street, the corner fork, the park, then home. Its forks still show, with the unbuilt paths and zones marked as unbuilt and not selectable. After home, a new lap starts and the saved progress resets (PLACEHOLDER: until the ending exists). The map's look is in the [art plan](../art/README.md)
+- **Backtracking:** she can walk back to any open zone and replay any zone she has completed
+- **Between zones:** the map shows after the start screen's Start or Continue, and after she clears a zone, with her on that zone. The zones she has completed and the paths she has opened are marked
+- **Open zones:** the first zone is open from the start and must be completed before anything else opens. Completing a zone opens the paths past it, through forks, to the next zones; a zone not completed closes everything past it. Unbuilt paths and zones stay closed
+- **Walk:** she stands on a zone. Tapping any open zone's marker, or ←/→, walks her there, and Continue plays the zone she stands on
+- **Forks:** at a fork the path splits two or three ways, and completing the zone before it opens each of them. Paths split and rejoin, and every path reaches the same ending
+- **V1:** one path is built: the street, the corner fork, the park, then home. Its forks still show, with the unbuilt paths and zones marked as unbuilt and not selectable. Home is the end of the built path and leads nowhere further: there are no laps (PLACEHOLDER: until the ending exists). The map's look is in the [art plan](../art/README.md)
 
 ### Zones
 
 - **Camera:** on the ground she sits about two thirds down the screen. In an assembled zone, the ground line follows the chunk she is in, blending across half a screen at each seam. The camera rises only when she climbs above the middle, and never shows below the lowest ground
 - **Challenge:** platforming, hazards and choices. There is no combat
-- **Checkpoint:** the start of a zone is its only checkpoint. Falling or touching a hazard restarts the zone from its start. Progress is saved: entering a zone saves its start, and clearing it saves the map where she stands, so a cleared zone never replays
+- **Checkpoint:** the start of a zone is its only checkpoint. Falling or touching a hazard restarts the zone from its start. Progress is saved: the zones she has completed and where she stands on the map. Clearing a zone marks it completed and returns her to the map on it; a zone left before its end is played again from its start
 - **Crush:** a moving platform that pushes her sideways carries her to its leading edge. If it squeezes her into terrain or another solid, she is crushed and the zone restarts from its start, as a hazard does. Layouts leave room beside every moving platform's path so she is never pinned on a required route
 - **Doors:** doors lead only into rooms. Use enters a door when any part of her drawn frame overlaps the door's drawn art; where she overlaps more than one, the door whose centre is nearest hers wins
 - **Exit:** reaching the end of the zone clears it, and the game moves straight on to the map
 - **Kinds:** indoor, outdoor, or a hybrid with both
 - **Layout:** zone 1 is hand-built as the tutorial. Every later zone is assembled from hand-built chunks: a fixed start chunk, a seeded run of chunks whose entry and exit heights match, then a fixed finish chunk. The rules for chunks are under Chunks
-- **Reroll:** the layout changes on each new lap. Restarts and Continue keep it, since the seed is saved
+- **Reroll:** an assembled zone's layout changes each time she enters it from the map. Restarts within the zone keep it
 - **Scale:** outdoors, the scenery is drawn at a quarter of indoor scale; the duck, the tiles and the reaches stay the same everywhere
 - **Shape:** a zone is 2 screens (60 tiles) tall and as wide as it needs, and scrolls sideways and up. Indoors, to a small duck the ceilings are high: a door is 15 tiles tall, half the screen
 
@@ -154,10 +155,10 @@ Everything in a zone except its terrain is placed in data, in three layers.
 ### Start screen
 
 - **Back:** back with no card open leaves the game, the same way as Exit, wherever Exit shows; elsewhere back is the browser's own
-- **Boot:** the game opens in landscape. With a saved zone start it opens straight into that zone with the pause card showing; with a saved map position it opens on the map at that point; with no save it opens on the start screen
+- **Boot:** the game opens in landscape. With saved progress it opens on the map where she stands; with no save it opens on the start screen. It never opens straight into a zone
 - **Exit:** at the top right, at the far end. In a browser tab it goes straight to the home page. In an installed app it closes the app, and it shows only in apps that can close themselves (Chrome's Android app, and Chrome or Edge desktop app windows); in every other installed app (iOS, Firefox for Android, Samsung Internet and Edge for Android) it is hidden, and Settings sits at the far right
 - **Settings:** at the top right, beside Exit. It opens the settings card
-- **Start:** the only other element. With saved progress (reached through Return home) it reads Continue and resumes from the save, a zone's start or the map; with none it reads Start and opens the map, which at the beginning offers one place to go: the first zone
+- **Start:** the only other element. With saved progress (reached through Return home) it reads Continue and opens the map where she stands; with none it reads Start and opens the map with her on the first zone
 
 ### Settings
 

@@ -16,7 +16,7 @@ import {
 import { type Random, randomStream } from "@andornaut/game-kit/random";
 import { clampInto, containsPoint } from "@andornaut/game-kit/rect";
 import { pageToGame } from "@andornaut/game-kit/view/pagePoint";
-import { Core, type GameObjects, Input, Scale, Scene, Scenes, type Tilemaps } from "phaser";
+import { type GameObjects, Input, Scale, Scene, Scenes, type Tilemaps } from "phaser";
 
 import { ARCHETYPES } from "../data/archetypes";
 import { CHARACTERS } from "../data/characters";
@@ -51,9 +51,15 @@ import { nodeOf } from "../rules/map";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
 import { zoneLayout } from "../rules/tiles";
 import { areaOf, leaveRoom, roomOf, startZone, stepZone, type ZoneState } from "../rules/zone";
-import { askedLapSeed, askedRecipe, nextZoneIndex, startZoneIndex } from "../rules/zoneChain";
+import {
+  askedAssemblySeed,
+  askedRecipe,
+  newAssemblySeed,
+  nextZoneIndex,
+  startZoneIndex,
+} from "../rules/zoneChain";
 import { zonePlanFor } from "../rules/zonePlans";
-import { newLapSeed, saveClearedZone, saveZoneStart } from "../save";
+import { saveCompleted } from "../save";
 import { type TouchSetting, touchSettingShown } from "../settings/touchControls";
 import { ART_MANIFEST_KEY, artHitboxes, type ArtManifest } from "../view/aseprite";
 import { cameraScroll } from "../view/camera";
@@ -65,11 +71,10 @@ import { type ArtKind, artKind, artOffset } from "../view/objectArt";
 import { type PlayHold, stepAction } from "../view/playHold";
 import { loadedTileset, objectTiles, terrainTiles, type Tileset } from "../view/tiles";
 import { buttonHeld, centredAt, controlTag, trackPress } from "../view/touchControls";
-import type { PauseScene } from "./PauseScene";
 import { canvasRect, fitCanvasCamera, fitPlayCamera } from "./playCamera";
 import type { RoomData } from "./RoomScene";
 
-// The zone a map node plays on the lap with seed.
+// The zone a map node plays, assembled for seed where it is a recipe.
 function zoneAt(seed: number, node: string): ZonePlan {
   const key = nodeOf(ZONE_MAP, node).zone;
   if (key === undefined) {
@@ -104,7 +109,6 @@ const OBJECT_COLOURS: Readonly<Record<Collision, number>> = {
 const FADE_MS = 250;
 
 const DUCK_SPRITE = "duck";
-const PAUSE = "pause";
 const MOVE_HINT_SPRITE = "ui-move-hint";
 const MOVE_KNOB_SPRITE = "ui-move-knob";
 const CONTROL_SPRITES: Readonly<Record<TouchControl, string>> = {
@@ -145,9 +149,7 @@ function show(sprite: GameObjects.Sprite, tag: string): void {
 // What a zone starts with: see ZoneScene.init.
 export interface ZoneData {
   readonly backdrop?: boolean;
-  readonly paused?: boolean;
-  readonly route?: readonly string[];
-  readonly seed?: number;
+  readonly node?: string;
 }
 
 // One zone, played with the keyboard or the touch controls.
@@ -164,19 +166,14 @@ export class ZoneScene extends Scene {
   private landMs = 0;
   private layout!: ZoneLayout;
   private zoneIndex = startZoneIndex(window.location.search, CHAIN.length);
-  // The nodes she has walked this lap on the map, ending at the node she plays, or undefined
-  // when ?zone=<n> chains the zones without the map.
-  private mapRoute: readonly string[] | undefined;
-  // The lap's seed, which assembled zones are assembled from.
-  private lapSeed = 0;
+  // The map node she plays, or undefined when ?zone=<n> chains the zones without the map.
+  private mapNode: string | undefined;
   // The recipe ?zone=<key> plays on its own, assembled afresh each time she clears it unless
-  // ?lap=<n> fixes the seed.
+  // ?assembly=<n> fixes the seed.
   private trial: string | undefined;
   private areaArt!: GameObjects.Graphics;
   // Drawn as the start screen's backdrop rather than played.
   private backdrop = false;
-  // Opens under the pause card.
-  private openPaused = false;
   // The hit boxes art's sprites declare, by art key.
   private hitboxes: Readonly<Record<string, ArtHitbox>> = {};
   private manifest!: ArtManifest;
@@ -202,17 +199,13 @@ export class ZoneScene extends Scene {
     super("zone");
   }
 
-  // data.route: the nodes she has walked this lap on the map, ending at the node to play; without
-  // one, the recipe ?zone=<key> names, or the chain from ?zone=<n>. data.seed: the lap's seed.
-  // data.paused: open the pause card over the zone's first frame, as when the game reopens at a
-  // saved zone. data.backdrop: the start screen's backdrop instead (holdStill).
+  // data.node: the map node to play; without one, the recipe ?zone=<key> names, or the chain from
+  // ?zone=<n>. data.backdrop: the start screen's backdrop instead (holdStill).
   init(data: ZoneData): void {
     const { search } = window.location;
     this.backdrop = data.backdrop === true;
-    this.openPaused = data.paused === true;
-    this.mapRoute = data.route;
+    this.mapNode = data.node;
     this.trial = askedRecipe(search, Object.keys(RECIPES));
-    this.lapSeed = data.seed ?? askedLapSeed(search) ?? newLapSeed();
     // Everything one run of the zone changes starts afresh: the scene object is reused.
     this.objectArt = [];
     this.heldKeys.clear();
@@ -243,17 +236,19 @@ export class ZoneScene extends Scene {
     this.duck = this.add.sprite(0, 0, DUCK_SPRITE).setOrigin(0).setDepth(DUCK_DEPTH);
     this.manifest = this.cache.json.get(ART_MANIFEST_KEY) as ArtManifest;
     this.hitboxes = artHitboxes((key) => this.textures.getFrame(key), this.manifest);
-    const node = this.mapRoute?.at(-1);
+    const node = this.mapNode;
     if (this.backdrop) {
       this.loadPlan(ZONE_1);
       this.holdStill();
       return;
     }
+    // An assembled zone is assembled afresh each time she enters it, unless ?assembly=<n> fixes
+    // the seed.
+    const seed = askedAssemblySeed(window.location.search) ?? newAssemblySeed();
     if (node !== undefined) {
-      this.loadPlan(zoneAt(this.lapSeed, node));
-      saveZoneStart(this.lapSeed, this.mapRoute ?? []);
+      this.loadPlan(zoneAt(seed, node));
     } else if (this.trial !== undefined) {
-      this.loadPlan(zonePlanFor(this.lapSeed, this.trial));
+      this.loadPlan(zonePlanFor(seed, this.trial));
     } else {
       this.loadZone(this.zoneIndex);
     }
@@ -286,11 +281,6 @@ export class ZoneScene extends Scene {
     );
     this.watchKeys();
     this.watchTouches();
-    if (this.openPaused) {
-      this.game.events.once(Core.Events.POST_RENDER, () => {
-        (this.scene.get(PAUSE) as PauseScene).openCard();
-      });
-    }
     // Paused under the pause card or a room: keys and time while it was open count for nothing.
     // Back from a room, she stands at its door with nothing held, and the door shows closed.
     this.events.on("resume", () => {
@@ -448,17 +438,18 @@ export class ZoneScene extends Scene {
     this.scene.pause();
   }
 
-  // Leaves the cleared zone for the map, play held until the map takes over; without one, plays
-  // the recipe ?zone=<key> names assembled again, or the next zone in the chain, fading back in.
+  // Leaves the cleared zone for the map, completed and with her standing on it, play held until
+  // the map takes over; without one, plays the recipe ?zone=<key> names assembled again, or the
+  // next zone in the chain, fading back in.
   private leave(): void {
-    if (this.mapRoute !== undefined) {
-      saveClearedZone(this.lapSeed, this.mapRoute);
-      this.scene.start("map", { played: true, route: this.mapRoute, seed: this.lapSeed });
+    if (this.mapNode !== undefined) {
+      saveCompleted(this.mapNode);
+      this.scene.start("map");
       return;
     }
     if (this.trial !== undefined) {
-      this.lapSeed = askedLapSeed(window.location.search) ?? newLapSeed();
-      this.loadPlan(zonePlanFor(this.lapSeed, this.trial));
+      const seed = askedAssemblySeed(window.location.search) ?? newAssemblySeed();
+      this.loadPlan(zonePlanFor(seed, this.trial));
     } else {
       this.loadZone(nextZoneIndex(this.zoneIndex, CHAIN.length));
     }

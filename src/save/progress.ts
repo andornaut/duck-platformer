@@ -1,95 +1,106 @@
 import type { Checked, SaveFormat, StoredObject } from "@andornaut/game-kit/save/versionedSave";
 
 import type { ZoneMap } from "../data/types";
+import { openMap } from "../rules/map";
 
-// Where the player's progress resumes: the beginning (no progress saved, the start screen offers
-// Start), the map where she stands after clearing a zone, or the start of the zone she is in.
-// route is the nodes she has walked this lap, ending at that zone's node. seed: the lap's seed,
-// which every assembled zone this lap is assembled from.
+// The player's progress: the beginning (no progress saved, the start screen offers Start), or
+// the map, with the zone nodes she has completed and the zone node she stands on.
 export type Progress =
   | { readonly at: "beginning" }
-  | { readonly at: "map" | "zone"; readonly route: readonly string[]; readonly seed: number };
+  | { readonly at: "map"; readonly completed: readonly string[]; readonly stand: string };
 
 export const BEGINNING: Progress = { at: "beginning" };
 
 // The save format's version. Before the first release, a change to the format or a map node or
-// zone renamed bumps it, and older saves reset to the beginning. Version 1 had no lap seed: its
-// saves gain a new one.
-export const PROGRESS_VERSION = 2;
+// zone renamed bumps it, and older saves reset to the beginning.
+export const PROGRESS_VERSION = 3;
 
-// A new lap's seed: a whole number in [0, 2^32).
-export function newLapSeed(): number {
-  return Math.floor(Math.random() * 2 ** 32);
+// Where she is on the map for progress: the beginning stands her on the map's start with
+// nothing completed.
+export function mapProgress(
+  map: ZoneMap,
+  progress: Progress,
+): { readonly completed: readonly string[]; readonly stand: string } {
+  return progress.at === "beginning" ? { completed: [], stand: map.start } : progress;
 }
 
-const isSeed = (seed: unknown): seed is number =>
-  Number.isInteger(seed) && (seed as number) >= 0 && (seed as number) < 2 ** 32;
+const isNames = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every((name) => typeof name === "string");
 
-const RESUMES = new Set(["map", "zone"]);
-
-// Why route is not a walk this lap on map, or undefined when it is: from the map's start along
-// built paths, ending at a zone node whose zone is in zones.
-export function routeProblem(
+// Why progress does not fit map and zones, or undefined when it does: each completed zone node,
+// and the node she stands on, is a zone node the completed zones open (openMap), whose zone is in
+// zones, named once.
+export function progressProblem(
   map: ZoneMap,
   zones: Readonly<Record<string, unknown>>,
-  route: readonly string[],
+  completed: readonly string[],
+  stand: string,
 ): string | undefined {
-  if (route[0] !== map.start) {
-    return "the route does not begin at the map's start";
+  const done = new Set(completed);
+  if (done.size !== completed.length) {
+    return "the save names a completed zone twice";
   }
-  for (let index = 1; index < route.length; index++) {
-    const from = route[index - 1];
-    const to = route[index];
-    if (!map.edges.some((edge) => edge.built && edge.from === from && edge.to === to)) {
-      return `no built path from ${String(from)} to ${String(to)}`;
-    }
+  const open = openMap(map, done).zones.filter((id) => {
+    const zone = map.nodes.find((node) => node.id === id)?.zone;
+    return zone !== undefined && zone in zones;
+  });
+  const closed = completed.find((id) => !open.includes(id));
+  if (closed !== undefined) {
+    return `the completed zone ${closed} is not open on the map`;
   }
-  const last = map.nodes.find((node) => node.id === route.at(-1));
-  if (last?.kind !== "zone" || last.zone === undefined || !(last.zone in zones)) {
-    return "the route does not end at a zone that exists";
-  }
-  return undefined;
+  return open.includes(stand) ? undefined : `she stands on ${stand}, not an open zone`;
 }
 
-// The progress save's format on map and zones: a save whose route no longer fits them (a
-// renamed node, a path not built, a zone removed) is refused, and the player starts from the
-// beginning. A version 1 save gains a lap seed from drawSeed.
+// CLEANUP (added 2026-10-30): version 2 saved this lap's route and where it resumed. Its zones
+// count as completed, except a final zone she was only entering, and she stands on its last
+// node. Remove once every player's version 2 save has loaded and been written as version 3.
+function fromLapRoute(map: ZoneMap, save: StoredObject): StoredObject {
+  const { at, route } = save;
+  if (at === "beginning" || !isNames(route)) {
+    return save;
+  }
+  const zones = route.filter((id) =>
+    map.nodes.some((node) => node.id === id && node.kind === "zone"),
+  );
+  const completed = at === "zone" ? zones.slice(0, -1) : zones;
+  return { at: "map", completed: [...new Set(completed)], stand: route.at(-1) };
+}
+
+// The progress save's format on map and zones: a save that no longer fits them (a renamed node, a
+// path not built, a zone removed) is refused, and the player starts from the beginning.
 export function progressFormat(
   map: ZoneMap,
   zones: Readonly<Record<string, unknown>>,
-  drawSeed: () => number,
 ): SaveFormat<Progress> {
   const checked = (progress: Progress): Checked<Progress> => {
     if (progress.at === "beginning") {
       return { ok: true, value: progress };
     }
-    const problem = routeProblem(map, zones, progress.route);
+    const problem = progressProblem(map, zones, progress.completed, progress.stand);
     return problem === undefined ? { ok: true, value: progress } : { ok: false, reason: problem };
   };
   return {
-    decode: ({ at, route, seed }: StoredObject): Checked<Progress> => {
+    decode: ({ at, completed, stand }: StoredObject): Checked<Progress> => {
       if (at === "beginning") {
         return { ok: true, value: BEGINNING };
       }
-      if (typeof at !== "string" || !RESUMES.has(at)) {
-        return { ok: false, reason: "the save does not say where to resume" };
+      if (at !== "map") {
+        return { ok: false, reason: "the save does not say where she is" };
       }
-      if (!Array.isArray(route) || !route.every((node) => typeof node === "string")) {
-        return { ok: false, reason: "the save's route is not a list of map nodes" };
+      if (!isNames(completed)) {
+        return { ok: false, reason: "the save's completed zones are not a list of map nodes" };
       }
-      if (!isSeed(seed)) {
-        return { ok: false, reason: "the save's lap seed is not a whole number in [0, 2^32)" };
+      if (typeof stand !== "string") {
+        return { ok: false, reason: "the save does not say where she stands" };
       }
-      return checked({ at: at as "map" | "zone", route: route as string[], seed });
+      return checked({ at, completed, stand });
     },
     encode: (progress: Progress): Checked<StoredObject> => {
       const valid = checked(progress);
       return valid.ok ? { ok: true, value: { ...valid.value } } : valid;
     },
     fresh: () => BEGINNING,
-    migrations: {
-      1: (save) => (save.at === "beginning" ? save : { ...save, seed: drawSeed() }),
-    },
+    migrations: { 2: (save) => fromLapRoute(map, save) },
     version: PROGRESS_VERSION,
   };
 }

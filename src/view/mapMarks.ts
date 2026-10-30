@@ -2,7 +2,7 @@ import type { BitmapFont } from "@andornaut/game-kit/text/bitmapFont";
 
 import type { MapEdge, MapNode, Point, Size, ZoneMap } from "../data/types";
 import type { PathLook } from "../layout/mapScreen";
-import type { MapRoute, MapStand } from "../rules/map";
+import { nodeOf, type OpenMap } from "../rules/map";
 
 export type MarkerState = "current" | "normal" | "unbuilt" | "visited";
 
@@ -12,77 +12,57 @@ export function nodeCentre(tile: number, node: MapNode): Point {
 }
 
 // A node's marker: unbuilt where no built path touches it; else current where she stands,
-// visited where she has walked this lap, and normal elsewhere.
-export function markerState(map: ZoneMap, stand: MapStand, node: MapNode): MarkerState {
+// visited where she has completed its zone, and normal elsewhere.
+export function markerState(
+  map: ZoneMap,
+  completed: ReadonlySet<string>,
+  stand: string,
+  node: MapNode,
+): MarkerState {
   if (!map.edges.some((edge) => edge.built && (edge.from === node.id || edge.to === node.id))) {
     return "unbuilt";
   }
-  if (node.id === stand.at) {
+  if (node.id === stand) {
     return "current";
   }
-  return stand.walked.includes(node.id) ? "visited" : "normal";
+  return completed.has(node.id) ? "visited" : "normal";
 }
 
-// The route on that a tap at point picks: the one whose zone node's hit area, hit centred on the
-// node, takes in the point, the nearest where they overlap. None for a tap on any other node:
-// routes on run only along built paths, so never to an unbuilt one.
-export function routeAtTap(
+// The open zone node a tap at point lands on: the one whose hit area, hit centred on the node,
+// takes in the point, the nearest where they overlap. None for a tap on any other node.
+export function zoneAtTap(
   tile: number,
   hit: Size,
-  stand: MapStand,
+  map: ZoneMap,
+  open: OpenMap,
   point: Point,
-): number | undefined {
-  const picks = stand.routes.flatMap((route, index) => {
-    const centre = nodeCentre(tile, route.zone);
+): string | undefined {
+  const picks = open.zones.flatMap((id) => {
+    const centre = nodeCentre(tile, nodeOf(map, id));
     const dx = Math.abs(point.x - centre.x);
     const dy = Math.abs(point.y - centre.y);
     return dx <= hit.width / 2 && dy <= hit.height / 2
-      ? [{ distance: Math.hypot(dx, dy), index }]
+      ? [{ distance: Math.hypot(dx, dy), id }]
       : [];
   });
   picks.sort((a, b) => a.distance - b.distance);
-  return picks[0]?.index;
+  return picks[0]?.id;
 }
 
-// The node a route on goes to first from where she stands.
-export function firstStep(route: MapRoute): string {
-  return route.via[0] ?? route.zone.id;
+// The open zone step places along the map's node order from stand (Left -1, Right 1), stopping
+// at the first and the last.
+export function steppedZone(open: OpenMap, stand: string, step: -1 | 1): string {
+  const at = open.zones.indexOf(stand);
+  const next = Math.min(open.zones.length - 1, Math.max(0, at + step));
+  return open.zones[next] ?? stand;
 }
 
-// Whether she chooses among the routes on where she stands: where more than one leads on.
-export function choosing(stand: MapStand): boolean {
-  return stand.routes.length > 1;
-}
-
-// A path's look: unbuilt, or travelled where she walked it this lap; where she chooses, the path
-// from her to each route's first step selectable, the chosen route's selected; else built.
-export function pathLook(stand: MapStand, chosen: number, edge: MapEdge): PathLook {
+// A path's look: unbuilt, open where the zones she has completed open it, else built.
+export function pathLook(open: OpenMap, edge: MapEdge): PathLook {
   if (!edge.built) {
     return "unbuilt";
   }
-  const walked = stand.walked.some((id, i) => id === edge.from && stand.walked[i + 1] === edge.to);
-  if (walked) {
-    return "travelled";
-  }
-  if (choosing(stand) && edge.from === stand.at) {
-    const route = stand.routes[chosen];
-    if (route && firstStep(route) === edge.to) {
-      return "selected";
-    }
-    if (stand.routes.some((each) => firstStep(each) === edge.to)) {
-      return "selectable";
-    }
-  }
-  return "built";
-}
-
-// The fork-choice arrow for a path leaving one node for the next: up when the next is on a row
-// above, down when below, else level.
-export function forkArrow(from: MapNode, to: MapNode): "down" | "level" | "up" {
-  if (to.at.row < from.at.row) {
-    return "up";
-  }
-  return to.at.row > from.at.row ? "down" : "level";
+  return open.edges.includes(edge) ? "open" : "built";
 }
 
 // How far line moves the pen in font at scale: each glyph's advance and the kerning between

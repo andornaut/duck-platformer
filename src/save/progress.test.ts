@@ -36,19 +36,22 @@ const MAP: ZoneMap = {
   start: "start",
 };
 const ZONE_KEYS = { built: {}, start: {}, unbuilt: {} };
-// A version 1 save's new lap seed.
-const DRAWN = 42;
-const FORMAT = progressFormat(MAP, ZONE_KEYS, () => DRAWN);
+const FORMAT = progressFormat(MAP, ZONE_KEYS);
 
 const stored = (fields: object, version = PROGRESS_VERSION) =>
-  JSON.stringify({ seed: 7, ...fields, version });
+  JSON.stringify({ ...fields, version });
+const at = (stand: string, completed: string[] = []): Progress => ({
+  at: "map",
+  completed,
+  stand,
+});
 
 describe("progressFormat", () => {
   it.each<[string, Progress]>([
     ["the beginning", BEGINNING],
-    ["the start zone's start", { at: "zone", route: ["start"], seed: 0 }],
-    ["a zone past a fork", { at: "zone", route: ["start", "fork", "built"], seed: 2 ** 32 - 1 }],
-    ["the map after clearing a zone", { at: "map", route: ["start", "fork", "built"], seed: 7 }],
+    ["the first zone, nothing completed", at("start")],
+    ["a zone past the fork, the first completed", at("built", ["start"])],
+    ["back on the first zone, both completed", at("start", ["start", "built"])],
   ])("round-trips %s", (_, progress) => {
     const encoded = encodeSave(FORMAT, progress);
     expect(encoded.ok && loadSave(FORMAT, encoded.value)).toEqual({
@@ -59,62 +62,59 @@ describe("progressFormat", () => {
 
   it.each([
     ["not JSON", "{not json"],
-    ["no version", JSON.stringify({ at: "zone", route: ["start"] })],
-    ["a version older than 1", stored({ at: "zone", route: ["start"] }, 0)],
-    ["no lap seed", JSON.stringify({ at: "zone", route: ["start"], version: PROGRESS_VERSION })],
-    ["a lap seed that is not whole", stored({ at: "zone", route: ["start"], seed: 1.5 })],
-    ["a negative lap seed", stored({ at: "zone", route: ["start"], seed: -1 })],
-    ["a lap seed past 32 bits", stored({ at: "zone", route: ["start"], seed: 2 ** 32 })],
-    ["a lap seed that is not a number", stored({ at: "zone", route: ["start"], seed: "7" })],
-    ["an unknown place to resume", stored({ at: "shop", route: ["start"] })],
-    ["a route that is not a list", stored({ at: "zone", route: "start" })],
-    ["a route with a non-name", stored({ at: "zone", route: ["start", 3] })],
-    ["a route not from the start", stored({ at: "zone", route: ["built"] })],
-    ["a node that no longer exists", stored({ at: "zone", route: ["start", "moved"] })],
-    ["a path not built", stored({ at: "zone", route: ["start", "fork", "unbuilt"] })],
-    ["a route ending at a fork", stored({ at: "map", route: ["start", "fork"] })],
-    ["a zone that no longer exists", stored({ at: "zone", route: ["start", "gone"] })],
+    ["no version", JSON.stringify({ at: "map", completed: [], stand: "start" })],
+    ["a version older than 2", stored({ at: "map", route: ["start"], seed: 7 }, 1)],
+    ["an unknown place", stored({ at: "shop", completed: [], stand: "start" })],
+    [
+      "completed zones that are not a list",
+      stored({ at: "map", completed: "start", stand: "start" }),
+    ],
+    ["a completed zone that is not a name", stored({ at: "map", completed: [3], stand: "start" })],
+    ["no stand", stored({ at: "map", completed: [] })],
+    ["a stand not yet open", stored({ at: "map", completed: [], stand: "built" })],
+    ["a stand on a fork", stored({ at: "map", completed: ["start"], stand: "fork" })],
+    ["a stand on a path not built", stored({ at: "map", completed: ["start"], stand: "unbuilt" })],
+    ["a stand that no longer exists", stored({ at: "map", completed: [], stand: "moved" })],
+    ["a zone that no longer exists", stored({ at: "map", completed: ["start"], stand: "gone" })],
+    ["a completed zone not open", stored({ at: "map", completed: ["built"], stand: "start" })],
+    [
+      "a completed zone named twice",
+      stored({ at: "map", completed: ["start", "start"], stand: "start" }),
+    ],
   ])("starts from the beginning on a save with %s", (_, raw) => {
     expect(loadSave(FORMAT, raw)).toMatchObject({ save: BEGINNING, status: "corrupt" });
   });
 
   it("leaves a later version's save alone and starts from the beginning", () => {
-    const raw = stored({ at: "zone", route: ["start"] }, PROGRESS_VERSION + 1);
+    const raw = stored({ at: "map", completed: [], stand: "start" }, PROGRESS_VERSION + 1);
     expect(loadSave(FORMAT, raw)).toMatchObject({ save: BEGINNING, status: "newer" });
   });
 
+  // A version 2 save's route: its zones completed, but a final zone she was only entering, and
+  // she stands on its last node.
   it.each<[string, object, Progress]>([
     ["the beginning", { at: "beginning" }, BEGINNING],
+    ["entering the first zone", { at: "zone", route: ["start"], seed: 7 }, at("start")],
     [
-      "a zone's start, with a new lap seed",
-      { at: "zone", route: ["start"] },
-      { at: "zone", route: ["start"], seed: DRAWN },
+      "entering a zone past the fork",
+      { at: "zone", route: ["start", "fork", "built"], seed: 7 },
+      at("built", ["start"]),
     ],
     [
-      "the map, with a new lap seed",
-      { at: "map", route: ["start"] },
-      { at: "map", route: ["start"], seed: DRAWN },
+      "on the map after clearing a zone past the fork",
+      { at: "map", route: ["start", "fork", "built"], seed: 7 },
+      at("built", ["start", "built"]),
     ],
-  ])("migrates a version 1 save at %s", (_, fields, progress) => {
-    const raw = JSON.stringify({ ...fields, version: 1 });
+  ])("migrates a version 2 save %s", (_, fields, progress) => {
+    const raw = JSON.stringify({ ...fields, version: 2 });
     expect(loadSave(FORMAT, raw)).toEqual({ save: progress, status: "loaded" });
   });
 
-  it("refuses to store a route that does not fit the map", () => {
-    expect(
-      encodeSave(FORMAT, { at: "zone", route: ["start", "fork", "unbuilt"], seed: 1 }).ok,
-    ).toBe(false);
+  it("refuses to store a stand that is not open", () => {
+    expect(encodeSave(FORMAT, at("built")).ok).toBe(false);
   });
 
-  it("takes the game's map start as a zone start", () => {
-    const encoded = encodeSave(
-      progressFormat(ZONE_MAP, ZONES, () => DRAWN),
-      {
-        at: "zone",
-        route: [ZONE_MAP.start],
-        seed: 1,
-      },
-    );
-    expect(encoded.ok).toBe(true);
+  it("takes the game's map start, nothing completed, as a place to stand", () => {
+    expect(encodeSave(progressFormat(ZONE_MAP, ZONES), at(ZONE_MAP.start)).ok).toBe(true);
   });
 });

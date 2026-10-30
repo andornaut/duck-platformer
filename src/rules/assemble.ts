@@ -361,7 +361,7 @@ function fillsOf(recipe: ZoneRecipe): Record<SlotKind, string[]> {
   };
 }
 
-// The zone key's recipe assembled for a lap's seed: its start chunk, a seeded run of its
+// The zone key's recipe assembled for a seed: its start chunk, a seeded run of its
 // theme's chunks (searchRun), and its finish chunk, with the recipe's events and doors in
 // seeded slots. The same seed always gives the same zone. Throws when no assembly fits.
 export function assembleZone(

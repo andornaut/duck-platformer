@@ -15,15 +15,6 @@ export type PathStroke =
   | { readonly kind: "dots"; readonly every: number; readonly width: number }
   | { readonly kind: "solid"; readonly width: number };
 
-// An arrowhead along a path: at along (a fraction of its length), its tip tip px ahead along the
-// curve, and its two back corners back px away, spread degrees either side of ahead.
-export interface Arrowhead {
-  readonly along: number;
-  readonly back: number;
-  readonly spread: number;
-  readonly tip: number;
-}
-
 // A path's ends: each node's centre, and how far from it the path stops.
 export interface PathEnds {
   readonly from: Point;
@@ -75,8 +66,8 @@ function arcOf(curve: Curve): Arc {
   return { lengths, points };
 }
 
-// The point s px along an arc, and the unit direction of travel there.
-function along({ lengths, points }: Arc, s: number): { point: Point; ahead: Point } {
+// The point s px along an arc.
+function along({ lengths, points }: Arc, s: number): { point: Point } {
   let low = 1;
   let high = SAMPLES;
   while (low < high) {
@@ -93,11 +84,7 @@ function along({ lengths, points }: Arc, s: number): { point: Point; ahead: Poin
   const start = lengths[i - 1] ?? 0;
   const span = (lengths[i] ?? start) - start;
   const k = span === 0 ? 0 : (s - start) / span;
-  const size = Math.hypot(b.x - a.x, b.y - a.y) || 1;
-  return {
-    ahead: { x: (b.x - a.x) / size, y: (b.y - a.y) / size },
-    point: { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k },
-  };
+  return { point: { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k } };
 }
 
 // The first arc length at which the curve is at least far from centre, searching from one end.
@@ -131,40 +118,9 @@ export function dashInks(on: number, off: number, distance: number): boolean {
   return distance % (on + off) <= on;
 }
 
-// The pixels a filled triangle covers: those whose centres fall inside it, and those its corners
-// fall in, so a sharp tip still shows.
-function triangle(a: Point, b: Point, c: Point): Rect[] {
-  const cross = (p: Point, q: Point, r: Point) =>
-    (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x);
-  const xs = [a.x, b.x, c.x];
-  const ys = [a.y, b.y, c.y];
-  const rects: Rect[] = [a, b, c].map((corner) => ({
-    height: 1,
-    width: 1,
-    x: Math.floor(corner.x),
-    y: Math.floor(corner.y),
-  }));
-  for (let y = Math.floor(Math.min(...ys)); y <= Math.ceil(Math.max(...ys)); y++) {
-    for (let x = Math.floor(Math.min(...xs)); x <= Math.ceil(Math.max(...xs)); x++) {
-      const p = { x: x + 0.5, y: y + 0.5 };
-      const sides = [cross(a, b, p), cross(b, c, p), cross(c, a, p)];
-      if (sides.every((side) => side >= 0) || sides.every((side) => side <= 0)) {
-        rects.push({ height: 1, width: 1, x, y });
-      }
-    }
-  }
-  return rects;
-}
-
-// The squares that ink a path along curve between its trimmed ends, stamped every step px, with
-// its arrowhead if it has one. Each square once.
-export function pathRects(
-  step: number,
-  stroke: PathStroke,
-  arrow: Arrowhead | undefined,
-  ends: PathEnds,
-  curve: Curve,
-): Rect[] {
+// The squares that ink a path along curve between its trimmed ends, stamped every step px. Each
+// square once.
+export function pathRects(step: number, stroke: PathStroke, ends: PathEnds, curve: Curve): Rect[] {
   const arc = arcOf(curve);
   const start = trimAt(arc, ends.from, ends.fromTrim, false);
   const end = trimAt(arc, ends.to, ends.toTrim, true);
@@ -187,25 +143,6 @@ export function pathRects(
   const rects = distances.map((distance) =>
     stampAt(stroke.width, along(arc, start + distance).point),
   );
-  if (arrow) {
-    const { ahead, point } = along(arc, start + arrow.along * length);
-    const turn = (degrees: number, far: number): Point => {
-      const angle = (degrees * Math.PI) / 180;
-      const cos = Math.cos(angle);
-      const sin = Math.sin(angle);
-      return {
-        x: point.x + far * (ahead.x * cos - ahead.y * sin),
-        y: point.y + far * (ahead.x * sin + ahead.y * cos),
-      };
-    };
-    rects.push(
-      ...triangle(
-        turn(0, arrow.tip),
-        turn(arrow.spread, arrow.back),
-        turn(-arrow.spread, arrow.back),
-      ),
-    );
-  }
   const seen = new Set<string>();
   return rects.filter((rect) => {
     const key = `${rect.x},${rect.y},${rect.width}`;
