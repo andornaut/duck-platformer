@@ -24,7 +24,7 @@ export const TEXT: GameText = {
     zones: {
       alley: "Alley",
       park: "Park",
-      street: "Street",
+      street: "Parcel depot",
     },
   },
   pause: {

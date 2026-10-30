@@ -32,6 +32,18 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 10,
     rows: 2,
   },
+  "depot-loading-bay": {
+    archetype: "scenery",
+    art: "depot-loading-bay",
+    cols: 10,
+    rows: 10,
+  },
+  "depot-wall": {
+    archetype: "scenery",
+    art: "depot-wall",
+    cols: 4,
+    rows: 15,
+  },
   // A harmless pug that trots up to her.
   "dog-pug": {
     animations: { idle: "idle", move: "walk", react: "perk", talk: "talk" },
@@ -150,6 +162,12 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
   // Pedestrians walking past, back and forth, paying her no attention. React and talk fall back
   // to idle.
   // The park's pieces. The bandstand, 7 tall, with its roof a one-way ledge 6 above its base.
+  "parcel-open": {
+    archetype: "scenery",
+    art: "parcel-open",
+    cols: 6,
+    rows: 3,
+  },
   "park-bandstand": {
     archetype: "scenery",
     art: "park-bandstand",

@@ -15,7 +15,9 @@ export const ZONE_1: ZonePlan = {
         { character: "street-city-far", col: 0, cols: 240, parallax: { x: 0.15, y: 0.05 }, row: 0 },
         { character: "street-city-mid", col: 0, cols: 240, parallax: { x: 0.4, y: 0.15 }, row: 0 },
         // The first screen is the depot; the street's shops begin beyond its exit.
-        { character: "facade-one-storey", col: 0, cols: 60, row: 34 },
+        { character: "depot-wall", col: 0, cols: 60, row: 35 },
+        { character: "depot-loading-bay", col: 30, row: 40 },
+        { character: "parcel-open", col: 2, row: 47 },
         { character: "facade-one-storey", col: 60, cols: 4, row: 34 },
         { character: "facade-walkup", col: 64, cols: 32, row: 24 },
         { character: "facade-walkup-upper", col: 64, cols: 32, row: 9 },

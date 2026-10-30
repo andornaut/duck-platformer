@@ -6,12 +6,12 @@ The rulebook: every rule the game is built to. What's left to build and tune is 
 
 ## Pitch
 
-A landscape platformer: a duck travels back to the apartment he shares with his best friend, a ferret, after the ferret mails him far away. V1 follows one linear route; branching routes are planned for Next.
+A landscape platformer: a duck travels back to the apartment he shared with his former best friend, a ferret, after the ferret mails him far away. V1 follows one linear route; branching routes are planned for Next.
 
 ## Setting
 
 - **Characters:** the male duck is the one the player controls: a small, round, cream duck with tiny wings and feet, an orange bill and a dot eye. His full design is in the [art plan](../art/README.md). Animals talk, and most interactions are with animals. PLACEHOLDER: whether there are humans (see [`ideas.md`](ideas.md))
-- **Ferret:** the duck's male best friend and apartment-mate: a champagne (cream-coloured) ferret, about twice the duck's height, standing upright, with a tall plum stovepipe hat and a red bow tie. His full design is in the [art plan](../art/README.md)
+- **Ferret:** the duck's male former best friend and apartment-mate: a champagne (cream-coloured) ferret, about twice the duck's height, standing upright, with a tall plum stovepipe hat and a red bow tie. His full design is in the [art plan](../art/README.md)
 - **Story:** the duck and ferret share an apartment in a big city. After a big fight, the ferret packages the sleeping duck and mails him far away. The duck knows the ferret is responsible and wants to get home. The cause of the fight and the outcome of their friendship are undecided
 - **World:** the modern day, mixing fantasy and reality
 - **Zones:** each zone is one place, indoors, outdoors or a hybrid of both. The V1 route is listed below; only its first zone is being implemented now
@@ -126,6 +126,12 @@ The target play time is about 30 minutes across six groups of two zones, in this
 | Home city      | Outskirts                            | Familiar neighbourhood |
 | Apartment      | Entrance and lobby                   | Climb to the apartment |
 
+### Zone 1
+
+- **Layout:** the fixed tutorial combines the parcel depot and streets of the blue cityscape in one area. The duck starts beside his opened parcel on safe ground, then crosses a one-tile step, a full-jump block and a short red-edged gap before entering the streets. A later low ceiling over a one-tile step requires a short press
+- **Rooms:** the street door leads to the prototype test room
+- **Route:** the main path continues right toward the city boundary; the upper street ledges are an optional detour. The city boundary is planned as the group's second zone and is not built by this first-zone change
+
 The park is a prototype for randomized zones, not V1's second zone. The identities of the ferret's friends and the detailed encounters along the route are undecided.
 
 ### Rooms
@@ -149,7 +155,7 @@ The park is a prototype for randomized zones, not V1's second zone. The identiti
 
 ### The ferret
 
-- **Appearances:** the ferret enlists his friends as a favour. One friend or a group appears in person with dialogue overlays; their identities are undecided
+- **Appearances:** the ferret enlists his friends as a favour. Each friend is responsible for one zone or a themed group of zones and appears there either in person or through dialogue overlays; their identities are undecided
 - **Calling card:** every trap it sets carries a badge of its stovepipe hat and bow tie
 - **Ending:** the duck returns home; the outcome of their friendship is undecided. There is no combat
 
