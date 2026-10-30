@@ -65,6 +65,7 @@ import { cameraScroll } from "../view/camera";
 import { characterState, nextQuirkAt } from "../view/character";
 import { duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
 import { type ArtKind, artKind, artOffset } from "../view/objectArt";
+import { type PlayHold, stepAction } from "../view/playHold";
 import { loadedTileset, objectTiles, terrainTiles, type Tileset } from "../view/tiles";
 import {
   buttonHeld,
@@ -191,8 +192,8 @@ export class ZoneScene extends Scene {
   // The area drawn, and a rectangle for each of its objects.
   private areaShown = "";
   private attemptShown = 0;
-  // Play holds still while a door fades or an exit opens.
-  private fading = false;
+  // Why play holds still, if it does.
+  private hold: PlayHold;
   // The exit opening, by its index among the area's objects: drawObjects leaves its tag alone.
   private opening: number | undefined;
   private objectArt: ObjectArt[] = [];
@@ -216,9 +217,15 @@ export class ZoneScene extends Scene {
     this.mapRoute = data.route;
     this.trial = askedRecipe(search, Object.keys(RECIPES));
     this.lapSeed = data.seed ?? askedLapSeed(search) ?? newLapSeed();
+    // Everything one run of the zone changes starts afresh: the scene object is reused.
     this.objectArt = [];
     this.heldKeys.clear();
     this.heldTouches.clear();
+    this.presses.clear();
+    this.hold = undefined;
+    this.opening = undefined;
+    this.clock = startStepClock;
+    this.duckPose = startPose;
   }
 
   create(): void {
@@ -306,7 +313,15 @@ export class ZoneScene extends Scene {
     this.clock = frame.clock;
     const touches = [...this.heldTouches.values()];
     const intent = combineIntents(keyIntent(this.heldKeys), touchIntent(TOUCH, touches));
-    for (let step = 0; step < frame.steps && !this.fading; step++) {
+    for (let step = 0; step < frame.steps; step++) {
+      const action = stepAction(this.hold, this.zone.cleared);
+      if (action === "hold") {
+        break;
+      }
+      if (action === "exit") {
+        this.openExit();
+        return;
+      }
       const before = this.zone.duck;
       this.zone = stepZone(
         DUCK,
@@ -316,10 +331,6 @@ export class ZoneScene extends Scene {
         this.zone,
       );
       this.duckPose = stepPose(this.landMs, STEP_MS, before, this.zone.duck, this.duckPose);
-      if (this.zone.cleared) {
-        this.openExit();
-        return;
-      }
       if (this.zone.using) {
         this.goThrough(this.zone.using);
       }
@@ -340,19 +351,19 @@ export class ZoneScene extends Scene {
       this.leave();
       return;
     }
-    this.fading = true;
+    this.hold = "exit";
     this.opening = index;
     sprite.play(animationKey(sprite.texture.key, EXIT_TAG));
     sprite.once("animationcomplete", () => {
-      this.fading = false;
       this.opening = undefined;
       this.leave();
     });
   }
 
-  // Leaves the cleared zone for the map; without one, plays the recipe ?zone=<key> names
-  // assembled again, or the next zone in the chain.
+  // Leaves the cleared zone for the map, play held until the map takes over; without one, plays
+  // the recipe ?zone=<key> names assembled again, or the next zone in the chain.
   private leave(): void {
+    this.hold = this.mapRoute === undefined ? undefined : "left";
     if (this.mapRoute !== undefined) {
       saveClearedZone(this.lapSeed, this.mapRoute);
       this.scene.start("map", { played: true, route: this.mapRoute, seed: this.lapSeed });
@@ -389,7 +400,7 @@ export class ZoneScene extends Scene {
 
   // Fades to black, takes her through the door to link, and fades back, play held still.
   private goThrough(link: AreaLink): void {
-    this.fading = true;
+    this.hold = "door";
     const camera = this.cameras.main;
     camera.fadeOut(FADE_MS, 0, 0, 0);
     camera.once("camerafadeoutcomplete", () => {
@@ -399,7 +410,7 @@ export class ZoneScene extends Scene {
       this.drawDuck();
       camera.fadeIn(FADE_MS, 0, 0, 0);
       camera.once("camerafadeincomplete", () => {
-        this.fading = false;
+        this.hold = undefined;
       });
     });
   }
