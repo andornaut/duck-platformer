@@ -88,7 +88,7 @@ Pause card, settings card and install steps card (each over the game dimmed two 
 - ui-close, 24x24, at 510,94 (hit 500,88,44,44) on every card. Tags normal (cream X), pressed (white X on dslate).
 - ui-settings-row, nine-slice 12x48, margins 2,2,2,2, dslate, drawn 352x48 at x 184; each row is its own hit area.
   A row's 16x16 icon sits at 198,y+16 and its label (font-body, cream, white while pressed) at origin 228,y+15.
-- Pause card, 368x236, title "Paused". Rows: Settings at y 136 (icon-settings), Return home at y 188
+- Pause card, 368x236, title "Paused". Rows: Settings at y 136 (icon-settings), Back to title at y 188
   (icon-home). Resume below.
 - Settings card, title "Settings": 368x236 with the Install row, 368x184 without it. Rows: "Move controls" at
   y 136 (icon-move-controls) and "Action buttons" at y 188 (icon-touch-controls), each with ui-checkbox at
