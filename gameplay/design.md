@@ -73,7 +73,7 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 ### Zones
 
 - **Areas:** a zone can have more than one area, joined by doors. Use at a door fades to the other area
-- **Camera:** on the ground she sits about two thirds down the screen. In an assembled zone, the ground line follows the chunk she is in. The camera rises only when she climbs above the middle, and never shows below the lowest ground
+- **Camera:** on the ground she sits about two thirds down the screen. In an assembled zone, the ground line follows the chunk she is in, blending across half a screen at each seam. The camera rises only when she climbs above the middle, and never shows below the lowest ground
 - **Challenge:** platforming, hazards and choices. There is no combat
 - **Checkpoint:** the start of a zone is its only checkpoint. Falling or touching a hazard restarts the zone from its start. Progress is saved: entering a zone saves its start, and clearing it saves the map where she stands, so a cleared zone never replays
 - **Crush:** a moving platform that pushes her sideways carries her to its leading edge. If it squeezes her into terrain or another solid, she is crushed and the zone restarts from its start, as a hazard does. Layouts leave room beside every moving platform's path so she is never pinned on a required route
@@ -86,10 +86,10 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 
 ### Chunks
 
-- **Assembly:** a zone's recipe names its theme, start and finish chunks, a length range, a difficulty that rises from start to finish, and the events and doors to place. The seed picks chunks within ±1 of the difficulty curve, never the same chunk twice in a row, and fills the slots
+- **Assembly:** a zone's recipe names its theme, start and finish chunks, a length range (start and finish included), a difficulty that rises from start to finish, and the events and doors to place. The seed picks each middle chunk within ±1 of the difficulty curve, read at the chunk's centre; the start and finish chunks are exempt. It never picks the same chunk twice in a row, and it fills the slots
 - **Difficulty:** 1 to 5. 1: walking and taps. 2: full jumps and still hazards. 3: gaps near the reach and single moving platforms. 4: timed platforms or moving hazards on the required path. 5: platform-to-platform jumps and tap-only spots under hazards
 - **Fairness:** every chunk is walked on its own from entry to exit, with its slots empty and filled, and a sample of seeds per recipe is walked end to end
-- **Seams:** a chunk's entry and exit are the ground rows at its left and right edges: 50, 40 or 30. The seam surface runs at least 4 tiles in from the edge, with no gap, hazard or moving platform within those 4 tiles, and 6 clear rows above it
+- **Seams:** a chunk's entry and exit are the ground rows at its left and right edges: 50, 40 or 30. The seam surface is terrain and runs at least 4 tiles in from the edge, with no gap there, and nothing (no solid, ledge, hazard or moving platform) in the 6 rows above it
 - **Shape:** one or two screens wide (60 to 120 tiles) and 60 rows tall
 - **Slots:** marked regions where the seed places an event or a door. A chunk must pass with every slot empty
 - **Themes:** a theme sets the tileset, terrain looks and repeated backdrops for every chunk of that theme, so seams never show. A chunk can still place its own scenery. The first theme is the park (outdoor)
