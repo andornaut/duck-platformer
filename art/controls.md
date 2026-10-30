@@ -1,0 +1,137 @@
+# Form controls
+
+The visual and interaction contract for ordinary buttons and selection controls. All measurements are base pixels in the 720x360 view. See [the art plan](README.md) for the drawing pipeline and [the rulebook](../gameplay/design.md) for game behaviour.
+
+Status means **implemented**, **approved target** (a decision awaiting implementation), or **proposed** (requires a decision). Proposed values are not implementation instructions. This document records the target contract; it does not change runtime controls.
+
+## Scope and exceptions
+
+Apply this guide to menu actions, modal actions and ordinary form controls. A primary action keeps the same colour and geometry wherever it appears; disabled is a state, not another action role.
+
+| Control                        | Reason for exception                                     | Retained rules                                                               |
+| ------------------------------ | -------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Compact Install action         | A 28px action sits within a full-height settings row     | Full 48px row target; compact content padding must still fit the shared font |
+| Dialogue answer                | A choice has selected and speaker-context states         | Readable labels, focus, keyboard support and adequate press area             |
+| Icon-only navigation and close | Compact, recognisable action without a text label        | Consistent icon placement, accessible action name, focus and press area      |
+| Movement hint and knob         | Continuous directional input rather than a form action   | Contrast and clear state indication                                          |
+| Pause, Use and Jump            | In-game controls must remain visible over varied scenery | Contrast, adequate press area and consistent press feedback                  |
+
+A new exception names its concrete purpose and retained rules in this table. Placement alone does not justify another button style.
+
+## Design tokens
+
+Palette names refer to [palette.json](../public/art/palette.json). Colours are opaque; disabled controls do not become translucent.
+
+| Name            | Value                       | Unit            | Purpose                                    | Status                                           |
+| --------------- | --------------------------- | --------------- | ------------------------------------------ | ------------------------------------------------ |
+| Card face       | `lgrey`                     | palette colour  | Neutral menu ground                        | Implemented                                      |
+| Disabled face   | `lgrey`                     | palette colour  | Distinct, flat unavailable control         | Approved target                                  |
+| Disabled label  | `dslate`                    | palette colour  | Readable label on disabled face            | Approved target                                  |
+| Focus band      | `yellow`, fringed in `ink`  | palette colours | Keyboard focus independent of role         | Implemented                                      |
+| Label font      | `font-body`, mixed case, 2x | font and scale  | Ordinary control labels                    | Implemented                                      |
+| Primary face    | `dslate`                    | palette colour  | One colour for the main action             | Implemented on cards; approved target throughout |
+| Primary label   | `white`                     | palette colour  | Label and essential icon on primary face   | Implemented on cards; approved target throughout |
+| Secondary face  | `grey`                      | palette colour  | Other ordinary actions                     | Implemented                                      |
+| Secondary label | `ink`                       | palette colour  | Label and essential icon on secondary face | Implemented                                      |
+
+## Sizing and spacing
+
+A texture's nine-slice margins preserve its corners and are not content padding. Keep face dimensions, content padding, gaps and expanded press areas separate.
+
+| Name                             | Value                                              | Unit        | Purpose                                                      | Status                                               |
+| -------------------------------- | -------------------------------------------------- | ----------- | ------------------------------------------------------------ | ---------------------------------------------------- |
+| Button content inset, horizontal | 16 minimum                                         | px per side | Clear space between visible label/icon group and button edge | Approved target                                      |
+| Button content inset, vertical   | 12 minimum                                         | px per side | Clear space above and below label ink                        | Approved target                                      |
+| Button height, standard          | 48                                                 | px          | Ordinary menu and modal actions                              | Implemented on cards; approved target throughout     |
+| Button width                     | Shared within an action group; grow to fit content | rule        | Like actions have matching sizes                             | Approved target                                      |
+| Card action inset                | 8                                                  | px per side | Place 352px actions within a 368px card                      | Implemented                                          |
+| Card text inset                  | 14 minimum                                         | px per side | Card text clear of frame                                     | Implemented                                          |
+| Compact action height            | 28                                                 | px          | Install's compact action within its full-size row            | Implemented exception                                |
+| Focus expansion                  | 4                                                  | px per side | Ring outside the focused face                                | Implemented                                          |
+| Icon-to-label gap                | 6                                                  | px          | Leading play mark and label                                  | Implemented                                          |
+| Control row height               | 48                                                 | px          | Full labelled selection row                                  | Implemented for settings; approved target throughout |
+| Ordinary control gap             | 8                                                  | px          | Separate unrelated controls or groups                        | Approved target                                      |
+| Press displacement               | 2                                                  | px down     | Move face, label and icon together                           | Implemented                                          |
+| Press target                     | 48 minimum                                         | px per axis | Minimum interactive target                                   | Implemented                                          |
+| Press target growth              | 25% of shorter face side, clamped to 6..16         | px per side | Enlarge the drawn control's press area                       | Implemented                                          |
+| Stacked action gap               | 4                                                  | px          | Consecutive equal-height card actions                        | Implemented                                          |
+
+Vertical content is centred within the usable face, with the existing two-pixel press displacement. Do not shrink text to meet a size token: grow the button or reword its label. The compact Install exception uses its existing 8px horizontal inset rather than the standard 16px; the whole 48px row remains interactive. Standardizing height does not make every button equally wide; use a shared width within the same action group.
+
+Current fixed-size assets differ: `ui-start` is 192x52 and `ui-resume` is 160x44. The target standardizes both to 48px high; their current assets have not yet been resized. Card actions are 352x48; Install is 72x28 within a 352x48 row.
+
+## Button roles and states
+
+Primary and secondary buttons share one silhouette, cut corners and nine-slice geometry. Role controls colour; interaction state controls geometry and feedback.
+
+| Role/state         | Fill                        | Label/icon | Border and highlight                       | Geometry                               | Status                                           |
+| ------------------ | --------------------------- | ---------- | ------------------------------------------ | -------------------------------------- | ------------------------------------------------ |
+| Primary, normal    | `dslate`                    | `white`    | No outline; `slate` highlight, `navy` lip  | Raised face                            | Implemented on cards; approved target throughout |
+| Primary, pressed   | `dslate`                    | `white`    | Lip disappears                             | Face, label and icon descend 2px       | Implemented on cards                             |
+| Primary, focused   | Normal or pressed primary   | `white`    | Shared yellow focus ring outside face      | Size unchanged                         | Implemented                                      |
+| Secondary, normal  | `grey`                      | `ink`      | No outline; `lgrey` highlight, `slate` lip | Same raised face                       | Implemented                                      |
+| Secondary, pressed | `grey`                      | `ink`      | Lip disappears                             | Same 2px displacement                  | Implemented                                      |
+| Secondary, focused | Normal or pressed secondary | `ink`      | Shared yellow focus ring outside face      | Size unchanged                         | Implemented                                      |
+| Any role, disabled | `lgrey`                     | `dslate`   | Flat face, no outline or raised lip        | Same outer size; no press displacement | Approved target                                  |
+
+A disabled action retains its label and layout but cannot activate. The disabled face is pale steel (`lgrey`, `#c0cbdc`), with dark steel (`dslate`, `#3a4466`) text at 5.83:1 contrast. Primary is dark steel with white text; secondary is grey (`#8b9bb4`) with ink (`#181425`) text. Its flat silhouette distinguishes it from a raised secondary action without relying on colour alone. Ordinary buttons have no approved hover-specific visual treatment; hover must not change their size or role colour.
+
+## Labels and icons
+
+- Centre the visible label ink, not its font advance. At 2x, `font-body` visible width is advance minus 2px.
+- Centre a leading icon, its gap and the label as one group. Preserve the same horizontal content inset on both sides of that group.
+- Keep labels mixed case, short and consistent for the same action. The game supplies words; do not bake text into textures.
+- Maintain at least 4.5:1 label contrast and 3:1 for essential marks. Use an icon colour suited to the face, rather than reusing a dark icon on a dark primary button.
+
+The current ink `ui-play-mark` is unsuitable for a dslate face. A light variant or a tintable equivalent is required before restoring that mark on primary actions.
+
+## Selection controls
+
+Checkboxes, radio buttons and switches share this specification structure. Their semantics differ; do not replace one with another solely to reuse available art.
+
+| Control      | Value semantics                                       | States                                                        | Drawn size | Label and placement                                           | Press area         | Keyboard                                          | Status                              |
+| ------------ | ----------------------------------------------------- | ------------------------------------------------------------- | ---------- | ------------------------------------------------------------- | ------------------ | ------------------------------------------------- | ----------------------------------- |
+| Checkbox     | Independent boolean selection, usually part of a form | Unchecked, checked, focused, disabled; mixed only if required | 16x16      | Visible adjacent label; whole labelled row activates          | Shared target rule | Space toggles focused choice                      | Approved target; no current asset   |
+| Radio button | Exactly one selection in a named group                | Unselected, selected, focused, disabled                       | 16x16      | Visible adjacent label; whole labelled row activates          | Shared target rule | Arrows move/select within group; Space selects    | Approved target; no current asset   |
+| Switch       | Independent boolean setting applied immediately       | Off, on, focused, disabled                                    | 32x16      | Existing row: icon, label, switch; whole 352x48 row activates | Whole row          | Existing settings focus navigation and activation | On/off implemented; disabled target |
+
+The switch uses knob position and a glyph: right with a tick for on; left with a cross for off. Off is an available value and must never look disabled. Checked and selected likewise remain separate from enabled and disabled.
+
+## Interaction and accessibility
+
+- Activating a disabled control has no effect. Keyboard navigation skips disabled controls; their labels remain visible.
+- Focus is independent of pressed, selected and checked. Never remove the shared focus ring because a control is already coloured.
+- On existing menus, Tab and arrows move focus; Enter and Space activate the focused action. A held key does not repeatedly activate an action.
+- Open modals receive input exclusively. Outside taps follow the modal's close behaviour and never activate a control underneath.
+- Overlapping expanded press areas choose the nearest control centre. Keep drawn faces and labels visually separate even where their press areas meet.
+- Selection controls require visible labels; icon-only exceptions require an unambiguous action name. Exposing those names to assistive technology is a runtime requirement, not something a PNG supplies.
+
+## Asset and code contract
+
+| Concern                   | Current contract                                              | Intended change or gap                                                                        |
+| ------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Button face assets        | `ui-button` and `ui-button-primary`; tags `normal`, `pressed` | Shared disabled treatment needs an asset/tag and runtime support                              |
+| Checkbox and radio assets | None                                                          | Target 16x16 square checkbox and circular radio; check mark or centre dot indicates selection |
+| Colour source             | Served palette data                                           | Keep control tokens tied to palette names                                                     |
+| Focus asset               | `ui-focus`, nine-slice 16x16, margins 4 on all sides          | Retain for every ordinary control                                                             |
+| Geometry source           | Runtime layout values                                         | Add approved shared size/spacing tokens without copying literals between screens              |
+| Label rendering           | Runtime `font-body` at 2x                                     | Light primary icon required                                                                   |
+| Nine-slice face           | 16x28, margins left/top/right/bottom 2/4/2/6                  | Primary, secondary and disabled use the same outer geometry                                   |
+| Start and Continue        | Separate green fixed-size assets                              | Approved target: dslate face and white label; target height 48px                              |
+| Switch asset              | `ui-switch`, tags `on`, `off`                                 | Use shared focus ring and disabled tokens; retain knob position and value glyph               |
+
+## Review checklist
+
+1. Compare the control in its real menu or modal, in normal, pressed, focused and disabled states.
+2. Check matching face sizes, content insets and gaps across the action group.
+3. Verify labels fit at the shared font size, with icons centred as part of the group.
+4. Check contrast in colour and greyscale, and check at fractional phone scale.
+5. Confirm enabled state, selected value and keyboard focus remain distinguishable.
+6. Confirm keyboard and touch activation use the same action and disabled controls cannot activate.
+7. Record any exception and its concrete reason rather than introducing an undocumented style.
+
+## Open decisions
+
+None for the standard colours, dimensions, spacing or disabled navigation defined here. New bespoke controls require an explicit exception and a contextual review before implementation.
+
+Implementation remains separate: update Start and Continue, provide a light primary play mark, add disabled states and supply checkbox/radio assets when implementing forms. The asset and code contract above records these gaps.

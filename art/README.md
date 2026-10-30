@@ -164,6 +164,8 @@ The villain is a champagne ferret standing up on its hind legs in a stovepipe ha
 
 ## UI
 
+The [form control style guide](controls.md) defines standard buttons, selection controls, shared states, spacing and explicit exceptions. The screen layouts below specify their placement.
+
 All positions are in base pixels (x, y, w, h) of the 720x360 layout as drawn. The game derives every press area from the drawn button at runtime: the button plus 25% of its shorter side on each side, clamped between 6 and 16px, and at least 48x48. Use and Jump instead press within 100 of each one's centre (a clear circle of 63 plus the move hint's radius of 37), cut along the line midway between their centres so the two never overlap; Jump's also reaches the screen's bottom-right corner, as the rect from its centre to the corner. Art gives only the drawn rects and centres.
 
 ### Dialogue box
