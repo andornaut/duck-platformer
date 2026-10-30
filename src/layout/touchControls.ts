@@ -1,6 +1,7 @@
 import { SCREEN } from "../data/screen";
 import type { Point, Rect } from "../data/types";
 import { type PressArea, type PressShape, TOUCH_CIRCLE_RADIUS } from "./hitAreas";
+import { CONTROL_BOTTOM, CONTROL_EDGE } from "./playView";
 
 export type TouchControl = "jump" | "use";
 
@@ -14,8 +15,18 @@ function buttonArt(centre: Point): Rect {
   return { height: BUTTON_FRAME, width: BUTTON_FRAME, x: centre.x - half, y: centre.y - half };
 }
 
-const USE_CENTRE = { x: 592, y: 210 };
-const JUMP_CENTRE = { x: 667, y: 307 };
+// Art draws each control 1px inside its frame, so a frame's centre pixel is this far from the
+// drawn edge on each side.
+const DRAWN_HALF = (BUTTON_FRAME - 1) / 2 - 1;
+
+// Jump at the view's right, CONTROL_EDGE in, and CONTROL_BOTTOM above the bottom; Use above and
+// left of Jump by art's spacing.
+const JUMP_CENTRE = {
+  x: SCREEN.width - 1 - CONTROL_EDGE - DRAWN_HALF,
+  y: SCREEN.height - 1 - CONTROL_BOTTOM - DRAWN_HALF,
+};
+const USE_FROM_JUMP = { x: -75, y: -97 };
+const USE_CENTRE = { x: JUMP_CENTRE.x + USE_FROM_JUMP.x, y: JUMP_CENTRE.y + USE_FROM_JUMP.y };
 const USE_ART = buttonArt(USE_CENTRE);
 const JUMP_ART = buttonArt(JUMP_CENTRE);
 
@@ -55,10 +66,9 @@ export const TOUCH_PRESS_AREAS: readonly PressArea<TouchControl>[] = (
 
 // Art's move hint, a drawing with no press area of its own (movement is the floating drag
 // everywhere off the buttons): a ring in a frame the buttons' size, centred at rest on centre,
-// anchored to the canvas's bottom-left corner, and a knob that moves from the ring's centre at
-// most knobReach pixels left or right the way the drag goes. At rest its centre is level with
-// Jump's and mirrors Use's across the screen: as far in from the left edge as Use's is from the
-// right. Anchored to opposite bottom corners, the two keep that in every canvas.
+// and a knob that moves from the ring's centre at most knobReach pixels left or right the way
+// the drag goes. At rest it sits level with Jump, as far in from the view's left as Use is from
+// its right.
 const MOVE_HINT_CENTRE: Point = { x: SCREEN.width - 1 - USE_CENTRE.x, y: JUMP_CENTRE.y };
 export const MOVE_HINT = {
   art: buttonArt(MOVE_HINT_CENTRE),

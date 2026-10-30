@@ -16,21 +16,25 @@ export function playView(canvasSize: Size): Rect {
   };
 }
 
-// How far a control anchored to the canvas's bottom-right corner (Jump and Use) moves from where
-// it sits in a canvas the game's own size, so that in a wider or taller canvas it moves into the
-// bars. A control anchored to the top-left corner (the pause button) stays where it is.
-export function bottomRightShift(canvasSize: Size): Point {
-  return {
-    x: Math.floor(canvasSize.width) - SCREEN.width,
-    y: Math.floor(canvasSize.height) - SCREEN.height,
-  };
+// The on-screen controls' least distance, in base pixels, from each drawn edge to the edge
+// they are placed against: the view's left, right and top, and the canvas's bottom.
+export const CONTROL_EDGE = 8;
+
+// How far the bottom controls (Use, Jump and the move hint) sit above the canvas's bottom edge,
+// drawn edge to edge.
+export const CONTROL_BOTTOM = 20;
+
+// How far a control along the canvas's bottom (Use, Jump and the move hint) moves from where it
+// sits in a canvas the game's own size: across with the view, so it stays inside it, and down
+// to the canvas's bottom, so below the game it moves into the bar.
+export function bottomShift(canvasSize: Size): Point {
+  return { x: playView(canvasSize).x, y: Math.floor(canvasSize.height) - SCREEN.height };
 }
 
-// How far a control anchored to the canvas's bottom-left corner (the move hint) moves from where
-// it sits in a canvas the game's own size: down into a bar below, and staying at the canvas's
-// left, so in a wider canvas it sits in the left bar.
-export function bottomLeftShift(canvasSize: Size): Point {
-  return { x: 0, y: Math.floor(canvasSize.height) - SCREEN.height };
+// How far a control along the view's top (the pause button) moves from where it sits in a
+// canvas the game's own size: across with the view, so it stays inside it.
+export function topShift(canvasSize: Size): Point {
+  return { x: playView(canvasSize).x, y: 0 };
 }
 
 // A point moved by shift, or back by it with sign -1.

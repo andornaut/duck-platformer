@@ -35,25 +35,26 @@ Quip
   line cream in font-body, origin x+15+An, y 11.
 
 Touch controls (two round buttons for the right thumb, a pause button at the top left and the move hint at the left)
-- Positions here are the base 720x360 layout as drawn. At runtime the game anchors Use, Jump and ui-pause to the
-  screen's corners and sizes their press areas (src/layout/hitAreas.ts).
-- ui-touch-use, 75x75, centre pixel 37,37: top-left 555,173 for the centre 592,210.
-- ui-touch-jump, 75x75, centre pixel 37,37: top-left 630,270 for the centre 667,307, towards the bottom-right
+- Positions here are the base 720x360 layout as drawn. At runtime the game keeps every control inside the game's
+  view across, ui-pause at the view's top and Use, Jump and the move hint at the screen's bottom, and sizes their
+  press areas (src/layout/hitAreas.ts). Each drawn edge sits at least 8px from the edge it is placed against.
+  Jump's ring is 8px in from the right and 20px up from the bottom, and the pause disc 8px in from the top and left.
+- ui-touch-use, 75x75, centre pixel 37,37: top-left 563,169 for the centre 600,206.
+- ui-touch-jump, 75x75, centre pixel 37,37: top-left 638,266 for the centre 675,303, towards the bottom-right
   corner, with Use above and to its left.
 - Each is the move hint's open ring, 73px across with no face: a 2px cream band between 1px ink lines, with its icon
   centred in 2px strokes and fringed in ink, so it reads on any ground: three round dots (25x7) on Use, their top
   3px above the centre, and a caret (21x11) on Jump, its top 5px above. No label. Tags rest (100ms); press, once
   (frame 0 the band and icon turn white and the ring swells 1px; frame 1 the same at rest size; 60ms each); held (as
   press frame 1, 100ms).
-- ui-pause, 35x35, centre pixel 17,17: top-left 15,15 for the centre 32,32, its edge mirroring Jump's ring's inset. A disc 33px
+- ui-pause, 35x35, centre pixel 17,17: top-left 7,7 for the centre 24,24, its disc 8px in from the top and left. A disc 33px
   across: an ink edge, a 2px cream ring (3px pressed) and a navy face (dslate pressed), with two pause bars (11x13,
   each 4 wide, 3 apart) centred on the centre; no label. Tags as for Use and Jump: rest; press, once (2 frames at
   60ms, frame 0 swells 1px); held.
 - ui-move-hint, 75x75, centre pixel 37,37: a drawing only, with no press area. An open ring 73px across with no
   face, a 2px cream band between 1px ink lines, and a 2x chevron (8x10) each side, 22px from the centre, fringed in
-  ink, so it reads on any ground, sky, character or prop. At rest its centre is level with Jump's and as far in from
-  the left edge as Use's centre is from the right: centre 127,307 (top-left 90,270) at 720 wide. The game anchors it
-  to the bottom-left corner as it anchors the buttons to the bottom-right, so the mirroring holds on any canvas.
+  ink, so it reads on any ground, sky, character or prop. At rest its centre is level with Jump's and its ring as far
+  in from the view's left as Use's is from its right: centre 119,303 (top-left 82,266) at 720 wide.
   While a touch moves her, the game draws it centred on that touch's neutral point (where the drag began), anywhere
   on screen, and puts it back on release. Tags rest; held-left and held-right (the dragged side's chevron white);
   one frame each.

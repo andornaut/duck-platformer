@@ -1,12 +1,13 @@
 import { animationKey } from "@andornaut/game-kit/art/aseprite";
 import { snapshotRemapped } from "@andornaut/game-kit/view/phaser/snapshotRemap";
-import { type Cameras, Core, type GameObjects, type Input, Scene, Scenes } from "phaser";
+import { type Cameras, Core, type GameObjects, type Input, Scale, Scene, Scenes } from "phaser";
 
 import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
 import { FRAME_TURN } from "../input/frameTurn";
 import { type PressArea, pressedArea } from "../layout/hitAreas";
 import { PAUSE_BUTTON, PAUSE_CARD } from "../layout/pauseCard";
+import { shifted, topShift } from "../layout/playView";
 import { type CardAction, cardBackAction, cardKeyAction, cardTurnAction } from "../pause/cardInput";
 import { focusKeyAction, stepFocus } from "../pause/focusInput";
 import { coverZone, PHONE_EVENTS, startWakeLock, stopWakeLock, zoneShown } from "../pwa";
@@ -77,8 +78,8 @@ export class PauseScene extends Scene implements SettingsOpener {
   }
 
   create(): void {
-    // The main camera covers the whole canvas, for the pause button at its top-left corner and
-    // the dim over all of it; the card camera shows the cards in the game's view. Everything
+    // The main camera covers the whole canvas, for the pause button at the view's top-left corner
+    // and the dim over all of it; the card camera shows the cards in the game's view. Everything
     // added after the pause button and the dim belongs to the cards.
     const canvasCamera = this.cameras.main;
     fitCanvasCamera(this, canvasCamera);
@@ -87,6 +88,11 @@ export class PauseScene extends Scene implements SettingsOpener {
     this.pauseButton = this.add
       .sprite(PAUSE_BUTTON.at.x, PAUSE_BUTTON.at.y, "ui-pause")
       .setOrigin(0);
+    this.placePauseButton();
+    this.scale.on(Scale.Events.RESIZE, this.placePauseButton, this);
+    this.events.once("shutdown", () =>
+      this.scale.off(Scale.Events.RESIZE, this.placePauseButton, this),
+    );
     this.dim = this.add.image(0, 0, "__DEFAULT").setOrigin(0);
     this.cardCamera.ignore([this.pauseButton, this.dim]);
     const toCards = (object: GameObjects.GameObject) => canvasCamera.ignore(object);
@@ -315,6 +321,12 @@ export class PauseScene extends Scene implements SettingsOpener {
     }
   }
 
+  // Puts the pause button at its place shifted across with the view, so it stays inside it.
+  private placePauseButton(): void {
+    const at = shifted(topShift(this.scale.gameSize), PAUSE_BUTTON.at);
+    this.pauseButton.setPosition(at.x, at.y);
+  }
+
   private controlAt(pointer: Input.Pointer): Control | undefined {
     const { close, home, resume, settings } = PAUSE_CARD;
     const areas: PressArea<Control>[] =
@@ -331,7 +343,7 @@ export class PauseScene extends Scene implements SettingsOpener {
     const point =
       this.state === "open"
         ? playPoint(this, pointer, this.cardCamera)
-        : { x: pointer.x, y: pointer.y };
+        : shifted(topShift(this.scale.gameSize), { x: pointer.x, y: pointer.y }, -1);
     return pressedArea(areas, point);
   }
 

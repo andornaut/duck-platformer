@@ -45,7 +45,7 @@ import {
   touchRoleAt,
 } from "../input/intent";
 import { PAUSE_BUTTON } from "../layout/pauseCard";
-import { bottomLeftShift, bottomRightShift, shifted } from "../layout/playView";
+import { bottomShift, shifted, topShift } from "../layout/playView";
 import { MOVE_HINT, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
 import { nodeOf } from "../rules/map";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
@@ -316,10 +316,10 @@ export class ZoneScene extends Scene {
     this.events.once("create", () => this.sys.pause());
   }
 
-  // Puts the touch buttons at their places shifted to the canvas's bottom-right corner, into the
-  // bars where the canvas is wider or taller than the game's view.
+  // Puts the touch buttons at their places shifted across with the view and down to the canvas's
+  // bottom, into the bar below where the canvas is taller than the game's view.
   private placeControls(): void {
-    const shift = bottomRightShift(this.scale.gameSize);
+    const shift = bottomShift(this.scale.gameSize);
     for (const [control, sprite] of this.controls) {
       const { centre } = TOUCH_CONTROLS[control];
       const at = shifted(shift, centredAt(centre, sprite.frame));
@@ -346,7 +346,7 @@ export class ZoneScene extends Scene {
     const { knob, ring } = this.moveHint;
     const shown =
       window.matchMedia("(pointer: coarse)").matches && touchSettingShown("moveControls");
-    const rest = shifted(bottomLeftShift(this.scale.gameSize), MOVE_HINT.centre);
+    const rest = shifted(bottomShift(this.scale.gameSize), MOVE_HINT.centre);
     const view = moveHintView(TOUCH, MOVE_HINT.knobReach, rest, touches);
     show(ring, view.ringTag);
     show(knob, view.knobTag);
@@ -724,14 +724,15 @@ export class ZoneScene extends Scene {
         clientPoint(event),
       );
     const onGame = (event: PagePointerEvent) => clampInto(canvasRect(this), unclamped(event));
-    // The touch buttons sit shifted to the canvas's bottom-right corner (placeControls).
+    // The touch buttons sit shifted with the view and to the canvas's bottom (placeControls), and
+    // the pause button with the view.
     const roleAt = (point: Point) =>
-      touchRoleAt(shifted(bottomRightShift(this.scale.gameSize), point, -1));
+      touchRoleAt(shifted(bottomShift(this.scale.gameSize), point, -1));
     const accepts = (event: PagePointerEvent) => {
       if (event.pointerType !== "touch" || onPageControl(event.target) || !this.scene.isActive()) {
         return false;
       }
-      const point = onGame(event);
+      const point = shifted(topShift(this.scale.gameSize), onGame(event), -1);
       return !(
         event.target === this.game.canvas && containsPoint(PAUSE_BUTTON.hit, point.x, point.y)
       );

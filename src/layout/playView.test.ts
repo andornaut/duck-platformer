@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { SCREEN } from "../data/screen";
+import type { Point } from "../data/types";
 import { touchRoleAt } from "../input/intent";
-import { bottomRightShift, playView, shifted } from "./playView";
-import { TOUCH_CONTROLS } from "./touchControls";
+import { PAUSE_BUTTON } from "./pauseCard";
+import { bottomShift, CONTROL_BOTTOM, CONTROL_EDGE, playView, shifted, topShift } from "./playView";
+import { MOVE_HINT, TOUCH_CONTROLS } from "./touchControls";
 
 // Canvases the play area makes at the game's scale: the game's own size, wider, and taller.
 const CASES: [string, { height: number; width: number }][] = [
@@ -25,20 +27,45 @@ describe("playView", () => {
   });
 });
 
-describe("bottomRightShift", () => {
-  // Jump keeps its distance from the canvas's bottom-right corner, and a press on it there
-  // still takes it once moved back by the shift.
-  it.each(CASES)("in %s keeps Jump at the bottom-right corner", (_, canvas) => {
-    const shift = bottomRightShift(canvas);
-    const jump = shifted(shift, TOUCH_CONTROLS.jump.centre);
+// A frame's drawn rect: art draws each control 1px inside its frame.
+const drawn = (frame: { height: number; width: number; x: number; y: number }, shift: Point) => ({
+  bottom: frame.y + shift.y + frame.height - 2,
+  left: frame.x + shift.x + 1,
+  right: frame.x + shift.x + frame.width - 2,
+  top: frame.y + shift.y + 1,
+});
+
+describe("the controls' edges", () => {
+  // In each canvas: Jump's ring CONTROL_EDGE in from the view's right, the hint's as far in from
+  // its left as Use's from its right, both CONTROL_BOTTOM above the canvas's bottom, and the
+  // pause disc CONTROL_EDGE in from the view's top and left.
+  it.each(CASES)("in %s sit their set distances from the view and the canvas", (_, canvas) => {
+    const view = playView(canvas);
+    const jump = drawn(TOUCH_CONTROLS.jump.art, bottomShift(canvas));
+    const hint = drawn(MOVE_HINT.art, bottomShift(canvas));
+    const use = drawn(TOUCH_CONTROLS.use.art, bottomShift(canvas));
+    const pause = drawn(PAUSE_BUTTON.art, topShift(canvas));
+    const bottom = Math.floor(canvas.height) - 1;
     expect({
-      fromBottom: canvas.height - jump.y,
-      fromRight: canvas.width - jump.x,
-      role: touchRoleAt(shifted(shift, jump, -1)),
+      hintBottom: bottom - hint.bottom,
+      hintLeft: hint.left - view.x,
+      jumpBottom: bottom - jump.bottom,
+      jumpRight: view.x + view.width - 1 - jump.right,
+      pauseLeft: pause.left - view.x,
+      pauseTop: pause.top - view.y,
     }).toEqual({
-      fromBottom: SCREEN.height - TOUCH_CONTROLS.jump.centre.y,
-      fromRight: SCREEN.width - TOUCH_CONTROLS.jump.centre.x,
-      role: "jump",
+      hintBottom: CONTROL_BOTTOM,
+      hintLeft: view.x + view.width - 1 - use.right,
+      jumpBottom: CONTROL_BOTTOM,
+      jumpRight: CONTROL_EDGE,
+      pauseLeft: CONTROL_EDGE,
+      pauseTop: CONTROL_EDGE,
     });
+  });
+
+  it.each(CASES)("in %s take a press on Jump once moved back by the shift", (_, canvas) => {
+    const shift = bottomShift(canvas);
+    const jump = shifted(shift, TOUCH_CONTROLS.jump.centre);
+    expect(touchRoleAt(shifted(shift, jump, -1))).toBe("jump");
   });
 });

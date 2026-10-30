@@ -5,7 +5,7 @@ import { SCREEN } from "../data/screen";
 import { TOUCH } from "../data/touch";
 import type { Point } from "../data/types";
 import type { HeldTouch } from "../input/intent";
-import { bottomLeftShift, bottomRightShift, shifted } from "../layout/playView";
+import { bottomShift, shifted } from "../layout/playView";
 import { MOVE_HINT, TOUCH_CONTROLS } from "../layout/touchControls";
 import { knobOffset, moveHintView } from "./moveHint";
 import { centredAt } from "./touchControls";
@@ -31,33 +31,26 @@ describe("the move hint at rest", () => {
     });
   });
 
-  // Level with Jump and mirroring Use across the canvas, each where the canvas anchors it: Use's
-  // centre is as far in from the right edge as the hint's is from the left.
-  it.each([
-    ["the game's own size", SCREEN],
-    ["a wider canvas", { height: SCREEN.height, width: SCREEN.width + 180 }],
-    ["a turned portrait canvas", { height: SCREEN.height, width: 779.08 }],
-    ["a taller canvas", { height: SCREEN.height + 40, width: SCREEN.width }],
-  ])("sits level with Jump and opposite Use in %s", (_, canvas) => {
-    const buttons = bottomRightShift(canvas);
-    const use = shifted(buttons, TOUCH_CONTROLS.use.centre);
-    const jump = shifted(buttons, TOUCH_CONTROLS.jump.centre);
-    const hint = shifted(bottomLeftShift(canvas), MOVE_HINT.centre);
-    expect(hint).toEqual({ x: Math.floor(canvas.width) - 1 - use.x, y: jump.y });
-  });
-
-  // Anchored to the canvas's bottom-left corner: into a left bar it stays at the canvas's left,
-  // and below the game it moves down with the bar.
+  // Level with Jump, inside the view across and at the canvas's bottom: in a wider canvas it
+  // moves across with the view, and below the game it moves down with the bar.
   it.each([
     ["the game's own size", SCREEN, MOVE_HINT.centre],
-    ["a wider canvas", { height: SCREEN.height, width: SCREEN.width + 180 }, MOVE_HINT.centre],
+    [
+      "a wider canvas",
+      { height: SCREEN.height, width: SCREEN.width + 180 },
+      { x: MOVE_HINT.centre.x + 90, y: MOVE_HINT.centre.y },
+    ],
     [
       "a taller canvas",
       { height: SCREEN.height + 40, width: SCREEN.width },
       { x: MOVE_HINT.centre.x, y: MOVE_HINT.centre.y + 40 },
     ],
-  ])("sits in %s at %j", (_, canvas, centre) => {
-    expect(shifted(bottomLeftShift(canvas), MOVE_HINT.centre)).toEqual(centre);
+  ])("sits in %s at %j, level with Jump", (_, canvas, centre) => {
+    const shift = bottomShift(canvas);
+    expect({
+      at: shifted(shift, MOVE_HINT.centre),
+      jumpY: shifted(shift, TOUCH_CONTROLS.jump.centre).y,
+    }).toEqual({ at: centre, jumpY: centre.y });
   });
 });
 
