@@ -18,6 +18,7 @@ The preview is a conceptual 720x720 assembly with two 720x360 phone views, a low
 ledge and floor, wall and ceiling contact strips. It is an art composition, not a validated level.
 """
 
+import json
 import os
 import sys
 
@@ -94,6 +95,13 @@ def tiles():
 
 def build():
     entry = pixel.write_tileset(KEY, tiles(), hitboxes=HITBOXES)
+    path = "public/art/" + entry["json"]
+    with open(path) as f:
+        data = json.load(f)
+    data["tiles"]["one-way-ledge"] = data["tiles"]["one-way-ledge-middle"]
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2, sort_keys=True)
+        f.write("\n")
     pixel.update_manifest("tilesets", [entry])
 
 

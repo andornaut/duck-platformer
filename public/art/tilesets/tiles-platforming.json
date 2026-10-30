@@ -33,6 +33,7 @@
     "hazard-left": 15,
     "hazard-right": 16,
     "hazard-top": 13,
+    "one-way-ledge": 11,
     "one-way-ledge-left": 10,
     "one-way-ledge-middle": 11,
     "one-way-ledge-right": 12,
