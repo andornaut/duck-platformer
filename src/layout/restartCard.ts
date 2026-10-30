@@ -13,7 +13,8 @@ export interface LabelledButton {
 // A pressed button's label sinks this far.
 const PRESSED_SINK = 2;
 
-function labelled(button: Rect, labelDy: number): LabelledButton {
+// A labelled button drawn at button, its label's origin labelDy below its top.
+export function labelledButton(button: Rect, labelDy: number): LabelledButton {
   return {
     button,
     hit: hitAround(button),
@@ -26,10 +27,10 @@ function labelled(button: Rect, labelDy: number): LabelledButton {
 // parts: the card and its title, the question in body text at most room wide, then Cancel and
 // Restart side by side, each art's `ui-button` stretched, its label centred across it.
 export const RESTART_CARD = {
-  cancel: labelled({ height: 36, width: 144, x: 208, y: 196 }, 7),
+  cancel: labelledButton({ height: 36, width: 144, x: 208, y: 196 }, 7),
   card: { height: 168, width: 368, x: 176, y: 88 } satisfies Rect,
   question: { x: 198, y: 140 } satisfies Point,
-  restart: labelled({ height: 36, width: 144, x: 368, y: 196 }, 7),
+  restart: labelledButton({ height: 36, width: 144, x: 368, y: 196 }, 7),
   room: 324,
   title: { x: 190, y: 93 } satisfies Point,
 } as const;
@@ -39,9 +40,9 @@ export const RESTART_CARD = {
 // `ui-button` stretched) and Continue (art's `ui-resume`, led by the play mark) side by side.
 export const CELEBRATION = {
   card: { height: 184, width: 368, x: 176, y: 88 } satisfies Rect,
-  continue: labelled({ height: 44, width: 160, x: 368, y: 208 }, 11),
+  continue: labelledButton({ height: 44, width: 160, x: 368, y: 208 }, 11),
   message: { x: 198, y: 140 } satisfies Point,
-  restart: labelled({ height: 44, width: 160, x: 192, y: 208 }, 11),
+  restart: labelledButton({ height: 44, width: 160, x: 192, y: 208 }, 11),
   room: 324,
   title: { x: 190, y: 93 } satisfies Point,
 } as const;

@@ -6,22 +6,28 @@ import { bitmapMeasure, fittingText } from "@andornaut/game-kit/text/textFit";
 import { describe, expect, it } from "vitest";
 
 import fontBody from "../../public/art/fonts/font-body.fnt?raw";
+import manifestJson from "../../public/art/manifest.json";
 import installSheet from "../../public/art/sprites/icon-install.json";
 import moveSheet from "../../public/art/sprites/icon-move-controls.json";
-import settingsSheet from "../../public/art/sprites/icon-settings.json";
 import touchSheet from "../../public/art/sprites/icon-touch-controls.json";
 import buttonSheet from "../../public/art/sprites/ui-button.json";
+import primarySheet from "../../public/art/sprites/ui-button-primary.json";
 import checkboxSheet from "../../public/art/sprites/ui-checkbox.json";
 import pauseSheet from "../../public/art/sprites/ui-pause.json";
-import quitSheet from "../../public/art/sprites/ui-quit.json";
 import { SCREEN } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { Point, Rect } from "../data/types";
+import type { ArtManifest } from "../view/aseprite";
+import { centredLabel, PLAY_MARK } from "./buttonLabel";
 import { HIT_RULE, type PressArea, pressedArea } from "./hitAreas";
 import { CARD_TEXT_SCALE, PAUSE_BUTTON, PAUSE_CARD } from "./pauseCard";
 import { focusRingAround, SETTINGS_CARD, STEPS_CARD } from "./settingsCard";
 
 const FONT = parseBitmapFont(fontBody);
+// Art's 9-slice edges, by sprite key.
+const MANIFEST_SLICES = Object.fromEntries(
+  (manifestJson as ArtManifest).sprites.flatMap(({ key, slice }) => (slice ? [[key, slice]] : [])),
+);
 const SETTINGS = ["moveControls", "actionButtons"] as const;
 const SCREEN_RECT: Rect = { ...SCREEN, x: 0, y: 0 };
 
@@ -45,9 +51,9 @@ const CARDS: [string, Rect, CardButton[]][] = [
     PAUSE_CARD.card,
     [
       { art: PAUSE_CARD.close.art, hit: PAUSE_CARD.close.hit, key: "close" },
-      { art: PAUSE_CARD.home.row, hit: PAUSE_CARD.home.hit, key: "back to title row" },
-      { art: PAUSE_CARD.resume.art, hit: PAUSE_CARD.resume.hit, key: "resume" },
-      { art: PAUSE_CARD.settings.row, hit: PAUSE_CARD.settings.hit, key: "settings row" },
+      { art: PAUSE_CARD.home.button, hit: PAUSE_CARD.home.hit, key: "back to title" },
+      { art: PAUSE_CARD.resume.button, hit: PAUSE_CARD.resume.hit, key: "resume" },
+      { art: PAUSE_CARD.settings.button, hit: PAUSE_CARD.settings.hit, key: "settings" },
     ],
   ],
   [
@@ -134,8 +140,6 @@ describe("card layouts", () => {
   // Each sprite's frame, at its point, lies inside the area that presses it.
   it.each([
     ["pause button", pauseSheet, PAUSE_BUTTON.at, PAUSE_BUTTON.hit],
-    ["back to title icon", quitSheet, PAUSE_CARD.home.icon, PAUSE_CARD.home.row],
-    ["settings icon", settingsSheet, PAUSE_CARD.settings.icon, PAUSE_CARD.settings.row],
     ...SETTINGS.map(
       (setting) =>
         [
@@ -173,20 +177,50 @@ describe("card layouts", () => {
   });
 });
 
-describe("pause card words", () => {
-  // Each row's label runs from its point to the row's right edge, less the inset its icon keeps
-  // from the row's left edge.
-  const room = ({ icon, label, row }: { icon: Point; label: Point; row: Rect }) =>
-    row.x + row.width - (icon.x - row.x) - label.x;
+describe("pause card", () => {
+  const buttons = (["resume", "settings", "home"] as const).map(
+    (name) => [name, PAUSE_CARD[name], TEXT.pause[name], name === "resume"] as const,
+  );
 
-  it("fits each row's label in its room", () => {
-    const roles = (["settings", "home"] as const).map((row) => ({
-      name: `${row} row`,
-      room: room(PAUSE_CARD[row]),
+  // Each label fits across its button inside the button's 9-slice edges, Resume's after the play
+  // mark, and centres there with room either side.
+  it("fits each button's label in its room", () => {
+    const slice = MANIFEST_SLICES["ui-button"];
+    const roles = buttons.map(([name, { button }, text, marked]) => ({
+      name: `${name} button`,
+      room:
+        button.width -
+        (slice?.left ?? 0) -
+        (slice?.right ?? 0) -
+        (marked ? PLAY_MARK.width + PLAY_MARK.gap : 0),
       style: { scale: CARD_TEXT_SCALE },
-      texts: [TEXT.pause[row]],
+      texts: [text],
     }));
     expect(overflowingTexts(bitmapMeasure(FONT), roles)).toEqual([]);
+  });
+
+  it.each(buttons)("centres %s's label on its button", (_, { button }, text, marked) => {
+    const ink = inkWidth(FONT, CARD_TEXT_SCALE, text);
+    const { labelX, markX } = centredLabel(button, ink, marked ? PLAY_MARK : undefined);
+    const margins = [(markX ?? labelX) - button.x, button.x + button.width - (labelX + ink)];
+    expect(Math.min(...margins)).toBeGreaterThan(0);
+  });
+
+  it("stacks Resume, Settings and Back to title in that order, all one shape", () => {
+    const rects = buttons.map(([, { button }]) => button);
+    expect({
+      order: rects.every((rect, i) => i === 0 || (rects[i - 1]?.y ?? 0) < rect.y),
+      shapes: new Set(rects.map(({ height, width, x }) => `${x} ${width}x${height}`)).size,
+    }).toEqual({ order: true, shapes: 1 });
+  });
+
+  it("draws Resume and the others no smaller than art's buttons", () => {
+    const sizes = [frameOf(buttonSheet), frameOf(primarySheet)];
+    expect(
+      buttons.every(([, { button }]) =>
+        sizes.every(({ h, w }) => button.width >= w && button.height >= h),
+      ),
+    ).toBe(true);
   });
 });
 

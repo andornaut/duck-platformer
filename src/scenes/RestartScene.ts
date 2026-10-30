@@ -10,6 +10,7 @@ import {
   addSlice,
   addTextButton,
   BODY_FONT,
+  closeOnOutsideTap,
   paletteColour,
   pressTextButton,
   ringFocus,
@@ -35,7 +36,8 @@ const TARGETS: readonly Target[] = ["cancel", "restart"];
 
 // The card that asks before Restart clears progress, over the scene that opened it: a question,
 // Cancel, and Restart, which confirms. Restart clears only the progress save and opens the map
-// with her on the first zone and nothing completed; Cancel, back, Escape and P close the card. A
+// with her on the first zone and nothing completed; Cancel, back, Escape, P and a tap outside
+// the card close it. A
 // button acts when a press lands on it and lifts on it; Tab and the arrows move the keyboard's
 // focus, and Enter and Space press the focused one. The opener passes this scene its keys and
 // back.
@@ -71,6 +73,11 @@ export class RestartScene extends Scene {
       restart: addTextButton(this, RESTART_CARD.restart, words.restart),
     };
     this.render();
+    closeOnOutsideTap(
+      this,
+      () => [RESTART_CARD.card, ...TARGETS.map((target) => RESTART_CARD[target].hit)],
+      () => this.back(),
+    );
     this.input.on("pointerdown", (pointer: Input.Pointer) => {
       this.pressed = this.targetAt(pointer);
       this.render();
@@ -100,7 +107,7 @@ export class RestartScene extends Scene {
     }
   }
 
-  // Back, Escape and P cancel.
+  // Back, Escape, P and a tap outside the card cancel.
   back(): void {
     this.scene.stop();
     (this.scene.get(this.opener) as Scene & RestartOpener).restartClosed();

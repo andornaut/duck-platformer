@@ -1,4 +1,5 @@
 import { type AsepriteSheet, sheetTags } from "@andornaut/game-kit/art/aseprite";
+import { catchOutsideTaps } from "@andornaut/game-kit/input/phaser/catchOutsideTaps";
 import { inkWidth } from "@andornaut/game-kit/text/bitmapFont";
 import {
   phaserBitmapFont,
@@ -6,6 +7,7 @@ import {
 } from "@andornaut/game-kit/text/phaser/phaserBitmapFont";
 import type { GameObjects, Scene } from "phaser";
 
+import { TOUCH } from "../data/touch";
 import type { Point, Rect } from "../data/types";
 import { centredLabel, MARK_DROP, PLAY_MARK } from "../layout/buttonLabel";
 import { CARD_TEXT_SCALE } from "../layout/pauseCard";
@@ -13,9 +15,10 @@ import type { LabelledButton } from "../layout/restartCard";
 import { focusRingAround } from "../layout/settingsCard";
 import { ART_MANIFEST_KEY, type ArtManifest } from "../view/aseprite";
 import type { Palette } from "../view/dim";
+import { canvasRect } from "./playCamera";
 
-// What the pause, settings and install steps cards draw with: art's 9-slices, card text and the
-// palette's colours.
+// What the pause, settings, install steps and restart cards draw with: art's 9-slices, card text,
+// buttons and the palette's colours, and how each modal card closes on a press outside it.
 
 const PALETTE = "palette";
 export const BODY_FONT = "font-body";
@@ -120,23 +123,32 @@ export function captureTab(scene: Scene, captured: boolean): void {
   }
 }
 
-// A labelled button on art's `ui-button` stretched over its rect: its normal and pressed faces,
-// and its label in ink.
+// Art's buttons: the normal one, and the green primary, which a card leads with.
+export const BUTTON = "ui-button";
+export const PRIMARY_BUTTON = "ui-button-primary";
+
+// A labelled button on one of art's buttons (BUTTON by default) stretched over its rect: its
+// normal and pressed faces, and its label in ink, led by the play mark when marked.
 export interface TextButton {
   readonly faces: Readonly<Record<"normal" | "pressed", GameObjects.NineSlice>>;
   readonly label: ButtonLabel;
   readonly layout: LabelledButton;
 }
 
-export function addTextButton(scene: Scene, layout: LabelledButton, text: string): TextButton {
-  const frames = sheetTags(scene.cache.json.get("ui-button") as AsepriteSheet);
+export function addTextButton(
+  scene: Scene,
+  layout: LabelledButton,
+  text: string,
+  { art = BUTTON, marked = false }: { readonly art?: string; readonly marked?: boolean } = {},
+): TextButton {
+  const frames = sheetTags(scene.cache.json.get(art) as AsepriteSheet);
   const face = (tag: "normal" | "pressed") =>
-    addSlice(scene, "ui-button", layout.button, frames.get(tag)?.[0]?.frame);
+    addSlice(scene, art, layout.button, frames.get(tag)?.[0]?.frame);
   return {
     faces: { normal: face("normal"), pressed: face("pressed") },
     label: addButtonLabel(scene, layout.button, layout.labelY, text, {
       colour: paletteColour(scene, "ink"),
-      marked: false,
+      marked,
     }),
     layout,
   };
@@ -147,4 +159,34 @@ export function pressTextButton({ faces, label, layout }: TextButton, pressed: b
   faces.normal.setVisible(!pressed);
   faces.pressed.setVisible(pressed);
   placeButtonLabel(label, pressed ? layout.pressedLabelY : layout.labelY);
+}
+
+// Closes a modal card, as its close X or back would, on a tap outside it (the kit's
+// catchOutsideTaps, as dog-walker's panels close): a press that lands on the canvas off the card
+// and off every control it lists, the bars beside the game's view included, travels no further
+// than the tap distance, and lifts outside them too. covered gives the card's rect and each
+// control's press area in camera's view while it shows, or undefined while it shows none. The
+// press is kept from the scenes under this one, so a modal scene sits above the scenes it covers
+// (main.ts's scene order), and the zone, paused under the pause card, never hears it. Every modal
+// card closes this way.
+export function closeOnOutsideTap(
+  scene: Scene,
+  covered: () => readonly Rect[] | undefined,
+  close: () => void,
+  camera = scene.cameras.main,
+): void {
+  catchOutsideTaps(
+    TOUCH.tapMaxDistance,
+    scene,
+    () => {
+      const rects = covered();
+      return rects === undefined
+        ? undefined
+        : {
+            bounds: canvasRect(scene),
+            covered: rects.map((rect) => ({ ...rect, x: rect.x + camera.x, y: rect.y + camera.y })),
+          };
+    },
+    close,
+  );
 }

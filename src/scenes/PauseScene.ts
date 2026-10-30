@@ -14,16 +14,17 @@ import { coverZone, PHONE_EVENTS, startWakeLock, stopWakeLock, zoneShown } from 
 import { setTouchSettingShown, type TouchSetting, touchSettings } from "../settings/touchControls";
 import { dimColour, type Palette } from "../view/dim";
 import {
-  addButtonLabel,
   addCardText,
   addSlice,
-  BODY_FONT,
-  type ButtonLabel,
+  addTextButton,
   captureTab,
+  closeOnOutsideTap,
   palette,
   paletteColour,
-  placeButtonLabel,
+  pressTextButton,
+  PRIMARY_BUTTON,
   ringFocus,
+  type TextButton,
   TITLE_FONT,
 } from "./cardParts";
 import { canvasRect, fitCanvasCamera, fitPlayCamera, playPoint } from "./playCamera";
@@ -48,14 +49,17 @@ type Control = "close" | "home" | "pauseButton" | "resume" | "settings";
 type CardControl = Exclude<Control, "pauseButton">;
 
 // The card's controls, in the order the keyboard's focus moves through them.
-const FOCUS_ORDER: readonly CardControl[] = ["settings", "home", "resume", "close"];
+const FOCUS_ORDER: readonly CardControl[] = ["resume", "settings", "home", "close"];
+// The card's buttons, top to bottom.
+type CardButton = Exclude<CardControl, "close">;
+const BUTTONS: readonly CardButton[] = ["resume", "settings", "home"];
 
 // The pause card over the dimmed zone, and the pause button that opens it, which shows on a
 // touch screen while a zone plays, never on the map. It runs beside the zone from the start.
-// Opening the card pauses the zone and lets the screen sleep; Resume, the close X, back, Escape
-// and P close it. The Settings row opens SettingsScene's card over the same dim in the pause
-// card's place, and passes it the keys and back until it closes; Back to title ends the zone for
-// the start screen.
+// Opening the card pauses the zone and lets the screen sleep; Resume (the primary button, at the
+// top), the close X, back, Escape, P and a tap outside the card (closeOnOutsideTap) close it.
+// Settings opens SettingsScene's card over the same dim in the pause card's place, and passes it
+// the keys and back until it closes; Back to title ends the zone for the start screen.
 export class PauseScene extends Scene implements SettingsOpener {
   private card!: GameObjects.Container;
   // The control the keyboard's focus is on, and art's ring round it.
@@ -67,10 +71,7 @@ export class PauseScene extends Scene implements SettingsOpener {
   // The control a press landed on, which acts if the press lifts on it too.
   private cardCamera!: Cameras.Scene2D.Camera;
   private pressed: Control | undefined;
-  private homeLabel!: GameObjects.BitmapText;
-  private resume!: GameObjects.Sprite;
-  private resumeLabel!: ButtonLabel;
-  private settingsLabel!: GameObjects.BitmapText;
+  private buttons!: Readonly<Record<CardButton, TextButton>>;
   private state: "closed" | "open" | "opening" | "settings" = "closed";
 
   constructor() {
@@ -101,6 +102,15 @@ export class PauseScene extends Scene implements SettingsOpener {
     this.card = this.drawCard();
     this.showCard(false);
     this.watchPresses();
+    closeOnOutsideTap(
+      this,
+      () =>
+        this.state === "open"
+          ? [PAUSE_CARD.card, PAUSE_CARD.close.hit, ...BUTTONS.map((name) => PAUSE_CARD[name].hit)]
+          : undefined,
+      () => this.close(),
+      this.cardCamera,
+    );
     this.watchKeys();
     const onBack = () => {
       if (this.state === "settings") {
@@ -226,15 +236,13 @@ export class PauseScene extends Scene implements SettingsOpener {
     this.focusRing = ringFocus(this, this.focusRing, rect);
   }
 
-  // What the focus ring surrounds: a row, Resume, or the close X itself.
+  // What the focus ring surrounds: a button, or the close X itself.
   private focusedRect(control: CardControl): Rect {
-    const { close, home, resume, settings } = PAUSE_CARD;
-    return {
-      close: { height: this.closeX.height, width: this.closeX.width, ...close.at },
-      home: home.row,
-      resume: resume.art,
-      settings: settings.row,
-    }[control];
+    if (control === "close") {
+      const { at } = PAUSE_CARD.close;
+      return { height: this.closeX.height, width: this.closeX.width, ...at };
+    }
+    return PAUSE_CARD[control].button;
   }
 
   // The pause button shows on a touch screen while a zone plays and the card is closed. The map
@@ -258,54 +266,40 @@ export class PauseScene extends Scene implements SettingsOpener {
   }
 
   private drawCard(): GameObjects.Container {
-    const { card, close, home, resume, settings, title } = PAUSE_CARD;
+    const { card, close, title } = PAUSE_CARD;
     const words = TEXT.pause;
-    const cream = this.colour("cream");
     const objects: GameObjects.GameObject[] = [
       this.slice("ui-settings-card", card),
-      this.text(TITLE_FONT, title.x, title.y, words.title, cream),
-      this.slice("ui-settings-row", settings.row),
-      this.add.image(settings.icon.x, settings.icon.y, "icon-settings").setOrigin(0),
-      this.slice("ui-settings-row", home.row),
-      this.add.image(home.icon.x, home.icon.y, "icon-home").setOrigin(0),
+      this.text(TITLE_FONT, title.x, title.y, words.title, this.colour("cream")),
     ];
-    this.settingsLabel = this.text(
-      BODY_FONT,
-      settings.label.x,
-      settings.label.y,
-      words.settings,
-      cream,
-    );
-    this.homeLabel = this.text(BODY_FONT, home.label.x, home.label.y, words.home, cream);
     this.closeX = this.add.sprite(close.at.x, close.at.y, "ui-close").setOrigin(0);
-    this.resume = this.add.sprite(resume.art.x, resume.art.y, "ui-resume").setOrigin(0);
-    this.resumeLabel = addButtonLabel(this, resume.art, resume.labelY, words.resume, {
-      colour: this.colour("ink"),
-      marked: true,
-    });
+    this.buttons = {
+      home: addTextButton(this, PAUSE_CARD.home, words.home),
+      resume: addTextButton(this, PAUSE_CARD.resume, words.resume, {
+        art: PRIMARY_BUTTON,
+        marked: true,
+      }),
+      settings: addTextButton(this, PAUSE_CARD.settings, words.settings),
+    };
     this.setPressed(undefined);
     return this.add.container(0, 0, [
       ...objects,
       this.closeX,
-      this.settingsLabel,
-      this.homeLabel,
-      this.resume,
-      this.resumeLabel.label,
-      ...(this.resumeLabel.mark === undefined ? [] : [this.resumeLabel.mark]),
+      ...BUTTONS.flatMap((name) => {
+        const { faces, label } = this.buttons[name];
+        return [faces.normal, faces.pressed, label.label, ...(label.mark ? [label.mark] : [])];
+      }),
     ]);
   }
 
   // A pressed control shows its pressed look until the press lifts: the pause button plays its
-  // press tag, then holds, as the touch buttons do; the Settings and Back to title labels turn
-  // white and Resume's sinks.
+  // press tag, then holds, as the touch buttons do; a card button's face and label sink.
   private setPressed(control: Control | undefined): void {
     this.pressed = control;
-    const { labelY, pressedLabelY } = PAUSE_CARD.resume;
     this.closeX.play(animationKey("ui-close", control === "close" ? "pressed" : "normal"));
-    this.homeLabel.setTint(this.colour(control === "home" ? "white" : "cream"));
-    this.settingsLabel.setTint(this.colour(control === "settings" ? "white" : "cream"));
-    this.resume.play(animationKey("ui-resume", control === "resume" ? "pressed" : "normal"));
-    placeButtonLabel(this.resumeLabel, control === "resume" ? pressedLabelY : labelY);
+    for (const name of BUTTONS) {
+      pressTextButton(this.buttons[name], control === name);
+    }
     this.pauseButton.chain();
     if (control === "pauseButton") {
       this.pauseButton
@@ -323,14 +317,16 @@ export class PauseScene extends Scene implements SettingsOpener {
   }
 
   private controlAt(pointer: Input.Pointer): Control | undefined {
-    const { close, home, resume, settings } = PAUSE_CARD;
+    const { close } = PAUSE_CARD;
     const areas: PressArea<Control>[] =
       this.state === "open"
         ? [
             { art: close.art, hit: close.hit, key: "close" },
-            { art: settings.row, hit: settings.hit, key: "settings" },
-            { art: home.row, hit: home.hit, key: "home" },
-            { art: resume.art, hit: resume.hit, key: "resume" },
+            ...BUTTONS.map((key) => ({
+              art: PAUSE_CARD[key].button,
+              hit: PAUSE_CARD[key].hit,
+              key,
+            })),
           ]
         : this.pauseButton.visible
           ? [{ art: PAUSE_BUTTON.art, hit: PAUSE_BUTTON.hit, key: "pauseButton" }]

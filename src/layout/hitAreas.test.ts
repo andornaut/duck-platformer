@@ -27,7 +27,7 @@ describe("hitAround", () => {
     ["the close X, at the least size", PAUSE_CARD.close.art, { height: 48, width: 48 }],
     ["a 16 px icon, at the least size", square(16), { height: 48, width: 48 }],
     ["a card row", SETTINGS_CARD.moveControls.row, { height: 72, width: 376 }],
-    ["Resume", PAUSE_CARD.resume.art, { height: 66, width: 182 }],
+    ["a pause card button", PAUSE_CARD.resume.button, { height: 60, width: 340 }],
     ["Start", start.button, { height: 78, width: 218 }],
     ["a nav icon button", startScreenLayout(true, false).settings.art, { height: 54, width: 54 }],
     ["a map zone marker", square(35), MAP_SCREEN.nodeHit],

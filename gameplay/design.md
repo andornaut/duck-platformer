@@ -167,6 +167,7 @@ Everything in a zone except its terrain is placed in data, in three layers.
 
 - **Back:** back during play opens the pause card, and back with the card open closes it. Where the browser can't hand back to the game (Firefox for Android's installed app, and before the first tap or key in browsers without CloseWatcher), back is the browser's own
 - **Back to title:** always goes to the start screen
+- **Modals:** every card over the game (the pause card, the settings card and its install steps, the restart question) closes, as its close X or back would, on a tap anywhere outside it, the margins beside the game included. A press that starts or ends on the card, or drags, does nothing, and the tap never reaches the game under it
 - **Open:** the pause button at the top left, shown only while a zone plays, P or Esc, or back. It also opens by itself when the frame turns, or stops turning, while a zone plays, and only then; Resume continues
-- **Pause card:** a card titled Paused, over the dimmed game, which pauses play, with a close X. Its rows: Settings, Back to title, then Resume
+- **Pause card:** a card titled Paused, over the dimmed game, which pauses play, with a close X. Its buttons, all one shape, stacked: Resume first, the primary in green, then Settings and Back to title
 - **Settings card:** opened from Settings on the pause card or the start screen. Its rows: Move controls (the move hint) and Action buttons (Use and Jump), each Shown or Hidden and Shown by default, then Install while the game can be installed, which opens the install steps. The build label sits at its foot. Its close X, P, Esc and back each return to whichever opened it

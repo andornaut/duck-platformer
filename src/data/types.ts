@@ -141,6 +141,8 @@ export interface InstallSteps {
 export interface TouchTuning {
   // A move touch moves her once it is more than this far left or right of where it started.
   readonly moveDeadZone: number;
+  // A press that travels further than this is a drag, not a tap: a tap outside a card closes it.
+  readonly tapMaxDistance: number;
 }
 
 // A rectangle on the tile grid, in whole tiles: col and row are its top-left tile.

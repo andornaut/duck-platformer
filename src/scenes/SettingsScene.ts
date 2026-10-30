@@ -18,7 +18,14 @@ import { focusRingAround, SETTINGS_CARD, STEPS_CARD } from "../layout/settingsCa
 import { focusKeyAction, stepFocus } from "../pause/focusInput";
 import { installOffer } from "../pwa/installOffer";
 import { TOUCH_SETTINGS, type TouchSetting, touchSettingShown } from "../settings/touchControls";
-import { addCardText, addSlice, BODY_FONT, paletteColour, TITLE_FONT } from "./cardParts";
+import {
+  addCardText,
+  addSlice,
+  BODY_FONT,
+  closeOnOutsideTap,
+  paletteColour,
+  TITLE_FONT,
+} from "./cardParts";
 import { fitPlayCamera, playPoint } from "./playCamera";
 
 // The scene that opens the settings card, the pause card's or the start screen's: it saves each
@@ -99,6 +106,11 @@ export class SettingsScene extends Scene {
     this.focusRing = undefined;
     this.render();
     this.watchPresses();
+    closeOnOutsideTap(
+      this,
+      () => this.covered(),
+      () => this.back(),
+    );
     // The Install row comes and goes as the game becomes installable or installed.
     const stopWatching = installOffer().onChange(() =>
       this.scene.restart({ opener: this.opener } satisfies SettingsData),
@@ -123,8 +135,25 @@ export class SettingsScene extends Scene {
     }
   }
 
-  // Back, Escape and P close the install steps card while it shows, and the settings card
-  // otherwise.
+  // The card on top and its controls' press areas: the install steps card and its close X, or the
+  // settings card, with or without its Install row, and each control it shows.
+  private covered(): Rect[] {
+    if (this.steps !== undefined) {
+      return [STEPS_CARD.card, STEPS_CARD.close.hit];
+    }
+    const card =
+      this.installButton === undefined ? SETTINGS_CARD.cardWithoutInstall : SETTINGS_CARD.card;
+    const hits: Record<Target, Rect> = {
+      actionButtons: SETTINGS_CARD.actionButtons.hit,
+      close: SETTINGS_CARD.close.hit,
+      install: SETTINGS_CARD.install.hit,
+      moveControls: SETTINGS_CARD.moveControls.hit,
+    };
+    return [card, ...this.targets().map((target) => hits[target])];
+  }
+
+  // Back, Escape, P and a tap outside it close the install steps card while it shows, and the
+  // settings card otherwise.
   back(): void {
     if (this.steps !== undefined) {
       this.closeSteps();

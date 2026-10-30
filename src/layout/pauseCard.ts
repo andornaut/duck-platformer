@@ -1,42 +1,28 @@
 import type { Point, Rect } from "../data/types";
 import { hitAround } from "./hitAreas";
 import { CONTROL_EDGE } from "./playView";
+import { type LabelledButton, labelledButton } from "./restartCard";
 
 // Art's pause card (art/README.md, Pause, settings and install cards), in base pixels: a 9-slice
-// card with the title in its header, the close X at its top right, the Settings and Back to title
-// rows, and Resume at the foot. Each label's point is its text's top-left. Resume's label, centred
-// with its play mark, starts at labelY, sinking to pressedLabelY while Resume is pressed. Each
-// button's press area, hit, is its drawn button grown by hitAreas.ts's rule.
+// card with the title in its header and the close X at its top right, then three buttons of one
+// shape, stacked: Resume, the primary, then Settings and Back to title. Each button's label is
+// centred across it (Resume's led by the play mark), labelDy below its top and 2 lower while
+// pressed. Each button's press area, hit, is its drawn button grown by hitAreas.ts's rule.
 const CLOSE_ART: Rect = { height: 24, width: 24, x: 510, y: 94 };
-const HOME_ROW: Rect = { height: 48, width: 352, x: 184, y: 188 };
-const RESUME_ART: Rect = { height: 44, width: 160, x: 280, y: 264 };
-const SETTINGS_ROW: Rect = { height: 48, width: 352, x: 184, y: 136 };
+const BUTTON = { height: 40, labelDy: 9, width: 320, x: 200 } as const;
+const button = (y: number): LabelledButton =>
+  labelledButton({ height: BUTTON.height, width: BUTTON.width, x: BUTTON.x, y }, BUTTON.labelDy);
 
 export const PAUSE_CARD = {
-  card: { height: 236, width: 368, x: 176, y: 88 } satisfies Rect,
+  card: { height: 200, width: 368, x: 176, y: 88 } satisfies Rect,
   close: {
     art: CLOSE_ART,
     at: { x: CLOSE_ART.x, y: CLOSE_ART.y } satisfies Point,
     hit: hitAround(CLOSE_ART),
   },
-  home: {
-    hit: hitAround(HOME_ROW),
-    icon: { x: 198, y: 204 } satisfies Point,
-    label: { x: 228, y: 203 } satisfies Point,
-    row: HOME_ROW,
-  },
-  resume: {
-    art: RESUME_ART,
-    hit: hitAround(RESUME_ART),
-    labelY: 275,
-    pressedLabelY: 277,
-  },
-  settings: {
-    hit: hitAround(SETTINGS_ROW),
-    icon: { x: 198, y: 152 } satisfies Point,
-    label: { x: 228, y: 151 } satisfies Point,
-    row: SETTINGS_ROW,
-  },
+  home: button(232),
+  resume: button(136),
+  settings: button(184),
   title: { x: 190, y: 93 } satisfies Point,
 } as const;
 
