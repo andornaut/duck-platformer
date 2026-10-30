@@ -106,6 +106,7 @@ export function objectLayout(
       open: character.animations?.open ?? OPEN_TAG,
     },
     art: character.art,
+    ...(character.tileset !== undefined && { tileset: character.tileset }),
     character: instance.character,
     collision: archetype.collision,
     height,
@@ -163,7 +164,14 @@ export function areaLayout(
     height: area.rows * tile,
     objects: area.objects
       .filter((instance) => isPlaced(flags, instance))
-      .map((instance) => objectLayout(tile, catalogue, hitboxes, tileset, instance)),
+      .map((instance) => {
+        const key = resolveNames(catalogue, instance).character.tileset;
+        const source = key === undefined ? tileset : tilesets[key];
+        if (key !== undefined && !source) {
+          throw new Error(`No tileset ${key} for ${instance.character}`);
+        }
+        return objectLayout(tile, catalogue, hitboxes, source, instance);
+      }),
     solids: area.solids.map((rect) => tileRect(tile, rect)),
     terrain: area.solids,
     tileset: area.tileset,

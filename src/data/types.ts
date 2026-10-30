@@ -231,6 +231,8 @@ export interface Quirk {
 // box comes from art's manifest. lines and quips are keys into TEXT.lines and TEXT.quips; a prop
 // has none.
 export interface Character {
+  // A shared tileset for this character's art, otherwise its area's tileset.
+  readonly tileset?: string;
   readonly animations?: Readonly<Partial<Record<CharacterState, string>>>;
   readonly archetype: string;
   readonly art: string;
@@ -462,6 +464,8 @@ export interface Reaches {
 // the view and dialogue need. hitbox: where a hazard touches her, from its top-left corner, when
 // its art declares one; else its whole rectangle.
 export interface ObjectLayout {
+  // The character's shared tileset, otherwise the area's tileset.
+  readonly tileset?: string;
   readonly animations: Readonly<Record<CharacterState, string | undefined>>;
   readonly art: string;
   readonly character: string;

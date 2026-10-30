@@ -520,9 +520,15 @@ export class ZoneScene extends Scene {
     for (const { item } of this.objectArt) {
       item.destroy();
     }
-    this.objectArt = area.objects.map((object, index) =>
-      this.drawObject(area.tileset, tileset, object, index),
-    );
+    this.objectArt = area.objects.map((object, index) => {
+      const key = object.tileset ?? area.tileset;
+      const source = loadedTileset(
+        TILE,
+        (name) => this.cache.json.get(name) as Tileset | undefined,
+        key,
+      );
+      return this.drawObject(key, source, object, index);
+    });
   }
 
   private drawTerrain(key: string, tileset: Tileset, area: AreaLayout): Tilemaps.Tilemap {

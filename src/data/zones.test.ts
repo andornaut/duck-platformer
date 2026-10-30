@@ -2,17 +2,15 @@ import { type AsepriteSheet, sheetTags } from "@andornaut/game-kit/art/aseprite"
 import { describe, expect, it } from "vitest";
 
 import manifestJson from "../../public/art/manifest.json";
-import lobbyTiles from "../../public/art/tilesets/tiles-lobby.json";
-import streetTiles from "../../public/art/tilesets/tiles-street.json";
 import { STEP_SECONDS } from "../rules/step";
 import { resolveNames, zoneLayout } from "../rules/tiles";
 import { startZone, stepZone } from "../rules/zone";
 import { zonePlanFor } from "../rules/zonePlans";
-import { HITBOXES, TILESETS as TILESETS_ALL } from "../testing/walkSuite";
+import { HITBOXES, TILESETS } from "../testing/walkSuite";
 import type { ArtManifest } from "../view/aseprite";
 import { DUCK_FRAME } from "../view/duck";
 import { artKind } from "../view/objectArt";
-import { lookTiles, type Tileset } from "../view/tiles";
+import { lookTiles } from "../view/tiles";
 import { ARCHETYPES, NO_INTERACTION, NO_REACTION, STATIC_MOTION } from "./archetypes";
 import { CHARACTERS } from "./characters";
 import { DUCK } from "./duck";
@@ -25,10 +23,6 @@ import { ZONE_1 } from "./zone1";
 import { RECIPES, TEST_ZONES, ZONES as ZONES_BY_KEY } from "./zones";
 
 const MANIFEST = manifestJson as ArtManifest;
-const TILESETS: Readonly<Record<string, Tileset>> = {
-  "tiles-lobby": lobbyTiles,
-  "tiles-street": streetTiles,
-};
 const SHEETS = import.meta.glob<AsepriteSheet>("../../public/art/sprites/*.json", {
   eager: true,
   import: "default",
@@ -77,6 +71,9 @@ describe("the characters", () => {
     (name, character) => {
       expect(ARCHETYPES[character.archetype], character.archetype).toBeDefined();
       expect(unknownFields(character.tuning)).toEqual([]);
+      if (character.tileset !== undefined) {
+        expect(TILESETS[character.tileset], character.tileset).toBeDefined();
+      }
       const tags = [
         ...Object.values(character.animations ?? {}),
         ...(character.quirks ?? []).map(({ tag }) => tag),
@@ -106,7 +103,8 @@ describe("the zones", () => {
         rows: instance.rows ?? character.rows,
       };
       expect(inside(area, rect), "inside its area").toBe(true);
-      const tileset = area.tileset === undefined ? undefined : TILESETS[area.tileset];
+      const key = character.tileset ?? area.tileset;
+      const tileset = key === undefined ? undefined : TILESETS[key];
       const drawable =
         character.art.startsWith("placeholder-") ||
         character.art.startsWith("test-") ||
@@ -190,7 +188,7 @@ const START_SEEDS = [1, 2, 3, 4, 5];
 // Her collision box where a plan starts her: it must start clear of the first column, or she
 // would turn back (rules/zone's turnedBack) on arrival.
 const startsClear = (plan: ZonePlan) => {
-  const layout = zoneLayout(TILE, DUCK_FRAME, CATALOGUE, {}, {}, new Set(), plan);
+  const layout = zoneLayout(TILE, DUCK_FRAME, CATALOGUE, HITBOXES, TILESETS, new Set(), plan);
   const start = startZone(DUCK, layout, 1);
   const area = layout.areas[start.area];
   return area !== undefined && start.duck.x >= area.backX && !start.turnedBack;
@@ -213,7 +211,7 @@ describe("every zone's start", () => {
 // Whether, held left with no jump from the plan's start, on art's real tiles and sprites, she
 // turns back within seconds: nothing in a zone's first column may stop her reaching it.
 const turnsBackWithin = (seconds: number, plan: ZonePlan) => {
-  const layout = zoneLayout(TILE, DUCK_FRAME, CATALOGUE, HITBOXES, TILESETS_ALL, new Set(), plan);
+  const layout = zoneLayout(TILE, DUCK_FRAME, CATALOGUE, HITBOXES, TILESETS, new Set(), plan);
   let zone = startZone(DUCK, layout, 1);
   for (let step = 0; step < Math.round(seconds / STEP_SECONDS) && !zone.turnedBack; step++) {
     zone = stepZone(
