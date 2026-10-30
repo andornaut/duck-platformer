@@ -34,8 +34,9 @@ Tilesets
      "pieces": {"<name>": [[<index>, ...], ...]}}        multi-tile pieces as rows of indices, top row first
   Names are kebab-case. A tile whose name starts with "one-way-" is a one-way ledge: it stops a fall onto its top
   edge and nothing else. A tile whose name starts with "door-" or "exit-" is a doorway: it has no collision, and
-  the game puts a Use zone over its piece. A tile whose name starts with "pit-" is a pit: it has no collision, so
-  she falls through it and out of the level. Every other tile with art is solid on all sides.
+  where the level gives it a room, the game puts a Use zone over its piece. A tile whose name starts with "pit-"
+  is a pit: it has no collision, so she falls through it and out of the level. Every other tile with art is solid
+  on all sides.
 - The manifest lists each as {"key": "<key>", "png": "tilesets/<key>.png", "json": "tilesets/<key>.json"}.
 - Walkable surfaces: the walkable edge is the tile's top row. A surface tile has a 1px edge, a 2px light lip and
   a 2px darker underside; the face tiles below it are plainer and darker.
@@ -49,12 +50,12 @@ tiles-street
 - one-way-awning-left, one-way-awning, one-way-awning-right: an ochre-and-cream shop awning seen front-on, 4px
   stripes and a scalloped hem, art in the top 11 rows. Lay them on row 20 (y 240), 6 tiles above the sidewalk,
   across a shopfront under its sign.
-- one-way-canopy-left, one-way-canopy, one-way-canopy-right: the exit's dark-brown canopy with a white lip, the same shape,
+- one-way-canopy-left, one-way-canopy, one-way-canopy-right: a dark-brown canopy with a white lip, the same shape,
   laid on row 20 over the hotel door.
 - planter-top-left, planter-top, planter-top-right (a clipped hedge: the walkable top), planter-left, planter,
   planter-right (the box). A planter is 2 tiles tall: a 2-tile step.
-- door (piece, 3x4 tiles, 36x48): a pair of lit amber glass doors in a slate frame, the street's exit until the exit
-  is decided. Tiles door-0 to door-11 in row order; a Use zone, no collision.
+- door (piece, 3x4 tiles, 36x48): a pair of lit amber glass doors in a slate frame, a room's door
+  where the level has one. Tiles door-0 to door-11 in row order; no collision.
 - The cellar hatch, a hazard: an open pit in the sidewalk, any number of tiles wide, its two steel leaves standing
   up. On the sidewalk row: hatch-left, then pit-opening for each opening tile, then hatch-right. pit-opening fills
   every row below the opening to the level's bottom, and sidewalk-face-right and sidewalk-face-left run down under
@@ -83,9 +84,8 @@ tiles-lobby (the boutique lobby: wood, books and plants, at indoor scale; kept f
   one-way-desk-* (the reception desk's top).
 - post-cap-left/right, post-left/right, post-base-left/right: a wood post 2 tiles wide, solid, for the room's
   ends.
-- exit (piece, 7x15 tiles, 84x180, a door at indoor scale): the stairwell to the next floor, an opening with
-  stairs rising to the right under a white up-arrow on a green sign. Tiles exit-0 to exit-104 in row order; a
-  Use zone, no collision.
+- exit (piece, 7x15 tiles, 84x180, a door at indoor scale): a stairwell, an opening with stairs rising to the
+  right under a white up-arrow on a green sign. Tiles exit-0 to exit-104 in row order; no collision.
 
 Backdrops
 - One PNG per piece in public/art/backdrops/<key>.png, drawn behind the play layer, lower in contrast and

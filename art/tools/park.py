@@ -56,11 +56,11 @@ Sprites (Aseprite, public/art/sprites/<key>.png + .json, listed under the manife
   and 2, like every walkable top; nothing is drawn above it. A tan gunwale (rows 3 and 4), then a rust hull lit
   ochre along its top and shaded dark brown underneath, rounded to the keel at row 16 or 17, dipping into the pond's
   water rows. Tag idle, 2 frames at 400ms: frame 1 drops the keel 1px; the deck line stays fixed.
-- park-gate, 36x60 (3x5 tiles), the zone's exit, a Use zone with no collision. Anchor: the frame's bottom-left on
-  the ground's top at the park's end. A wrought-iron arch (ink with plum lit edges) on two posts with leaf finials
-  and ochre and rust leaves along the arch, over a pale skin1 opening above a brown path (the way on); two leaves
-  of 2px bars with scrolls. Tags idle (closed, 1 frame at 400ms) and open (4 frames at 80ms, played once: the
-  leaves swing back to the posts and hold open).
+- park-gate, 36x60 (3x5 tiles), not placed while a zone is cleared at its right edge; no collision. Anchor: the
+  frame's bottom-left on the ground's top at the park's end. A wrought-iron arch (ink with plum lit edges) on two
+  posts with leaf finials and ochre and rust leaves along the arch, over a pale skin1 opening above a brown path
+  (the way on); two leaves of 2px bars with scrolls. Tags idle (closed, 1 frame at 400ms) and open (4 frames at
+  80ms, played once: the leaves swing back to the posts and hold open).
 Props (none; y is the ground top they stand on, given for row 50; add -120 per seam row up)
 - park-tree 96x150 (y 600): a lobed rust crown with ochre lit lobes; its one-way-branch row is 6 rows up.
 - park-bench 36x24 (y 600): the bench's legs and seat under its one-way-bench row, 2 rows up.
