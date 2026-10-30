@@ -428,7 +428,7 @@ The first chunk theme: an autumn park. Later zones are built from hand-built chu
 Sprites, in the manifest's `sprites`:
 
 - `park-boat`, 72x18, facing right: a rowing boat, the moving platform on a pond. Its collision is 6x1 tiles (72x12) with its top on the frame's row 0, the deck line: a 1px dark-brown edge on row 0 and a 2px cream lip on rows 1 and 2, like every walkable top, and nothing drawn above it. A tan gunwale, then a rust hull lit ochre and shaded dark brown underneath, rounded to the keel, dipping into the pond's water rows. Tag `idle`, 2 frames at 400ms: frame 1 drops the keel 1px; the deck line stays fixed.
-- `park-gate`, 36x60 (3x5 tiles), not placed while a zone is cleared at its right edge: no collision. Anchor: the frame's bottom-left on the ground's top at the park's end. A wrought-iron arch on two posts with leaf finials and ochre and rust leaves, over a pale opening and a brown path. Tags `idle` (closed, 1 frame at 400ms) and `open` (4 frames at 80ms, plays once and holds open).
+- `park-gate`, 36x60 (3x5 tiles), the park's room door: no collision, and the game puts a Use zone over it. Anchor: the frame's bottom-left on the ground's top, centred in the door's slot. A wrought-iron arch on two posts with leaf finials and ochre and rust leaves, over a pale opening and a brown path. Tags `idle` (closed, 1 frame at 400ms) and `open` (4 frames at 80ms, plays once and holds open) when she uses it.
 
 Backdrops repeat in x at widths that divide 720, so chunk seams never show; props stand on the ground (their bottom y is given for row 50; subtract 120 per seam row up).
 
