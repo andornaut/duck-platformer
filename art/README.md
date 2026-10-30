@@ -200,6 +200,7 @@ A pause button at the top left opens the pause card over the game, which is dimm
 | Settings | 176,88,368,236 | Settings | Move controls 136, Action buttons 188, Install 240 (if installable) | build label centred on x 360, origin y 296 |
 | Steps    | 176,88,368,160 | Install  | none: two steps at y 144 and 196                                    |                                            |
 
+- Buttons on a card come in two styles of the same shape, both nine-slices (16x28, margins 2,4,2,6) drawn at any size with an ink label that sinks 2px while pressed: `ui-button-primary` (green face, dgreen lip) for the card's main action, first on the card, and `ui-button` (cream face, tan lip) for the rest.
 - Settings card without Install: 368x184, the build label at origin y 244.
 - Move controls and Action buttons rows: two independent toggles, the left hint and the right buttons (Use and Jump), both Shown by default; hiding the hint hides only its drawing. Each row has its icon at 198,y+16 (`icon-move-controls`, `icon-touch-controls`), the checkbox (20x20) at 504,y+14 and Shown or Hidden ending at x 494, left of it. The checkbox stays: the user picked it, its two states differ in shape, and the state word reads it a second time.
 - Install row: its icon at 198,256 and a secondary button (`ui-button`, 72x28) at 452,250 whose label the game centres in it, at most 56 wide. The whole row presses it.

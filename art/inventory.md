@@ -76,6 +76,7 @@ Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with 
 | portrait-ferret     | portrait                                                   | 64x64  | neutral, smug, annoyed                    |
 | ui-answer           | sprite                                                     | 208x36 | normal, selected, pressed                 |
 | ui-button           | nine-slice (2,4,2,6)                                       | 16x28  | normal, pressed                           |
+| ui-button-primary   | nine-slice (2,4,2,6)                                       | 16x28  | normal, pressed                           |
 | ui-checkbox         | sprite                                                     | 20x20  | off, on                                   |
 | ui-close            | sprite                                                     | 24x24  | normal, pressed                           |
 | ui-dialogue-box     | sprite                                                     | 640x96 | rest                                      |

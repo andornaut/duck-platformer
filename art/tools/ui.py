@@ -109,6 +109,9 @@ Pause card, settings card and install steps card (each over the game dimmed two 
   the arrow 2px further out).
 - ui-button, nine-slice 16x28, margins 2,4,2,6: the secondary button, an ink line, a cream face with a white top
   highlight and a tan lip 4px deep. Tags normal, pressed (the face sinks 2px, so its label moves down 2).
+- ui-button-primary, nine-slice 16x28, margins 2,4,2,6: the primary button, ui-button's geometry, tags and press in
+  ui-resume's colours: an ink line, a green face and a dgreen lip 4px deep, with no highlight. Label ink (8.4:1 on
+  green), as on ui-button, so the game draws both with one code path at any size.
 - 16x16 row icons, one tag, rest: icon-settings (a cog: four 4x2 teeth on the axes and four 2x2 on the diagonals
   round a ring with a round hole), icon-home (dog-walker's solid house: a 1:1 pitched roof, a chimney on the right
   slope and a door gap, cream with tan on its lower-right edges), icon-exit (ui-quit's doorway and arrow, 12 rows
@@ -339,6 +342,16 @@ def button(state):
     g.rect(1, top + 1, 14, 22, "cream")
     if state == "normal":
         g.rect(2, 1, 12, 1, "white")
+    return g.px
+
+
+def button_primary(state):
+    """16x28 nine-slice for the primary action: ui-button's geometry in ui-resume's colours, an ink line with cut
+    corners, a green face and a dgreen lip 4px deep; pressed, the face sinks 2px into the lip."""
+    top = 0 if state == "normal" else 2
+    g = Grid(16, 28)
+    panel(g, 0, top, 16, 28 - top, "dgreen", rim=None)
+    g.rect(1, top + 1, 14, 22, "green")
     return g.px
 
 
@@ -581,6 +594,7 @@ SLICES = {
     "ui-name-tab": (2, 2, 2, 2),
     "ui-nav-bar": (1, 1, 1, 3),
     "ui-button": (2, 4, 2, 6),
+    "ui-button-primary": (2, 4, 2, 6),
     "ui-focus": (4, 4, 4, 4),
     "ui-quip-strip": (2, 2, 2, 2),
     "ui-settings-card": (2, 38, 2, 2),
@@ -608,6 +622,7 @@ def sprites():
     yield "icon-touch-controls", one(touch_controls_icon())
     yield "ui-answer", [(s, [answer(s)], 100) for s in ("normal", "selected", "pressed")]
     yield "ui-button", [(s, [button(s)], 100) for s in ("normal", "pressed")]
+    yield "ui-button-primary", [(s, [button_primary(s)], 100) for s in ("normal", "pressed")]
     yield "ui-checkbox", [("off", [checkbox(False)], 100), ("on", [checkbox(True)], 100)]
     yield "ui-close", [(s, [close(s)], 100) for s in ("normal", "pressed")]
     yield "ui-dialogue-box", one(dialogue_box())
