@@ -19,6 +19,7 @@ Gameplay owns the rulebook and the values and content in the data value files (e
 
 - **Decisions:** the user's. Gameplay asks with a prompt, recommendation first and the trade-off in a line; routine work needs no asking.
 - **Design sessions:** start with "design session" and a topic. Claude keeps floated ideas apart from agreed ones, asks the question that unblocks a decision, and on "wrap up" proposes doc changes, writing them once confirmed.
+- **Difficulty:** keep zones around the same configurable difficulty, with variation inside its band rather than guaranteed escalation. Zone 1 is fixed; every later zone, including the final zone, randomizes on entry.
 - **Playtest what needs eyes:** play the build headless on a landscape phone viewport, and report what broke to tech or art. The user playtests. PLACEHOLDER: the build URL and its dev parameters.
 - **Simulate before tuning:** every difficulty change is compared before and after against a baseline, with a headless simulator that plays the real rules with bots at three skills (novice, typical, expert) and reports the targets per zone. Simulate only what a decision needs, with the same seed before and after, and re-baseline after a change that reorders random draws. Results go to the user as tables with a recommendation. Only gameplay runs simulations at scale. PLACEHOLDER: the simulator and its command; tech builds it.
 - **Tune to the targets:** a result inside its band needs no tuning. The user declares when the goal is met.

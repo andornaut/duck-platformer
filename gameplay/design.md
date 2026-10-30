@@ -55,12 +55,12 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 
 - **Duck:** 2 tiles wide and 3 tall
 - **Reaches:** zones are built to the duck's reaches, measured in tiles from the top of the ground she leaves to the top of the ledge she lands on. A quick tap rises 1 tile (clearing a 1-tile ledge with a little room); a full jump rises 6; a full running jump with flutter crosses a 19-tile gap at the same height, with the jump pressed at its best moment, coyote time included. A ledge at a reach is always makeable, and one tile beyond it never is
-- **Tiles:** zones are built on a grid of 12 px tiles, so the screen is 60 columns by 30 rows. Every solid, ledge, hazard and door sits on whole tiles and spans whole tiles
+- **Tiles:** zones are built on a grid of 12 px tiles, so the screen is 60 columns by 30 rows. Every solid, ledge and door sits on whole tiles and spans whole tiles. Hazards follow the grid, except for the 2 to 3 px thickness of edge hazards
 
 ### The duck
 
 - **Flutter:** every fall flutters, after a jump or off a ledge: her fall is slow enough to use, and the player steers her in the air
-- **Jump height:** every press launches her at full speed, and she keeps rising while Jump is held, up to about 6.5 tiles with the top at about 0.3 s. Letting go within the first 0.12 s stops the rise where she is, so the quickest tap rises about 1.5 tiles and a 0.1 s press about 3.7; letting go later halves her upward speed. A buffered jump whose button was already released is the quickest tap. This lets a zone set obstacles only a tap clears, such as a low ledge with spikes just above it
+- **Jump height:** every press launches her at full speed, and she keeps rising while Jump is held, up to about 6.5 tiles with the top at about 0.3 s. Letting go within the first 0.12 s stops the rise where she is, so the quickest tap rises about 1.5 tiles and a 0.1 s press about 3.7; letting go later halves her upward speed. A buffered jump whose button was already released is the quickest tap. This lets a zone set obstacles only a tap clears, such as a low ledge beneath a ceiling with a red edge hazard
 - **Jump timing:** a jump pressed just after she leaves a ledge still jumps (coyote time), and a jump pressed just before she lands jumps as she lands (jump buffering)
 - **Movement:** she walks left and right and jumps. She is quick and responsive: about 0.1 s to reach full speed or stop, on the ground and in the air. Her speeds, jump, flutter and timing values are in `src/data/duck.ts`, tuned to the reaches under Grid
 
@@ -77,25 +77,27 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 ### Zones
 
 - **Camera:** on the ground she sits about two thirds down the screen. In an assembled zone, the ground line follows the chunk she is in, blending across half a screen at each seam. The camera rises only when she climbs above the middle, and never shows below the lowest ground
-- **Challenge:** platforming, hazards and choices. There is no combat
+- **Challenge:** platforming, hazards and choices. Routes use ledges and cliffs, not ladders, with both short-press jumps beneath low ceilings and full jumps. There is no combat
 - **Checkpoint:** the start of a zone is its only checkpoint. Falling or touching a hazard restarts the zone from its start. Progress is saved: the zones she has completed and where she stands on the map. Clearing a zone marks it completed and returns her to the map on it; a zone left before its end is played again from its start
 - **Crush:** a moving platform that pushes her sideways carries her to its leading edge. If it squeezes her into terrain or another solid, she is crushed and the zone restarts from its start, as a hazard does. Layouts leave room beside every moving platform's path so she is never pinned on a required route
+- **Difficulty:** zones use the same configurable difficulty band, with variation inside it rather than guaranteed escalation between zones or from start to finish
 - **Doors:** doors lead only into rooms. Use enters a door when any part of her drawn frame overlaps the door's drawn art; where she overlaps more than one, the door whose centre is nearest hers wins
+- **Edge hazards:** a common red strip, 2 to 3 px thick, can cover the top, bottom, left or right edge of terrain. There are no spikes. Touching any edge hazard restarts the zone from its start
 - **Exit:** reaching the end of the zone clears it, and the game moves straight on to the map
 - **Going back:** walking all the way back to the zone's left edge leaves it without completing it: the screen fades and the map shows with her on that zone, and nothing is saved. Every zone starts her clear of that edge and has no wall in front of it
 - **Kinds:** indoor, outdoor, or a hybrid with both
-- **Layout:** zone 1 is hand-built as the tutorial. Every later zone is assembled from hand-built chunks: a fixed start chunk, a seeded run of chunks whose entry and exit heights match, then a fixed finish chunk. The rules for chunks are under Chunks
+- **Layout:** zone 1 is hand-built as the tutorial. Every later zone, including the final zone, has a randomized layout assembled from hand-built chunks: a fixed start chunk, a seeded run of chunks whose entry and exit heights match, then a fixed finish chunk. The rules for chunks are under Chunks
 - **Reroll:** an assembled zone's layout changes each time she enters it from the map. Restarts within the zone keep it
 - **Scale:** outdoors, the scenery is drawn at a quarter of indoor scale; the duck, the tiles and the reaches stay the same everywhere
-- **Shape:** a zone is 2 screens (60 tiles) tall and as wide as it needs, and scrolls sideways and up. Indoors, to a small duck the ceilings are high: a door is 15 tiles tall, half the screen
+- **Shape:** a zone is at most 2 screens (60 tiles, 720 px) tall and as wide as it needs, and scrolls sideways and up. Indoors, to a small duck the ceilings are high: a door is 15 tiles tall, half the screen
 
 ### Chunks
 
-- **Assembly:** a zone's recipe names its theme, start and finish chunks, a length range (start and finish included), a difficulty that rises from start to finish, and the events and doors to place. The seed picks each middle chunk within ±1 of the difficulty curve, read at the chunk's centre; the start and finish chunks are exempt. It never picks the same chunk twice in a row, and it fills the slots
+- **Assembly:** a zone's recipe names its theme, start and finish chunks, a length range (start and finish included), a configurable difficulty band, and the events and doors to place. The seed varies the middle chunks within that band, without requiring difficulty to rise; the start and finish chunks are exempt. It never picks the same chunk twice in a row, and it fills the slots
 - **Difficulty:** 1 to 5. 1: walking and taps. 2: full jumps and still hazards. 3: gaps near the reach and single moving platforms. 4: timed platforms or moving hazards on the required path. 5: platform-to-platform jumps and tap-only spots under hazards
 - **Fairness:** every chunk is walked on its own from entry to exit, with its slots empty and filled, and a sample of seeds per recipe is walked end to end
 - **Seams:** a chunk's entry and exit are the ground rows at its left and right edges: 50, 40 or 30. The seam surface is terrain and runs at least 4 tiles in from the edge, with no gap there, and nothing (no solid, ledge, hazard or moving platform) in the 6 rows above it
-- **Shape:** one or two screens wide (60 to 120 tiles) and 60 rows tall
+- **Shape:** one or two screens wide (60 to 120 tiles) and at most 60 rows (720 px) tall
 - **Slots:** marked regions where the seed places an event or a door. A chunk must pass with every slot empty
 - **Themes:** a theme sets the tileset, terrain looks and repeated backdrops for every chunk of that theme, so seams never show. A chunk can still place its own scenery. The first theme is the park (outdoor)
 
@@ -120,7 +122,7 @@ Everything in a zone except its terrain is placed in data, in three layers.
 ### Zone 2
 
 - **Kind:** outdoor, an autumn park
-- **Layout:** assembled from the park's chunks: 6 to 10 screens (360 to 600 tiles), difficulty rising from 1 to 3. PLACEHOLDER: a basic test version until its events exist
+- **Layout:** assembled from the park's chunks: 6 to 10 screens (360 to 600 tiles), difficulty varying within the shared configurable band. PLACEHOLDER: a basic test version until its events exist
 - **Rooms:** one door, in a door slot, leads to the test room
 
 ### Rooms
