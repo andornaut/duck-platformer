@@ -17,6 +17,11 @@ export const TEXT: GameText = {
     reload: "Reload",
     title: "Something went wrong",
   },
+  // CLEANUP (added 2026-10-30): fill dialogue labels before the depot introduction ships.
+  dialogue: {
+    skip: "",
+    speakers: { dog: "", duck: "" },
+  },
   lines: {},
   map: {
     continue: "Continue",

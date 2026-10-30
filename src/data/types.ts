@@ -51,6 +51,11 @@ export interface DuckTuning {
 
 // The words the player reads.
 export interface GameText {
+  // Dialogue controls and speaker names; paragraph text lives in lines.
+  readonly dialogue: {
+    readonly skip: string;
+    readonly speakers: Readonly<Record<string, string>>;
+  };
   // What characters say in dialogue, by key.
   readonly lines: Readonly<Record<string, string>>;
   // The map screen between zones: its title, the button that goes on, and each zone node's name,
@@ -254,6 +259,24 @@ export interface Character {
   readonly quirks?: readonly Quirk[];
   readonly rows: number;
   readonly tuning?: Tuning;
+}
+
+// One paragraph in a linear conversation: speaker names a SPEAKERS entry, line a TEXT.lines key.
+export interface DialogueLine {
+  readonly line: string;
+  readonly speaker: string;
+}
+
+// A linear conversation, played in order with no choices or effects.
+export interface DialoguePlan {
+  readonly lines: readonly DialogueLine[];
+}
+
+// A dialogue speaker's portrait asset and name-tab palette colour. TEXT.dialogue.speakers owns
+// the displayed name under the same speaker key.
+export interface DialogueSpeaker {
+  readonly colour: "amber" | "green" | "pink" | "tan";
+  readonly portrait: string;
 }
 
 export interface AreaLink {
