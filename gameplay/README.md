@@ -48,5 +48,4 @@ Open questions:
 - **Map:** how it looks, and how many zones and forks the V1 path has
 - **Rooms:** the currency and what items do; what quests and rewards give and how they are tracked; what a threat leads to; whether a room can be revisited, and whether its dialogue changes
 - **Use:** what it acts on besides doors (assumed: talking to animals, and objects at route forks)
-- **Zone 1 exit:** what she uses at the end of the street to leave it
 - **Zones:** the V1 path's zones after zone 1, and which are indoor, outdoor or hybrid

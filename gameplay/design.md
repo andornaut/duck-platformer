@@ -40,7 +40,7 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 - **Overlay:** the touch buttons show by default. Settings hides them, and hidden buttons still work
 - **Touch buttons** (right thumb): Use above, Jump below. Each is labelled with its name, reads clearly as a button and stands out against any background, while hiding little of the play area. On a screen wider or taller than 2:1, Jump, Use and Pause sit in the spare space beside the game. Jump's press area reaches into the screen corner. A button animates subtly when pressed
 - **Touch movement:** a touch anywhere except on a button or other interactive element sets the neutral point where it lands. Dragging left or right from it past a small dead zone moves the duck that way at full speed; back inside the dead zone, she stops. Releasing ends the movement. Nothing marks the neutral point
-- **Use:** opens a door, to a room or another area. PLACEHOLDER: what else it acts on
+- **Use:** opens a room's door. PLACEHOLDER: what else it acts on
 
 ### Interface
 
@@ -73,12 +73,12 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 
 ### Zones
 
-- **Areas:** a zone can have more than one area, joined by doors. Use at a door fades to the other area
 - **Camera:** on the ground she sits about two thirds down the screen. In an assembled zone, the ground line follows the chunk she is in, blending across half a screen at each seam. The camera rises only when she climbs above the middle, and never shows below the lowest ground
 - **Challenge:** platforming, hazards and choices. There is no combat
 - **Checkpoint:** the start of a zone is its only checkpoint. Falling or touching a hazard restarts the zone from its start. Progress is saved: entering a zone saves its start, and clearing it saves the map where she stands, so a cleared zone never replays
 - **Crush:** a moving platform that pushes her sideways carries her to its leading edge. If it squeezes her into terrain or another solid, she is crushed and the zone restarts from its start, as a hazard does. Layouts leave room beside every moving platform's path so she is never pinned on a required route
-- **Exit:** Use at the zone's exit clears the zone
+- **Doors:** doors lead only into rooms. Use at a room's door enters it
+- **Exit:** reaching the end of the zone clears it, and the game moves straight on to the map
 - **Kinds:** indoor, outdoor, or a hybrid with both
 - **Layout:** zone 1 is hand-built as the tutorial. Every later zone is assembled from hand-built chunks: a fixed start chunk, a seeded run of chunks whose entry and exit heights match, then a fixed finish chunk. The rules for chunks are under Chunks
 - **Reroll:** the layout changes on each new lap. Restarts and Continue keep it, since the seed is saved
@@ -108,7 +108,6 @@ Everything in a zone except its terrain is placed in data, in three layers.
 
 ### Zone 1
 
-- **Exit:** PLACEHOLDER: what the exit at the street's end is
 - **Kind:** outdoor
 - **Length:** 4 screens (240 tiles)
 - **Street:** a day-time New York street, 2 screens tall: she walks the sidewalk along the bottom and climbs fire escapes, awnings and ledges into the upper screen, past a row of shops: a café, a florist, a gift shop, a makeup store, a pet shop and two restaurants. Its hazards are open cellar hatches in the sidewalk, a frog courier riding a delivery bike back and forth along it, and the ferret's first trap, a giant snap trap with a quip. Pigeons in flocks flee from her, a pug approaches her, and pedestrians walk past
@@ -116,12 +115,14 @@ Everything in a zone except its terrain is placed in data, in three layers.
 ### Zone 2
 
 - **Kind:** outdoor, an autumn park
-- **Layout:** assembled from the park's chunks: 6 to 10 screens (360 to 600 tiles), difficulty rising from 1 to 3, ending at the park gate. PLACEHOLDER: a basic test version until its events, doors and rooms exist
+- **Layout:** assembled from the park's chunks: 6 to 10 screens (360 to 600 tiles), difficulty rising from 1 to 3. PLACEHOLDER: a basic test version until its events, doors and rooms exist
 
 ### Rooms
 
 - **Contents:** usually dialogue, and any of: items to buy or sell, quests to take, rewards, threats, and talk that advances the story or adds flavour
-- **Enter:** Use at a room's door shows the room as a full-screen static scene, such as a bartender behind his bar. Play pauses until she leaves, and leaving returns her to the door
+- **Enter:** Use at a room's door shows the room as a full-screen still scene with a little animation, such as a bartender behind his bar. Play pauses until she leaves, and leaving returns her to the door. She leaves with the Leave button in a corner, back, or Esc
+- **Per zone:** every zone has at least one room. PLACEHOLDER: each is an empty test room for now, showing only its name
+- **World:** the side-scrolling zones are the game world; rooms are the only other places, each reached through a door
 
 ### Dialogue
 
