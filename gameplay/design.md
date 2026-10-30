@@ -122,7 +122,7 @@ Everything in a zone except its terrain is placed in data, in three layers.
 ### Rooms
 
 - **Contents:** usually dialogue, and any of: items to buy or sell, quests to take, rewards, threats, and talk that advances the story or adds flavour
-- **Enter:** Use at a room's door shows the room as a full-screen still scene with a little animation, such as a bartender behind his bar. Play pauses until she leaves, and leaving returns her to the door. She leaves with the Leave button in a corner, back, or Esc
+- **Enter:** Use at a room's door plays the door's opening animation, if it has one, with play held, then shows the room as a full-screen still scene with a little animation, such as a bartender behind his bar. Play pauses until she leaves, and leaving returns her to the door, shown closed. She leaves with the Leave button in a corner, back, or Esc
 - **Per zone:** every zone has at least one room. PLACEHOLDER: each is an empty test room for now, showing only its name
 - **World:** the side-scrolling zones are the game world; rooms are the only other places, each reached through a door
 
