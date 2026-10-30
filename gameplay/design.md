@@ -38,7 +38,7 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 - Landscape, 720×360 base resolution. Phone browser first, with on-screen touch controls; keyboard on desktop. In portrait on a touch screen, the game draws turned a quarter turn to fill the screen, so the player turns the phone
 - **Keyboard:** ←/→ or A/D to move; Space, ↑ or W to jump; E to use; P or Esc to open or close the pause card
 - **Overlay:** the touch buttons show by default. Settings hides them, and hidden buttons still work
-- **Touch buttons** (right thumb): Use above, Jump below. Each is labelled with its name, reads clearly as a button and stands out against any background, while hiding little of the play area. A button animates subtly when pressed
+- **Touch buttons** (right thumb): Use above, Jump below. Each is labelled with its name, reads clearly as a button and stands out against any background, while hiding little of the play area. On a screen wider or taller than 2:1, Jump, Use and Pause sit in the spare space beside the game. Each press area is the drawn button plus a small margin, and Jump's reaches into the screen corner. A button animates subtly when pressed
 - **Touch movement:** a touch anywhere except on a button or other interactive element sets the neutral point where it lands. Dragging left or right from it past a small dead zone moves the duck that way at full speed; back inside the dead zone, she stops. Releasing ends the movement. Nothing marks the neutral point
 - **Use:** opens a door, to a room or another area. PLACEHOLDER: what else it acts on
 
