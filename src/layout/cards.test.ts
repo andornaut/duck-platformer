@@ -24,7 +24,10 @@ const SCREEN_RECT: Rect = { ...SCREEN, x: 0, y: 0 };
 
 // Each card's buttons, by name: where each is drawn, on its card, and its press area. The pause
 // button sits on the zone instead.
-const CARDS: [string, Rect, PressArea<string>[]][] = [
+// Card buttons press in rects.
+type CardButton = PressArea<string> & { readonly hit: Rect };
+
+const CARDS: [string, Rect, CardButton[]][] = [
   [
     "pause card",
     PAUSE_CARD.card,

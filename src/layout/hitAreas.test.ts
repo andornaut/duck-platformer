@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { SCREEN } from "../data/screen";
-import { HIT_RULE, hitAround, hitMargin, pressArea, pressedArea } from "./hitAreas";
+import {
+  HIT_RULE,
+  hitAround,
+  hitMargin,
+  pressArea,
+  pressedArea,
+  TOUCH_CIRCLE_RADIUS,
+  touchRadius,
+} from "./hitAreas";
 import { MAP_SCREEN } from "./mapScreen";
 import { PAUSE_BUTTON, PAUSE_CARD } from "./pauseCard";
 import { SETTINGS_CARD } from "./settingsCard";
@@ -24,7 +31,6 @@ describe("hitAround", () => {
   // Each button's press area, by the rule, from its drawn size.
   const { start } = startScreenLayout(true);
   it.each<[string, { height: number; width: number }, { height: number; width: number }]>([
-    ["Use, a 75 px disc", TOUCH_CONTROLS.use.art, { height: 107, width: 107 }],
     ["the pause button, a 35 px frame", PAUSE_BUTTON.art, { height: 52.5, width: 52.5 }],
     ["the close X, at the least size", PAUSE_CARD.close.art, { height: 48, width: 48 }],
     ["a 16 px icon, at the least size", square(16), { height: 48, width: 48 }],
@@ -72,7 +78,30 @@ describe("pressedArea", () => {
   });
 
   it("keeps the screen's bottom-right corner in Jump's area", () => {
-    const { hit } = TOUCH_CONTROLS.jump;
-    expect([hit.x + hit.width, hit.y + hit.height]).toEqual([SCREEN.width, SCREEN.height]);
+    expect(pressedArea([{ ...TOUCH_CONTROLS.jump, key: "jump" }], { x: 719, y: 359 })).toBe("jump");
+  });
+});
+
+describe("touchRadius", () => {
+  // Buttons the drawn distance apart, and with one anchor moved closer, where the circles shrink
+  // to half the distance so they still never overlap.
+  it.each<[string, { x: number; y: number }, number]>([
+    ["far apart", { x: 200, y: 0 }, TOUCH_CIRCLE_RADIUS],
+    ["exactly two radii apart", { x: 2 * TOUCH_CIRCLE_RADIUS, y: 0 }, TOUCH_CIRCLE_RADIUS],
+    ["moved closer", { x: 60, y: 80 }, 50],
+  ])("keeps circles %s at radius %d", (_, other, radius) => {
+    expect(touchRadius({ x: 0, y: 0 }, other)).toBe(radius);
+  });
+
+  it("leaves a press halfway between moved-closer buttons to neither", () => {
+    const a = { x: 0, y: 0 };
+    const b = { x: 60, y: 80 };
+    const radius = touchRadius(a, b);
+    const art = { height: 1, width: 1, x: 0, y: 0 };
+    const areas = [
+      { art, hit: { centre: a, radius }, key: "a" },
+      { art: { ...art, x: 60, y: 80 }, hit: { centre: b, radius }, key: "b" },
+    ];
+    expect(pressedArea(areas, { x: 30, y: 40 })).toBeUndefined();
   });
 });

@@ -1,6 +1,6 @@
 import { SCREEN } from "../data/screen";
 import type { Point, Rect } from "../data/types";
-import { hitAround, type PressArea } from "./hitAreas";
+import { type PressArea, type PressShape, touchRadius } from "./hitAreas";
 
 export type TouchControl = "jump" | "use";
 
@@ -19,15 +19,19 @@ const JUMP_CENTRE = { x: 667, y: 307 };
 const USE_ART = buttonArt(USE_CENTRE);
 const JUMP_ART = buttonArt(JUMP_CENTRE);
 
-// Jump's press area: its button grown by the rule (hitAround), and on out to the screen's right
-// and bottom edges, where a thumb reaching for it lands.
-const JUMP_GROWN = hitAround(JUMP_ART);
-const JUMP_HIT: Rect = {
-  height: SCREEN.height - JUMP_GROWN.y,
-  width: SCREEN.width - JUMP_GROWN.x,
-  x: JUMP_GROWN.x,
-  y: JUMP_GROWN.y,
-};
+// Each button presses within a circle about its centre (TOUCH_CIRCLE_RADIUS, touchRadius), and
+// Jump's reaches on into the screen's bottom-right corner, away from Use: the rect from its
+// centre to the corner, where a thumb reaching for it lands.
+const RADIUS = touchRadius(USE_CENTRE, JUMP_CENTRE);
+const JUMP_HIT: PressShape = [
+  { centre: JUMP_CENTRE, radius: RADIUS },
+  {
+    height: SCREEN.height - JUMP_CENTRE.y,
+    width: SCREEN.width - JUMP_CENTRE.x,
+    x: JUMP_CENTRE.x,
+    y: JUMP_CENTRE.y,
+  },
+];
 
 // Art's touch buttons, in base pixels: each button's centre, where it is drawn, the area a touch
 // must start in to take it (hitAreas.ts), how far its label's origin sits above the centre, and
@@ -35,21 +39,20 @@ const JUMP_HIT: Rect = {
 export const TOUCH_CONTROLS: Readonly<
   Record<
     TouchControl,
-    { art: Rect; centre: Point; hit: Rect; labelRaise: number; labelRoom: number }
+    { art: Rect; centre: Point; hit: PressShape; labelRaise: number; labelRoom: number }
   >
 > = {
   jump: { art: JUMP_ART, centre: JUMP_CENTRE, hit: JUMP_HIT, labelRaise: 1, labelRoom: 53 },
   use: {
     art: USE_ART,
     centre: USE_CENTRE,
-    hit: hitAround(USE_ART),
+    hit: { centre: USE_CENTRE, radius: RADIUS },
     labelRaise: 3,
     labelRoom: 55,
   },
 };
 
-// The touch buttons' press areas, for pressedArea: where Jump's and Use's overlap, the nearer
-// button wins.
+// The touch buttons' press areas, for pressedArea.
 export const TOUCH_PRESS_AREAS: readonly PressArea<TouchControl>[] = (
   Object.keys(TOUCH_CONTROLS) as TouchControl[]
 ).map((key) => ({ art: TOUCH_CONTROLS[key].art, hit: TOUCH_CONTROLS[key].hit, key }));

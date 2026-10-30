@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { SCREEN } from "../data/screen";
 import { TOUCH } from "../data/touch";
-import { hitMargin } from "../layout/hitAreas";
+import { TOUCH_CIRCLE_RADIUS } from "../layout/hitAreas";
 import { TOUCH_CONTROLS } from "../layout/touchControls";
 import {
   combineIntents,
@@ -36,40 +36,36 @@ describe("keyIntent", () => {
 
 describe("touchRoleAt", () => {
   const { jump, use } = TOUCH_CONTROLS;
-  const useMargin = hitMargin(use.art);
-  const jumpMargin = hitMargin(jump.art);
-  const right = (rect: { width: number; x: number }) => rect.x + rect.width;
-  const bottom = (rect: { height: number; y: number }) => rect.y + rect.height;
+  // A point at distance from centre, toward the left, away from the other button.
+  const left = (centre: { x: number; y: number }, distance: number) => ({
+    x: centre.x - distance,
+    y: centre.y,
+  });
   it.each<[string, { x: number; y: number }, string]>([
     ["Use's centre", use.centre, "use"],
-    ["just inside Use's left margin", { x: use.art.x - useMargin, y: use.centre.y }, "use"],
-    ["just outside Use's left margin", { x: use.art.x - useMargin - 1, y: use.centre.y }, "move"],
-    ["just inside Use's top margin", { x: use.centre.x, y: use.art.y - useMargin }, "use"],
-    ["just outside Use's top margin", { x: use.centre.x, y: use.art.y - useMargin - 1 }, "move"],
-    ["just outside Use's right margin", { x: right(use.art) + useMargin, y: use.centre.y }, "move"],
+    ["inside Use's circle", left(use.centre, TOUCH_CIRCLE_RADIUS - 0.1), "use"],
+    ["outside Use's circle", left(use.centre, TOUCH_CIRCLE_RADIUS + 0.1), "move"],
     ["Jump's centre", jump.centre, "jump"],
-    ["just inside Jump's left reach", { x: jump.art.x - jumpMargin, y: jump.centre.y }, "jump"],
+    ["inside Jump's circle", left(jump.centre, TOUCH_CIRCLE_RADIUS - 0.1), "jump"],
+    ["outside Jump's circle", left(jump.centre, TOUCH_CIRCLE_RADIUS + 0.1), "move"],
     [
-      "just outside Jump's left reach",
-      { x: jump.art.x - jumpMargin - 1, y: jump.centre.y },
+      "halfway between them, in the gap between the circles",
+      { x: (use.centre.x + jump.centre.x) / 2, y: (use.centre.y + jump.centre.y) / 2 },
       "move",
     ],
-    ["the screen's bottom-right corner", { x: SCREEN.width - 1, y: SCREEN.height - 1 }, "jump"],
-    // Above Jump's area and right of Use's.
-    ["just above Jump's reach", { x: jump.centre.x, y: jump.art.y - jumpMargin - 1 }, "move"],
-    [
-      "in both areas, nearer Use",
-      { x: jump.art.x - jumpMargin, y: bottom(use.art) + useMargin - 1 },
-      "use",
-    ],
-    [
-      "in both areas, nearer Jump",
-      { x: right(use.art) + useMargin - 1, y: jump.art.y - jumpMargin },
-      "jump",
-    ],
+    ["the screen's bottom-right corner, past Jump's circle", { x: 719, y: 359 }, "jump"],
     ["the open middle", { x: 320, y: 180 }, "move"],
   ])("takes %s as %s", (_, point, role) => {
     expect(touchRoleAt(point)).toBe(role);
+  });
+
+  it("puts the screen's corner beyond Jump's circle and the circles apart", () => {
+    const fromJump = (x: number, y: number) => Math.hypot(x - jump.centre.x, y - jump.centre.y);
+    const between = Math.hypot(use.centre.x - jump.centre.x, use.centre.y - jump.centre.y);
+    expect({
+      apart: between > 2 * TOUCH_CIRCLE_RADIUS,
+      cornerOutside: fromJump(SCREEN.width - 1, SCREEN.height - 1) > TOUCH_CIRCLE_RADIUS,
+    }).toEqual({ apart: true, cornerOutside: true });
   });
 });
 

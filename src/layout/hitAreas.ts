@@ -12,6 +12,12 @@ export const HIT_RULE = {
   mostMargin: 16,
 } as const;
 
+// The touch buttons Use and Jump instead press within a circle of this radius about each one's
+// centre, or half the distance between their centres where that is less, so the two never
+// overlap (touchRadius). Jump's reaches on into the screen's bottom-right corner as well
+// (touchControls.ts).
+export const TOUCH_CIRCLE_RADIUS = 60;
+
 // How far a drawn button's press area reaches past it on every side.
 export function hitMargin(art: Rect): number {
   const { leastMargin, marginShare, mostMargin } = HIT_RULE;
@@ -32,14 +38,35 @@ export function hitAround(art: Rect): Rect {
   return { height: y.size, width: x.size, x: x.start, y: y.start };
 }
 
+export interface Circle {
+  readonly centre: Point;
+  readonly radius: number;
+}
+
+// A press area's shape: a rect, a circle, or the union of several.
+export type PressShape = Circle | Rect | readonly (Circle | Rect)[];
+
+// The radius of the touch buttons' circles about centres a and b: TOUCH_CIRCLE_RADIUS, or half
+// the distance between them where that is less, so the circles never overlap.
+export function touchRadius(a: Point, b: Point): number {
+  return Math.min(TOUCH_CIRCLE_RADIUS, Math.hypot(a.x - b.x, a.y - b.y) / 2);
+}
+
 // A button on screen: what it is, where it is drawn, and its press area.
 export interface PressArea<K> {
   readonly art: Rect;
-  readonly hit: Rect;
+  readonly hit: PressShape;
   readonly key: K;
 }
 
-function contains(rect: Rect, point: Point): boolean {
+function contains(shape: PressShape, point: Point): boolean {
+  if (Array.isArray(shape)) {
+    return shape.some((part: Circle | Rect) => contains(part, point));
+  }
+  if ("radius" in shape) {
+    return Math.hypot(point.x - shape.centre.x, point.y - shape.centre.y) < shape.radius;
+  }
+  const rect = shape as Rect;
   return (
     point.x >= rect.x &&
     point.x < rect.x + rect.width &&
