@@ -23,8 +23,7 @@ export const THEMES: Readonly<Record<string, ThemePlan>> = {
       { character: "park-far-trees", row: 40 },
       { character: "park-treetops", row: 15 },
     ],
-    // PLACEHOLDER: the park's door, drawn flat until art draws one.
-    door: "test-door",
+    door: "park-gate",
     looks: { ground: "grass", raised: "grass" },
     tileset: "tiles-park",
   },

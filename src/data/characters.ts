@@ -210,6 +210,13 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 20,
     rows: 10,
   },
+  // The park's door to a room: a gate that opens when she uses it.
+  "park-gate": {
+    archetype: "door",
+    art: "park-gate",
+    cols: 3,
+    rows: 5,
+  },
   "park-lamp": {
     archetype: "scenery",
     art: "park-lamp",
