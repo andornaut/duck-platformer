@@ -67,6 +67,12 @@ export interface GameText {
   };
   // What characters say in passing, by key.
   readonly quips: Readonly<Record<string, string>>;
+  // A room's Leave button, which returns her to its door.
+  readonly room: {
+    readonly leave: string;
+  };
+  // Each room's name, by its key in ROOMS, shown in the room.
+  readonly rooms: Readonly<Record<string, { readonly name: string }>>;
   // The screen over the page when the game stops on an error.
   readonly crash: {
     readonly body: string;

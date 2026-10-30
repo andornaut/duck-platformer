@@ -27,6 +27,13 @@ export const TEXT: GameText = {
     title: "Paused",
   },
   quips: {},
+  room: {
+    leave: "Leave",
+  },
+  rooms: {
+    // PLACEHOLDER: until gameplay designs the rooms.
+    test: { name: "Test room" },
+  },
   settings: {
     hidden: "Hidden",
     install: "Install",
