@@ -83,9 +83,9 @@ Start screen (720x360, over the street)
   "Start" puts the triangle at x 338 and the label at 349.
 
 Pause card, settings card and install steps card (each over the game dimmed two ramp steps, one at a time)
-- ui-settings-card, nine-slice 16x16, margins 2,2,2,2: an ink border with cut corners round a skin1 face (the
-  park's peach), a cream rim on the top and left and a skin2 rim on the bottom and right; no header. Every card is
-  drawn 368 wide at 176,88. Title ink in font-title (9.99:1 on skin1), centred on x 360: origin x = 358 minus
+- ui-settings-card, nine-slice 16x16, margins 2,2,2,2: an ink border with cut corners round an lgrey face (pale
+  steel), a white rim on the top and left and a grey rim on the bottom and right; no header. Every card is
+  drawn 368 wide at 176,88. Title ink in font-title (11.0:1 on lgrey), centred on x 360: origin x = 358 minus
   floor((A - 4) / 2), where A is its advance width at 2x, origin y 96.
 - ui-close, 24x24, at 510,94 (hit 500,88,44,44), the card's top right, on every card. Tags normal (ink X), pressed
   (white X on dslate).
@@ -97,7 +97,7 @@ Pause card, settings card and install steps card (each over the game dimmed two 
   y 136 (icon-move-controls) and "Action buttons" at y 188 (icon-touch-controls), each with ui-checkbox at
   504,y+14 and its state Shown or Hidden cream, its last glyph ending at x 494 (origin 496-A), both Shown by
   default; Install at y 240, only while the app is installable (icon-install; ui-button drawn 72x28 at 452,250,
-  centred on x 488, label ink, origin y 253; room 56). The build label, dbrown in font-body (4.7:1 on skin1), for
+  centred on x 488, label ink, origin y 253; room 56). The build label, dslate in font-body (5.83:1 on lgrey), for
   example "v0.0.1 · dev", is centred on x 360 with its origin 28 above the card's foot: y 296, or 244 without
   Install.
 - Install steps card, 368x160, title "Install". Two steps, each a 16x16 glyph and up to two lines of ink
@@ -298,10 +298,10 @@ def touch_button(key):
 # ---------------------------------------------------------------- settings
 
 def settings_card():
-    """16x16 nine-slice: an ink border with cut corners round a skin1 face (the park's peach), lit top-left: a cream
-    rim on the top and left, a skin2 rim on the bottom and right. No header."""
+    """16x16 nine-slice: an ink border with cut corners round an lgrey face (pale steel), lit top-left: a white rim
+    on the top and left, a grey rim on the bottom and right. No header."""
     g = Grid(16, 16)
-    panel(g, 0, 0, 16, 16, "skin1", rim=("cream", "skin2"))
+    panel(g, 0, 0, 16, 16, "lgrey", rim=("white", "grey"))
     return g.px
 
 
