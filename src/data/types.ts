@@ -95,7 +95,7 @@ export interface GameText {
     readonly reload: string;
     readonly title: string;
   };
-  // The pause card: its title, the Settings and Return home rows, and Resume.
+  // The pause card: its title, the Settings and Back to title rows, and Resume.
   readonly pause: {
     readonly home: string;
     readonly resume: string;

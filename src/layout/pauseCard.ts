@@ -3,7 +3,7 @@ import { hitAround } from "./hitAreas";
 import { CONTROL_EDGE } from "./playView";
 
 // Art's pause card (art/README.md, Pause, settings and install cards), in base pixels: a 9-slice
-// card with the title in its header, the close X at its top right, the Settings and Return home
+// card with the title in its header, the close X at its top right, the Settings and Back to title
 // rows, and Resume at the foot. Each label's point is its text's top-left. Resume's label, centred
 // with its play mark, starts at labelY, sinking to pressedLabelY while Resume is pressed. Each
 // button's press area, hit, is its drawn button grown by hitAreas.ts's rule.

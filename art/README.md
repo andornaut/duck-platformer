@@ -190,13 +190,13 @@ The game boots into the start screen; Start goes to the map. A nav bar runs acro
 
 ### Pause, settings and install cards
 
-A pause button at the top left opens the pause card over the game, which is dimmed by stepping every colour two ramp steps darker. The pause card reads Settings, Return home and Resume; Settings opens the settings card over the same dim, and Install opens the install steps card for browsers that install from their own menu. One card shows at a time. Every card is the same frame, 368 wide at 176,88, with a 36px header holding its title and a close X (24x24 at 510,94). Rows are 352x48 at x 184, 4px apart, each pressed as a whole, with a 16x16 icon at x 198 and a label origin at x 228.
+A pause button at the top left opens the pause card over the game, which is dimmed by stepping every colour two ramp steps darker. The pause card reads Settings, Back to title and Resume; Settings opens the settings card over the same dim, and Install opens the install steps card for browsers that install from their own menu. One card shows at a time. Every card is the same frame, 368 wide at 176,88, with a 36px header holding its title and a close X (24x24 at 510,94). Rows are 352x48 at x 184, 4px apart, each pressed as a whole, with a 16x16 icon at x 198 and a label origin at x 228.
 
 - Pause button: a disc 33px across (an ink edge, a 2px cream ring and a navy face, the ring white and 1px thicker and the face a step lighter while pressed), with two pause bars and no label, centred at 24,24 as drawn (35x35 frame, top-left 7,7), its edge 8px in from the game view's top and left. Every control stays inside the view across; Use, Jump and the move hint sit at the screen's bottom, so on a screen taller than 2:1 they move into the bar below, with Jump's ring 8px in from the view's right and 20px up from the bottom, and no drawn edge closer than 8px to the edge it is placed against. It is a touch control: hidden on desktop and while a dialogue box is open. Its press area is the drawn frame grown by the rect rule above.
 
 | Card     | Rect           | Title    | Rows (y)                                                            | Below the rows                             |
 | -------- | -------------- | -------- | ------------------------------------------------------------------- | ------------------------------------------ |
-| Pause    | 176,88,368,236 | Paused   | Settings 136, Return home 188                                       | Resume 280,264,160,44                      |
+| Pause    | 176,88,368,236 | Paused   | Settings 136, Back to title 188                                     | Resume 280,264,160,44                      |
 | Settings | 176,88,368,236 | Settings | Move controls 136, Action buttons 188, Install 240 (if installable) | build label centred on x 360, origin y 296 |
 | Steps    | 176,88,368,160 | Install  | none: two steps at y 144 and 196                                    |                                            |
 

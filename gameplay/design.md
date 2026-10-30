@@ -29,7 +29,7 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 - **Lengths:** text is Tiny5 drawn at 2×, about 6.5 base px a character on average; measure the width, don't count characters. A dialogue paragraph fits 3 lines of 504 px (about 72 characters a line). An answer fits 166 px (about 25 characters). A quip, with its speaker's name, fits 452 px (about 60 characters)
 - **Spelling:** Canadian (colour, favourite, neighbour). No em dashes and no emojis
 - **Style:** plain, short and consistent: no flourishes, no figures of speech, no redundancy
-- **Terms:** the home page is the website's page at `/`; it is never shown inside an installed app. The start screen is the game's first screen, in a browser and in an installed app. Return home always goes to the start screen, from any zone, the map or a card
+- **Terms:** the home page is the website's page at `/`; it is never shown inside an installed app. The start screen is the game's first screen, in a browser and in an installed app. Back to title always goes to the start screen, from any zone, the map or a card
 
 ## Rules
 
@@ -160,12 +160,12 @@ Everything in a zone except its terrain is placed in data, in three layers.
 - **Exit:** at the top right, at the far end. In a browser tab it goes straight to the home page. In an installed app it closes the app, and it shows only in apps that can close themselves (Chrome's Android app, and Chrome or Edge desktop app windows); in every other installed app (iOS, Firefox for Android, Samsung Internet and Edge for Android) it is hidden, and Settings sits at the far right
 - **Restart:** on the start screen with a save, and on the celebration. It asks first on a card: a short question, Restart, which confirms, and Cancel; back and Esc cancel. Confirming clears only the saved progress and opens the map with her on the first zone and nothing completed. It never clears stats or achievements, which keep their own save
 - **Settings:** at the top right, beside Exit. It opens the settings card
-- **Start:** with no save it reads Start and opens the map with her on the first zone. With a save (reached through Return home) Start gives way to Continue, which opens the map where she stands, and Restart beside it. There is one save
+- **Start:** with no save it reads Start and opens the map with her on the first zone. With a save (reached through Back to title) Start gives way to Continue, which opens the map where she stands, and Restart beside it. There is one save
 
 ### Settings
 
 - **Back:** back during play opens the pause card, and back with the card open closes it. Where the browser can't hand back to the game (Firefox for Android's installed app, and before the first tap or key in browsers without CloseWatcher), back is the browser's own
+- **Back to title:** always goes to the start screen
 - **Open:** the pause button at the top left, shown only while a zone plays, P or Esc, or back. It also opens by itself when the frame turns, or stops turning, while a zone plays, and only then; Resume continues
-- **Pause card:** a card titled Paused, over the dimmed game, which pauses play, with a close X. Its rows: Settings, Return home, then Resume
-- **Return home:** always goes to the start screen
+- **Pause card:** a card titled Paused, over the dimmed game, which pauses play, with a close X. Its rows: Settings, Back to title, then Resume
 - **Settings card:** opened from Settings on the pause card or the start screen. Its rows: Move controls (the move hint) and Action buttons (Use and Jump), each Shown or Hidden and Shown by default, then Install while the game can be installed, which opens the install steps. The build label sits at its foot. Its close X, P, Esc and back each return to whichever opened it

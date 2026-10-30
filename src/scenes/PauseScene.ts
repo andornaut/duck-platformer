@@ -54,7 +54,7 @@ const FOCUS_ORDER: readonly CardControl[] = ["settings", "home", "resume", "clos
 // touch screen while a zone plays, never on the map. It runs beside the zone from the start.
 // Opening the card pauses the zone and lets the screen sleep; Resume, the close X, back, Escape
 // and P close it. The Settings row opens SettingsScene's card over the same dim in the pause
-// card's place, and passes it the keys and back until it closes; Return home ends the zone for
+// card's place, and passes it the keys and back until it closes; Back to title ends the zone for
 // the start screen.
 export class PauseScene extends Scene implements SettingsOpener {
   private card!: GameObjects.Container;
@@ -296,8 +296,8 @@ export class PauseScene extends Scene implements SettingsOpener {
   }
 
   // A pressed control shows its pressed look until the press lifts: the pause button plays its
-  // press tag, then holds, as the touch buttons do; the Settings and Return home labels turn white and
-  // Resume's sinks.
+  // press tag, then holds, as the touch buttons do; the Settings and Back to title labels turn
+  // white and Resume's sinks.
   private setPressed(control: Control | undefined): void {
     this.pressed = control;
     const { labelY, pressedLabelY } = PAUSE_CARD.resume;

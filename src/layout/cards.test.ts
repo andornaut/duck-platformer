@@ -1,6 +1,7 @@
 import { BUILD_LABEL } from "@andornaut/game-kit/build/buildLabel";
 import { containsPoint, rectsOverlap } from "@andornaut/game-kit/rect";
 import { inkWidth, parseBitmapFont } from "@andornaut/game-kit/text/bitmapFont";
+import { overflowingTexts } from "@andornaut/game-kit/text/overflow";
 import { bitmapMeasure, fittingText } from "@andornaut/game-kit/text/textFit";
 import { describe, expect, it } from "vitest";
 
@@ -44,7 +45,7 @@ const CARDS: [string, Rect, CardButton[]][] = [
     PAUSE_CARD.card,
     [
       { art: PAUSE_CARD.close.art, hit: PAUSE_CARD.close.hit, key: "close" },
-      { art: PAUSE_CARD.home.row, hit: PAUSE_CARD.home.hit, key: "return home row" },
+      { art: PAUSE_CARD.home.row, hit: PAUSE_CARD.home.hit, key: "back to title row" },
       { art: PAUSE_CARD.resume.art, hit: PAUSE_CARD.resume.hit, key: "resume" },
       { art: PAUSE_CARD.settings.row, hit: PAUSE_CARD.settings.hit, key: "settings row" },
     ],
@@ -133,7 +134,7 @@ describe("card layouts", () => {
   // Each sprite's frame, at its point, lies inside the area that presses it.
   it.each([
     ["pause button", pauseSheet, PAUSE_BUTTON.at, PAUSE_BUTTON.hit],
-    ["return home icon", quitSheet, PAUSE_CARD.home.icon, PAUSE_CARD.home.row],
+    ["back to title icon", quitSheet, PAUSE_CARD.home.icon, PAUSE_CARD.home.row],
     ["settings icon", settingsSheet, PAUSE_CARD.settings.icon, PAUSE_CARD.settings.row],
     ...SETTINGS.map(
       (setting) =>
@@ -169,6 +170,23 @@ describe("card layouts", () => {
       fits: true,
       large: true,
     });
+  });
+});
+
+describe("pause card words", () => {
+  // Each row's label runs from its point to the row's right edge, less the inset its icon keeps
+  // from the row's left edge.
+  const room = ({ icon, label, row }: { icon: Point; label: Point; row: Rect }) =>
+    row.x + row.width - (icon.x - row.x) - label.x;
+
+  it("fits each row's label in its room", () => {
+    const roles = (["settings", "home"] as const).map((row) => ({
+      name: `${row} row`,
+      room: room(PAUSE_CARD[row]),
+      style: { scale: CARD_TEXT_SCALE },
+      texts: [TEXT.pause[row]],
+    }));
+    expect(overflowingTexts(bitmapMeasure(FONT), roles)).toEqual([]);
   });
 });
 

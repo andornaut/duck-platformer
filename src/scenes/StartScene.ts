@@ -54,13 +54,13 @@ interface IconButton {
   readonly layout: IconButtonLayout;
 }
 
-// The screen the game opens on without saved progress, and that Return home goes to: the Start
+// The screen the game opens on without saved progress, and that Back to title goes to: the Start
 // button, which opens the map (Continue, with her where she stands, once progress is saved),
 // under a nav bar with Settings and Exit at its right end. Settings opens the settings card over
-// this screen, which passes it the keys and back until it closes. Exit, and back with no card open, leave the game
-// (the kit's exitApp). An installed app whose window the game cannot close shows no Exit
-// (exitShown), and back there is the browser's own. A control acts when a press lands on it and
-// lifts on it.
+// this screen, and Restart the restart card; the card that shows takes the keys and back until it
+// closes. Exit, and back with no card open, leave the game (the kit's exitApp). An installed app
+// whose window the game cannot close shows no Exit (exitShown), and back there is the browser's
+// own. A control acts when a press lands on it and lifts on it.
 export class StartScene extends Scene implements RestartOpener, SettingsOpener {
   // The nav's icon buttons: Settings and, where the game can exit, Exit.
   private buttons = new Map<"exit" | "settings", IconButton>();
