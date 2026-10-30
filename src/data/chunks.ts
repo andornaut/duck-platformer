@@ -89,13 +89,11 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     exit: { row: 30 },
     objects: [
       { character: "red-edge-top", col: 20, cols: 12, row: 34 },
-      { character: "red-edge-support", col: 20, cols: 12, row: 35 },
+      { character: "red-edge-support", col: 20, cols: 12, row: 35, rows: 25 },
       { character: "red-edge-top", col: 46, cols: 16, row: 34 },
-      { character: "red-edge-support", col: 46, cols: 16, row: 35 },
+      { character: "red-edge-support", col: 46, cols: 16, row: 35, rows: 25 },
     ],
     solids: [
-      { col: 20, cols: 12, look: "raised", row: 36, rows: 24 },
-      { col: 46, cols: 16, look: "raised", row: 36, rows: 24 },
       { col: 0, cols: 20, look: "raised", row: 30, rows: 30 },
       { col: 32, cols: 14, look: "raised", row: 30, rows: 30 },
       { col: 62, cols: 28, look: "raised", row: 30, rows: 30 },
@@ -184,14 +182,13 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     exit: { row: 50 },
     objects: [
       { character: "red-edge-top", col: 60, cols: 3, row: 49 },
-      { character: "red-edge-support", col: 60, cols: 3, row: 50 },
+      { character: "red-edge-support", col: 60, cols: 3, row: 50, rows: 10 },
     ],
     solids: [
       { col: 0, cols: 20, look: "raised", row: 30, rows: 30 },
       { col: 20, cols: 14, look: "raised", row: 36, rows: 24 },
       { col: 34, cols: 14, look: "raised", row: 43, rows: 17 },
       { col: 48, cols: 12, look: "ground", row: 50, rows: 10 },
-      { col: 60, cols: 3, look: "ground", row: 51, rows: 9 },
       { col: 63, cols: 17, look: "ground", row: 50, rows: 10 },
     ],
     theme: "park",
@@ -227,16 +224,14 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     exit: { row: 40 },
     objects: [
       { character: "red-edge-top", col: 36, cols: 3, row: 39 },
-      { character: "red-edge-support", col: 36, cols: 3, row: 40 },
+      { character: "red-edge-support", col: 36, cols: 3, row: 40, rows: 20 },
       { character: "red-edge-top", col: 52, cols: 2, row: 39 },
-      { character: "red-edge-support", col: 52, cols: 2, row: 40 },
+      { character: "red-edge-support", col: 52, cols: 2, row: 40, rows: 20 },
     ],
     solids: [
       { col: 0, cols: 22, look: "raised", row: 30, rows: 30 },
       { col: 22, cols: 14, look: "raised", row: 40, rows: 20 },
-      { col: 36, cols: 3, look: "raised", row: 41, rows: 19 },
       { col: 39, cols: 13, look: "raised", row: 40, rows: 20 },
-      { col: 52, cols: 2, look: "raised", row: 41, rows: 19 },
       { col: 54, cols: 16, look: "raised", row: 40, rows: 20 },
     ],
     theme: "park",
@@ -274,12 +269,11 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     exit: { row: 40 },
     objects: [
       { character: "red-edge-top", col: 12, cols: 3, row: 49 },
-      { character: "red-edge-support", col: 12, cols: 3, row: 50 },
+      { character: "red-edge-support", col: 12, cols: 3, row: 50, rows: 10 },
       { character: "park-bench", col: 50, row: 38 },
     ],
     solids: [
       { col: 0, cols: 12, look: "ground", row: 50, rows: 10 },
-      { col: 12, cols: 3, look: "ground", row: 51, rows: 9 },
       { col: 15, cols: 9, look: "ground", row: 50, rows: 10 },
       { col: 24, cols: 16, look: "raised", row: 45, rows: 15 },
       { col: 40, cols: 40, look: "raised", row: 40, rows: 20 },
@@ -296,12 +290,11 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     exit: { row: 30 },
     objects: [
       { character: "red-edge-top", col: 12, cols: 3, row: 39 },
-      { character: "red-edge-support", col: 12, cols: 3, row: 40 },
+      { character: "red-edge-support", col: 12, cols: 3, row: 40, rows: 20 },
       { character: "park-branch", col: 48, row: 24 },
     ],
     solids: [
       { col: 0, cols: 12, look: "raised", row: 40, rows: 20 },
-      { col: 12, cols: 3, look: "raised", row: 41, rows: 19 },
       { col: 15, cols: 11, look: "raised", row: 40, rows: 20 },
       { col: 26, cols: 10, look: "raised", row: 35, rows: 25 },
       { col: 36, cols: 44, look: "raised", row: 30, rows: 30 },
