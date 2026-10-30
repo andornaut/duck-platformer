@@ -438,6 +438,11 @@
       "json": "tilesets/tiles-park.json"
     },
     {
+      "key": "tiles-platforming",
+      "png": "tilesets/tiles-platforming.png",
+      "json": "tilesets/tiles-platforming.json"
+    },
+    {
       "key": "tiles-street",
       "png": "tilesets/tiles-street.png",
       "json": "tilesets/tiles-street.json"

@@ -1,0 +1,50 @@
+{
+  "columns": 8,
+  "hitboxes": {
+    "hazard-bottom": {
+      "height": 3,
+      "width": 12,
+      "x": 0,
+      "y": 0
+    },
+    "hazard-left": {
+      "height": 12,
+      "width": 3,
+      "x": 9,
+      "y": 0
+    },
+    "hazard-right": {
+      "height": 12,
+      "width": 3,
+      "x": 0,
+      "y": 0
+    },
+    "hazard-top": {
+      "height": 3,
+      "width": 12,
+      "x": 0,
+      "y": 9
+    }
+  },
+  "pieces": {},
+  "tileSize": 12,
+  "tiles": {
+    "hazard-bottom": 14,
+    "hazard-left": 15,
+    "hazard-right": 16,
+    "hazard-top": 13,
+    "one-way-ledge-left": 10,
+    "one-way-ledge-middle": 11,
+    "one-way-ledge-right": 12,
+    "platform-bottom": 7,
+    "platform-bottom-left": 8,
+    "platform-bottom-right": 9,
+    "platform-face": 4,
+    "platform-face-left": 5,
+    "platform-face-right": 6,
+    "platform-top": 0,
+    "platform-top-joint": 3,
+    "platform-top-left": 1,
+    "platform-top-right": 2
+  }
+}
