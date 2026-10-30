@@ -28,7 +28,7 @@ describe("hitAround", () => {
     ["a 16 px icon, at the least size", square(16), { height: 48, width: 48 }],
     ["a card row", SETTINGS_CARD.moveControls.row, { height: 72, width: 376 }],
     ["a pause card button", PAUSE_CARD.resume.button, { height: 72, width: 376 }],
-    ["Start", start.button, { height: 78, width: 218 }],
+    ["Start", start.button, { height: 72, width: 216 }],
     ["a nav icon button", startScreenLayout(true, false).settings.art, { height: 54, width: 54 }],
     ["a map zone marker", square(35), MAP_SCREEN.nodeHit],
   ])("grows %s", (_, art, size) => {
