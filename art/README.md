@@ -219,6 +219,7 @@ The map screen shows the zones and the forks between them as a paper map, after 
 - Paths have no art. The game draws each from node to node as a gentle curve (a quadratic Bezier bent 8% of its length, alternating sides), trimmed 3px outside the markers, by stamping squares along it: built a 2px dbrown dash (6 on, 4 off), opened (by the zones she has completed) a 4px solid dred line, unbuilt 2x2 slate dots every 6px.
 - Labels: the zone's name in `font-title` at 2x, plum, centred under its marker: origin (cx - floor((A - 4) / 2) - 2, cy + 12), where A is its advance width at 2x, over a cream knock-out (ox - 2, cy + 17, A + 4, 16) that hides the paths behind it.
 - Continue is `ui-resume` at 280,300 and plays the zone she stands on; a tap on an open zone's marker walks her there. The game no longer draws `ui-fork-choice` or `ui-fork-arrow`.
+- The celebration screen after the last zone, and the restart card that asks before Restart, are placeholders awaiting art: they reuse the settings card, `ui-button`, `ui-resume` and `ui-focus`.
 
 ## Animation
 

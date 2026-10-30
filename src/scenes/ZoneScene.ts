@@ -47,7 +47,7 @@ import {
 import { PAUSE_BUTTON } from "../layout/pauseCard";
 import { bottomShift, shifted, topShift } from "../layout/playView";
 import { MOVE_HINT, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
-import { nodeOf } from "../rules/map";
+import { isLastZone, nodeOf } from "../rules/map";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
 import { zoneLayout } from "../rules/tiles";
 import { areaOf, leaveRoom, roomOf, startZone, stepZone, type ZoneState } from "../rules/zone";
@@ -438,13 +438,14 @@ export class ZoneScene extends Scene {
     this.scene.pause();
   }
 
-  // Leaves the cleared zone for the map, completed and with her standing on it, play held until
-  // the map takes over; without one, plays the recipe ?zone=<key> names assembled again, or the
-  // next zone in the chain, fading back in.
+  // Leaves the cleared zone completed, with her standing on it on the map, play held until the
+  // next screen takes over: the celebration after a last zone (isLastZone), else the map. Without
+  // a map node, plays the recipe ?zone=<key> names assembled again, or the next zone in the
+  // chain, fading back in.
   private leave(): void {
     if (this.mapNode !== undefined) {
       saveCompleted(this.mapNode);
-      this.scene.start("map");
+      this.scene.start(isLastZone(ZONE_MAP, this.mapNode) ? "celebration" : "map");
       return;
     }
     if (this.trial !== undefined) {

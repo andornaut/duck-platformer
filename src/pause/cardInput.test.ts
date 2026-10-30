@@ -29,14 +29,14 @@ describe("cardBackAction", () => {
 
 describe("startBackAction", () => {
   it.each([
-    { action: "closeSettings", canExit: true, settingsOpen: true },
-    { action: "closeSettings", canExit: false, settingsOpen: true },
-    { action: "exit", canExit: true, settingsOpen: false },
-    { action: undefined, canExit: false, settingsOpen: false },
+    { action: "closeCard", canExit: true, cardOpen: true },
+    { action: "closeCard", canExit: false, cardOpen: true },
+    { action: "exit", canExit: true, cardOpen: false },
+    { action: undefined, canExit: false, cardOpen: false },
   ])(
-    "with the settings card open $settingsOpen, Exit shown $canExit: $action",
-    ({ action, canExit, settingsOpen }) => {
-      expect(startBackAction(settingsOpen, canExit)).toBe(action);
+    "with a card open $cardOpen, Exit shown $canExit: $action",
+    ({ action, canExit, cardOpen }) => {
+      expect(startBackAction(cardOpen, canExit)).toBe(action);
     },
   );
 });

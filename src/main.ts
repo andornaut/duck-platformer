@@ -16,8 +16,10 @@ import { FRAME_TURN } from "./input/frameTurn";
 import { setupPhoneApp } from "./pwa";
 import { installOffer } from "./pwa/installOffer";
 import { BootScene } from "./scenes/BootScene";
+import { CelebrationScene } from "./scenes/CelebrationScene";
 import { MapScene } from "./scenes/MapScene";
 import { PauseScene } from "./scenes/PauseScene";
+import { RestartScene } from "./scenes/RestartScene";
 import { RoomScene } from "./scenes/RoomScene";
 import { SettingsScene } from "./scenes/SettingsScene";
 import { StartScene } from "./scenes/StartScene";
@@ -46,8 +48,18 @@ function startGame(): void {
     render: { antialias: false, desynchronized: true, powerPreference: "high-performance" },
     scale: { autoCenter: Scale.CENTER_HORIZONTALLY, mode: Scale.EXPAND },
     // Later scenes draw over earlier ones: the pause card over the zone, the settings card over
-    // the pause card's dim.
-    scene: [BootScene, StartScene, MapScene, ZoneScene, PauseScene, RoomScene, SettingsScene],
+    // the pause card's dim, the restart card over the start screen or the celebration.
+    scene: [
+      BootScene,
+      StartScene,
+      MapScene,
+      ZoneScene,
+      CelebrationScene,
+      PauseScene,
+      RoomScene,
+      SettingsScene,
+      RestartScene,
+    ],
     // WebGL only: the build's Phaser has no Canvas renderer (src/tools/phaserBuild.ts).
     type: WEBGL,
     width: SCREEN.width,

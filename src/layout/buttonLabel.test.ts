@@ -48,16 +48,25 @@ describe("centredLabel", () => {
     ["Start", TEXT.start.start],
     ["Continue", TEXT.start.continue],
   ])("fits the start screen's %s label, led by the play mark, on its button", (_, text) => {
-    const { button: start } = startScreenLayout(true).start;
+    const { button: start } = startScreenLayout(true, false).start;
     const ink = inkWidth(parseBitmapFont(fontBody), CARD_TEXT_SCALE, text);
     const { labelX, markX } = centredLabel(start, ink, PLAY_MARK);
     const margins = [(markX ?? labelX) - start.x, start.x + start.width - (labelX + ink)];
     expect(Math.min(...margins)).toBeGreaterThan(0);
   });
 
+  it("fits the start screen's Restart label on its button", () => {
+    const restart = startScreenLayout(true, true).restart?.button;
+    const ink = inkWidth(parseBitmapFont(fontBody), CARD_TEXT_SCALE, TEXT.start.restart);
+    const labelX = restart && centredLabel(restart, ink).labelX;
+    const margins = restart &&
+      labelX !== undefined && [labelX - restart.x, restart.x + restart.width - (labelX + ink)];
+    expect(margins && Math.min(...margins)).toBeGreaterThan(0);
+  });
+
   it("puts Start's play mark and label where art's worked example does", () => {
     const ink = inkWidth(parseBitmapFont(fontBody), CARD_TEXT_SCALE, TEXT.start.start);
-    expect(centredLabel(startScreenLayout(true).start.button, ink, PLAY_MARK)).toEqual({
+    expect(centredLabel(startScreenLayout(true, false).start.button, ink, PLAY_MARK)).toEqual({
       labelX: 349,
       markX: 338,
     });

@@ -5,6 +5,13 @@ export const TEXT: GameText = {
     jump: "Jump",
     use: "Use",
   },
+  // PLACEHOLDER: until gameplay writes the celebration.
+  celebration: {
+    continue: "Continue",
+    message: "You reached the end of the map.",
+    restart: "Restart",
+    title: "Well done!",
+  },
   crash: {
     body: "The game stopped. Reload to play again.",
     reload: "Reload",
@@ -27,6 +34,13 @@ export const TEXT: GameText = {
     title: "Paused",
   },
   quips: {},
+  // PLACEHOLDER: until gameplay writes the question.
+  restart: {
+    cancel: "Cancel",
+    question: "Start again from the first zone?",
+    restart: "Restart",
+    title: "Restart",
+  },
   room: {
     leave: "Leave",
   },
@@ -51,6 +65,7 @@ export const TEXT: GameText = {
   start: {
     continue: "Continue",
     exit: "Exit",
+    restart: "Restart",
     settings: "Settings",
     start: "Start",
   },

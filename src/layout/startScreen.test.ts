@@ -6,6 +6,7 @@ import startSheet from "../../public/art/sprites/ui-start.json";
 import { SCREEN } from "../data/screen";
 import type { Rect } from "../data/types";
 import { HIT_RULE, type PressArea, pressedArea } from "./hitAreas";
+import type { LabelledButton } from "./restartCard";
 import { type IconButtonLayout, startScreenLayout } from "./startScreen";
 
 // A nav icon's size (art/README.md, Start screen).
@@ -29,20 +30,28 @@ const right = (rect: Rect) => rect.x + rect.width;
 const face = ({ at }: IconButtonLayout): Rect => ({ ...frameOf(buttonSheet), ...at });
 
 describe.each([
-  ["with Exit", true],
-  ["without Exit", false],
-])("the start screen %s", (_, exitShown) => {
-  const layout = startScreenLayout(exitShown);
+  ["with Exit, with no save", true, false],
+  ["without Exit, with no save", false, false],
+  ["with Exit and a save", true, true],
+  ["without Exit, with a save", false, true],
+])("the start screen %s", (_, exitShown, saved) => {
+  const layout = startScreenLayout(exitShown, saved);
+  const texts: [string, LabelledButton][] = [
+    ["start", layout.start],
+    ...(layout.restart === undefined
+      ? []
+      : [["restart", layout.restart] as [string, LabelledButton]]),
+  ];
   const buttons: [string, IconButtonLayout][] = [
     ["settings", layout.settings],
     ...(layout.exit === undefined ? [] : [["exit", layout.exit] as [string, IconButtonLayout]]),
   ];
   const hits: [string, Rect][] = [
-    ["start", layout.start.hit],
+    ...texts.map(([name, button]): [string, Rect] => [name, button.hit]),
     ...buttons.map(([name, button]): [string, Rect] => [name, button.hit]),
   ];
   const areas: PressArea<string>[] = [
-    { art: layout.start.button, hit: layout.start.hit, key: "start" },
+    ...texts.map(([key, { button, hit }]) => ({ art: button, hit, key })),
     ...buttons.map(([key, { art, hit }]) => ({ art, hit, key })),
   ];
 
@@ -66,7 +75,7 @@ describe.each([
 
   it("ends the nav with Exit, or with Settings in Exit's place where there is no Exit", () => {
     const last = layout.exit ?? layout.settings;
-    const withExit = startScreenLayout(true).exit;
+    const withExit = startScreenLayout(true, saved).exit;
     expect({
       lastIsExit: last === layout.exit,
       settingsBeforeExit:
@@ -84,11 +93,24 @@ describe.each([
     }).toEqual({ face: true, icon: true });
   });
 
-  it("sizes Start to its art, under the nav bar", () => {
-    const { button } = layout.start;
+  it.each(texts)("sizes %s to Start's art, under the nav bar, on the screen", (__, { button }) => {
     expect({
       below: button.y >= layout.nav.y + layout.nav.height,
+      onScreen: inside(SCREEN_RECT, button),
       size: { height: button.height, width: button.width },
-    }).toEqual({ below: true, size: frameOf(startSheet) });
+    }).toEqual({ below: true, onScreen: true, size: frameOf(startSheet) });
+  });
+
+  it("shows Restart only with a save, beside Continue in Start's row, the two centred on Start", () => {
+    const alone = startScreenLayout(exitShown, false).start.button;
+    const { restart, start } = layout;
+    const row = restart && {
+      centre: (start.button.x + right(restart.button)) / 2,
+      clear: right(start.button) < restart.button.x,
+      y: restart.button.y,
+    };
+    expect(row).toEqual(
+      saved ? { centre: alone.x + alone.width / 2, clear: true, y: alone.y } : undefined,
+    );
   });
 });

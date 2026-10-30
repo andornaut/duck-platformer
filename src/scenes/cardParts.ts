@@ -1,3 +1,4 @@
+import { type AsepriteSheet, sheetTags } from "@andornaut/game-kit/art/aseprite";
 import { inkWidth } from "@andornaut/game-kit/text/bitmapFont";
 import {
   phaserBitmapFont,
@@ -8,6 +9,7 @@ import type { GameObjects, Scene } from "phaser";
 import type { Point, Rect } from "../data/types";
 import { centredLabel, MARK_DROP, PLAY_MARK } from "../layout/buttonLabel";
 import { CARD_TEXT_SCALE } from "../layout/pauseCard";
+import type { LabelledButton } from "../layout/restartCard";
 import { focusRingAround } from "../layout/settingsCard";
 import { ART_MANIFEST_KEY, type ArtManifest } from "../view/aseprite";
 import type { Palette } from "../view/dim";
@@ -116,4 +118,33 @@ export function captureTab(scene: Scene, captured: boolean): void {
   } else {
     scene.input.keyboard?.removeCapture("TAB");
   }
+}
+
+// A labelled button on art's `ui-button` stretched over its rect: its normal and pressed faces,
+// and its label in ink.
+export interface TextButton {
+  readonly faces: Readonly<Record<"normal" | "pressed", GameObjects.NineSlice>>;
+  readonly label: ButtonLabel;
+  readonly layout: LabelledButton;
+}
+
+export function addTextButton(scene: Scene, layout: LabelledButton, text: string): TextButton {
+  const frames = sheetTags(scene.cache.json.get("ui-button") as AsepriteSheet);
+  const face = (tag: "normal" | "pressed") =>
+    addSlice(scene, "ui-button", layout.button, frames.get(tag)?.[0]?.frame);
+  return {
+    faces: { normal: face("normal"), pressed: face("pressed") },
+    label: addButtonLabel(scene, layout.button, layout.labelY, text, {
+      colour: paletteColour(scene, "ink"),
+      marked: false,
+    }),
+    layout,
+  };
+}
+
+// Shows a labelled button pressed or not: the pressed face, its label sunk.
+export function pressTextButton({ faces, label, layout }: TextButton, pressed: boolean): void {
+  faces.normal.setVisible(!pressed);
+  faces.pressed.setVisible(pressed);
+  placeButtonLabel(label, pressed ? layout.pressedLabelY : layout.labelY);
 }

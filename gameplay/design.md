@@ -69,6 +69,7 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 - **Backtracking:** she can walk back to any open zone and replay any zone she has completed
 - **Between zones:** the map shows after the start screen's Start or Continue, and after she clears a zone, with her on that zone. The zones she has completed and the paths she has opened are marked
 - **Open zones:** the first zone is open from the start and must be completed before anything else opens. Completing a zone opens the paths past it, through forks, to the next zones; a zone not completed closes everything past it. Unbuilt paths and zones stay closed
+- **Celebration:** clearing the last zone, the one whose path leads on to home, shows a celebration screen every time, replays included (PLACEHOLDER: until it is designed). Continue returns to the map with her on that zone, where she can walk back and replay; Restart asks first, as on the start screen
 - **Walk:** she stands on a zone. Tapping any open zone's marker, or ←/→, walks her there, and Continue plays the zone she stands on
 - **Forks:** at a fork the path splits two or three ways, and completing the zone before it opens each of them. Paths split and rejoin, and every path reaches the same ending
 - **V1:** one path is built: the street, the corner fork, the park, then home. Its forks still show, with the unbuilt paths and zones marked as unbuilt and not selectable. Home is the end of the built path and leads nowhere further: there are no laps (PLACEHOLDER: until the ending exists). The map's look is in the [art plan](../art/README.md)
@@ -157,8 +158,9 @@ Everything in a zone except its terrain is placed in data, in three layers.
 - **Back:** back with no card open leaves the game, the same way as Exit, wherever Exit shows; elsewhere back is the browser's own
 - **Boot:** the game opens in landscape. With saved progress it opens on the map where she stands; with no save it opens on the start screen. It never opens straight into a zone
 - **Exit:** at the top right, at the far end. In a browser tab it goes straight to the home page. In an installed app it closes the app, and it shows only in apps that can close themselves (Chrome's Android app, and Chrome or Edge desktop app windows); in every other installed app (iOS, Firefox for Android, Samsung Internet and Edge for Android) it is hidden, and Settings sits at the far right
+- **Restart:** on the start screen with a save, and on the celebration. It asks first on a card: a short question, Restart, which confirms, and Cancel; back and Esc cancel. Confirming clears only the saved progress and opens the map with her on the first zone and nothing completed. It never clears stats or achievements, which keep their own save
 - **Settings:** at the top right, beside Exit. It opens the settings card
-- **Start:** the only other element. With saved progress (reached through Return home) it reads Continue and opens the map where she stands; with none it reads Start and opens the map with her on the first zone
+- **Start:** with no save it reads Start and opens the map with her on the first zone. With a save (reached through Return home) Start gives way to Continue, which opens the map where she stands, and Restart beside it. There is one save
 
 ### Settings
 

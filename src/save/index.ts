@@ -55,3 +55,9 @@ function write(next: Progress): void {
   progress = next;
   void store.save(next);
 }
+
+// Restart: progress goes back to the beginning, and the map opens on the first zone with nothing
+// completed. Only progress is cleared.
+export function clearProgress(): void {
+  write(BEGINNING);
+}

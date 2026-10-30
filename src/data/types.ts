@@ -73,6 +73,22 @@ export interface GameText {
   };
   // Each room's name, by its key in ROOMS, shown in the room.
   readonly rooms: Readonly<Record<string, { readonly name: string }>>;
+  // The celebration screen after the last zone: its title and message, Continue back to the map,
+  // and Restart.
+  readonly celebration: {
+    readonly continue: string;
+    readonly message: string;
+    readonly restart: string;
+    readonly title: string;
+  };
+  // The card that asks before Restart clears progress: its title, the question, Restart, which
+  // confirms, and Cancel.
+  readonly restart: {
+    readonly cancel: string;
+    readonly question: string;
+    readonly restart: string;
+    readonly title: string;
+  };
   // The screen over the page when the game stops on an error.
   readonly crash: {
     readonly body: string;
@@ -86,11 +102,12 @@ export interface GameText {
     readonly settings: string;
     readonly title: string;
   };
-  // The start screen: its Start button, which reads Continue once progress is saved, and the nav
+  // The start screen: Start without saved progress, or Continue and Restart with it, and the nav
   // bar's Settings and Exit buttons.
   readonly start: {
     readonly continue: string;
     readonly exit: string;
+    readonly restart: string;
     readonly settings: string;
     readonly start: string;
   };
