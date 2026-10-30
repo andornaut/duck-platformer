@@ -55,6 +55,14 @@ export interface ArtManifest {
   }[];
 }
 
+// A sprite sheet's frame size, from its first frame: art's sprites draw every frame one size.
+export function sheetFrameSize(sheet: {
+  readonly frames: Readonly<Record<string, { readonly sourceSize: { w: number; h: number } }>>;
+}): Size {
+  const frame = Object.values(sheet.frames)[0];
+  return { height: frame?.sourceSize.h ?? 0, width: frame?.sourceSize.w ?? 0 };
+}
+
 // The hit boxes the manifest's sprites declare, by sprite key, each with its sprite's frame size.
 export function artHitboxes(
   frameOf: (key: string) => Size,

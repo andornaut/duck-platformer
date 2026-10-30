@@ -11,16 +11,17 @@ import { TILE } from "../data/screen";
 import type { TilePoint, ZoneLayout, ZonePlan } from "../data/types";
 import { zoneLayout } from "../rules/tiles";
 import { crosses, type Surface, surfaceAt, walkZone, type ZoneWalk } from "../sim/zoneWalk";
-import { artHitboxes, type ArtManifest } from "../view/aseprite";
+import { artHitboxes, type ArtManifest, sheetFrameSize } from "../view/aseprite";
+import { DUCK_FRAME } from "../view/duck";
 import type { Tileset } from "../view/tiles";
 
 const SHEETS = import.meta.glob<{
   readonly frames: Readonly<Record<string, { readonly sourceSize: { w: number; h: number } }>>;
 }>("../../public/art/sprites/*.json", { eager: true, import: "default" });
-export const HITBOXES = artHitboxes((key) => {
-  const frame = Object.values(SHEETS[`../../public/art/sprites/${key}.json`]?.frames ?? {})[0];
-  return { height: frame?.sourceSize.h ?? 0, width: frame?.sourceSize.w ?? 0 };
-}, manifestJson as ArtManifest);
+export const HITBOXES = artHitboxes(
+  (key) => sheetFrameSize(SHEETS[`../../public/art/sprites/${key}.json`] ?? { frames: {} }),
+  manifestJson as ArtManifest,
+);
 export const CATALOGUE = { archetypes: ARCHETYPES, characters: CHARACTERS };
 // Art's tilesets by key.
 export const TILESETS: Readonly<Record<string, Tileset>> = Object.fromEntries(
@@ -50,7 +51,7 @@ export function walkSuite(plan: ZonePlan): void {
   );
 
   beforeAll(() => {
-    layout = zoneLayout(TILE, CATALOGUE, HITBOXES, TILESETS, new Set(), plan);
+    layout = zoneLayout(TILE, DUCK_FRAME, CATALOGUE, HITBOXES, TILESETS, new Set(), plan);
     walk = walkZone(DUCK, layout);
   }, WALK_MS);
 

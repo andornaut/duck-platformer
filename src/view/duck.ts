@@ -1,5 +1,10 @@
+import duckSheet from "../../public/art/sprites/duck.json";
 import type { DuckTuning, Point, Size } from "../data/types";
-import type { DuckState } from "../rules/duck";
+import { duckFrameRect, type DuckState } from "../rules/duck";
+import { sheetFrameSize } from "./aseprite";
+
+// Her drawn frame's size, from art's duck sheet: every frame is this big.
+export const DUCK_FRAME: Size = sheetFrameSize(duckSheet);
 
 export type DuckTag = "flutter" | "idle" | "jump" | "land" | "walk";
 
@@ -35,11 +40,8 @@ export function stepPose(
   return tag === pose.tag ? { ms, tag } : { ms: 0, tag };
 }
 
-// The whole-pixel top-left of her frame: its bottom edge on her collision box's bottom edge and
-// its horizontal centre on the box's.
+// The whole-pixel top-left of her frame (duckFrameRect).
 export function duckFrameAt(tuning: DuckTuning, frame: Size, duck: DuckState): Point {
-  return {
-    x: Math.round(duck.x + tuning.width / 2 - frame.width / 2),
-    y: Math.round(duck.y + tuning.height - frame.height),
-  };
+  const { x, y } = duckFrameRect(tuning, frame, duck);
+  return { x, y };
 }

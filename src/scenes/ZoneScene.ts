@@ -64,7 +64,7 @@ import { ART_MANIFEST_KEY, artHitboxes, type ArtManifest } from "../view/aseprit
 import { cameraScroll } from "../view/camera";
 import { characterState, nextQuirkAt } from "../view/character";
 import { doorPhase } from "../view/doorOpen";
-import { duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
+import { DUCK_FRAME, duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
 import { moveHintView } from "../view/moveHint";
 import { type ArtKind, artKind, artOffset } from "../view/objectArt";
 import { type PlayHold, stepAction } from "../view/playHold";
@@ -526,7 +526,7 @@ export class ZoneScene extends Scene {
     const tilesets = Object.fromEntries(
       this.manifest.tilesets.map(({ key }) => [key, this.cache.json.get(key) as Tileset]),
     );
-    this.layout = zoneLayout(TILE, CATALOGUE, this.hitboxes, tilesets, new Set(), plan);
+    this.layout = zoneLayout(TILE, DUCK_FRAME, CATALOGUE, this.hitboxes, tilesets, new Set(), plan);
     const asked = Number(new URLSearchParams(window.location.search).get("seed"));
     const seed = Number.isInteger(asked) && asked > 0 ? asked : Math.floor(Math.random() * 2 ** 31);
     this.zone = startZone(DUCK, this.layout, seed);

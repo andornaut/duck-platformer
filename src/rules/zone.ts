@@ -7,9 +7,18 @@ import type {
   ObjectLayout,
   Point,
   Rect,
+  Size,
   ZoneLayout,
 } from "../data/types";
-import { duckBox, type DuckInput, type DuckState, EDGE, startDuck, stepDuck } from "./duck";
+import {
+  duckBox,
+  duckFrameRect,
+  type DuckInput,
+  type DuckState,
+  EDGE,
+  startDuck,
+  stepDuck,
+} from "./duck";
 import { axisOf, motionTrack, type Track } from "./motion";
 import { overlaps } from "./rect";
 
@@ -97,6 +106,43 @@ export function leaveRoom(zone: ZoneState): ZoneState {
   return { ...zone, door: undefined, useHeld: true };
 }
 
+const centreOf = (rect: Rect): Point => ({
+  x: rect.x + rect.width / 2,
+  y: rect.y + rect.height / 2,
+});
+
+// The door Use opens: of the doors (Use objects) whose drawn rect, placed at, her drawn frame
+// intersects at all, the one whose centre is nearest hers; undefined where none is. A door is
+// drawn over its whole rect (art's door sprites, tiles and placeholders fill it), so its rect is
+// its drawn rect.
+export function doorAt(
+  tuning: DuckTuning,
+  frame: Size,
+  objects: readonly ObjectLayout[],
+  at: readonly Point[],
+  duck: DuckState,
+): number | undefined {
+  const drawn = duckFrameRect(tuning, frame, duck);
+  const hers = centreOf(duckBox(tuning, duck));
+  let nearest: { distance: number; index: number } | undefined;
+  objects.forEach((object, index) => {
+    const placed = at[index];
+    if (object.collision !== "use" || placed === undefined) {
+      return;
+    }
+    const rect = rectAt(object, placed);
+    if (!overlaps(drawn, rect)) {
+      return;
+    }
+    const mine = centreOf(rect);
+    const distance = Math.hypot(mine.x - hers.x, mine.y - hers.y);
+    if (nearest === undefined || distance < nearest.distance) {
+      nearest = { distance, index };
+    }
+  });
+  return nearest?.index;
+}
+
 // The room behind the door she used, if she used one.
 export function roomOf(layout: ZoneLayout, zone: ZoneState): string | undefined {
   return zone.door === undefined ? undefined : areaOf(layout, zone.area).objects[zone.door]?.room;
@@ -114,11 +160,6 @@ export function standsOn(tuning: DuckTuning, duck: DuckState, rect: Rect): boole
     duck.x + tuning.width > rect.x
   );
 }
-
-const centreOf = (rect: Rect): Point => ({
-  x: rect.x + rect.width / 2,
-  y: rect.y + rect.height / 2,
-});
 
 // Where an object goes this step. Without a reaction, it follows its track. Within its reaction's
 // range of her it moves along its motion's axis, away from her or toward her; out of range it
@@ -188,7 +229,8 @@ export function pushedAside(
 // until she lands. A solid one running into her side pushes her ahead of it. Touching a hazard,
 // being pushed into a solid or falling out of the area restarts the zone at its start, the next
 // attempt. Her collision box reaching the area's last column, at any height, clears the zone.
-// Use at a door sets `door`, and the zone holds still until leaveRoom.
+// Use with her drawn frame over a door sets `door` (doorAt), and the zone holds still until
+// leaveRoom.
 export function stepZone(
   tuning: DuckTuning,
   layout: ZoneLayout,
@@ -260,12 +302,18 @@ export function stepZone(
   }
   const usePressed = input.useHeld && !zone.useHeld;
   const door = usePressed
-    ? objects.findIndex(({ after, object }) => object.collision === "use" && overlaps(box, after))
-    : -1;
+    ? doorAt(
+        tuning,
+        layout.duckFrame,
+        area.objects,
+        objects.map(({ after }) => after),
+        duck,
+      )
+    : undefined;
   return {
     ...zone,
     cleared: box.x + box.width > area.exitX,
-    door: door < 0 ? undefined : door,
+    door,
     duck,
     objects: objects.map(({ after }) => ({ x: after.x, y: after.y })),
     seconds: time,

@@ -490,6 +490,8 @@ export interface ArtHitbox {
 
 export interface ZoneLayout {
   readonly areas: Readonly<Record<string, AreaLayout>>;
+  // Her drawn frame's size, from art: Use reaches a door her drawn frame covers any of.
+  readonly duckFrame: Size;
   readonly start: AreaLink;
 }
 

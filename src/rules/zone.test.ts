@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import { DUCK } from "../data/duck";
 import type { AreaLayout, Motion, ObjectLayout, Point, ZoneLayout } from "../data/types";
-import { startDuck } from "./duck";
+import { DUCK_FRAME } from "../view/duck";
+import { duckBox, duckFrameRect, startDuck } from "./duck";
 import { STEP_SECONDS } from "./step";
 import {
+  doorAt,
   enterArea,
   leaveRoom,
   objectStep,
@@ -76,6 +78,7 @@ function area(objects: readonly ObjectLayout[], fields: Partial<AreaLayout> = {}
 
 const zone = (main: AreaLayout, others: Record<string, AreaLayout> = {}): ZoneLayout => ({
   areas: { main, ...others },
+  duckFrame: DUCK_FRAME,
   start: { area: "main", entry: "start" },
 });
 
@@ -256,6 +259,51 @@ describe("clearing", () => {
     const first = states.findIndex((state) => state.cleared);
     expect(first).toBeGreaterThan(0);
     expect(states.at(-1)).toBe(states[first]);
+  });
+});
+
+describe("doorAt", () => {
+  // She stands on the ground at x 100; her drawn frame is wider and taller than her box.
+  const duck = startDuck(DUCK, { x: 100, y: GROUND.y });
+  const frame = duckFrameRect(DUCK, DUCK_FRAME, duck);
+  const box = duckBox(DUCK, duck);
+  const door = (x: number, y: number, width = 24, height = 48) =>
+    object({ collision: "use", height, origin: { x, y }, width });
+  const at = (objects: readonly ObjectLayout[]) => objects.map(({ origin }) => origin);
+  const opened = (objects: readonly ObjectLayout[]) =>
+    doorAt(DUCK, DUCK_FRAME, objects, at(objects), duck);
+
+  it.each([
+    ["overlapping 1 px past her frame's right edge", door(frame.x + frame.width - 1, frame.y), 0],
+    ["just touching her frame's right edge", door(frame.x + frame.width, frame.y), undefined],
+    ["overlapping 1 px past her frame's left edge", door(frame.x - 24 + 1, frame.y), 0],
+    ["just touching her frame's left edge", door(frame.x - 24, frame.y), undefined],
+    ["overlapping 1 px above her frame's top", door(frame.x, frame.y - 48 + 1), 0],
+    ["just touching her frame's top", door(frame.x, frame.y - 48), undefined],
+    // Past her collision box but under her drawn frame: the forgiving reach.
+    ["under her frame but clear of her box", door(box.x + box.width + 1, frame.y), 0],
+  ])("opens a door %s: %s", (_, placed, index) => {
+    expect(opened([placed])).toBe(index);
+  });
+
+  it("opens no door for anything but a door under her frame", () => {
+    expect(opened([{ ...door(frame.x, frame.y), collision: "solid" }])).toBeUndefined();
+  });
+
+  // Two doors under her frame: the one whose centre is nearer hers.
+  it.each([
+    [
+      "the left one nearer",
+      [door(frame.x - 20, frame.y), door(frame.x + frame.width - 1, frame.y)],
+      0,
+    ],
+    [
+      "the right one nearer",
+      [door(frame.x - 23, frame.y), door(box.x + box.width - 4, frame.y)],
+      1,
+    ],
+  ])("of two doors, opens %s", (_, objects, index) => {
+    expect(opened(objects)).toBe(index);
   });
 });
 

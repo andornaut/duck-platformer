@@ -13,6 +13,7 @@ import type {
 import { STEP_SECONDS } from "../rules/step";
 import { tileRect, zoneLayout } from "../rules/tiles";
 import { startZone, stepZone, type ZoneInput, type ZoneState } from "../rules/zone";
+import { DUCK_FRAME } from "../view/duck";
 
 export type Reach = keyof Reaches;
 
@@ -53,7 +54,15 @@ function courseLayout(tile: number, cols: number, solids: TileRect[], start: Poi
     },
     start: { area: "course", entry: "start" },
   };
-  const layout = zoneLayout(tile, { archetypes: {}, characters: {} }, {}, {}, new Set(), plan);
+  const layout = zoneLayout(
+    tile,
+    DUCK_FRAME,
+    { archetypes: {}, characters: {} },
+    {},
+    {},
+    new Set(),
+    plan,
+  );
   const area = layout.areas.course as AreaLayout;
   return { ...layout, areas: { course: { ...area, entries: { start }, exitX: Infinity } } };
 }

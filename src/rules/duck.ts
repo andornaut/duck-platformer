@@ -1,4 +1,4 @@
-import type { DuckTuning, Point, Rect } from "../data/types";
+import type { DuckTuning, Point, Rect, Size } from "../data/types";
 import { overlaps } from "./rect";
 
 // Pixels of rounding error allowed when she stands exactly on an edge.
@@ -51,6 +51,17 @@ export function startDuck(tuning: DuckTuning, start: Point): DuckState {
 
 export function duckBox(tuning: DuckTuning, duck: DuckState): Rect {
   return { height: tuning.height, width: tuning.width, x: duck.x, y: duck.y };
+}
+
+// The whole-pixel rect her drawn frame, frame big, covers: its bottom edge on her collision
+// box's bottom edge and its horizontal centre on the box's, where the zone draws her sprite.
+export function duckFrameRect(tuning: DuckTuning, frame: Size, duck: DuckState): Rect {
+  return {
+    height: frame.height,
+    width: frame.width,
+    x: Math.round(duck.x + tuning.width / 2 - frame.width / 2),
+    y: Math.round(duck.y + tuning.height - frame.height),
+  };
 }
 
 // Moves speed toward target by at most step.

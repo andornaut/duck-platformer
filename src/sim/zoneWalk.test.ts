@@ -8,6 +8,7 @@ import { ZONE_1 } from "../data/zone1";
 import { TEST_ZONES } from "../data/zones";
 import { zoneLayout } from "../rules/tiles";
 import { CATALOGUE, WALK_MS, walkSuite } from "../testing/walkSuite";
+import { DUCK_FRAME } from "../view/duck";
 import { crosses, type Surface, walkZone, zoneSurfaces } from "./zoneWalk";
 
 const ZONES: [string, ZonePlan][] = [
@@ -65,7 +66,7 @@ describe("walkZone", () => {
       const walk = (doors: number) => {
         const { cleared, reached } = walkZone(
           DUCK,
-          zoneLayout(TILE, CATALOGUE, {}, {}, new Set(), street(doors)),
+          zoneLayout(TILE, DUCK_FRAME, CATALOGUE, {}, {}, new Set(), street(doors)),
         );
         return { cleared, reached: [...reached].sort() };
       };
@@ -83,7 +84,7 @@ describe("crosses", () => {
     "makes %s at her reach in one move, and never one tile more",
     (_, gap, rise, gapOver, riseOver) => {
       const makes = (plan: ZonePlan) => {
-        const layout = zoneLayout(TILE, CATALOGUE, {}, {}, new Set(), plan);
+        const layout = zoneLayout(TILE, DUCK_FRAME, CATALOGUE, {}, {}, new Set(), plan);
         const surfaces = zoneSurfaces(DUCK, layout);
         const [start, end] = [...surfaces].sort((a, b) => a.left - b.left) as [Surface, Surface];
         return crosses(DUCK, layout, surfaces, start, end);

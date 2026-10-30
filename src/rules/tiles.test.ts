@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Archetype, Character, Instance, ZonePlan } from "../data/types";
+import { DUCK_FRAME } from "../view/duck";
 import { type Catalogue, isPlaced, tileRect, zoneLayout } from "./tiles";
 
 describe("tileRect", () => {
@@ -77,7 +78,7 @@ describe("zoneLayout", () => {
   const hitboxes = {
     lift: { frame: { height: 10, width: 40 }, hitbox: { height: 6, width: 30, x: 5, y: 2 } },
   };
-  const layout = zoneLayout(10, CATALOGUE, hitboxes, {}, new Set(), PLAN);
+  const layout = zoneLayout(10, DUCK_FRAME, CATALOGUE, hitboxes, {}, new Set(), PLAN);
   const yard = layout.areas.yard;
   const [lift, special, gate] = yard?.objects ?? [];
   it.each([
@@ -159,7 +160,7 @@ describe("zoneLayout", () => {
       ...PLAN,
       areas: { yard: { ...PLAN.areas.yard, objects: [instance] } },
     } as ZonePlan;
-    expect(() => zoneLayout(10, catalogue, {}, {}, new Set(), bad)).toThrow(message);
+    expect(() => zoneLayout(10, DUCK_FRAME, catalogue, {}, {}, new Set(), bad)).toThrow(message);
   });
 });
 
