@@ -17,8 +17,8 @@ import {
   trackPress,
 } from "./touchControls";
 
-const JUMP: HeldTouch = { role: "jump", startX: 600, x: 600 };
-const MOVE: HeldTouch = { role: "move", startX: 100, x: 140 };
+const JUMP: HeldTouch = { role: "jump", startX: 600, startY: 200, x: 600 };
+const MOVE: HeldTouch = { role: "move", startX: 100, startY: 200, x: 140 };
 
 describe("buttonHeld", () => {
   it.each([

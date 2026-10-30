@@ -26,6 +26,13 @@ export function bottomRightShift(canvasSize: Size): Point {
   };
 }
 
+// How far a control anchored to the canvas's bottom-left corner (the move hint) moves from where
+// it sits in a canvas the game's own size: down into a bar below, and staying at the canvas's
+// left, so in a wider canvas it sits in the left bar.
+export function bottomLeftShift(canvasSize: Size): Point {
+  return { x: 0, y: Math.floor(canvasSize.height) - SCREEN.height };
+}
+
 // A point moved by shift, or back by it with sign -1.
 export function shifted(shift: Point, point: Point, sign: 1 | -1 = 1): Point {
   return { x: point.x + sign * shift.x, y: point.y + sign * shift.y };

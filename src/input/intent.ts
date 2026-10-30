@@ -41,10 +41,12 @@ export function moveFromOffset(tuning: TouchTuning, dx: number): -1 | 0 | 1 {
   return dx < -tuning.moveDeadZone ? -1 : 0;
 }
 
-// Each held touch, in the order they started: its role, the x it started at and its x now.
+// Each held touch, in the order they started: its role, the point it started at (where the move
+// hint centres on a drag) and its x now.
 export interface HeldTouch {
   readonly role: TouchRole;
   readonly startX: number;
+  readonly startY: number;
   readonly x: number;
 }
 

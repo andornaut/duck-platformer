@@ -86,8 +86,13 @@ describe("moveFromOffset", () => {
 
 describe("touchIntent", () => {
   const beyond = TOUCH.moveDeadZone + 1;
-  const move = (startX: number, x: number): HeldTouch => ({ role: "move", startX, x });
-  const JUMP: HeldTouch = { role: "jump", startX: 600, x: 600 };
+  const move = (startX: number, x: number): HeldTouch => ({
+    role: "move",
+    startX,
+    startY: 200,
+    x,
+  });
+  const JUMP: HeldTouch = { role: "jump", startX: 600, startY: 200, x: 600 };
   it.each([
     ["nothing", [], NONE],
     ["a drag right", [move(300, 300 + beyond)], { ...NONE, move: 1 }],
@@ -101,7 +106,7 @@ describe("touchIntent", () => {
       { ...NONE, move: 1 },
     ],
     ["the later move, still", [move(100, 100 - beyond), move(400, 400)], NONE],
-    ["Use", [{ role: "use", startX: 528, x: 528 }], { ...NONE, use: true }],
+    ["Use", [{ role: "use", startX: 528, startY: 200, x: 528 }], { ...NONE, use: true }],
   ] as const)("reads %s", (_, touches, intent) => {
     expect(touchIntent(TOUCH, touches)).toEqual(intent);
   });

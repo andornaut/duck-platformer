@@ -57,5 +57,16 @@ export const TOUCH_PRESS_AREAS: readonly PressArea<TouchControl>[] = (
   Object.keys(TOUCH_CONTROLS) as TouchControl[]
 ).map((key) => ({ art: TOUCH_CONTROLS[key].art, hit: TOUCH_CONTROLS[key].hit, key }));
 
+// Art's move hint, a drawing with no press area of its own (movement is the floating drag
+// everywhere off the buttons): a ring in a frame the buttons' size, centred at rest on centre,
+// anchored to the canvas's bottom-left corner, and a knob that moves from the ring's centre at
+// most knobReach pixels left or right the way the drag goes.
+const MOVE_HINT_CENTRE: Point = { x: 53, y: 258 };
+export const MOVE_HINT = {
+  art: buttonArt(MOVE_HINT_CENTRE),
+  centre: MOVE_HINT_CENTRE,
+  knobReach: 12,
+} as const;
+
 // A button's label is set in font-body at this scale.
 export const LABEL_SCALE = 2;

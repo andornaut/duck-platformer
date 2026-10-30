@@ -50,8 +50,8 @@ import {
   touchRoleAt,
 } from "../input/intent";
 import { PAUSE_BUTTON } from "../layout/pauseCard";
-import { bottomRightShift, shifted } from "../layout/playView";
-import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
+import { bottomLeftShift, bottomRightShift, shifted } from "../layout/playView";
+import { LABEL_SCALE, MOVE_HINT, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
 import { nodeOf } from "../rules/map";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
 import { zoneLayout } from "../rules/tiles";
@@ -65,6 +65,7 @@ import { cameraScroll } from "../view/camera";
 import { characterState, nextQuirkAt } from "../view/character";
 import { doorPhase } from "../view/doorOpen";
 import { duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
+import { moveHintView } from "../view/moveHint";
 import { type ArtKind, artKind, artOffset } from "../view/objectArt";
 import { type PlayHold, stepAction } from "../view/playHold";
 import { loadedTileset, objectTiles, terrainTiles, type Tileset } from "../view/tiles";
@@ -116,6 +117,8 @@ const FADE_MS = 250;
 
 const DUCK_SPRITE = "duck";
 const PAUSE = "pause";
+const MOVE_HINT_SPRITE = "ui-move-hint";
+const MOVE_KNOB_SPRITE = "ui-move-knob";
 const CONTROL_SPRITES: Readonly<Record<TouchControl, string>> = {
   jump: "ui-touch-jump",
   use: "ui-touch-use",
@@ -166,6 +169,8 @@ export class ZoneScene extends Scene {
   private clock: StepClock = startStepClock;
   private readonly controls = new Map<TouchControl, GameObjects.Sprite>();
   private readonly labels = new Map<TouchControl, GameObjects.BitmapText>();
+  // The move hint's ring and knob.
+  private moveHint!: { readonly knob: GameObjects.Sprite; readonly ring: GameObjects.Sprite };
   // Where each label sits in a canvas the game's own size, before placeControls shifts it.
   private readonly labelOrigins = new Map<TouchControl, Point>();
   private colours: Readonly<Record<string, string>> = {};
@@ -297,6 +302,16 @@ export class ZoneScene extends Scene {
         shown.cameraFilter &= ~controlsCamera.id;
       }
     }
+    this.moveHint = {
+      knob: this.add.sprite(0, 0, MOVE_KNOB_SPRITE).setOrigin(0),
+      ring: this.add.sprite(0, 0, MOVE_HINT_SPRITE).setOrigin(0),
+    };
+    for (const part of [this.moveHint.ring, this.moveHint.knob]) {
+      part.setScrollFactor(0).setDepth(OVERLAY_DEPTH);
+      this.cameras.main.ignore(part);
+      part.cameraFilter &= ~controlsCamera.id;
+    }
+    this.drawMoveHint([]);
     this.placeControls();
     this.scale.on(Scale.Events.RESIZE, this.placeControls, this);
     this.events.once("shutdown", () =>
@@ -359,6 +374,25 @@ export class ZoneScene extends Scene {
       sprite.setVisible(buttons);
       this.labels.get(control)?.setVisible(buttons);
     }
+    this.moveHint.ring.setVisible(settings.moveControls && touch);
+    this.moveHint.knob.setVisible(settings.moveControls && touch);
+  }
+
+  // The move hint shows only on a touch screen, with the Move controls setting on: at rest at its
+  // place anchored to the canvas's bottom-left corner, or following the drag that moves her
+  // (moveHintView).
+  private drawMoveHint(touches: readonly HeldTouch[]): void {
+    const { knob, ring } = this.moveHint;
+    const shown =
+      window.matchMedia("(pointer: coarse)").matches && touchSettingShown("moveControls");
+    const rest = shifted(bottomLeftShift(this.scale.gameSize), MOVE_HINT.centre);
+    const view = moveHintView(TOUCH, MOVE_HINT.knobReach, rest, touches);
+    show(ring, view.ringTag);
+    show(knob, view.knobTag);
+    const ringAt = centredAt(view.centre, ring.frame);
+    const knobAt = centredAt(view.knob, knob.frame);
+    ring.setPosition(ringAt.x, ringAt.y).setVisible(shown);
+    knob.setPosition(knobAt.x, knobAt.y).setVisible(shown);
   }
 
   override update(time: number): void {
@@ -398,6 +432,7 @@ export class ZoneScene extends Scene {
     this.drawObjects();
     this.drawDuck();
     this.drawControls(time, touches);
+    this.drawMoveHint(touches);
   }
 
   // Fades out of the cleared zone, play held still, then leaves it.
@@ -746,8 +781,9 @@ export class ZoneScene extends Scene {
       {
         cancel: release,
         down: ({ pointerId }, event) => {
-          const { x } = unclamped(event);
-          this.heldTouches.set(pointerId, { role: roleAt(onGame(event)), startX: x, x });
+          const { x, y } = unclamped(event);
+          const role = roleAt(onGame(event));
+          this.heldTouches.set(pointerId, { role, startX: x, startY: y, x });
         },
         move: ({ pointerId }, event) => {
           const touch = this.heldTouches.get(pointerId);
