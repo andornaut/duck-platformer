@@ -189,3 +189,11 @@ Pieces placed from level data by their bottom-left corner at the bottom y given,
 | --------------- | ------------------ | ------- | -------------------------------------------- |
 | street-city-far | repeating backdrop | 720x600 | bottom-left, y 600, repeat x; far skyline    |
 | street-city-mid | repeating backdrop | 720x600 | bottom-left, y 600, repeat x; middle skyline |
+
+## Depot modules
+
+| Key               | Type                                        | Size    | Placement                                  |
+| ----------------- | ------------------------------------------- | ------- | ------------------------------------------ |
+| depot-loading-bay | static backdrop, roller bay and parcel icon | 120x120 | bottom-left, y 600, no repeat              |
+| depot-wall        | static ribbed blue-grey wall                | 48x180  | bottom-left, y 600, repeat x               |
+| parcel-open       | static opened cardboard parcel              | 72x36   | bottom-left, y 600, no repeat; behind duck |

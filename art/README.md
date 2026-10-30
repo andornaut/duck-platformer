@@ -366,10 +366,11 @@ For a dangerous top, use a plain solid face under the hazard instead of a safe w
 
 Red strips never carry the bright safe lip. Red is a consistent danger cue across zones; the contrasting ink backing keeps the thin edge visible against both pale and dark scenery. Gameplay chooses the placement and clearance, including dangerous ceilings over short-jump routes and dangerous sides beside landings.
 
-## Zone 1: New York street
+## Zone 1: parcel depot and New York street
 
-A lost duck travels zone to zone across a map with forks. Zone 1 is a downtown New York street on a pale steel morning, with ground-floor shops, two screens tall: the sidewalk runs along the bottom and she climbs the buildings into the upper screen. She clears it by reaching its right edge. `art/tools/floor1.py` draws it; its docstring lists every tile and piece.
+The first zone has a fixed layout, beginning at an opened parcel in an industrial depot and continuing into a downtown New York street on a pale steel morning. It is two screens tall: the sidewalk runs along the bottom and the buildings support climbs into the upper screen. `art/tools/depot.py` draws the depot modules and `art/tools/floor1.py` the street pieces. Their docstrings specify each reusable asset; gameplay data defines their arrangement.
 
+- Depot: blue-grey ribbed wall modules, roller loading bays and cream parcel icons, with warm cardboard reserved for the opened parcel. No labels are baked into the art. The three modules are static backdrops with no collision, animation or interaction; gameplay places solid surfaces separately. All stay on the play plane, with parallax factors 1,1.
 - Outdoor scale: the street is drawn as if zoomed out 4x while the duck and the 12px tiles keep their size. A storey is 180px and a door is about 45px, so the duck (42px) stands almost as tall as a street door.
 - The street is 720px (60 tiles) tall: the sidewalk's top is y 600 (row 50), with sidewalk and road filling rows 50 to 59 below it so the camera can hold her feet two thirds down the screen. The ground storey runs from y 420 to the sidewalk, and storeys stack every 180px above: a two-storey roof is at y 240 (row 20) and a three-storey roof at y 60 (row 5), the tallest that fits. A water tower (its tank top 6 tiles above its roof) fits on a two-storey roof, not a three-storey one. Every street piece's bottom y below is in that frame.
 - Street tiles (`tiles-street`): a pale concrete sidewalk (tops alternating with a 2px joint every 24px, ends, a slate face), a pale stone kerb where it meets a cross street, the road one tile lower, an ochre-and-cream one-way shop awning, a dark-brown one-way canopy with a white lip, a 2-tile planter with a hedge top, the cellar hatch and its pit, and the door as a 3x4 piece: a pair of lit amber glass doors, 36x48, the brightest thing at the door, for a room's door where the level has one.
@@ -420,6 +421,16 @@ A lost duck travels zone to zone across a map with forks. Zone 1 is a downtown N
 | cross-street            | 120x26  | 600      | none   |
 
 Below the sidewalk's top, the sidewalk and road tiles fill rows 50 to 59.
+
+### Depot modules
+
+| Key               | Size    | Bottom y | Repeat | Placement                                                       |
+| ----------------- | ------- | -------- | ------ | --------------------------------------------------------------- |
+| depot-loading-bay | 120x120 | 600      | none   | Ten columns by ten rows, top at row 40 on a row-50 floor        |
+| depot-wall        | 48x180  | 600      | x      | Four columns by fifteen rows, top at row 35 on a row-50 floor   |
+| parcel-open       | 72x36   | 600      | none   | Six columns by three rows, top at row 47; drawn behind the duck |
+
+The opened parcel is scenery, without the bright safe ledge lip or a red danger strip. It marks the starting location without blocking movement. The depot wall can repeat to any run width; loading bays and parcels are independently placed pieces. No panorama or scene-specific duck drawing is exported.
 
 The separate atmosphere layers `street-city-far` and `street-city-mid` are each 720x600, bottom-left anchored at y 600 and repeating in x. Place them with the flat `street-sky`, back to front in that order. The legacy `street-skyline` is a composite compatibility asset: do not place it alongside the two separate layers. Physical facades, doors and attached ledges remain on the play plane.
 
