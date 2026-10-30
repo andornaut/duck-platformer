@@ -57,12 +57,14 @@ Touch controls (two round buttons for the right thumb, a pause button at the top
   2px of face on each side when pressed: Use 55, Jump 53.
 - ui-move-hint, 75x75, centre pixel 37,37: a drawing only, with no press area. An open ring 73px across with no
   face, a 2px cream band between 1px ink lines, and a 2x chevron (8x10) each side, 22px from the centre, fringed in
-  ink, so it reads on any ground, sky, character or prop. At rest it sits at centre 53,258 (top-left 16,221), its
-  left edge mirroring Jump's right inset. While a touch moves her, the game draws it centred on that touch's neutral
-  point (where the drag began), anywhere on screen, and puts it back on release. Tags rest; held-left and
-  held-right (the dragged side's chevron white); one frame each.
+  ink, so it reads on any ground, sky, character or prop. At rest its centre is level with Jump's and as far in from
+  the left edge as Use's centre is from the right: centre 127,307 (top-left 90,270) at 720 wide. The game anchors it
+  to the bottom-left corner as it anchors the buttons to the bottom-right, so the mirroring holds on any canvas.
+  While a touch moves her, the game draws it centred on that touch's neutral point (where the drag began), anywhere
+  on screen, and puts it back on release. Tags rest; held-left and held-right (the dragged side's chevron white);
+  one frame each.
 - ui-move-knob, 11x11, centre pixel 5,5: a 9px knob fringed in ink, drawn on the hint's centre and offset by the
-  drag's distance from its neutral point, capped at 12px. Tags rest (cream), held (white).
+  drag's distance from its neutral point, left or right, capped at 12px. Tags rest (cream), held (white).
 
 Button labels
 - Every button's label is font-body at 2x, mixed case ("Start", "Resume", "Continue", "Install"), set by the game.
