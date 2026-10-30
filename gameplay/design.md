@@ -38,7 +38,7 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 - Landscape, 720×360 base resolution. Phone browser first, with on-screen touch controls; keyboard on desktop. In portrait on a touch screen, the game draws turned a quarter turn to fill the screen, so the player turns the phone
 - **Keyboard:** ←/→ or A/D to move; Space, ↑ or W to jump; E to use; P or Esc to open or close the pause card
 - **Overlay:** the touch buttons show by default. Settings hides them, and hidden buttons still work
-- **Touch buttons** (right thumb): Use above, Jump below. Each is labelled with its name, reads clearly as a button and stands out against any background, while hiding little of the play area. On a screen wider or taller than 2:1, Jump, Use and Pause sit in the spare space beside the game. Jump's press area reaches into the screen corner. A button animates subtly when pressed
+- **Touch buttons** (right thumb): Use above, Jump below. Each is labelled with its name, reads clearly as a button and stands out against any background, while hiding little of the play area. On a screen wider or taller than 2:1, Jump, Use and Pause sit in the spare space beside the game. Their press areas are circles of radius 60 base px centred on each button, or half the distance between them if that's less, so they never overlap; Jump's also reaches into the bottom-right corner of the screen. A button animates subtly when pressed
 - **Touch movement:** a touch anywhere except on a button or other interactive element sets the neutral point where it lands. Dragging left or right from it past a small dead zone moves the duck that way at full speed; back inside the dead zone, she stops. Releasing ends the movement. Nothing marks the neutral point
 - **Use:** opens a room's door. PLACEHOLDER: what else it acts on
 
@@ -48,7 +48,7 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 - **Exact:** spacing sits on a fixed pixel grid: equal margins, aligned edges, and text clear of its box's edge by the same amount on both sides
 - **Minimal:** show only what the player needs. No heading that repeats a tab's name, no label the picture already gives, and no decoration that competes with play
 - **Options:** art mocks up visual options for the user to pick
-- **Press areas:** a button's press area is the drawn button plus a quarter of its shorter side on each side, between 6 and 16 px, and at least 48×48. Where press areas overlap, the nearer button wins
+- **Press areas:** apart from Jump and Use, a button's press area is the drawn button plus a quarter of its shorter side on each side, between 6 and 16 px, and at least 48×48. Where press areas overlap, the nearer button wins
 
 ### Grid
 
