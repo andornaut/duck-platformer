@@ -80,9 +80,9 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 - **Challenge:** platforming, hazards and choices. Routes use ledges and cliffs, not ladders, with both short-press jumps beneath low ceilings and full jumps. There is no combat
 - **Checkpoint:** the start of a zone is its only checkpoint. Falling or touching a hazard restarts the zone from its start. Progress is saved: the zones she has completed and where she stands on the map. Clearing a zone marks it completed and returns her to the map on it; a zone left before its end is played again from its start
 - **Crush:** a moving platform that pushes her sideways carries her to its leading edge. If it squeezes her into terrain or another solid, she is crushed and the zone restarts from its start, as a hazard does. Layouts leave room beside every moving platform's path so she is never pinned on a required route
-- **Difficulty:** zones use the same configurable difficulty band, with variation inside it rather than guaranteed escalation between zones or from start to finish
+- **Difficulty:** zones use the same configurable difficulty target and variation band in `src/data/`, with variation inside it rather than guaranteed escalation between zones or from start to finish
 - **Doors:** doors lead only into rooms. Use enters a door when any part of her drawn frame overlaps the door's drawn art; where she overlaps more than one, the door whose centre is nearest hers wins
-- **Edge hazards:** a common red strip, 2 to 3 px thick, can cover the top, bottom, left or right edge of terrain. There are no spikes. Touching any edge hazard restarts the zone from its start
+- **Edge hazards:** a common red strip, 2 to 3 px thick, can cover the top, bottom, left or right edge of terrain. These are the lethal contact hazards in every real zone: other objects do not kill on contact, and there are no spikes. Touching any edge hazard restarts the zone from its start
 - **Exit:** reaching the end of the zone clears it, and the game moves straight on to the map
 - **Going back:** walking all the way back to the zone's left edge leaves it without completing it: the screen fades and the map shows with her on that zone, and nothing is saved. Every zone starts her clear of that edge and has no wall in front of it
 - **Kinds:** indoor, outdoor, or a hybrid with both
@@ -117,7 +117,7 @@ Everything in a zone except its terrain is placed in data, in three layers.
 - **Kind:** outdoor
 - **Length:** 4 screens (240 tiles)
 - **Rooms:** a door in the brownstone before the subway entrance leads to the test room
-- **Street:** a day-time New York street, 2 screens tall: she walks the sidewalk along the bottom and climbs fire escapes, awnings and ledges into the upper screen, past a row of shops: a café, a florist, a gift shop, a makeup store, a pet shop and two restaurants. Its hazards are open cellar hatches in the sidewalk, a frog courier riding a delivery bike back and forth along it, and the ferret's first trap, a giant snap trap with a quip. Pigeons in flocks flee from her, a pug approaches her, and pedestrians walk past
+- **Street:** a day-time New York street, 2 screens tall: she walks the sidewalk along the bottom and climbs fire escapes, awnings and ledges into the upper screen, past a row of shops: a café, a florist, a gift shop, a makeup store, a pet shop and two restaurants. Its lethal contact hazards are the common red edge strips. Pigeons in flocks flee from her, a pug approaches her, and pedestrians walk past
 
 ### Zone 2
 
