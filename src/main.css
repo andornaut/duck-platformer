@@ -4,21 +4,6 @@
    turns the whole frame onto its side and sets the --inset-* properties, the safe-area insets on
    the frame's own edges, which every rule here uses in place of env(safe-area-inset-*). */
 
-/* The page's box is no taller than the visible area, which src/main.ts sets as --page-height
-   from the visual viewport, rather than viewport units, which an installed app can size past the
-   screen. The kit's turned frame measures its size from this box; unturned, the page fills it.
-   Its width stays the layout viewport's: a page wider than that would widen the layout viewport
-   on a phone. */
-html {
-  height: min(100%, var(--page-height, 100%));
-}
-
-@media not all and (orientation: portrait) and (pointer: coarse) {
-  html > body {
-    height: 100%;
-  }
-}
-
 /* In the turned frame, under the kit's turnedFrameQuery("landscape"). Its top is the game's top
    at whichever edge the turn puts it. Phaser's centring measures the turned canvas, so here CSS
    puts the canvas at #game's top and centres it across instead (the kit's followFrameTurn). */
