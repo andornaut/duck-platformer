@@ -33,6 +33,7 @@ import {
 } from "../view/mapMarks";
 import { bentCurve, pathRects } from "../view/mapPath";
 import { addButtonLabel, type ButtonLabel, placeButtonLabel } from "./cardParts";
+import { fitPlayCamera, playPoint } from "./playCamera";
 
 const PALETTE = "palette";
 const BODY_FONT = "font-body";
@@ -96,6 +97,7 @@ export class MapScene extends Scene {
   }
 
   create(): void {
+    fitPlayCamera(this);
     this.colours = (this.cache.json.get(PALETTE) as { colours: Record<string, string> }).colours;
     this.stand = mapStand(ZONE_MAP, this.played, this.route);
     this.slice("map-paper", MAP_SCREEN.paper);
@@ -267,7 +269,7 @@ export class MapScene extends Scene {
   }
 
   private controlAt(pointer: Input.Pointer): Control | undefined {
-    const point = { x: pointer.x, y: pointer.y };
+    const point = playPoint(this, pointer);
     const { continue: go } = MAP_SCREEN;
     const button = pressedArea<Control>(
       [
@@ -279,10 +281,7 @@ export class MapScene extends Scene {
     if (button !== undefined) {
       return button;
     }
-    return routeAtTap(TILE, MAP_SCREEN.nodeHit, this.stand, {
-      x: pointer.x,
-      y: pointer.y,
-    });
+    return routeAtTap(TILE, MAP_SCREEN.nodeHit, this.stand, point);
   }
 
   private key(code: string): void {

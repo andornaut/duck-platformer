@@ -19,6 +19,7 @@ import { focusKeyAction, stepFocus } from "../pause/focusInput";
 import { installOffer } from "../pwa/installOffer";
 import { touchControlsShown } from "../settings/touchControls";
 import { addCardText, addSlice, BODY_FONT, paletteColour, TITLE_FONT } from "./cardParts";
+import { fitPlayCamera, playPoint } from "./playCamera";
 
 // The scene that opens the settings card, the pause card's or the start screen's: it shows the
 // Touch controls setting as it changes, and shows again when the card closes. It passes the card
@@ -78,6 +79,7 @@ export class SettingsScene extends Scene {
   }
 
   create(): void {
+    fitPlayCamera(this);
     this.focus = undefined;
     this.pressed = undefined;
     this.steps = undefined;
@@ -299,7 +301,7 @@ export class SettingsScene extends Scene {
   }
 
   private targetAt(pointer: Input.Pointer): Target | undefined {
-    const point = { x: pointer.x, y: pointer.y };
+    const point = playPoint(this, pointer);
     if (this.steps !== undefined) {
       const { close } = STEPS_CARD;
       return pressedArea([{ art: close.art, hit: close.hit, key: "close" as const }], point);

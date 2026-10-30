@@ -1,8 +1,7 @@
 import { animationKey } from "@andornaut/game-kit/art/aseprite";
 import { snapshotRemapped } from "@andornaut/game-kit/view/phaser/snapshotRemap";
-import { Core, type GameObjects, type Input, Scene } from "phaser";
+import { type Cameras, Core, type GameObjects, type Input, Scene, Scenes } from "phaser";
 
-import { SCREEN } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
 import { FRAME_TURN } from "../input/frameTurn";
@@ -26,6 +25,7 @@ import {
   ringFocus,
   TITLE_FONT,
 } from "./cardParts";
+import { canvasRect, fitCanvasCamera, fitPlayCamera, playPoint } from "./playCamera";
 import type { SettingsData, SettingsOpener, SettingsScene } from "./SettingsScene";
 import type { ZoneScene } from "./ZoneScene";
 
@@ -57,6 +57,7 @@ export class PauseScene extends Scene implements SettingsOpener {
   private dim!: GameObjects.Image;
   private pauseButton!: GameObjects.Sprite;
   // The control a press landed on, which acts if the press lifts on it too.
+  private cardCamera!: Cameras.Scene2D.Camera;
   private pressed: Control | undefined;
   private homeLabel!: GameObjects.BitmapText;
   private resume!: GameObjects.Sprite;
@@ -69,10 +70,21 @@ export class PauseScene extends Scene implements SettingsOpener {
   }
 
   create(): void {
+    // The main camera covers the whole canvas, for the pause button at its top-left corner and
+    // the dim over all of it; the card camera shows the cards in the game's view. Everything
+    // added after the pause button and the dim belongs to the cards.
+    const canvasCamera = this.cameras.main;
+    fitCanvasCamera(this, canvasCamera);
+    this.cardCamera = this.cameras.add();
+    fitPlayCamera(this, this.cardCamera);
     this.pauseButton = this.add
       .sprite(PAUSE_BUTTON.at.x, PAUSE_BUTTON.at.y, "ui-pause")
       .setOrigin(0);
     this.dim = this.add.image(0, 0, "__DEFAULT").setOrigin(0);
+    this.cardCamera.ignore([this.pauseButton, this.dim]);
+    const toCards = (object: GameObjects.GameObject) => canvasCamera.ignore(object);
+    this.events.on(Scenes.Events.ADDED_TO_SCENE, toCards);
+    this.events.once("shutdown", () => this.events.off(Scenes.Events.ADDED_TO_SCENE, toCards));
     this.card = this.drawCard();
     this.showCard(false);
     this.watchPresses();
@@ -119,7 +131,8 @@ export class PauseScene extends Scene implements SettingsOpener {
     this.scene.pause(ZONE);
     stopWakeLock();
     coverZone("pauseCard", true);
-    const camera = this.cameras.main.setVisible(false);
+    const cameras = this.cameras.cameras.filter((camera) => camera.visible);
+    cameras.forEach((camera) => camera.setVisible(false));
     const zone = this.scene.get(ZONE) as ZoneScene;
     zone.showTouchControls(false);
     await this.dimZone(DIM_TEXTURES.hidden);
@@ -129,7 +142,7 @@ export class PauseScene extends Scene implements SettingsOpener {
     this.renderDim();
     this.showCard(true);
     captureTab(this, true);
-    camera.setVisible(true);
+    cameras.forEach((camera) => camera.setVisible(true));
     this.state = "open";
   }
 
@@ -231,7 +244,7 @@ export class PauseScene extends Scene implements SettingsOpener {
   // The canvas as rendered at the end of the next frame, redrawn two steps down each colour's
   // ramp into the texture key. Where the renderer gives no image, the card shows undimmed.
   private async dimZone(key: string): Promise<void> {
-    await snapshotRemapped(dimColour(this.palette()), this, { ...SCREEN, x: 0, y: 0 }, key);
+    await snapshotRemapped(dimColour(this.palette()), this, canvasRect(this), key);
   }
 
   private drawCard(): GameObjects.Container {
@@ -306,7 +319,11 @@ export class PauseScene extends Scene implements SettingsOpener {
         : this.pauseButton.visible
           ? [{ art: PAUSE_BUTTON.art, hit: PAUSE_BUTTON.hit, key: "pauseButton" }]
           : [];
-    return pressedArea(areas, { x: pointer.x, y: pointer.y });
+    const point =
+      this.state === "open"
+        ? playPoint(this, pointer, this.cardCamera)
+        : { x: pointer.x, y: pointer.y };
+    return pressedArea(areas, point);
   }
 
   // A control acts when a press lands on it and lifts on it.

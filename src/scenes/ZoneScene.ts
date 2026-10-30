@@ -20,7 +20,7 @@ import {
   type PhaserFontData,
 } from "@andornaut/game-kit/text/phaser/phaserBitmapFont";
 import { pageToGame } from "@andornaut/game-kit/view/pagePoint";
-import { Core, type GameObjects, Input, Scene, type Tilemaps } from "phaser";
+import { Core, type GameObjects, Input, Scale, Scene, Scenes, type Tilemaps } from "phaser";
 
 import { ARCHETYPES } from "../data/archetypes";
 import { CHARACTERS } from "../data/characters";
@@ -51,6 +51,7 @@ import {
   touchRoleAt,
 } from "../input/intent";
 import { PAUSE_BUTTON } from "../layout/pauseCard";
+import { bottomRightShift, shifted } from "../layout/playView";
 import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
 import { nodeOf } from "../rules/map";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
@@ -76,6 +77,7 @@ import {
   trackPress,
 } from "../view/touchControls";
 import type { PauseScene } from "./PauseScene";
+import { canvasRect, fitCanvasCamera, fitPlayCamera } from "./playCamera";
 
 // The zone a map node plays on the lap with seed.
 function zoneAt(seed: number, node: string): ZonePlan {
@@ -164,6 +166,8 @@ export class ZoneScene extends Scene {
   private clock: StepClock = startStepClock;
   private readonly controls = new Map<TouchControl, GameObjects.Sprite>();
   private readonly labels = new Map<TouchControl, GameObjects.BitmapText>();
+  // Where each label sits in a canvas the game's own size, before placeControls shifts it.
+  private readonly labelOrigins = new Map<TouchControl, Point>();
   private colours: Readonly<Record<string, string>> = {};
   private duck!: GameObjects.Sprite;
   private duckPose: DuckPose = startPose;
@@ -229,6 +233,14 @@ export class ZoneScene extends Scene {
   }
 
   create(): void {
+    // The main camera shows the zone in the game's view; the controls camera covers the whole
+    // canvas for the touch buttons, anchored to its bottom-right corner, and shows nothing else.
+    fitPlayCamera(this);
+    const controlsCamera = this.cameras.add();
+    fitCanvasCamera(this, controlsCamera);
+    const offControls = (object: GameObjects.GameObject) => controlsCamera.ignore(object);
+    this.events.on(Scenes.Events.ADDED_TO_SCENE, offControls);
+    this.events.once("shutdown", () => this.events.off(Scenes.Events.ADDED_TO_SCENE, offControls));
     this.cameras.main.setBackgroundColor(BACKGROUND);
     this.cameras.main.setRoundPixels(true);
     this.areaArt = this.add.graphics();
@@ -266,6 +278,7 @@ export class ZoneScene extends Scene {
       this.controls.set(control, sprite.setPosition(at.x, at.y));
       const text = TEXT.buttons[control];
       const origin = labelAt(font, centre, labelRaise, text);
+      this.labelOrigins.set(control, origin);
       const label = this.add
         .bitmapText(origin.x, origin.y, LABEL_FONT, text)
         .setScale(LABEL_SCALE)
@@ -273,7 +286,16 @@ export class ZoneScene extends Scene {
         .setScrollFactor(0)
         .setDepth(OVERLAY_DEPTH);
       this.labels.set(control, label);
+      this.cameras.main.ignore([sprite, label]);
+      for (const shown of [sprite, label]) {
+        shown.cameraFilter &= ~controlsCamera.id;
+      }
     }
+    this.placeControls();
+    this.scale.on(Scale.Events.RESIZE, this.placeControls, this);
+    this.events.once("shutdown", () =>
+      this.scale.off(Scale.Events.RESIZE, this.placeControls, this),
+    );
     this.watchKeys();
     this.watchTouches();
     if (this.openPaused) {
@@ -296,6 +318,22 @@ export class ZoneScene extends Scene {
     this.drawObjects();
     this.drawDuck();
     this.events.once("create", () => this.sys.pause());
+  }
+
+  // Puts the touch buttons at their places shifted to the canvas's bottom-right corner, into the
+  // bars where the canvas is wider or taller than the game's view.
+  private placeControls(): void {
+    const shift = bottomRightShift(this.scale.gameSize);
+    for (const [control, sprite] of this.controls) {
+      const { centre } = TOUCH_CONTROLS[control];
+      const at = shifted(shift, centredAt(centre, sprite.frame));
+      sprite.setPosition(at.x, at.y);
+      const origin = this.labelOrigins.get(control);
+      if (origin) {
+        const moved = shifted(shift, origin);
+        this.labels.get(control)?.setPosition(moved.x, moved.y);
+      }
+    }
   }
 
   // Shows or hides the touch buttons now, for the pause card to show the zone behind it as the
@@ -635,11 +673,13 @@ export class ZoneScene extends Scene {
       pageToGame(
         FRAME_TURN.turn(),
         this.game.canvas.getBoundingClientRect(),
-        SCREEN,
+        this.scale.gameSize,
         clientPoint(event),
       );
-    const onGame = (event: PagePointerEvent) =>
-      clampInto({ ...SCREEN, x: 0, y: 0 }, unclamped(event));
+    const onGame = (event: PagePointerEvent) => clampInto(canvasRect(this), unclamped(event));
+    // The touch buttons sit shifted to the canvas's bottom-right corner (placeControls).
+    const roleAt = (point: Point) =>
+      touchRoleAt(shifted(bottomRightShift(this.scale.gameSize), point, -1));
     const accepts = (event: PagePointerEvent) => {
       if (event.pointerType !== "touch" || onPageControl(event.target) || !this.scene.isActive()) {
         return false;
@@ -656,7 +696,7 @@ export class ZoneScene extends Scene {
         cancel: release,
         down: ({ pointerId }, event) => {
           const { x } = unclamped(event);
-          this.heldTouches.set(pointerId, { role: touchRoleAt(onGame(event)), startX: x, x });
+          this.heldTouches.set(pointerId, { role: roleAt(onGame(event)), startX: x, x });
         },
         move: ({ pointerId }, event) => {
           const touch = this.heldTouches.get(pointerId);

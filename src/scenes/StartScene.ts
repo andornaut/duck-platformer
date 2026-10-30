@@ -3,10 +3,10 @@ import { browserExitPage, exitApp } from "@andornaut/game-kit/pwa/exitApp";
 import { snapshotRemapped } from "@andornaut/game-kit/view/phaser/snapshotRemap";
 import { type GameObjects, type Input, Scene } from "phaser";
 
-import { SCREEN } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
 import { type PressArea, pressedArea } from "../layout/hitAreas";
+import { playView } from "../layout/playView";
 import {
   type IconButtonLayout,
   type StartScreenLayout,
@@ -28,6 +28,7 @@ import {
   placeButtonLabel,
   ringFocus,
 } from "./cardParts";
+import { fitPlayCamera, playPoint } from "./playCamera";
 import { resumeProgress } from "./resume";
 import type { SettingsData, SettingsOpener, SettingsScene } from "./SettingsScene";
 import type { ZoneData } from "./ZoneScene";
@@ -72,6 +73,7 @@ export class StartScene extends Scene implements SettingsOpener {
   }
 
   create(): void {
+    fitPlayCamera(this);
     this.pressed = undefined;
     this.settingsOpen = false;
     this.focus = undefined;
@@ -160,7 +162,7 @@ export class StartScene extends Scene implements SettingsOpener {
         void snapshotRemapped(
           dimColour(palette(this)),
           this,
-          { ...SCREEN, x: 0, y: 0 },
+          playView(this.scale.gameSize),
           STREET_DIM,
         ).then((dimmed) => {
           this.scene.stop(ZONE);
@@ -201,7 +203,7 @@ export class StartScene extends Scene implements SettingsOpener {
       { art: settings.art, hit: settings.hit, key: "settings" },
       { art: start.button, hit: start.hit, key: "start" },
     ];
-    return pressedArea(areas, { x: pointer.x, y: pointer.y });
+    return pressedArea(areas, playPoint(this, pointer));
   }
 
   private watchPresses(): void {

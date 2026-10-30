@@ -22,12 +22,19 @@ import { SettingsScene } from "./scenes/SettingsScene";
 import { StartScene } from "./scenes/StartScene";
 import { ZoneScene } from "./scenes/ZoneScene";
 
-// Scale.FIT: the base resolution stretches by whatever amount fills #game, keeping its aspect
-// ratio, at the top of #game and centred across it, with bars on the other axis. pixelArt keeps
-// the stretch nearest-neighbour. The game is constructed at once and loads while a fresh load
+// The page's ink background (public/site.css), which the canvas's bars match.
+const INK = "#181425";
+
+// Scale.EXPAND: the canvas fills #game, stretched by the most the base resolution can take on
+// both axes, so where #game is wider or taller than 2:1 the canvas is too. Each scene shows the
+// game's base-resolution view at the canvas's top, centred across (src/scenes/playCamera.ts), and
+// the touch controls move into the bars beside or below it. pixelArt keeps the stretch
+// nearest-neighbour. The game is constructed at once and loads while a fresh load
 // checks for a newer version: BootScene holds only the zone for the check (launchReady).
 function startGame(): void {
   const game = new Game({
+    // The bars beside the game's view, in the page's ink.
+    backgroundColor: INK,
     height: SCREEN.height,
     // Three touch pointers: a move touch, Jump and Use can all be held at once.
     input: { activePointers: 3 },
@@ -36,8 +43,7 @@ function startGame(): void {
     // Lower input-to-screen delay: a desynchronized context lets the browser show a frame without
     // waiting on the page compositor, and the high-performance GPU where there is a choice.
     render: { antialias: false, desynchronized: true, powerPreference: "high-performance" },
-    // Phaser centres the canvas across #game, and src/main.css in the turned portrait frame.
-    scale: { autoCenter: Scale.CENTER_HORIZONTALLY, mode: Scale.FIT },
+    scale: { autoCenter: Scale.CENTER_HORIZONTALLY, mode: Scale.EXPAND },
     // Later scenes draw over earlier ones: the pause card over the zone, the settings card over
     // the pause card's dim.
     scene: [BootScene, StartScene, MapScene, ZoneScene, PauseScene, SettingsScene],
@@ -49,7 +55,7 @@ function startGame(): void {
   // pointers through the frame's turn (the kit's followFrameTurn).
   const parent = document.getElementById("game");
   if (parent !== null) {
-    followFrameTurn(game, parent, FRAME_TURN.turn, SCREEN);
+    followFrameTurn(game, parent, FRAME_TURN.turn, game.scale.gameSize);
   }
   // The pause card and BootScene draw at most about MENU_FPS frames a second; the zone, every
   // display frame.
