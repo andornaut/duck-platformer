@@ -228,7 +228,9 @@ export interface AreaLink {
 // starts in its round trip: 0 at the placed spot heading out, 0.5 at the far end heading back.
 // lines replace the character's for this one instance; scene names a dialogue scene. requires
 // and excludes are carried-choice flags: it is placed only while every required flag is set and
-// no excluded one is. to: where a door leads; a use thing with no `to` is the zone's exit.
+// no excluded one is. room: a door's room, a key of ROOMS (src/data/rooms.ts); a door is an
+// instance whose archetype is "door", and every door has one. to: where a door leads; a use
+// thing with no `to` is the zone's exit.
 export interface Instance {
   readonly character: string;
   readonly col: number;
@@ -238,6 +240,7 @@ export interface Instance {
   readonly overrides?: Tuning;
   readonly phase?: number;
   readonly requires?: readonly string[];
+  readonly room?: string;
   readonly row: number;
   readonly rows?: number;
   readonly scene?: string;
@@ -350,9 +353,11 @@ export interface ThemeBackdrop {
 
 // What every chunk of a theme is drawn with, so seams never show (THEMES by key, in
 // src/data/chunks.ts). tileset: the art tileset. looks: each look a chunk's terrain names, as
-// the tileset's look it is drawn with. backdrops: its repeated backdrops, back to front.
+// the tileset's look it is drawn with. backdrops: its repeated backdrops, back to front. door:
+// the character, a door, each filled door slot places, sized to the slot.
 export interface ThemePlan {
   readonly backdrops: readonly ThemeBackdrop[];
+  readonly door: string;
   readonly looks: Readonly<Record<string, string>>;
   readonly tileset: string;
 }
@@ -371,6 +376,37 @@ export interface ZoneRecipe {
   readonly length: { readonly max: number; readonly min: number };
   readonly start: string;
   readonly theme: string;
+}
+
+// A sprite in a room playing one tag, looping, its frame's top-left at `at`, in base pixels.
+export interface RoomAnimation {
+  readonly art: string;
+  readonly at: Point;
+  readonly tag: string;
+}
+
+// A character standing in a room: its art playing its idle tag, its frame's top-left at `at`, in
+// base pixels.
+export interface RoomCast {
+  readonly at: Point;
+  readonly character: string;
+}
+
+// PLACEHOLDER: what a room sells, by item key, until gameplay decides the currency and items.
+export interface RoomShop {
+  readonly items: readonly string[];
+}
+
+// A room behind a door (ROOMS by key, in src/data/rooms.ts): a full-screen still scene that Use at
+// its door shows, play paused, until she leaves. Its name is TEXT.rooms[key].name. art: its
+// backdrop, the whole game view; without one, a plain placeholder. animations and cast: what is
+// drawn over it. enter (a dialogue scene that plays as she enters) and shop are not built yet.
+export interface RoomPlan {
+  readonly animations?: readonly RoomAnimation[];
+  readonly art?: string;
+  readonly cast?: readonly RoomCast[];
+  readonly enter?: string;
+  readonly shop?: RoomShop;
 }
 
 // A chunk in an assembled zone: its id, and the zone columns it takes.

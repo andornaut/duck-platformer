@@ -32,6 +32,7 @@ function library(chunks: Readonly<Record<string, ChunkPlan>>): ChunkLibrary {
     themes: {
       t: {
         backdrops: [{ character: "sky", row: 0 }],
+        door: "door",
         looks: { ground: "grass" },
         tileset: "tiles",
       },

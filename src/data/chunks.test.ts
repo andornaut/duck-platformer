@@ -53,6 +53,10 @@ describe.each(ALL_THEMES)("theme %s", (_, theme) => {
   it("draws each backdrop from a character that exists", () => {
     expect(theme.backdrops.filter(({ character }) => !(character in CHARACTERS))).toEqual([]);
   });
+
+  it("places doors as a character whose archetype is a door", () => {
+    expect(CHARACTERS[theme.door]?.archetype, theme.door).toBe("door");
+  });
 });
 
 describe.each(ALL_CHUNKS)("chunk %s", (_, library, chunk) => {

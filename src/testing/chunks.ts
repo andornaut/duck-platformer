@@ -149,10 +149,16 @@ export const FIXTURE_LIBRARY: ChunkLibrary = {
   themes: {
     test: {
       backdrops: [{ character: "street-sky", row: 0 }],
+      door: "test-door",
       looks: { ground: "sidewalk" },
       tileset: "tiles-street",
     },
-    "test-other": { backdrops: [], looks: { ground: "floor" }, tileset: "tiles-lobby" },
+    "test-other": {
+      backdrops: [],
+      door: "test-door",
+      looks: { ground: "floor" },
+      tileset: "tiles-lobby",
+    },
   },
 };
 
