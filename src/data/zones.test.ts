@@ -5,6 +5,7 @@ import manifestJson from "../../public/art/manifest.json";
 import lobbyTiles from "../../public/art/tilesets/tiles-lobby.json";
 import streetTiles from "../../public/art/tilesets/tiles-street.json";
 import { resolveNames } from "../rules/tiles";
+import { zonePlanFor } from "../rules/zonePlans";
 import type { ArtManifest } from "../view/aseprite";
 import { artKind } from "../view/objectArt";
 import { lookTiles, type Tileset } from "../view/tiles";
@@ -14,7 +15,7 @@ import { ZONE_MAP } from "./map";
 import { ROOMS } from "./rooms";
 import { SCREEN, TILE } from "./screen";
 import { TEXT } from "./text";
-import type { AreaPlan, Instance, TileRect, Tuning } from "./types";
+import type { AreaPlan, Instance, TileRect, Tuning, ZonePlan } from "./types";
 import { ZONE_1 } from "./zone1";
 import { RECIPES, TEST_ZONES, ZONES as ZONES_BY_KEY } from "./zones";
 
@@ -151,6 +152,31 @@ describe("the zones", () => {
       expect(zone.areas[zone.start.area]?.entries[zone.start.entry]).toBeDefined();
     },
   );
+});
+
+// The doors a zone places: instances with a room on a door's archetype.
+const doorsOf = (plan: ZonePlan) =>
+  Object.values(plan.areas).flatMap(({ objects }) =>
+    objects.filter(
+      (instance) =>
+        instance.room !== undefined &&
+        ARCHETYPES[CHARACTERS[instance.character]?.archetype ?? ""]?.collision === "use",
+    ),
+  );
+
+// Lap seeds each recipe is assembled for.
+const DOOR_SEEDS = [1, 2, 3];
+
+describe("the real zones", () => {
+  it.each(Object.entries(ZONES_BY_KEY))("hand-built zone %s has a door to a room", (_, plan) => {
+    expect(doorsOf(plan).length).toBeGreaterThan(0);
+  });
+
+  it.each(Object.keys(RECIPES))("recipe %s fills a slot with a door to a room", (key) => {
+    for (const seed of DOOR_SEEDS) {
+      expect(doorsOf(zonePlanFor(seed, key)).length, `seed ${seed}`).toBeGreaterThan(0);
+    }
+  });
 });
 
 describe("the map", () => {
