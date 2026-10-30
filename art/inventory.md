@@ -97,6 +97,7 @@ Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with 
 | ui-settings-row     | nine-slice (2,2,2,2)                                       | 12x48  | rest                                      |
 | ui-skip             | sprite                                                     | 78x20  | normal, pressed, disabled                 |
 | ui-start            | sprite                                                     | 192x52 | normal, pressed                           |
+| ui-switch           | sprite                                                     | 32x16  | on, off                                   |
 | ui-touch-jump       | sprite                                                     | 75x75  | rest, press, held                         |
 | ui-touch-use        | sprite                                                     | 75x75  | rest, press, held                         |
 

@@ -89,13 +89,12 @@ Pause card, settings card and install steps card (each over the game dimmed two 
   floor((A - 4) / 2), where A is its advance width at 2x, origin y 96.
 - ui-close, 24x24, at 510,94 (hit 500,88,44,44), the card's top right, on every card. Tags normal (ink X), pressed
   (white X on dslate).
-- ui-settings-row, nine-slice 12x48, margins 2,2,2,2, dslate, drawn 352x48 at x 184; each row is its own hit area.
-  A row's 16x16 icon sits at 198,y+16 and its label (font-body, cream, white while pressed) at origin 228,y+15.
-- Pause card, 368x236, title "Paused". Rows: Settings at y 136 (icon-settings), Back to title at y 188
-  (icon-home). Resume below.
+- A settings row has no art, as on dog-walker-game's settings card: a 352x48 hit area at x 184 holding its 16x16
+  icon at 198,y+16, its label (font-body, ink) at origin 228,y+15 and, for a toggle, ui-switch at 496,y+16.
+- Pause card, 368x236, title "Paused": three buttons 352x48 at x 184, 4 apart: Resume (ui-button-primary) at y 136,
+  Settings at y 188 and Back to title at y 240 (ui-button). Labels centred, origin y = button y + 13.
 - Settings card, title "Settings": 368x236 with the Install row, 368x184 without it. Rows: "Move controls" at
-  y 136 (icon-move-controls) and "Action buttons" at y 188 (icon-touch-controls), each with ui-checkbox at
-  504,y+14 and its state Shown or Hidden cream, its last glyph ending at x 494 (origin 496-A), both Shown by
+  y 136 (icon-move-controls) and "Action buttons" at y 188 (icon-touch-controls), each with ui-switch, both on by
   default; Install at y 240, only while the app is installable (icon-install; ui-button drawn 72x28 at 452,250,
   centred on x 488, label ink, origin y 253; room 56). The build label, dslate in font-body (5.83:1 on lgrey), for
   example "v0.0.1 · dev", is centred on x 360 with its origin 28 above the card's foot: y 296, or 244 without
@@ -109,22 +108,26 @@ Pause card, settings card and install steps card (each over the game dimmed two 
   Install row included), Resume (168x52), Start (200x60), an answer (216x44), a nav button (44x44) or the close
   X's 24x24 mark (32x32). One tag, rest.
 - ui-checkbox, 20x20. Tags off (empty box), on (a green tick).
+- ui-switch, 32x16, dog-walker-game's switch: an ink-rimmed track with a white knob, at the right with a white tick
+  on dgreen when on, at the left with a white cross on slate when off, so the state reads by knob side and glyph as
+  well as colour. Tags on, off.
 - ui-quit, 20x20: the doorway with an arrow leaving it, the nav's Exit icon. Tags normal (cream), pressed (white,
   the arrow 2px further out).
-- ui-button, nine-slice 16x28, margins 2,4,2,6: the secondary button, an ink line, a cream face with a white top
-  highlight and a tan lip 4px deep. Tags normal, pressed (the face sinks 2px, so its label moves down 2).
+- ui-button, nine-slice 16x28, margins 2,4,2,6: the secondary button, dog-walker-game's shape with no outline and
+  cut corners: a grey face, one step darker than the card, with an lgrey highlight on its top row and a slate lip
+  4px deep. Label ink (6.39:1 on grey). Tags normal, pressed (the face sinks 2px and the lip is gone, so its label
+  moves down 2).
 - ui-button-primary, nine-slice 16x28, margins 2,4,2,6: the primary button, ui-button's geometry, tags and press in
-  ui-resume's colours: an ink line, a green face and a dgreen lip 4px deep, with no highlight. Label ink (8.4:1 on
-  green), as on ui-button, so the game draws both with one code path at any size.
+  dark steel: a dslate face, a slate highlight and a navy lip. Label white (9.55:1 on dslate).
 - 16x16 row icons, one tag, rest: icon-settings (a cog: four 4x2 teeth on the axes and four 2x2 on the diagonals
   round a ring with a round hole), icon-home (dog-walker's solid house: a 1:1 pitched roof, a chimney on the right
   slope and a door gap, cream with tan on its lower-right edges), icon-exit (ui-quit's doorway and arrow, 12 rows
   tall), icon-touch-controls (a round touch button with the Jump caret), icon-install (an arrow down into a tray),
   icon-ios-share (Safari's Share button), icon-browser-menu (three stacked dots) and icon-move-controls (the move
-  hint in small: a round ring with a chevron each side). All but icon-home are flat cream in 2px strokes.
-- ui-resume, 160x44, at 280,264 on the pause card (the hit area). Tags normal, pressed (the face sinks 2px into its
-  lip). Label origin y 275 (277 pressed), ui-play-mark's top y 279: "Resume" puts the triangle at x 329 and the label
-  at 340.
+  hint in small: a round ring with a chevron each side). All but icon-home are flat dslate in 2px strokes (5.83:1
+  on the card's lgrey).
+- ui-resume, 160x44: a green button with the play mark, the map's Continue at 280,300 (the hit area; art/tools/map.py
+  places its label). Tags normal, pressed (the face sinks 2px into its lip).
 """
 
 import math
@@ -338,35 +341,62 @@ X = [(i, i) for i in range(12)] + [(i + 1, i) for i in range(11)] + [(11 - i, i)
     [(10 - i, i) for i in range(11)]
 
 
-def button(state):
-    """16x28 nine-slice for a secondary action (Install): an ink line with cut corners, a cream face with a white
-    top highlight, and a tan lip 4px deep; pressed, the face sinks 2px into the lip and loses its highlight."""
-    top = 0 if state == "normal" else 2
+def plate(face, lip, hi, state):
+    """16x28 nine-slice, the dog-walker-game button: no outline, cut corners, a face with a 1px highlight on its top
+    row and a lip 4px deep; pressed, the face sinks 2px and the lip is gone."""
     g = Grid(16, 28)
-    panel(g, 0, top, 16, 28 - top, "tan", rim=None)
-    g.rect(1, top + 1, 14, 22, "cream")
-    if state == "normal":
-        g.rect(2, 1, 12, 1, "white")
+    top = 0 if state == "normal" else 2
+    if not top:
+        g.rect(1, 24, 14, 4, lip)
+        g.rect(0, 24, 16, 3, lip)
+    g.rect(1, top, 14, 24, face)
+    g.rect(0, top + 1, 16, 22, face)
+    g.rect(2, top + 1, 12, 1, hi)
     return g.px
 
 
+def button(state):
+    """The secondary button: a grey face, an lgrey highlight and a slate lip, one step darker than the card."""
+    return plate("grey", "slate", "lgrey", state)
+
+
 def button_primary(state):
-    """16x28 nine-slice for the primary action: ui-button's geometry in ui-resume's colours, an ink line with cut
-    corners, a green face and a dgreen lip 4px deep; pressed, the face sinks 2px into the lip."""
-    top = 0 if state == "normal" else 2
-    g = Grid(16, 28)
-    panel(g, 0, top, 16, 28 - top, "dgreen", rim=None)
-    g.rect(1, top + 1, 14, 22, "green")
+    """The primary button: a dslate face, a slate highlight and a navy lip."""
+    return plate("dslate", "navy", "slate", state)
+
+
+def switch(on):
+    """32x16, dog-walker-game's switch on the card: an ink-rimmed track, the white knob at the right and a white tick
+    on dgreen when on, at the left with a white cross on slate when off."""
+    track, sh = ("dgreen", "forest") if on else ("slate", "dslate")
+    g = Grid(32, 16)
+    for dy in range(16):
+        inset = round(8 - (64 - (dy - 7.5) ** 2) ** 0.5) if abs(dy - 7.5) < 8 else 8
+        g.rect(inset, dy, 32 - 2 * inset, 1, "ink")
+        if 0 < dy < 15:
+            inner = round(8 - (49 - (dy - 7.5) ** 2) ** 0.5) if abs(dy - 7.5) < 7 else 8
+            g.rect(inner + 1, dy, 30 - 2 * inner, 1, sh if dy == 1 else track)
+    kx = 23.5 if on else 8.5
+    g.ell(kx, 8, 6, 6, "ink")
+    g.ell(kx, 8, 5, 5, "white", "lgrey")
+    if on:
+        for x, y in ((4, 8), (5, 9), (6, 10), (7, 9), (8, 8), (9, 7), (10, 6), (11, 5)):
+            g.rect(x, y, 1, 2, "white")
+    else:
+        for i in range(5):
+            g.rect(19 + i, 5 + i, 1, 2, "white")
+            g.rect(23 - i, 5 + i, 1, 2, "white")
     return g.px
 
 
 def icon(rows):
-    """A 16x16 icon from 16 strings ('#' is cream): flat, 2px strokes, like ui-quit and ui-close."""
+    """A 16x16 icon from 16 strings ('#' is ROW_ICON): flat, 2px strokes."""
     g = Grid(16, 16)
-    stamp(g, bm(*rows), 0, 0, "cream")
+    stamp(g, bm(*rows), 0, 0, ROW_ICON)
     return g.px
 
 
+ROW_ICON = "dslate"  # 16x16 icons sit on the card's lgrey face: 5.83:1
 DOT4 = (".##.", "####", "####", ".##.")
 ICONS = {
     # a cog: a ring round a hole, four 4x2 teeth on the axes and four 2x2 on the diagonals
@@ -448,10 +478,10 @@ def move_controls_icon():
     for y in range(16):
         for x in range(16):
             if 5.9 <= math.hypot(x - 7.5, y - 7.5) <= 7.9:
-                g.p(x, y, "cream")
+                g.p(x, y, ROW_ICON)
     for x, y in ((5, 5), (4, 6), (3, 7), (3, 8), (4, 9), (5, 10)):
-        g.rect(x, y, 2, 1, "cream")
-        g.rect(14 - x, y, 2, 1, "cream")
+        g.rect(x, y, 2, 1, ROW_ICON)
+        g.rect(14 - x, y, 2, 1, ROW_ICON)
     return g.px
 
 
@@ -461,11 +491,11 @@ def touch_controls_icon():
     for y in range(16):
         for x in range(16):
             if 5.9 <= math.hypot(x - 7.5, y - 7.5) <= 7.9:
-                g.p(x, y, "cream")
-    g.rect(7, 6, 2, 1, "cream")
+                g.p(x, y, ROW_ICON)
+    g.rect(7, 6, 2, 1, ROW_ICON)
     for i in range(3):
-        g.rect(6 - i, 7 + i, 2, 1, "cream")
-        g.rect(8 + i, 7 + i, 2, 1, "cream")
+        g.rect(6 - i, 7 + i, 2, 1, ROW_ICON)
+        g.rect(8 + i, 7 + i, 2, 1, ROW_ICON)
     return g.px
 
 
@@ -514,7 +544,7 @@ def home(n):
 def exit_16():
     """icon-exit, ui-quit's doorway and arrow at 16x16: 2px strokes, 12 rows tall, centred."""
     g = Grid(16, 16)
-    stamp(g, bm(*EXIT_16), 0, 2, "cream")
+    stamp(g, bm(*EXIT_16), 0, 2, ROW_ICON)
     return g.px
 
 
@@ -628,6 +658,7 @@ def sprites():
     yield "ui-answer", [(s, [answer(s)], 100) for s in ("normal", "selected", "pressed")]
     yield "ui-button", [(s, [button(s)], 100) for s in ("normal", "pressed")]
     yield "ui-button-primary", [(s, [button_primary(s)], 100) for s in ("normal", "pressed")]
+    yield "ui-switch", [(s, [switch(s == "on")], 100) for s in ("on", "off")]
     yield "ui-checkbox", [("off", [checkbox(False)], 100), ("on", [checkbox(True)], 100)]
     yield "ui-close", [(s, [close(s)], 100) for s in ("normal", "pressed")]
     yield "ui-dialogue-box", one(dialogue_box())

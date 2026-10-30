@@ -416,6 +416,12 @@
       "once": []
     },
     {
+      "key": "ui-switch",
+      "png": "sprites/ui-switch.png",
+      "json": "sprites/ui-switch.json",
+      "once": []
+    },
+    {
       "key": "ui-touch-jump",
       "png": "sprites/ui-touch-jump.png",
       "json": "sprites/ui-touch-jump.json",
