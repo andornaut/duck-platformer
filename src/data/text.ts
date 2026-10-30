@@ -35,6 +35,7 @@ export const TEXT: GameText = {
     test: { name: "Test room" },
   },
   settings: {
+    actionButtons: "Action buttons",
     hidden: "Hidden",
     install: "Install",
     installButton: "Install",
@@ -43,6 +44,7 @@ export const TEXT: GameText = {
       ios: { first: "Tap Share.", second: "Tap Add to Home Screen." },
       title: "Install",
     },
+    moveControls: "Move controls",
     shown: "Shown",
     title: "Settings",
     touchControls: "Touch controls",

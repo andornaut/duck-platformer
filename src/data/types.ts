@@ -94,10 +94,11 @@ export interface GameText {
     readonly settings: string;
     readonly start: string;
   };
-  // The settings card: its title, the Touch controls row and its two states, the Install row and
-  // its button, and the install steps card: its title and, for each browser that installs only
-  // from its own menu, its two steps.
+  // The settings card: its title, the Move controls and Action buttons rows and their two states
+  // (Shown and Hidden), the Install row and its button, and the install steps card: its title
+  // and, for each browser that installs only from its own menu, its two steps.
   readonly settings: {
+    readonly actionButtons: string;
     readonly hidden: string;
     readonly install: string;
     readonly installButton: string;
@@ -106,6 +107,7 @@ export interface GameText {
       readonly ios: InstallSteps;
       readonly title: string;
     };
+    readonly moveControls: string;
     readonly shown: string;
     readonly title: string;
     readonly touchControls: string;
