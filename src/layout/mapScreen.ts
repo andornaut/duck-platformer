@@ -48,10 +48,10 @@ export const MAP_PATH = {
   trim: { fork: 11, zone: 15 } satisfies Record<MapNode["kind"], number>,
 } as const;
 
-// Each look a path takes, in a palette colour: unbuilt, built but not yet opened, and opened by
-// the zones she has completed (openMap).
+// Each look a path takes, in a palette colour: unbuilt, built but not yet opened (locked, dimmed a
+// step toward the paper), and opened by the zones she has completed (openMap).
 export const MAP_PATH_LOOKS = {
-  built: { colour: "dbrown", stroke: { kind: "dashes", off: 4, on: 6, width: 2 } },
+  built: { colour: "brown", stroke: { kind: "dashes", off: 4, on: 6, width: 2 } },
   open: { colour: "dred", stroke: { kind: "solid", width: 4 } },
   unbuilt: { colour: "slate", stroke: { every: 6, kind: "dots", width: 2 } },
 } as const satisfies Record<string, { readonly colour: string; readonly stroke: PathStroke }>;
