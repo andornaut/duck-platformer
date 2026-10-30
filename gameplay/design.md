@@ -37,9 +37,10 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 
 - Landscape, 720×360 base resolution. Phone browser first, with on-screen touch controls; keyboard on desktop. In portrait on a touch screen, the game draws turned a quarter turn to fill the screen, so the player turns the phone
 - **Keyboard:** ←/→ or A/D to move; Space, ↑ or W to jump; E to use; P or Esc to open or close the pause card
-- **Overlay:** the touch buttons show by default. Settings hides them, and hidden buttons still work
+- **Overlay:** the move hint and the touch buttons show by default. Settings hides each set on its own, and hidden controls still work
 - **Touch buttons** (right thumb): Use above, Jump below. Each is labelled with its name, reads clearly as a button and stands out against any background, while hiding little of the play area. On a screen wider or taller than 2:1, Jump, Use and Pause sit in the spare space beside the game. Their press areas are circles of radius 60 base px centred on each button, or half the distance between them if that's less, so they never overlap; Jump's also reaches into the bottom-right corner of the screen. A button animates subtly when pressed
-- **Touch movement:** a touch anywhere except on a button or other interactive element sets the neutral point where it lands. Dragging left or right from it past a small dead zone moves the duck that way at full speed; back inside the dead zone, she stops. Releasing ends the movement. Nothing marks the neutral point
+- **Touch movement:** a touch anywhere except on a button or other interactive element sets the neutral point where it lands. Dragging left or right from it past a small dead zone moves the duck that way at full speed; back inside the dead zone, she stops. Releasing ends the movement
+- **Move hint** (left thumb): a left and right marker at the left edge, inset as far as the touch buttons are from the right edge, centred midway between Use and Jump in height. It is only a drawing and has no press area of its own. While a touch is moving her, it sits on the neutral point; on release it returns to rest. On a screen wider or taller than 2:1, it rests in the spare space beside the game
 - **Use:** opens a room's door. PLACEHOLDER: what else it acts on
 
 ### Interface
@@ -164,4 +165,4 @@ Everything in a zone except its terrain is placed in data, in three layers.
 - **Open:** the pause button at the top left, shown only while a zone plays, P or Esc, or back. It also opens by itself when the frame turns, or stops turning, while a zone plays, and only then; Resume continues
 - **Pause card:** a card titled Paused, over the dimmed game, which pauses play, with a close X. Its rows: Settings, Return home, then Resume
 - **Return home:** always goes to the start screen
-- **Settings card:** opened from Settings on the pause card or the start screen. Its rows: Touch controls (Shown or Hidden, Shown by default), then Install while the game can be installed, which opens the install steps. The build label sits at its foot. Its close X, P, Esc and back each return to whichever opened it
+- **Settings card:** opened from Settings on the pause card or the start screen. Its rows: Move controls (the move hint) and Action buttons (Use and Jump), each Shown or Hidden and Shown by default, then Install while the game can be installed, which opens the install steps. The build label sits at its foot. Its close X, P, Esc and back each return to whichever opened it
