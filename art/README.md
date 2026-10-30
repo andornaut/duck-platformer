@@ -149,7 +149,7 @@ The villain is a champagne ferret standing up on its hind legs in a stovepipe ha
 
 ## UI
 
-All positions are in base pixels (x, y, w, h) of the 720x360 layout as drawn. The game derives every press area from the drawn button at runtime: the button plus 25% of its shorter side on each side, clamped between 6 and 16px, and at least 48x48; Jump's also reaches the screen's corner. Art gives only the drawn rects.
+All positions are in base pixels (x, y, w, h) of the 720x360 layout as drawn. The game derives every press area from the drawn button at runtime: the button plus 25% of its shorter side on each side, clamped between 6 and 16px, and at least 48x48. Use and Jump instead press within a circle of radius 60 about each one's centre, or half the distance between their centres where that is less, so the two never overlap; Jump's also reaches the screen's bottom-right corner, as the rect from its centre to the corner. Art gives only the drawn rects and centres.
 
 ### Dialogue box
 
@@ -193,7 +193,7 @@ The game boots into the start screen; Start goes to the map. A nav bar runs acro
 
 A pause button at the top left opens the pause card over the game, which is dimmed by stepping every colour two ramp steps darker. The pause card reads Settings, Return home and Resume; Settings opens the settings card over the same dim, and Install opens the install steps card for browsers that install from their own menu. One card shows at a time. Every card is the same frame, 368 wide at 176,88, with a 36px header holding its title and a close X (24x24 at 510,94). Rows are 352x48 at x 184, 4px apart, each pressed as a whole, with a 16x16 icon at x 198 and a label origin at x 228.
 
-- Pause button: the Use and Jump disc, 33px across, with two pause bars and no label, centred at 26,26 as drawn (35x35 frame), anchored to the top-left corner at runtime, as Use and Jump are to theirs. It is a touch control: hidden on desktop and while a dialogue box is open, and its press matches Use and Jump.
+- Pause button: the Use and Jump disc, 33px across, with two pause bars and no label, centred at 26,26 as drawn (35x35 frame), anchored to the top-left corner at runtime, as Use and Jump are to theirs. It is a touch control: hidden on desktop and while a dialogue box is open. Its press area is the drawn frame grown by the rect rule above.
 
 | Card     | Rect           | Title    | Rows (y)                                                            | Below the rows                             |
 | -------- | -------------- | -------- | ------------------------------------------------------------------- | ------------------------------------------ |
