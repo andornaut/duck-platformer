@@ -186,6 +186,17 @@ export interface Reaction {
   readonly speed: number;
 }
 
+// A horizontal patrol that crouches, rushes in one locked direction, then rests. Distances and
+// speed use tiles and seconds in character data, pixels and seconds in a resolved layout.
+export interface Charge {
+  readonly crouchSeconds: number;
+  readonly groundTolerance: number;
+  readonly restSeconds: number;
+  readonly rushSeconds: number;
+  readonly rushSpeed: number;
+  readonly triggerRange: number;
+}
+
 export type InteractionKind = "none" | "quip" | "talk";
 
 // How a character interacts with her, within range tiles of her (centre to centre). quip: says
@@ -231,6 +242,7 @@ export interface Quirk {
 // box comes from art's manifest. lines and quips are keys into TEXT.lines and TEXT.quips; a prop
 // has none.
 export interface Character {
+  readonly charge?: Charge;
   // A shared tileset for this character's art, otherwise its area's tileset.
   readonly tileset?: string;
   readonly animations?: Readonly<Partial<Record<CharacterState, string>>>;
@@ -467,6 +479,7 @@ export interface Reaches {
 // the view and dialogue need. hitbox: where a hazard touches her, from its top-left corner, when
 // its art declares one; else its whole rectangle.
 export interface ObjectLayout {
+  readonly charge?: Charge;
   // The character's shared tileset, otherwise the area's tileset.
   readonly tileset?: string;
   readonly animations: Readonly<Record<CharacterState, string | undefined>>;
