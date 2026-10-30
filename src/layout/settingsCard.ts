@@ -5,8 +5,8 @@ import { hitAround } from "./hitAreas";
 // Art's settings card (art/README.md, Pause, settings and install cards), in base pixels: every
 // card's frame, title and close X (cardFrame.ts), then the Move controls and Action buttons rows and,
 // while the game can be installed, the Install row, over the build label. Each row is its own
-// hit area. Each label's point is its text's top-left. A setting row's state text ends at
-// stateRight, before its checkbox; the Install button's label is centred across the button at
+// hit area, with no box drawn. Each label's point is its text's top-left. A setting row shows its
+// state with art's switch, toggle; the Install button's label is centred across the button at
 // labelY, or pressedLabelY while pressed, in at most room pixels; the build label is centred on
 // centreX.
 const ROW = { height: 48, width: 352, x: 184 } as const;
@@ -14,17 +14,15 @@ const ROW = { height: 48, width: 352, x: 184 } as const;
 const ROW_PITCH = 52;
 const INSTALL_ROW: Rect = { ...ROW, y: CARD_FRAME.firstRowY + 2 * ROW_PITCH };
 
-// A setting row at y: its checkbox, icon and label, each placed from the row's top, and its
-// state text ending at stateRight.
+// A setting row at y: its icon, label and switch, each placed from the row's top.
 function settingRow(y: number) {
   const row: Rect = { ...ROW, y };
   return {
-    checkbox: { x: 504, y: y + 14 } satisfies Point,
     hit: hitAround(row),
     icon: { x: 198, y: y + 16 } satisfies Point,
     label: { x: 228, y: y + 15 } satisfies Point,
     row,
-    stateRight: 494,
+    toggle: { x: 496, y: y + 16 } satisfies Point,
   };
 }
 

@@ -12,13 +12,13 @@ import moveSheet from "../../public/art/sprites/icon-move-controls.json";
 import touchSheet from "../../public/art/sprites/icon-touch-controls.json";
 import buttonSheet from "../../public/art/sprites/ui-button.json";
 import primarySheet from "../../public/art/sprites/ui-button-primary.json";
-import checkboxSheet from "../../public/art/sprites/ui-checkbox.json";
 import pauseSheet from "../../public/art/sprites/ui-pause.json";
+import switchSheet from "../../public/art/sprites/ui-switch.json";
 import { SCREEN } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { Point, Rect } from "../data/types";
 import type { ArtManifest } from "../view/aseprite";
-import { centredLabel, PLAY_MARK } from "./buttonLabel";
+import { centredLabel } from "./buttonLabel";
 import { CARD_FRAME } from "./cardFrame";
 import { HIT_RULE, type PressArea, pressedArea } from "./hitAreas";
 import { CARD_TEXT_SCALE, PAUSE_BUTTON, PAUSE_CARD } from "./pauseCard";
@@ -144,9 +144,9 @@ describe("card layouts", () => {
     ...SETTINGS.map(
       (setting) =>
         [
-          `${setting} checkbox`,
-          checkboxSheet,
-          SETTINGS_CARD[setting].checkbox,
+          `${setting} switch`,
+          switchSheet,
+          SETTINGS_CARD[setting].toggle,
           SETTINGS_CARD[setting].row,
         ] as const,
     ),
@@ -180,30 +180,26 @@ describe("card layouts", () => {
 
 describe("pause card", () => {
   const buttons = (["resume", "settings", "home"] as const).map(
-    (name) => [name, PAUSE_CARD[name], TEXT.pause[name], name === "resume"] as const,
+    (name) => [name, PAUSE_CARD[name], TEXT.pause[name]] as const,
   );
 
-  // Each label fits across its button inside the button's 9-slice edges, Resume's after the play
-  // mark, and centres there with room either side.
+  // Each label fits across its button inside the button's 9-slice edges, and centres there with
+  // room either side.
   it("fits each button's label in its room", () => {
     const slice = MANIFEST_SLICES["ui-button"];
-    const roles = buttons.map(([name, { button }, text, marked]) => ({
+    const roles = buttons.map(([name, { button }, text]) => ({
       name: `${name} button`,
-      room:
-        button.width -
-        (slice?.left ?? 0) -
-        (slice?.right ?? 0) -
-        (marked ? PLAY_MARK.width + PLAY_MARK.gap : 0),
+      room: button.width - (slice?.left ?? 0) - (slice?.right ?? 0),
       style: { scale: CARD_TEXT_SCALE },
       texts: [text],
     }));
     expect(overflowingTexts(bitmapMeasure(FONT), roles)).toEqual([]);
   });
 
-  it.each(buttons)("centres %s's label on its button", (_, { button }, text, marked) => {
+  it.each(buttons)("centres %s's label on its button", (_, { button }, text) => {
     const ink = inkWidth(FONT, CARD_TEXT_SCALE, text);
-    const { labelX, markX } = centredLabel(button, ink, marked ? PLAY_MARK : undefined);
-    const margins = [(markX ?? labelX) - button.x, button.x + button.width - (labelX + ink)];
+    const { labelX } = centredLabel(button, ink);
+    const margins = [labelX - button.x, button.x + button.width - (labelX + ink)];
     expect(Math.min(...margins)).toBeGreaterThan(0);
   });
 
@@ -229,18 +225,12 @@ describe("settings words", () => {
   const words = TEXT.settings;
   const { install } = SETTINGS_CARD;
 
-  // Each label ends before what follows it on its row, and each state before its checkbox.
+  // Each label ends before what follows it on its row.
   it.each<readonly [string, string, Rect, number]>([
-    ...SETTINGS.flatMap((setting) =>
-      [words.shown, words.hidden].map((state) => {
-        const { checkbox, label, stateRight } = SETTINGS_CARD[setting];
-        const stateLeft = stateRight - inkWidth(FONT, CARD_TEXT_SCALE, state);
-        return [
-          [words[setting], state, textRect(label, words[setting]), stateLeft],
-          [state, "the checkbox", { ...textRect(label, state), x: stateLeft }, checkbox.x],
-        ] as const;
-      }),
-    ).flat(),
+    ...SETTINGS.map((setting) => {
+      const { label, toggle } = SETTINGS_CARD[setting];
+      return [words[setting], "its switch", textRect(label, words[setting]), toggle.x] as const;
+    }),
     ["Install", "its button", textRect(install.label, words.install), install.button.x],
   ])("%s ends before %s", (_, __, label, next) => {
     expect(label.x + label.width).toBeLessThan(next);

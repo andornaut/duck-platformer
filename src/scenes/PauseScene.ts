@@ -273,10 +273,7 @@ export class PauseScene extends Scene implements SettingsOpener {
     this.closeX = this.add.sprite(close.at.x, close.at.y, "ui-close").setOrigin(0);
     this.buttons = {
       home: addTextButton(this, PAUSE_CARD.home, words.home),
-      resume: addTextButton(this, PAUSE_CARD.resume, words.resume, {
-        art: PRIMARY_BUTTON,
-        marked: true,
-      }),
+      resume: addTextButton(this, PAUSE_CARD.resume, words.resume, { style: PRIMARY_BUTTON }),
       settings: addTextButton(this, PAUSE_CARD.settings, words.settings),
     };
     this.setPressed(undefined);

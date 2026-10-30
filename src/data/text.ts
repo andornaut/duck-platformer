@@ -50,7 +50,6 @@ export const TEXT: GameText = {
   },
   settings: {
     actionButtons: "Action buttons",
-    hidden: "Hidden",
     install: "Install",
     installButton: "Install",
     installSteps: {
@@ -59,7 +58,6 @@ export const TEXT: GameText = {
       title: "Install",
     },
     moveControls: "Move controls",
-    shown: "Shown",
     title: "Settings",
   },
   start: {

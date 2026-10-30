@@ -131,11 +131,14 @@ export function captureTab(scene: Scene, captured: boolean): void {
 }
 
 // Art's buttons: the normal one, and the green primary, which a card leads with.
-export const BUTTON = "ui-button";
-export const PRIMARY_BUTTON = "ui-button-primary";
+// Art's buttons, each with its label's palette colour: the normal one, grey with an ink label, and
+// the primary, which a card leads with, dslate with a white label.
+export const BUTTON = { art: "ui-button", label: "ink" } as const;
+export const PRIMARY_BUTTON = { art: "ui-button-primary", label: "white" } as const;
+export type ButtonStyle = typeof BUTTON | typeof PRIMARY_BUTTON;
 
-// A labelled button on one of art's buttons (BUTTON by default) stretched over its rect: its
-// normal and pressed faces, and its label in ink, led by the play mark when marked.
+// A labelled button in one of art's button styles (BUTTON by default) stretched over its rect: its
+// normal and pressed faces, and its label in the style's colour, led by the play mark when marked.
 export interface TextButton {
   readonly faces: Readonly<Record<"normal" | "pressed", GameObjects.NineSlice>>;
   readonly label: ButtonLabel;
@@ -146,15 +149,18 @@ export function addTextButton(
   scene: Scene,
   layout: LabelledButton,
   text: string,
-  { art = BUTTON, marked = false }: { readonly art?: string; readonly marked?: boolean } = {},
+  {
+    marked = false,
+    style = BUTTON,
+  }: { readonly marked?: boolean; readonly style?: ButtonStyle } = {},
 ): TextButton {
-  const frames = sheetTags(scene.cache.json.get(art) as AsepriteSheet);
+  const frames = sheetTags(scene.cache.json.get(style.art) as AsepriteSheet);
   const face = (tag: "normal" | "pressed") =>
-    addSlice(scene, art, layout.button, frames.get(tag)?.[0]?.frame);
+    addSlice(scene, style.art, layout.button, frames.get(tag)?.[0]?.frame);
   return {
     faces: { normal: face("normal"), pressed: face("pressed") },
     label: addButtonLabel(scene, layout.button, layout.labelY, text, {
-      colour: paletteColour(scene, "ink"),
+      colour: paletteColour(scene, style.label),
       marked,
     }),
     layout,

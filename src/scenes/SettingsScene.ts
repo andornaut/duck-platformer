@@ -18,7 +18,7 @@ import { focusRingAround, SETTINGS_CARD, STEPS_CARD } from "../layout/settingsCa
 import { focusKeyAction, stepFocus } from "../pause/focusInput";
 import { installOffer } from "../pwa/installOffer";
 import { TOUCH_SETTINGS, type TouchSetting, touchSettingShown } from "../settings/touchControls";
-import { addCardText, addCardTitle, addSlice, BODY_FONT, paletteColour } from "./cardParts";
+import { addCardText, addCardTitle, addSlice, BODY_FONT, BUTTON, paletteColour } from "./cardParts";
 import { catchModalTaps } from "./modalTaps";
 import { fitPlayCamera, playPoint } from "./playCamera";
 
@@ -44,11 +44,10 @@ const SETTING_ICONS: Readonly<Record<TouchSetting, string>> = {
   moveControls: "icon-move-controls",
 };
 
-// A touch setting's row as drawn: its label, its Shown or Hidden, and its checkbox.
+// A touch setting's row as drawn: its label and its switch.
 interface SettingRow {
-  readonly checkbox: GameObjects.Sprite;
   readonly label: GameObjects.BitmapText;
-  readonly state: GameObjects.BitmapText;
+  readonly toggle: GameObjects.Sprite;
 }
 
 // The glyph of the button each browser's install steps start from.
@@ -236,7 +235,7 @@ export class SettingsScene extends Scene {
   private drawCard(installRow: boolean): GameObjects.Container {
     const { buildLabel, card, cardWithoutInstall, close, install } = SETTINGS_CARD;
     const words = TEXT.settings;
-    const cream = this.colour("cream");
+    const ink = this.colour("ink");
     const frame = installRow ? card : cardWithoutInstall;
     const objects: GameObjects.GameObject[] = [
       addSlice(this, "ui-settings-card", frame),
@@ -244,19 +243,16 @@ export class SettingsScene extends Scene {
     ];
     this.settingRows = new Map();
     for (const setting of TOUCH_SETTINGS) {
-      const { checkbox, icon, label, row } = SETTINGS_CARD[setting];
+      const { icon, label, toggle } = SETTINGS_CARD[setting];
       const drawn: SettingRow = {
-        checkbox: this.add.sprite(checkbox.x, checkbox.y, "ui-checkbox"),
-        label: addCardText(this, BODY_FONT, label, words[setting], cream),
-        state: addCardText(this, BODY_FONT, label, "", cream),
+        label: addCardText(this, BODY_FONT, label, words[setting], ink),
+        toggle: this.add.sprite(toggle.x, toggle.y, "ui-switch"),
       };
       this.settingRows.set(setting, drawn);
       objects.push(
-        addSlice(this, "ui-settings-row", row),
         this.add.image(icon.x, icon.y, SETTING_ICONS[setting]),
         drawn.label,
-        drawn.state,
-        drawn.checkbox,
+        drawn.toggle,
       );
     }
     this.closeX = this.add.sprite(close.at.x, close.at.y, "ui-close");
@@ -265,23 +261,22 @@ export class SettingsScene extends Scene {
     this.installButtonLabel = undefined;
     this.installLabel = undefined;
     if (installRow) {
-      this.installLabel = addCardText(this, BODY_FONT, install.label, words.install, cream);
-      const frames = sheetTags(this.cache.json.get("ui-button") as AsepriteSheet);
+      this.installLabel = addCardText(this, BODY_FONT, install.label, words.install, ink);
+      const frames = sheetTags(this.cache.json.get(BUTTON.art) as AsepriteSheet);
       const face = (tag: "normal" | "pressed") =>
-        addSlice(this, "ui-button", install.button, frames.get(tag)?.[0]?.frame);
+        addSlice(this, BUTTON.art, install.button, frames.get(tag)?.[0]?.frame);
       this.installButton = { normal: face("normal"), pressed: face("pressed") };
       this.installButtonLabel = addCardText(
         this,
         BODY_FONT,
         { x: install.button.x, y: install.buttonLabel.y },
         words.installButton,
-        this.colour("ink"),
+        this.colour(BUTTON.label),
       );
       this.installButtonLabel.setX(
         centredLabel(install.button, this.inkWidth(words.installButton)).labelX,
       );
       objects.push(
-        addSlice(this, "ui-settings-row", install.row),
         this.add.image(install.icon.x, install.icon.y, "icon-install"),
         this.installLabel,
         this.installButton.normal,
@@ -306,15 +301,12 @@ export class SettingsScene extends Scene {
 
   // Each control as the setting, the press and the focus leave it.
   private render(): void {
-    const words = TEXT.settings;
     const { install } = SETTINGS_CARD;
     const pressed = this.pressed;
-    const label = (target: Target) => this.colour(pressed === target ? "white" : "cream");
+    // A pressed row's label turns dslate, from ink.
+    const label = (target: Target) => this.colour(pressed === target ? "dslate" : "ink");
     for (const [setting, row] of this.settingRows) {
-      const shown = touchSettingShown(setting);
-      row.checkbox.play(animationKey("ui-checkbox", shown ? "on" : "off"));
-      const state = shown ? words.shown : words.hidden;
-      row.state.setText(state).setX(SETTINGS_CARD[setting].stateRight - this.inkWidth(state));
+      row.toggle.play(animationKey("ui-switch", touchSettingShown(setting) ? "on" : "off"));
       row.label.setTint(label(setting));
     }
     this.installLabel?.setTint(label("install"));

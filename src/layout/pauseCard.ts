@@ -6,10 +6,10 @@ import { type LabelledButton, labelledButton } from "./restartCard";
 
 // Art's pause card (art/README.md, Pause, settings and install cards), in base pixels: every
 // card's frame, title and close X (cardFrame.ts), then three buttons of one shape, stacked from
-// its first row down: Resume, the primary, then Settings and Back to title. Each button's label is
-// centred across it (Resume's led by the play mark), labelDy below its top and 2 lower while
-// pressed. Each button's press area, hit, is its drawn button grown by hitAreas.ts's rule.
-const BUTTON = { gap: 8, height: 40, labelDy: 9, width: 320, x: 200 } as const;
+// its first row down, the settings rows' size and pitch: Resume, the primary, then Settings and
+// Back to title. Each button's label is centred across it, labelDy below its top and 2 lower
+// while pressed. Each button's press area, hit, is its drawn button grown by hitAreas.ts's rule.
+const BUTTON = { gap: 4, height: 48, labelDy: 13, width: 352, x: 184 } as const;
 // The button at index down the stack.
 const button = (index: number): LabelledButton =>
   labelledButton(
@@ -23,7 +23,7 @@ const button = (index: number): LabelledButton =>
   );
 
 export const PAUSE_CARD = {
-  card: cardRect(200),
+  card: cardRect(236),
   close: CARD_FRAME.close,
   home: button(2),
   resume: button(0),

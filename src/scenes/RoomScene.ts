@@ -19,6 +19,7 @@ import {
   addButtonLabel,
   addCardText,
   addSlice,
+  BUTTON,
   type ButtonLabel,
   captureTab,
   paletteColour,
@@ -137,12 +138,12 @@ export class RoomScene extends Scene {
 
   private drawLeave(): void {
     const { leave } = ROOM_SCREEN;
-    const frames = sheetTags(this.cache.json.get("ui-button") as AsepriteSheet);
+    const frames = sheetTags(this.cache.json.get(BUTTON.art) as AsepriteSheet);
     const face = (tag: "normal" | "pressed") =>
-      addSlice(this, "ui-button", leave.art, frames.get(tag)?.[0]?.frame);
+      addSlice(this, BUTTON.art, leave.art, frames.get(tag)?.[0]?.frame);
     this.leaveFaces = { normal: face("normal"), pressed: face("pressed") };
     this.leaveLabel = addButtonLabel(this, leave.art, leave.labelY, TEXT.room.leave, {
-      colour: this.colour("ink"),
+      colour: this.colour(BUTTON.label),
       marked: false,
     });
   }
