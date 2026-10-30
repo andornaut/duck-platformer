@@ -5,7 +5,7 @@ import { type LabelledButton, labelledButton } from "./restartCard";
 
 // Art's start screen (art/README.md, Start screen), in base pixels: the nav bar across the top,
 // with 36x36 icon buttons at its right end, each with its 20x20 icon 8 in and 6 down (8 down
-// while pressed), and the logo with Start under it. With saved progress, Continue and Restart
+// while pressed), and the logo with Start under it. With saved progress, Restart and Continue
 // share Start's row instead, gap apart and centred under the logo. A button's label origin is 13
 // below its top, 2 lower while pressed. Each button's press area, hit, is its drawn button grown
 // by hitAreas.ts's rule.
@@ -55,7 +55,7 @@ function iconButton(slot: number): IconButtonLayout {
 }
 
 // The start screen with Settings then Exit at the nav's right end, or Settings alone there where
-// Exit is hidden; Start alone, or with saved progress, Continue then Restart.
+// Exit is hidden; Start alone, or with saved progress, Restart then Continue.
 export function startScreenLayout(exitShown: boolean, saved: boolean): StartScreenLayout {
   const { height, width, x, y } = START;
   const middle = x + width / 2;
@@ -64,10 +64,8 @@ export function startScreenLayout(exitShown: boolean, saved: boolean): StartScre
     ...(exitShown ? { exit: iconButton(0) } : {}),
     logo: { x: 180, y: 60 },
     nav: { height: 48, width: 720, x: 0, y: 0 },
-    ...(saved
-      ? { restart: labelledButton({ height, width, x: middle + ROW_GAP / 2, y }, START.labelDy) }
-      : {}),
+    ...(saved ? { restart: labelledButton({ height, width, x: left, y }, START.labelDy) } : {}),
     settings: iconButton(exitShown ? 1 : 0),
-    start: labelledButton({ height, width, x: saved ? left : x, y }, START.labelDy),
+    start: labelledButton({ height, width, x: saved ? middle + ROW_GAP / 2 : x, y }, START.labelDy),
   };
 }

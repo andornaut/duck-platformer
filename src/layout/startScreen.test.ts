@@ -73,12 +73,12 @@ describe.each([
     },
   );
 
-  it("shows Restart only with a save, beside Continue in Start's row, the two centred on Start", () => {
+  it("shows Restart left of Continue only with a save, the pair centred on Start", () => {
     const alone = startScreenLayout(exitShown, false).start.button;
     const { restart, start } = layout;
     const row = restart && {
-      centre: (start.button.x + right(restart.button)) / 2,
-      clear: right(start.button) < restart.button.x,
+      centre: (restart.button.x + right(start.button)) / 2,
+      clear: right(restart.button) < start.button.x,
       matchingSize:
         start.button.width === restart.button.width &&
         start.button.height === restart.button.height,
