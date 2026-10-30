@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 
 import fontBody from "../../public/art/fonts/font-body.fnt?raw";
 import installSheet from "../../public/art/sprites/icon-install.json";
+import moveSheet from "../../public/art/sprites/icon-move-controls.json";
 import settingsSheet from "../../public/art/sprites/icon-settings.json";
 import touchSheet from "../../public/art/sprites/icon-touch-controls.json";
 import buttonSheet from "../../public/art/sprites/ui-button.json";
@@ -20,7 +21,17 @@ import { CARD_TEXT_SCALE, PAUSE_BUTTON, PAUSE_CARD } from "./pauseCard";
 import { focusRingAround, SETTINGS_CARD, STEPS_CARD } from "./settingsCard";
 
 const FONT = parseBitmapFont(fontBody);
+const SETTINGS = ["moveControls", "actionButtons"] as const;
 const SCREEN_RECT: Rect = { ...SCREEN, x: 0, y: 0 };
+
+// The touch settings' rows, as press areas named for their settings.
+function settingAreas(): CardButton[] {
+  return SETTINGS.map((setting) => ({
+    art: SETTINGS_CARD[setting].row,
+    hit: SETTINGS_CARD[setting].hit,
+    key: `${setting} row`,
+  }));
+}
 
 // Each card's buttons, by name: where each is drawn, on its card, and its press area. The pause
 // button sits on the zone instead.
@@ -44,11 +55,7 @@ const CARDS: [string, Rect, CardButton[]][] = [
     [
       { art: SETTINGS_CARD.close.art, hit: SETTINGS_CARD.close.hit, key: "close" },
       { art: SETTINGS_CARD.install.row, hit: SETTINGS_CARD.install.hit, key: "install row" },
-      {
-        art: SETTINGS_CARD.touchControls.row,
-        hit: SETTINGS_CARD.touchControls.hit,
-        key: "touch controls row",
-      },
+      ...settingAreas(),
     ],
   ],
   [
@@ -56,11 +63,7 @@ const CARDS: [string, Rect, CardButton[]][] = [
     SETTINGS_CARD.cardWithoutInstall,
     [
       { art: SETTINGS_CARD.close.art, hit: SETTINGS_CARD.close.hit, key: "close" },
-      {
-        art: SETTINGS_CARD.touchControls.row,
-        hit: SETTINGS_CARD.touchControls.hit,
-        key: "touch controls row",
-      },
+      ...settingAreas(),
     ],
   ],
   [
@@ -132,17 +135,26 @@ describe("card layouts", () => {
     ["pause button", pauseSheet, PAUSE_BUTTON.at, PAUSE_BUTTON.hit],
     ["return home icon", quitSheet, PAUSE_CARD.home.icon, PAUSE_CARD.home.row],
     ["settings icon", settingsSheet, PAUSE_CARD.settings.icon, PAUSE_CARD.settings.row],
+    ...SETTINGS.map(
+      (setting) =>
+        [
+          `${setting} checkbox`,
+          checkboxSheet,
+          SETTINGS_CARD[setting].checkbox,
+          SETTINGS_CARD[setting].row,
+        ] as const,
+    ),
     [
-      "checkbox",
-      checkboxSheet,
-      SETTINGS_CARD.touchControls.checkbox,
-      SETTINGS_CARD.touchControls.row,
+      "move controls icon",
+      moveSheet,
+      SETTINGS_CARD.moveControls.icon,
+      SETTINGS_CARD.moveControls.row,
     ],
     [
-      "touch controls icon",
+      "action buttons icon",
       touchSheet,
-      SETTINGS_CARD.touchControls.icon,
-      SETTINGS_CARD.touchControls.row,
+      SETTINGS_CARD.actionButtons.icon,
+      SETTINGS_CARD.actionButtons.row,
     ],
     ["install icon", installSheet, SETTINGS_CARD.install.icon, SETTINGS_CARD.install.row],
   ] as const)("draws the %s inside its hit area", (_, sheet, at, hit) => {
@@ -162,25 +174,20 @@ describe("card layouts", () => {
 
 describe("settings words", () => {
   const words = TEXT.settings;
-  const { install, touchControls } = SETTINGS_CARD;
+  const { install } = SETTINGS_CARD;
 
-  const stateLeft = (state: string) =>
-    touchControls.stateRight - inkWidth(FONT, CARD_TEXT_SCALE, state);
-
-  // Each label ends before what follows it on its row.
-  it.each([
-    [
-      "Touch controls",
-      "Hidden",
-      textRect(touchControls.label, words.touchControls),
-      stateLeft(words.hidden),
-    ],
-    [
-      "Touch controls",
-      "Shown",
-      textRect(touchControls.label, words.touchControls),
-      stateLeft(words.shown),
-    ],
+  // Each label ends before what follows it on its row, and each state before its checkbox.
+  it.each<readonly [string, string, Rect, number]>([
+    ...SETTINGS.flatMap((setting) =>
+      [words.shown, words.hidden].map((state) => {
+        const { checkbox, label, stateRight } = SETTINGS_CARD[setting];
+        const stateLeft = stateRight - inkWidth(FONT, CARD_TEXT_SCALE, state);
+        return [
+          [words[setting], state, textRect(label, words[setting]), stateLeft],
+          [state, "the checkbox", { ...textRect(label, state), x: stateLeft }, checkbox.x],
+        ] as const;
+      }),
+    ).flat(),
     ["Install", "its button", textRect(install.label, words.install), install.button.x],
   ])("%s ends before %s", (_, __, label, next) => {
     expect(label.x + label.width).toBeLessThan(next);
@@ -211,6 +218,24 @@ describe("settings words", () => {
     });
   });
 
+  // The build label sits below the card's last row and inside the card, with Install and
+  // without.
+  it.each([
+    ["with Install", SETTINGS_CARD.card, SETTINGS_CARD.install.row, SETTINGS_CARD.buildLabel.y],
+    [
+      "without Install",
+      SETTINGS_CARD.cardWithoutInstall,
+      SETTINGS_CARD.actionButtons.row,
+      SETTINGS_CARD.buildLabel.yWithoutInstall,
+    ],
+  ])("places the build label under the last row %s", (_, card, lastRow, y) => {
+    const height = FONT.lineHeight * CARD_TEXT_SCALE;
+    expect({
+      belowRow: y >= lastRow.y + lastRow.height,
+      inCard: y + height <= card.y + card.height,
+    }).toEqual({ belowRow: true, inCard: true });
+  });
+
   it("has a glyph for every character of the build label, which fits across the card", () => {
     const { buildLabel, card, title } = SETTINGS_CARD;
     const half = inkWidth(FONT, CARD_TEXT_SCALE, BUILD_LABEL) / 2;
@@ -223,8 +248,8 @@ describe("settings words", () => {
     }).toEqual({ fits: true, missing: [] });
   });
 
-  it.each([
-    ["touch controls row", SETTINGS_CARD.touchControls.row],
+  it.each<readonly [string, Rect]>([
+    ...SETTINGS.map((setting) => [`${setting} row`, SETTINGS_CARD[setting].row] as const),
     ["install row", SETTINGS_CARD.install.row],
   ])("rings the %s inside the screen", (_, row) => {
     expect(inside(SCREEN_RECT, focusRingAround(row))).toBe(true);

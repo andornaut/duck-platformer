@@ -34,7 +34,7 @@ describe("hitAround", () => {
     ["the pause button, a 35 px frame", PAUSE_BUTTON.art, { height: 52.5, width: 52.5 }],
     ["the close X, at the least size", PAUSE_CARD.close.art, { height: 48, width: 48 }],
     ["a 16 px icon, at the least size", square(16), { height: 48, width: 48 }],
-    ["a card row", SETTINGS_CARD.touchControls.row, { height: 72, width: 376 }],
+    ["a card row", SETTINGS_CARD.moveControls.row, { height: 72, width: 376 }],
     ["Resume", PAUSE_CARD.resume.art, { height: 66, width: 182 }],
     ["Start", start.button, { height: 78, width: 218 }],
     ["a nav icon button", startScreenLayout(true).settings.art, { height: 54, width: 54 }],

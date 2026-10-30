@@ -59,7 +59,7 @@ import { areaOf, leaveRoom, roomOf, startZone, stepZone, type ZoneState } from "
 import { askedLapSeed, askedRecipe, nextZoneIndex, startZoneIndex } from "../rules/zoneChain";
 import { zonePlanFor } from "../rules/zonePlans";
 import { newLapSeed, saveClearedZone, saveZoneStart } from "../save";
-import { touchControlsShown } from "../settings/touchControls";
+import { type TouchSetting, touchSettingShown } from "../settings/touchControls";
 import { ART_MANIFEST_KEY, artHitboxes, type ArtManifest } from "../view/aseprite";
 import { cameraScroll } from "../view/camera";
 import { characterState, nextQuirkAt } from "../view/character";
@@ -350,13 +350,14 @@ export class ZoneScene extends Scene {
     }
   }
 
-  // Shows or hides the touch buttons now, for the pause card to show the zone behind it as the
-  // setting changes. They show only on a touch screen.
-  showTouchControls(shown: boolean): void {
-    const visible = shown && window.matchMedia("(pointer: coarse)").matches;
+  // Shows or hides the touch controls now as settings has them, for the pause card to show the
+  // zone behind it as the settings change. They show only on a touch screen.
+  showTouchControls(settings: Readonly<Record<TouchSetting, boolean>>): void {
+    const touch = window.matchMedia("(pointer: coarse)").matches;
+    const buttons = settings.actionButtons && touch;
     for (const [control, sprite] of this.controls) {
-      sprite.setVisible(visible);
-      this.labels.get(control)?.setVisible(visible);
+      sprite.setVisible(buttons);
+      this.labels.get(control)?.setVisible(buttons);
     }
   }
 
@@ -761,11 +762,12 @@ export class ZoneScene extends Scene {
     this.events.once("shutdown", stopListening);
   }
 
-  // The buttons show only on a touch screen, with the Touch controls setting on. A pressed
+  // The buttons show only on a touch screen, with the Action buttons setting on. A pressed
   // button plays its press tag, then holds until release, its label white until then. Nothing
   // marks where a move touch started.
   private drawControls(nowMs: number, touches: readonly HeldTouch[]): void {
-    const shown = window.matchMedia("(pointer: coarse)").matches && touchControlsShown();
+    const shown =
+      window.matchMedia("(pointer: coarse)").matches && touchSettingShown("actionButtons");
     for (const [control, sprite] of this.controls) {
       sprite.setVisible(shown);
       const since = trackPress(nowMs, buttonHeld(control, touches), this.presses.get(control));

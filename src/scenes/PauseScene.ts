@@ -10,7 +10,7 @@ import { PAUSE_BUTTON, PAUSE_CARD } from "../layout/pauseCard";
 import { type CardAction, cardBackAction, cardKeyAction, cardTurnAction } from "../pause/cardInput";
 import { focusKeyAction, stepFocus } from "../pause/focusInput";
 import { coverZone, PHONE_EVENTS, startWakeLock, stopWakeLock, zoneShown } from "../pwa";
-import { setTouchControlsShown, touchControlsShown } from "../settings/touchControls";
+import { setTouchSettingShown, type TouchSetting, touchSettings } from "../settings/touchControls";
 import { dimColour, type Palette } from "../view/dim";
 import {
   addButtonLabel,
@@ -32,9 +32,16 @@ import type { ZoneScene } from "./ZoneScene";
 const ZONE = "zone";
 const SETTINGS = "settings";
 const START = "start";
-// The dimmed zone, with the touch buttons hidden and shown, so the settings card's Touch
-// controls row updates the view behind the card as it changes.
-const DIM_TEXTURES = { hidden: "pause-dim-hidden", shown: "pause-dim-shown" } as const;
+// The dimmed zone with each mix of the touch settings, so the settings card's Move controls and
+// Action buttons rows update the view behind the card as they change.
+const DIM_MIXES: readonly Readonly<Record<TouchSetting, boolean>>[] = [false, true].flatMap(
+  (moveControls) => [false, true].map((actionButtons) => ({ actionButtons, moveControls })),
+);
+
+// The texture key of the dimmed zone with settings.
+function dimTexture({ actionButtons, moveControls }: Readonly<Record<TouchSetting, boolean>>) {
+  return `pause-dim-move-${String(moveControls)}-action-${String(actionButtons)}`;
+}
 
 type Control = "close" | "home" | "pauseButton" | "resume" | "settings";
 type CardControl = Exclude<Control, "pauseButton">;
@@ -121,7 +128,8 @@ export class PauseScene extends Scene implements SettingsOpener {
     void this.open();
   }
 
-  // Pauses the zone, reads it back twice (touch buttons hidden, then shown) to dim each, and
+  // Pauses the zone, reads it back once for each mix of the touch settings (DIM_MIXES) to dim
+  // each, and
   // shows the card over the dim. Nothing of this scene shows while the zone is read back.
   private async open(): Promise<void> {
     if (this.state !== "closed" || !this.scene.isActive(ZONE)) {
@@ -134,11 +142,12 @@ export class PauseScene extends Scene implements SettingsOpener {
     const cameras = this.cameras.cameras.filter((camera) => camera.visible);
     cameras.forEach((camera) => camera.setVisible(false));
     const zone = this.scene.get(ZONE) as ZoneScene;
-    zone.showTouchControls(false);
-    await this.dimZone(DIM_TEXTURES.hidden);
-    zone.showTouchControls(true);
-    await this.dimZone(DIM_TEXTURES.shown);
-    zone.showTouchControls(touchControlsShown());
+    for (const mix of DIM_MIXES) {
+      zone.showTouchControls(mix);
+      // eslint-disable-next-line no-await-in-loop -- each mix needs its own rendered frame.
+      await this.dimZone(dimTexture(mix));
+    }
+    zone.showTouchControls(touchSettings());
     this.renderDim();
     this.showCard(true);
     captureTab(this, true);
@@ -169,10 +178,10 @@ export class PauseScene extends Scene implements SettingsOpener {
     coverZone("pauseCard", false);
   }
 
-  // Saves the Touch controls setting and shows it in the zone and the dim behind the cards.
-  setTouchControls(shown: boolean): void {
-    setTouchControlsShown(shown);
-    (this.scene.get(ZONE) as ZoneScene).showTouchControls(shown);
+  // Saves a touch setting and shows it in the zone and the dim behind the cards.
+  setTouchSetting(setting: TouchSetting, shown: boolean): void {
+    setTouchSettingShown(setting, shown);
+    (this.scene.get(ZONE) as ZoneScene).showTouchControls(touchSettings());
     this.renderDim();
   }
 
@@ -199,7 +208,7 @@ export class PauseScene extends Scene implements SettingsOpener {
 
   // The dim behind the cards, with the touch buttons as the setting shows them.
   private renderDim(): void {
-    const key = touchControlsShown() ? DIM_TEXTURES.shown : DIM_TEXTURES.hidden;
+    const key = dimTexture(touchSettings());
     this.dim.setTexture(this.textures.exists(key) ? key : "__DEFAULT");
   }
 

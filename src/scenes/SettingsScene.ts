@@ -17,15 +17,15 @@ import { CARD_TEXT_SCALE } from "../layout/pauseCard";
 import { focusRingAround, SETTINGS_CARD, STEPS_CARD } from "../layout/settingsCard";
 import { focusKeyAction, stepFocus } from "../pause/focusInput";
 import { installOffer } from "../pwa/installOffer";
-import { touchControlsShown } from "../settings/touchControls";
+import { TOUCH_SETTINGS, type TouchSetting, touchSettingShown } from "../settings/touchControls";
 import { addCardText, addSlice, BODY_FONT, paletteColour, TITLE_FONT } from "./cardParts";
 import { fitPlayCamera, playPoint } from "./playCamera";
 
-// The scene that opens the settings card, the pause card's or the start screen's: it shows the
-// Touch controls setting as it changes, and shows again when the card closes. It passes the card
-// its keys and back while the card shows.
+// The scene that opens the settings card, the pause card's or the start screen's: it saves each
+// touch setting and shows it as it changes, and shows again when the card closes. It passes the
+// card its keys and back while the card shows.
 export interface SettingsOpener {
-  setTouchControls(shown: boolean): void;
+  setTouchSetting(setting: TouchSetting, shown: boolean): void;
   settingsClosed(): void;
 }
 
@@ -34,8 +34,21 @@ export interface SettingsData {
   readonly opener: string;
 }
 
-// The settings card's controls, in the order the keyboard's focus moves through them.
-type Target = "close" | "install" | "touchControls";
+// The settings card's controls: the close X, the Install row and each touch setting's row.
+type Target = "close" | "install" | TouchSetting;
+
+// The icon on each touch setting's row.
+const SETTING_ICONS: Readonly<Record<TouchSetting, string>> = {
+  actionButtons: "icon-touch-controls",
+  moveControls: "icon-move-controls",
+};
+
+// A touch setting's row as drawn: its label, its Shown or Hidden, and its checkbox.
+interface SettingRow {
+  readonly checkbox: GameObjects.Sprite;
+  readonly label: GameObjects.BitmapText;
+  readonly state: GameObjects.BitmapText;
+}
 
 // The glyph of the button each browser's install steps start from.
 const STEPS_GLYPHS: Readonly<Record<MenuInstallBrowser, string>> = {
@@ -44,7 +57,8 @@ const STEPS_GLYPHS: Readonly<Record<MenuInstallBrowser, string>> = {
 };
 
 // The settings card, which the pause card opens in its place over the same dim, or the start
-// screen over itself: the Touch controls row, the Install row while the game can be installed,
+// screen over itself: the Move controls and Action buttons rows, the Install row while the game
+// can be installed,
 // and the build label. A row acts when a press lands on it and lifts on it; the close X, back,
 // Escape and P close the card, back to the scene that opened it. Install shows the browser's
 // install prompt or, for a browser that installs only from its own menu, the install steps card
@@ -53,7 +67,6 @@ const STEPS_GLYPHS: Readonly<Record<MenuInstallBrowser, string>> = {
 // scene its keys and back.
 export class SettingsScene extends Scene {
   private card!: GameObjects.Container;
-  private checkbox!: GameObjects.Sprite;
   private closeX!: GameObjects.Sprite;
   private focus: Target | undefined;
   // Art's focus ring round the focused control, while the keyboard has moved the focus.
@@ -65,10 +78,9 @@ export class SettingsScene extends Scene {
   private opener = "";
   // The control a press landed on, which acts if the press lifts on it too.
   private pressed: Target | undefined;
-  private stateText!: GameObjects.BitmapText;
+  private settingRows = new Map<TouchSetting, SettingRow>();
   // The install steps card while it shows.
   private steps: GameObjects.Container | undefined;
-  private touchLabel!: GameObjects.BitmapText;
 
   constructor() {
     super("settings");
@@ -137,18 +149,18 @@ export class SettingsScene extends Scene {
       return ["close"];
     }
     return this.installButton === undefined
-      ? ["touchControls", "close"]
-      : ["touchControls", "install", "close"];
+      ? [...TOUCH_SETTINGS, "close"]
+      : [...TOUCH_SETTINGS, "install", "close"];
   }
 
   private act(target: Target): void {
     if (target === "close") {
       this.close();
-    } else if (target === "touchControls") {
-      this.openerScene().setTouchControls(!touchControlsShown());
-      this.render();
-    } else {
+    } else if (target === "install") {
       this.install();
+    } else {
+      this.openerScene().setTouchSetting(target, !touchSettingShown(target));
+      this.render();
     }
   }
 
@@ -200,25 +212,32 @@ export class SettingsScene extends Scene {
   }
 
   private drawCard(installRow: boolean): GameObjects.Container {
-    const { buildLabel, card, cardWithoutInstall, close, install, title, touchControls } =
-      SETTINGS_CARD;
+    const { buildLabel, card, cardWithoutInstall, close, install, title } = SETTINGS_CARD;
     const words = TEXT.settings;
     const cream = this.colour("cream");
     const objects: GameObjects.GameObject[] = [
       addSlice(this, "ui-settings-card", installRow ? card : cardWithoutInstall),
       addCardText(this, TITLE_FONT, title, words.title, cream),
-      addSlice(this, "ui-settings-row", touchControls.row),
-      this.add.image(touchControls.icon.x, touchControls.icon.y, "icon-touch-controls"),
     ];
-    this.touchLabel = addCardText(this, BODY_FONT, touchControls.label, words.touchControls, cream);
-    this.stateText = addCardText(this, BODY_FONT, touchControls.label, "", cream);
-    this.checkbox = this.add.sprite(
-      touchControls.checkbox.x,
-      touchControls.checkbox.y,
-      "ui-checkbox",
-    );
+    this.settingRows = new Map();
+    for (const setting of TOUCH_SETTINGS) {
+      const { checkbox, icon, label, row } = SETTINGS_CARD[setting];
+      const drawn: SettingRow = {
+        checkbox: this.add.sprite(checkbox.x, checkbox.y, "ui-checkbox"),
+        label: addCardText(this, BODY_FONT, label, words[setting], cream),
+        state: addCardText(this, BODY_FONT, label, "", cream),
+      };
+      this.settingRows.set(setting, drawn);
+      objects.push(
+        addSlice(this, "ui-settings-row", row),
+        this.add.image(icon.x, icon.y, SETTING_ICONS[setting]),
+        drawn.label,
+        drawn.state,
+        drawn.checkbox,
+      );
+    }
     this.closeX = this.add.sprite(close.at.x, close.at.y, "ui-close");
-    objects.push(this.touchLabel, this.stateText, this.checkbox, this.closeX);
+    objects.push(this.closeX);
     this.installButton = undefined;
     this.installButtonLabel = undefined;
     this.installLabel = undefined;
@@ -264,15 +283,17 @@ export class SettingsScene extends Scene {
 
   // Each control as the setting, the press and the focus leave it.
   private render(): void {
-    const shown = touchControlsShown();
     const words = TEXT.settings;
-    const { install, touchControls } = SETTINGS_CARD;
+    const { install } = SETTINGS_CARD;
     const pressed = this.pressed;
-    this.checkbox.play(animationKey("ui-checkbox", shown ? "on" : "off"));
-    const state = shown ? words.shown : words.hidden;
-    this.stateText.setText(state).setX(touchControls.stateRight - this.inkWidth(state));
     const label = (target: Target) => this.colour(pressed === target ? "white" : "cream");
-    this.touchLabel.setTint(label("touchControls"));
+    for (const [setting, row] of this.settingRows) {
+      const shown = touchSettingShown(setting);
+      row.checkbox.play(animationKey("ui-checkbox", shown ? "on" : "off"));
+      const state = shown ? words.shown : words.hidden;
+      row.state.setText(state).setX(SETTINGS_CARD[setting].stateRight - this.inkWidth(state));
+      row.label.setTint(label(setting));
+    }
     this.installLabel?.setTint(label("install"));
     this.closeX.play(animationKey("ui-close", pressed === "close" ? "pressed" : "normal"));
     this.installButton?.normal.setVisible(pressed !== "install");
@@ -297,7 +318,7 @@ export class SettingsScene extends Scene {
       const { x, y } = SETTINGS_CARD.close.at;
       return { height: this.closeX.height, width: this.closeX.width, x, y };
     }
-    return target === "install" ? SETTINGS_CARD.install.row : SETTINGS_CARD.touchControls.row;
+    return SETTINGS_CARD[target].row;
   }
 
   private targetAt(pointer: Input.Pointer): Target | undefined {
@@ -306,11 +327,12 @@ export class SettingsScene extends Scene {
       const { close } = STEPS_CARD;
       return pressedArea([{ art: close.art, hit: close.hit, key: "close" as const }], point);
     }
-    const { close, install, touchControls } = SETTINGS_CARD;
+    const { actionButtons, close, install, moveControls } = SETTINGS_CARD;
     const areas: Record<Target, PressArea<Target>> = {
+      actionButtons: { art: actionButtons.row, hit: actionButtons.hit, key: "actionButtons" },
       close: { art: close.art, hit: close.hit, key: "close" },
       install: { art: install.row, hit: install.hit, key: "install" },
-      touchControls: { art: touchControls.row, hit: touchControls.hit, key: "touchControls" },
+      moveControls: { art: moveControls.row, hit: moveControls.hit, key: "moveControls" },
     };
     return pressedArea(
       this.targets().map((target) => areas[target]),

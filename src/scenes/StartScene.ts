@@ -16,7 +16,7 @@ import { startBackAction } from "../pause/cardInput";
 import { focusKeyAction, stepFocus } from "../pause/focusInput";
 import { exitShown, PHONE_EVENTS } from "../pwa";
 import { savedProgress } from "../save";
-import { setTouchControlsShown } from "../settings/touchControls";
+import { setTouchSettingShown, type TouchSetting } from "../settings/touchControls";
 import { dimColour } from "../view/dim";
 import {
   addButtonLabel,
@@ -101,8 +101,8 @@ export class StartScene extends Scene implements SettingsOpener {
   }
 
   // The start screen has no zone to show the setting in: saving it is enough.
-  setTouchControls(shown: boolean): void {
-    setTouchControlsShown(shown);
+  setTouchSetting(setting: TouchSetting, shown: boolean): void {
+    setTouchSettingShown(setting, shown);
   }
 
   settingsClosed(): void {
