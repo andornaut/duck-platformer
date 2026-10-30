@@ -287,6 +287,13 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 2,
     rows: 2,
   },
+  "platform-ledge": {
+    archetype: "ledge",
+    art: "one-way-ledge",
+    cols: 1,
+    rows: 1,
+    tileset: "tiles-platforming",
+  },
   // A roofline capping a facade, repeated across its run: a cornice goes along its top.
   // A shallow pond, two rows deep: touching the water restarts her. Placed with a width, between
   // solid banks.
@@ -313,6 +320,13 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
   "red-edge-right": {
     archetype: "hazard",
     art: "hazard-right",
+    cols: 1,
+    rows: 1,
+    tileset: "tiles-platforming",
+  },
+  "red-edge-support": {
+    archetype: "solid",
+    art: "platform-face",
     cols: 1,
     rows: 1,
     tileset: "tiles-platforming",
@@ -378,19 +392,19 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 9,
     rows: 10,
   },
-  // A street door to a room, drawn with the street's door art.
   "street-city-far": {
-    archetype: "backdrop",
+    archetype: "scenery",
     art: "street-city-far",
     cols: 60,
     rows: 50,
   },
   "street-city-mid": {
-    archetype: "backdrop",
+    archetype: "scenery",
     art: "street-city-mid",
     cols: 60,
     rows: 50,
   },
+  // A street door to a room, drawn with the street's door art.
   "street-door": {
     archetype: "door",
     art: "door",
