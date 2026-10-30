@@ -8,7 +8,7 @@ import { ZONE_1 } from "../data/zone1";
 import { TEST_ZONES } from "../data/zones";
 import { zoneLayout } from "../rules/tiles";
 import { CATALOGUE, WALK_MS, walkSuite } from "../testing/walkSuite";
-import { crosses, type Surface, zoneSurfaces } from "./zoneWalk";
+import { crosses, type Surface, walkZone, zoneSurfaces } from "./zoneWalk";
 
 const ZONES: [string, ZonePlan][] = [
   ["1", ZONE_1],
@@ -38,6 +38,42 @@ function course(gap: number, rise: number): ZonePlan {
     start: { area: "course", entry: "start" },
   };
 }
+
+describe("walkZone", () => {
+  // Flat ground 120 wide, with a door on it where she must pass, or none.
+  const street = (doors: number): ZonePlan => ({
+    areas: {
+      street: {
+        cols: 120,
+        entries: { start: { col: 4, row: 50 } },
+        objects: Array.from({ length: doors }, () => ({
+          character: "test-door",
+          col: 60,
+          room: "test",
+          row: 46,
+        })),
+        rows: 60,
+        solids: [{ col: 0, cols: 120, row: 50, rows: 10 }],
+      },
+    },
+    start: { area: "street", entry: "start" },
+  });
+
+  it(
+    "ignores doors: a door on her way changes nothing it finds",
+    () => {
+      const walk = (doors: number) => {
+        const { cleared, reached } = walkZone(
+          DUCK,
+          zoneLayout(TILE, CATALOGUE, {}, {}, new Set(), street(doors)),
+        );
+        return { cleared, reached: [...reached].sort() };
+      };
+      expect(walk(1)).toEqual({ ...walk(0), cleared: true });
+    },
+    WALK_MS,
+  );
+});
 
 describe("crosses", () => {
   it.each([

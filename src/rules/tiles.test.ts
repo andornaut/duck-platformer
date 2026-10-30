@@ -39,7 +39,11 @@ describe("zoneLayout", () => {
     rows: 1,
     tuning: { interaction: { kind: "quip", range: 4 }, motion: { speed: 4 } },
   };
-  const CATALOGUE: Catalogue = { archetypes: { platform: PLATFORM }, characters: { lift: LIFT } };
+  const DOOR: Archetype = { ...PLATFORM, collision: "use" };
+  const CATALOGUE: Catalogue = {
+    archetypes: { door: DOOR, platform: PLATFORM },
+    characters: { gate: { archetype: "door", art: "gate", cols: 3, rows: 4 }, lift: LIFT },
+  };
   const PLAN: ZonePlan = {
     areas: {
       yard: {
@@ -60,9 +64,9 @@ describe("zoneLayout", () => {
             phase: 0.5,
             row: 25,
             scene: "lift-scene",
-            to: { area: "yard", entry: "gate" },
           },
           { character: "lift", col: 0, requires: ["met-lift"], row: 0 },
+          { character: "gate", col: 50, room: "shed", row: 29 },
         ],
         rows: 36,
         solids: [{ col: 0, cols: 64, row: 33, rows: 3 }],
@@ -75,10 +79,11 @@ describe("zoneLayout", () => {
   };
   const layout = zoneLayout(10, CATALOGUE, hitboxes, {}, new Set(), PLAN);
   const yard = layout.areas.yard;
-  const [lift, special] = yard?.objects ?? [];
+  const [lift, special, gate] = yard?.objects ?? [];
   it.each([
     ["the area's size", { height: yard?.height, width: yard?.width }, { height: 360, width: 640 }],
     ["its entries", yard?.entries, { gate: { x: 50, y: 330 } }],
+    ["its last column's left edge", yard?.exitX, 630],
     ["its terrain", yard?.solids, [{ height: 30, width: 640, x: 0, y: 330 }]],
     [
       "its chunks",
@@ -88,7 +93,7 @@ describe("zoneLayout", () => {
         { width: 400, x: 240 },
       ],
     ],
-    ["only the instances the set flags place", yard?.objects.length, 2],
+    ["only the instances the set flags place", yard?.objects.length, 3],
     ["the archetype's collision", lift?.collision, "solid"],
     [
       "the character's size",
@@ -124,7 +129,7 @@ describe("zoneLayout", () => {
     ],
     ["the character's quirks", lift?.quirks, LIFT.quirks],
     ["a phase, 0 when unset", [lift?.phase, special?.phase], [0, 0.5]],
-    ["a door's link", special?.to, { area: "yard", entry: "gate" }],
+    ["a door's room, and none on anything else", [gate?.room, lift?.room], ["shed", undefined]],
     ["its art's hit box", lift?.hitbox, { height: 6, width: 30, x: 5, y: 2 }],
     [
       "its art's hit box, the frame centred on a wider placement",
@@ -139,6 +144,12 @@ describe("zoneLayout", () => {
   it.each([
     ["an unknown character", { character: "kite", col: 0, row: 0 }, "kite"],
     ["a character with an unknown archetype", { character: "orphan", col: 0, row: 0 }, "nobody"],
+    ["a door without a room", { character: "gate", col: 0, row: 0 }, "has no room"],
+    [
+      "a room on what is not a door",
+      { character: "lift", col: 0, room: "shed", row: 0 },
+      "not a door",
+    ],
   ])("refuses %s", (_, instance, message) => {
     const catalogue = {
       ...CATALOGUE,

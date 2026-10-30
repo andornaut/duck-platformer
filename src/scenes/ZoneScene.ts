@@ -31,7 +31,6 @@ import { TEXT } from "../data/text";
 import { TOUCH } from "../data/touch";
 import type {
   AreaLayout,
-  AreaLink,
   ArtHitbox,
   CharacterState,
   Collision,
@@ -56,7 +55,7 @@ import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchC
 import { nodeOf } from "../rules/map";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
 import { zoneLayout } from "../rules/tiles";
-import { areaOf, enterArea, exitAt, startZone, stepZone, type ZoneState } from "../rules/zone";
+import { areaOf, leaveRoom, startZone, stepZone, type ZoneState } from "../rules/zone";
 import { askedLapSeed, askedRecipe, nextZoneIndex, startZoneIndex } from "../rules/zoneChain";
 import { zonePlanFor } from "../rules/zonePlans";
 import { newLapSeed, saveClearedZone, saveZoneStart } from "../save";
@@ -78,6 +77,7 @@ import {
 } from "../view/touchControls";
 import type { PauseScene } from "./PauseScene";
 import { canvasRect, fitCanvasCamera, fitPlayCamera } from "./playCamera";
+import type { RoomData } from "./RoomScene";
 
 // The zone a map node plays on the lap with seed.
 function zoneAt(seed: number, node: string): ZonePlan {
@@ -109,10 +109,9 @@ const OBJECT_COLOURS: Readonly<Record<Collision, number>> = {
   solid: 0xe4a672,
   use: 0x63c74d,
 };
-// Going through a door fades to black and back, each way this long, with play held still.
+// Leaving a cleared zone fades to black, and where the next zone plays in this scene, back, each
+// way this long, with play held still.
 const FADE_MS = 250;
-// The tag an exit's art plays once as she uses it, before the zone is left, where it has one.
-const EXIT_TAG = "open";
 
 const DUCK_SPRITE = "duck";
 const PAUSE = "pause";
@@ -198,8 +197,6 @@ export class ZoneScene extends Scene {
   private attemptShown = 0;
   // Why play holds still, if it does.
   private hold: PlayHold;
-  // The exit opening, by its index among the area's objects: drawObjects leaves its tag alone.
-  private opening: number | undefined;
   private objectArt: ObjectArt[] = [];
   private terrainMap: Tilemaps.Tilemap | undefined;
   // When each held button's press began.
@@ -227,7 +224,6 @@ export class ZoneScene extends Scene {
     this.heldTouches.clear();
     this.presses.clear();
     this.hold = undefined;
-    this.opening = undefined;
     this.clock = startStepClock;
     this.duckPose = startPose;
   }
@@ -303,10 +299,15 @@ export class ZoneScene extends Scene {
         (this.scene.get(PAUSE) as PauseScene).openCard();
       });
     }
-    // Paused under the pause card: keys and time while it was open count for nothing.
+    // Paused under the pause card or a room: keys and time while it was open count for nothing.
+    // Back from a room, she stands at its door with nothing held.
     this.events.on("resume", () => {
       this.clock = startStepClock;
       this.heldKeys.clear();
+      if (this.zone.room !== undefined) {
+        this.zone = leaveRoom(this.zone);
+        this.heldTouches.clear();
+      }
     });
   }
 
@@ -356,9 +357,9 @@ export class ZoneScene extends Scene {
       if (action === "hold") {
         break;
       }
-      if (action === "exit") {
-        this.openExit();
-        return;
+      if (action === "leave") {
+        this.fadeOut();
+        break;
       }
       const before = this.zone.duck;
       this.zone = stepZone(
@@ -369,8 +370,9 @@ export class ZoneScene extends Scene {
         this.zone,
       );
       this.duckPose = stepPose(this.landMs, STEP_MS, before, this.zone.duck, this.duckPose);
-      if (this.zone.using) {
-        this.goThrough(this.zone.using);
+      if (this.zone.room !== undefined) {
+        this.openRoom(this.zone.room);
+        break;
       }
     }
     if (this.zone.area !== this.areaShown || this.zone.attempt !== this.attemptShown) {
@@ -381,36 +383,41 @@ export class ZoneScene extends Scene {
     this.drawControls(time, touches);
   }
 
-  // Plays the open tag of the exit she used, where its art has one, play held still, then leaves.
-  private openExit(): void {
-    const index = exitAt(DUCK, this.layout, this.zone);
-    const sprite = index === undefined ? undefined : this.objectArt[index]?.sprite;
-    if (!sprite || !this.sheet(sprite.texture.key).has(EXIT_TAG)) {
-      this.leave();
-      return;
-    }
-    this.hold = "exit";
-    this.opening = index;
-    sprite.play(animationKey(sprite.texture.key, EXIT_TAG));
-    sprite.once("animationcomplete", () => {
-      this.opening = undefined;
-      this.leave();
-    });
+  // Fades out of the cleared zone, play held still, then leaves it.
+  private fadeOut(): void {
+    this.hold = "fade";
+    const camera = this.cameras.main;
+    camera.fadeOut(FADE_MS, 0, 0, 0);
+    camera.once("camerafadeoutcomplete", () => this.leave());
+  }
+
+  // Shows the room behind the door she used, the zone paused under it until she leaves.
+  private openRoom(room: string): void {
+    this.scene.launch("room", { room } satisfies RoomData);
+    this.scene.pause();
   }
 
   // Leaves the cleared zone for the map, play held until the map takes over; without one, plays
-  // the recipe ?zone=<key> names assembled again, or the next zone in the chain.
+  // the recipe ?zone=<key> names assembled again, or the next zone in the chain, fading back in.
   private leave(): void {
-    this.hold = this.mapRoute === undefined ? undefined : "left";
     if (this.mapRoute !== undefined) {
       saveClearedZone(this.lapSeed, this.mapRoute);
       this.scene.start("map", { played: true, route: this.mapRoute, seed: this.lapSeed });
-    } else if (this.trial !== undefined) {
+      return;
+    }
+    if (this.trial !== undefined) {
       this.lapSeed = askedLapSeed(window.location.search) ?? newLapSeed();
       this.loadPlan(zonePlanFor(this.lapSeed, this.trial));
     } else {
       this.loadZone(nextZoneIndex(this.zoneIndex, CHAIN.length));
     }
+    this.drawObjects();
+    this.drawDuck();
+    const camera = this.cameras.main;
+    camera.fadeIn(FADE_MS, 0, 0, 0);
+    camera.once("camerafadeincomplete", () => {
+      this.hold = undefined;
+    });
   }
 
   // Starts the zone at index from its start. Each load draws a fresh seed, so the random
@@ -434,23 +441,6 @@ export class ZoneScene extends Scene {
     const seed = Number.isInteger(asked) && asked > 0 ? asked : Math.floor(Math.random() * 2 ** 31);
     this.zone = startZone(DUCK, this.layout, seed);
     this.drawArea();
-  }
-
-  // Fades to black, takes her through the door to link, and fades back, play held still.
-  private goThrough(link: AreaLink): void {
-    this.hold = "door";
-    const camera = this.cameras.main;
-    camera.fadeOut(FADE_MS, 0, 0, 0);
-    camera.once("camerafadeoutcomplete", () => {
-      this.zone = enterArea(DUCK, this.layout, link, this.zone);
-      this.drawArea();
-      this.drawObjects();
-      this.drawDuck();
-      camera.fadeIn(FADE_MS, 0, 0, 0);
-      camera.once("camerafadeincomplete", () => {
-        this.hold = undefined;
-      });
-    });
   }
 
   // Draws the area she is in, with the camera kept inside it: its terrain from its tileset, or
@@ -585,7 +575,7 @@ export class ZoneScene extends Scene {
       const x = Math.round(at.x + art.offset.x);
       const y = Math.round(at.y + art.offset.y);
       const moved = x !== art.item.x || y !== art.item.y;
-      if (art.sprite && index !== this.opening) {
+      if (art.sprite) {
         if (x !== art.item.x) {
           art.sprite.setFlipX(x < art.item.x);
         }
@@ -653,7 +643,13 @@ export class ZoneScene extends Scene {
       Input.Keyboard.KeyCodes.UP,
       Input.Keyboard.KeyCodes.SPACE,
     ]);
-    keyboard.on("keydown", (event: KeyboardEvent) => this.heldKeys.add(event.code));
+    // A key held from before the zone resumed, under the pause card or a room, counts only once
+    // pressed again: its repeats never press it.
+    keyboard.on("keydown", (event: KeyboardEvent) => {
+      if (!event.repeat) {
+        this.heldKeys.add(event.code);
+      }
+    });
     keyboard.on("keyup", (event: KeyboardEvent) => this.heldKeys.delete(event.code));
     // A key released while the page is hidden never sends keyup.
     this.game.events.on("blur", () => this.heldKeys.clear());

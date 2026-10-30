@@ -186,8 +186,8 @@ export interface Tuning {
 
 // A behaviour (ARCHETYPES by name, in src/data/archetypes.ts): its collision, fixed, and the
 // default motion, reaction and interaction its characters tune. collision: solid blocks her from
-// every side; ledge only from above; touching a hazard restarts the zone; Use in a use zone goes
-// through it; none is scenery.
+// every side; ledge only from above; touching a hazard restarts the zone; Use in a use zone, a
+// door, opens its room; none is scenery.
 export interface Archetype {
   readonly collision: Collision;
   readonly interaction: Interaction;
@@ -234,9 +234,9 @@ export interface AreaLink {
 // starts in its round trip: 0 at the placed spot heading out, 0.5 at the far end heading back.
 // lines replace the character's for this one instance; scene names a dialogue scene. requires
 // and excludes are carried-choice flags: it is placed only while every required flag is set and
-// no excluded one is. room: a door's room, a key of ROOMS (src/data/rooms.ts); a door is an
-// instance whose archetype is "door", and every door has one. to: where a door leads; a use
-// thing with no `to` is the zone's exit.
+// no excluded one is. room: a door's room, a key of ROOMS (src/data/rooms.ts). A door is an
+// instance whose archetype is "door" (its collision "use"); every door has a room, and nothing
+// else has one.
 export interface Instance {
   readonly character: string;
   readonly col: number;
@@ -250,7 +250,6 @@ export interface Instance {
   readonly row: number;
   readonly rows?: number;
   readonly scene?: string;
-  readonly to?: AreaLink;
 }
 
 // A run of terrain. In an area with a tileset, look names the family of the tileset's tiles it is
@@ -458,17 +457,19 @@ export interface ObjectLayout {
   readonly quips: readonly string[];
   readonly quirks: readonly Quirk[];
   readonly reaction: Reaction;
+  readonly room: string | undefined;
   readonly scene: string | undefined;
-  readonly to: AreaLink | undefined;
   readonly width: number;
 }
 
-// An area in base pixels. Falling below its height restarts the zone. terrain and tileset are
-// its plan's, in tiles, for drawing. chunks: an assembled area's chunks, left to right, for the
+// An area in base pixels. Falling below its height restarts the zone, and her collision box
+// reaching past exitX, the left edge of its last column, clears it. terrain and tileset are its
+// plan's, in tiles, for drawing. chunks: an assembled area's chunks, left to right, for the
 // camera; none in a hand-built one.
 export interface AreaLayout {
   readonly chunks: readonly { readonly width: number; readonly x: number }[];
   readonly entries: Readonly<Record<string, Point>>;
+  readonly exitX: number;
   readonly height: number;
   readonly objects: readonly ObjectLayout[];
   readonly solids: readonly Rect[];

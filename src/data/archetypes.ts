@@ -29,15 +29,8 @@ export const ARCHETYPES: Readonly<Record<string, Archetype>> = {
     },
     reaction: { kind: "approach", range: 10, speed: 6 },
   },
-  // A doorway: Use at it goes to another area.
+  // A doorway: Use at it shows its room.
   door: {
-    collision: "use",
-    interaction: NO_INTERACTION,
-    motion: STATIC_MOTION,
-    reaction: NO_REACTION,
-  },
-  // The zone's exit: Use at it clears the zone.
-  exit: {
     collision: "use",
     interaction: NO_INTERACTION,
     motion: STATIC_MOTION,

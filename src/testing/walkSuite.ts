@@ -1,4 +1,5 @@
-// The zone walk's checks on one zone plan, for the walk tests: it clears, it reaches every
+// The zone walk's checks on one zone plan, for the walk tests: it clears at its right edge, it
+// reaches every
 // surface it does not mark out of reach and none it does, and no no-cross pair is crossed.
 import { beforeAll, expect, it } from "vitest";
 
@@ -53,7 +54,7 @@ export function walkSuite(plan: ZonePlan): void {
     walk = walkZone(DUCK, layout);
   }, WALK_MS);
 
-  it("clears at its exit, walked from the start", () => {
+  it("clears at its right edge, walked from the start", () => {
     expect(walk.cleared).toBe(true);
   });
 

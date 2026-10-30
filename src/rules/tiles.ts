@@ -59,7 +59,8 @@ export function resolveNames(
 // An instance resolved into one flat object, in pixels: its instance's overrides over its
 // character's tuning over its archetype, and the character's art, animations (a state left out
 // plays idle's), words and quirks, which an instance's own lines replace. Its hit box is its
-// sprite's, from hitboxes, or for art drawn from its area's tileset, its tiles'.
+// sprite's, from hitboxes, or for art drawn from its area's tileset, its tiles'. A door without a
+// room, or a room on anything but a door, is refused.
 export function objectLayout(
   tile: number,
   catalogue: Catalogue,
@@ -68,6 +69,13 @@ export function objectLayout(
   instance: Instance,
 ): ObjectLayout {
   const { archetype, character } = resolveNames(catalogue, instance);
+  if ((archetype.collision === "use") !== (instance.room !== undefined)) {
+    throw new Error(
+      archetype.collision === "use"
+        ? `Door ${instance.character} at col ${instance.col} row ${instance.row} has no room`
+        : `${instance.character} at col ${instance.col} row ${instance.row} is not a door`,
+    );
+  }
   const motion: Motion = {
     ...archetype.motion,
     ...character.tuning?.motion,
@@ -115,8 +123,8 @@ export function objectLayout(
     quips: character.quips ?? [],
     quirks: character.quirks ?? [],
     reaction: { ...reaction, range: reaction.range * tile, speed: reaction.speed * tile },
+    room: instance.room,
     scene: instance.scene,
-    to: instance.to,
     width,
   };
 }
@@ -144,6 +152,7 @@ export function areaLayout(
     entries: Object.fromEntries(
       Object.entries(area.entries).map(([name, point]) => [name, tilePoint(tile, point)]),
     ),
+    exitX: (area.cols - 1) * tile,
     height: area.rows * tile,
     objects: area.objects
       .filter((instance) => isPlaced(flags, instance))

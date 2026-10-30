@@ -6,7 +6,7 @@ import { startDuck } from "./duck";
 import { STEP_SECONDS } from "./step";
 import {
   enterArea,
-  exitAt,
+  leaveRoom,
   objectStep,
   standsOn,
   startZone,
@@ -45,8 +45,8 @@ function object(fields: Partial<ObjectLayout> & { origin: Point }): ObjectLayout
     quips: [],
     quirks: [],
     reaction: { kind: "none", range: 0, speed: 0 },
+    room: undefined,
     scene: undefined,
-    to: undefined,
     width: 48,
     ...fields,
   };
@@ -56,6 +56,7 @@ function area(objects: readonly ObjectLayout[], fields: Partial<AreaLayout> = {}
   return {
     chunks: [],
     entries: { start: { x: 100, y: GROUND.y } },
+    exitX: GROUND.width - 12,
     height: 360,
     objects,
     solids: [GROUND],
@@ -221,55 +222,82 @@ describe("pushes", () => {
   });
 });
 
-describe("use zones", () => {
-  const exit = object({
+describe("clearing", () => {
+  // Her box's right edge at x, standing on the ground.
+  const at = (x: number) => {
+    const start = startZone(DUCK, zone(area([])), SEED);
+    return { ...start, duck: { ...start.duck, x: x - DUCK.width } };
+  };
+  const exitX = GROUND.width - 12;
+  it.each([
+    ["her box reaching past the last column's left edge", exitX + 1, true],
+    ["her box ending at the last column's left edge", exitX, false],
+  ])("standing still with %s: cleared %s", (_, right, cleared) => {
+    const layout = zone(area([]));
+    expect(stepZone(DUCK, layout, STEP, STILL, at(right)).cleared).toBe(cleared);
+  });
+
+  it("clears at any height, in the air above the last column", () => {
+    const layout = zone(area([]));
+    const high = at(exitX + 1);
+    const state = { ...high, duck: { ...high.duck, grounded: false, y: 20 } };
+    expect(stepZone(DUCK, layout, STEP, STILL, state).cleared).toBe(true);
+  });
+
+  it("runs right to the edge, clears, and then holds still", () => {
+    const states = run(zone(area([])), 6, RIGHT);
+    const first = states.findIndex((state) => state.cleared);
+    expect(first).toBeGreaterThan(0);
+    expect(states.at(-1)).toBe(states[first]);
+  });
+});
+
+describe("doors", () => {
+  const door = object({
     collision: "use",
     height: 48,
     origin: { x: 80, y: GROUND.y - 48 },
+    room: "parlour",
     width: 24,
   });
-  const door = { ...exit, to: { area: "hall", entry: "in" } };
-  const hall = area([], { entries: { in: { x: 500, y: GROUND.y } } });
   const press = (step: number) => ({ ...STILL, useHeld: step >= 10 });
 
   it.each([
-    ["Use at the exit clears the zone", zone(area([exit])), press, true],
+    ["Use at a door opens its room", [door], press, "parlour"],
     [
-      "Use away from the exit does nothing",
-      zone(area([{ ...exit, origin: { x: 400, y: 252 } }])),
+      "Use away from every door does nothing",
+      [{ ...door, origin: { x: 400, y: 252 } }],
       press,
-      false,
+      undefined,
     ],
     [
       "Use held since before she arrived does nothing",
-      zone(area([exit])),
+      [door],
       () => ({ ...STILL, useHeld: true }),
-      false,
-    ],
-  ])("%s", (_, layout, input, cleared) => {
-    expect(run(layout, 0.5, input).at(-1)?.cleared).toBe(cleared);
-  });
-
-  it.each([
-    ["the exit she used, past a door", [{ ...door, origin: { x: 600, y: 252 } }, exit], 1],
-    ["none away from every exit", [{ ...exit, origin: { x: 600, y: 252 } }], undefined],
-  ])("exitAt names %s", (_, objects, index) => {
-    const layout = zone(area(objects), { hall });
-    expect(exitAt(DUCK, layout, run(layout, 0.5, press).at(-1) as ZoneState)).toBe(index);
-  });
-
-  it("Use at a door holds the zone still at the door until enterArea takes her through", () => {
-    const layout = zone(area([door]), { hall });
-    const states = run(layout, 0.5, press);
-    const at = states.findIndex((state) => state.using !== undefined);
-    expect(states.at(-1)?.using).toEqual(door.to);
-    expect(states.at(-1)).toBe(states[at]);
-    const through = enterArea(DUCK, layout, door.to, states.at(-1) as ZoneState);
-    expect([through.area, through.duck, through.using]).toEqual([
-      "hall",
-      startDuck(DUCK, { x: 500, y: GROUND.y }),
       undefined,
+    ],
+  ])("%s", (_, objects, input, room) => {
+    expect(run(zone(area(objects)), 0.5, input).at(-1)?.room).toBe(room);
+  });
+
+  it("holds the zone still while the room shows", () => {
+    const states = run(zone(area([door])), 0.5, press);
+    const opened = states.findIndex((state) => state.room !== undefined);
+    expect(states.at(-1)).toBe(states[opened]);
+  });
+
+  it("leaves the room with her where she was, and steps on from there", () => {
+    const layout = zone(area([door]));
+    const inside = run(layout, 0.5, press).at(-1) as ZoneState;
+    const back = leaveRoom(inside);
+    expect([back.room, back.duck, back.objects, back.seconds]).toEqual([
+      undefined,
+      inside.duck,
+      inside.objects,
+      inside.seconds,
     ]);
+    const next = stepZone(DUCK, layout, STEP, { ...STILL, useHeld: true }, back);
+    expect([next.room, next.seconds]).toEqual([undefined, inside.seconds + STEP]);
   });
 });
 

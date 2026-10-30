@@ -7,6 +7,7 @@ import { lookTiles, type Tileset } from "../view/tiles";
 import { ARCHETYPES } from "./archetypes";
 import { CHARACTERS } from "./characters";
 import { CHUNK_RULES, SEAM_ROWS } from "./chunks";
+import { ROOMS } from "./rooms";
 import type { ChunkPlan, ZonePlan } from "./types";
 import { RECIPES, ZONES } from "./zones";
 
@@ -157,6 +158,10 @@ describe.each(ALL_RECIPES)("recipe %s", (key, library, recipe) => {
       const over = [...counts].filter(([id, count]) => count > (chunkAt(id).maxPerZone ?? count));
       expect(over).toEqual([]);
     }
+  });
+
+  it("asks for doors only to rooms that exist", () => {
+    expect(recipe.doors.filter(({ room }) => !(room in ROOMS))).toEqual([]);
   });
 
   it("places every event and door it asks for in a slot of that kind", () => {

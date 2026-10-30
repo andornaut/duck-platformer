@@ -3,13 +3,13 @@ import { ZONE_1 } from "./zone1";
 
 // PLACEHOLDER: parkour test zones, until gameplay designs the real zones.
 //
-// Every zone is 60 rows, starts on the ground at the bottom left and exits in the upper screen
-// on the right. Each solid runs down to the bottom row, so every gap is a pit she falls out of.
-// Rises and gaps are in tiles, from the top of the ground she leaves to the top of the ledge she
-// lands on: a tap rises 1, a full jump 6, and a running jump crosses 18. Every mover's path is 2
-// tiles from every solid and every other mover's path, so a mover never meets her box where she
-// stands at an edge. Every gap she must not jump, a mover's gaps among them, is 19 or more across,
-// counting the speed she keeps from a mover she leaves.
+// Every zone is 60 rows, starts on the ground at the bottom left and clears at its right edge.
+// Each solid runs down to the bottom row, so every gap is a pit she falls out of. Rises and gaps
+// are in tiles, from the top of the ground she leaves to the top of the ledge she lands on: a tap
+// rises 1, a full jump 6, and a running jump crosses 18. Every mover's path is 2 tiles from every
+// solid and every other mover's path, so a mover never meets her box where she stands at an edge.
+// Every gap she must not jump, a mover's gaps among them, is 19 or more across, counting the
+// speed she keeps from a mover she leaves.
 export const TEST_ZONES: readonly ZonePlan[] = [
   // Ledges.
   {
@@ -17,7 +17,7 @@ export const TEST_ZONES: readonly ZonePlan[] = [
       main: {
         cols: 138,
         entries: { start: { col: 3, row: 56 } },
-        objects: [{ character: "test-exit", col: 132, cols: 2, row: 21, rows: 4 }],
+        objects: [],
         rows: 60,
         solids: [
           // Tap steps: up 1, then up 1 again (the tap's reach).
@@ -64,7 +64,6 @@ export const TEST_ZONES: readonly ZonePlan[] = [
           // Hazard spikes 5 above the floor, over a tiny ledge 1 up: a tap rises onto the ledge
           // under them, and a mid or full jump touches them.
           { character: "test-hazard", col: 130, cols: 17, row: 45, rows: 2 },
-          { character: "test-exit", col: 204, cols: 2, row: 17, rows: 4 },
         ],
         rows: 60,
         solids: [
@@ -138,7 +137,7 @@ export const TEST_ZONES: readonly ZonePlan[] = [
             row: 42,
             rows: 1,
           },
-          // A horizontal mover level with the ledges across a gap of 28, to the exit. Its near end
+          // A horizontal mover level with the ledges across a gap of 28, to the end. Its near end
           // is 4 from the ledge, so she jumps on rather than walking off onto it.
           {
             character: "test-mover",
@@ -149,7 +148,6 @@ export const TEST_ZONES: readonly ZonePlan[] = [
             row: 26,
             rows: 1,
           },
-          { character: "test-exit", col: 126, cols: 2, row: 22, rows: 4 },
         ],
         rows: 60,
         solids: [
@@ -173,7 +171,7 @@ export const TEST_ZONES: readonly ZonePlan[] = [
         entries: { start: { col: 3, row: 56 } },
         // Each transfer can't be skipped: the first lift to the second (marked by where their
         // tracks start), the ledge to the second horizontal mover, and the first horizontal mover
-        // to the exit ledge.
+        // to the end ledge.
         noCross: [
           { from: { col: 15, row: 56 }, to: { col: 45, row: 42 } },
           { from: { col: 60, row: 16 }, to: { col: 95, row: 12 } },
@@ -225,8 +223,8 @@ export const TEST_ZONES: readonly ZonePlan[] = [
           },
           // Horizontal to horizontal, opposite directions, fastest: the second, 4 higher and 2
           // across, pauses at its near end as the first pauses at its far end, then carries her to
-          // the exit ledge. Their round trip is 5 s. The ledge is 26 from the second's near end,
-          // and the first's far end is 26 from the exit ledge.
+          // the end ledge. Their round trip is 5 s. The ledge is 26 from the second's near end,
+          // and the first's far end is 26 from the end ledge.
           {
             character: "test-mover",
             col: 70,
@@ -245,7 +243,6 @@ export const TEST_ZONES: readonly ZonePlan[] = [
             row: 12,
             rows: 1,
           },
-          { character: "test-exit", col: 132, cols: 2, row: 8, rows: 4 },
         ],
         rows: 60,
         solids: [
@@ -257,30 +254,20 @@ export const TEST_ZONES: readonly ZonePlan[] = [
     },
     start: { area: "main", entry: "start" },
   },
-  // Two areas joined by a door: a street 4 screens wide, with a pigeon that hops about and flies
-  // from her and a door at its right end, then a lobby 6 screens wide with a cart wandering its
-  // floor, and the exit at its right end.
+  // A street 10 screens wide: a pigeon that hops about and flies from her, a door to the test
+  // room, then a cart wandering its floor.
   {
     areas: {
-      lobby: {
-        cols: 360,
-        entries: { door: { col: 4, row: 56 } },
-        objects: [
-          { character: "test-cart", col: 40, row: 54 },
-          { character: "test-exit", col: 354, cols: 2, row: 52, rows: 4 },
-        ],
-        rows: 60,
-        solids: [{ col: 0, cols: 360, row: 56, rows: 4 }],
-      },
       street: {
-        cols: 240,
+        cols: 600,
         entries: { start: { col: 3, row: 56 } },
         objects: [
           { character: "test-pigeon", col: 30, row: 54 },
-          { character: "test-door", col: 228, row: 52, to: { area: "lobby", entry: "door" } },
+          { character: "test-door", col: 228, room: "test", row: 52 },
+          { character: "test-cart", col: 280, row: 54 },
         ],
         rows: 60,
-        solids: [{ col: 0, cols: 240, row: 56, rows: 4 }],
+        solids: [{ col: 0, cols: 600, row: 56, rows: 4 }],
       },
     },
     start: { area: "street", entry: "start" },

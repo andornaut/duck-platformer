@@ -49,7 +49,7 @@ const FIXTURE_CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     difficulty: 1,
     entry: { row: 50 },
     exit: { row: 50 },
-    objects: [{ character: "test-exit", col: 54, cols: 2, row: 46, rows: 4 }],
+    objects: [],
     solids: [ground(0, 60, 50)],
     theme: "test",
   },
@@ -164,7 +164,7 @@ export const FIXTURE_LIBRARY: ChunkLibrary = {
 
 export const FIXTURE_RECIPE: ZoneRecipe = {
   difficulty: { from: 1, to: 5 },
-  doors: [{ count: 1, room: "test-room" }],
+  doors: [{ count: 1, room: "test" }],
   events: [{ count: 1, id: "test-event" }],
   finish: "test-finish",
   length: { max: 480, min: 300 },

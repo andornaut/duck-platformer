@@ -139,7 +139,7 @@ describe("assembleZone", () => {
     expect(runs(lib, zone).size).toBeGreaterThan(1);
   });
 
-  it("moves each chunk's contents to its zone columns, drawn in the theme", () => {
+  it("moves each chunk's contents to its zone columns, drawn in the theme, with its doors", () => {
     const lib = library({
       a: chunk(50, 50, {
         backdrops: [{ character: "tree", col: 3, row: 20 }],
@@ -163,6 +163,7 @@ describe("assembleZone", () => {
         { character: "sky", col: 0, cols: 180, row: 0 },
         { character: "tree", col: 63, row: 20 },
         { character: "bench", col: 65, row: 48 },
+        { character: "door", col: 66, cols: 2, room: "r", row: 40, rows: 4 },
       ],
       outOfReach: [{ col: 62, row: 10 }],
       rows: ROWS,
@@ -207,4 +208,29 @@ describe("assembleZone", () => {
     }
     expect(new Set(fills.map((each) => each.join())).size).toBeGreaterThan(1);
   });
+
+  it.each([0, 1, 2])(
+    "places the theme's door in each of %i filled door slots, sized to it",
+    (count) => {
+      const slot = (id: string, col: number) => ({
+        area: { col, cols: 4, row: 45, rows: 5 },
+        id,
+        kind: "door" as const,
+      });
+      const lib = library({
+        a: chunk(50, 50, { slots: [slot("d1", 10)] }),
+        b: chunk(50, 50, { slots: [slot("d2", 20)] }),
+      });
+      const zone = recipe(2, { doors: count === 0 ? [] : [{ count, room: "r" }] });
+      for (const seed of SEEDS) {
+        const area = areaOf(assembleZone(lib, seed, "z", zone));
+        const doors = area.objects.filter(({ character }) => character === "door");
+        const filled = (area.slots ?? []).filter(({ fill }) => fill !== undefined);
+        expect(doors).toEqual(
+          filled.map(({ area: rect }) => ({ character: "door", ...rect, room: "r" })),
+        );
+        expect(doors).toHaveLength(count);
+      }
+    },
+  );
 });

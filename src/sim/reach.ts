@@ -39,6 +39,7 @@ interface Course {
 const ground = (cols: number) => ({ col: 0, cols, row: GROUND_ROW, rows: 2 });
 
 // One area of terrain, with nothing in it, where she starts at start (her box's bottom centre).
+// It never clears, so she runs on past its right edge until the measure ends.
 function courseLayout(tile: number, cols: number, solids: TileRect[], start: Point): ZoneLayout {
   const plan: ZonePlan = {
     areas: {
@@ -54,7 +55,7 @@ function courseLayout(tile: number, cols: number, solids: TileRect[], start: Poi
   };
   const layout = zoneLayout(tile, { archetypes: {}, characters: {} }, {}, {}, new Set(), plan);
   const area = layout.areas.course as AreaLayout;
-  return { ...layout, areas: { course: { ...area, entries: { start } } } };
+  return { ...layout, areas: { course: { ...area, entries: { start }, exitX: Infinity } } };
 }
 
 // A ledge tiles high, just right of where she stands still. She walks right, holding Jump for

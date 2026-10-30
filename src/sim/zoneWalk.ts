@@ -408,29 +408,19 @@ function walkInto(
   return { landed: undefined, steps: run.steps };
 }
 
-// Walks to a use zone's centre and presses Use: the state after, if Use acted.
-function use(
+// Walks right from start until she clears the zone at its area's last column: whether she does.
+function walkOff(
   tuning: DuckTuning,
   layout: ZoneLayout,
   start: ZoneState,
-  object: ObjectLayout,
-): { done: ZoneState | undefined; steps: number } {
+): { cleared: boolean; steps: number } {
   const run = runner(tuning, layout, start);
-  const target = object.origin.x + object.width / 2 - tuning.width / 2;
-  for (let i = 0; i < WALK_STEPS; i++) {
-    const gap = target - run.zone.duck.x;
-    if (Math.abs(gap) < 2) {
+  for (let i = 0; i < WALK_STEPS && !run.zone.cleared; i++) {
+    if (!run.step({ ...STILL, move: 1 })) {
       break;
     }
-    if (!run.step({ ...STILL, move: gap > 0 ? 1 : -1 })) {
-      return { done: undefined, steps: run.steps };
-    }
   }
-  for (const useHeld of [false, true]) {
-    run.step({ ...STILL, useHeld });
-  }
-  const { zone } = run;
-  return { done: zone.cleared || zone.using ? zone : undefined, steps: run.steps };
+  return { cleared: run.zone.cleared, steps: run.steps };
 }
 
 // Steps her still until she stands somewhere, or gives up.
@@ -631,8 +621,9 @@ function targetsFrom(
 
 // Walks the zone from its start on the real rules. From each spot she comes to stand on, it
 // tries each stretch in range that she has not reached yet: a walk along her own surface, then
-// every jump at it, at every wait where something moves near. It presses Use at each use zone
-// near the spot; a door leads on to its area. It stops when no try finds a new spot.
+// every jump at it, at every wait where something moves near. From a spot near the area's last
+// column on a surface that runs into it, she walks right to clear the zone. It never presses
+// Use, so doors and their rooms play no part. It stops when no try finds a new spot.
 export function walkZone(tuning: DuckTuning, layout: ZoneLayout): ZoneWalk {
   const surfaces = zoneSurfaces(tuning, layout);
   const seen = new Map<string, Spot>();
@@ -713,24 +704,13 @@ export function walkZone(tuning: DuckTuning, layout: ZoneLayout): ZoneWalk {
         }
       }
     }
-    const lo = here.left + (from.bucket - 1) * BUCKET;
     const hi = here.left + (from.bucket + 2) * BUCKET;
-    for (const object of area.objects.filter((each) => each.collision === "use")) {
-      const centre = object.origin.x + object.width / 2;
-      const top = here.y - tuning.height;
-      const touches = top < object.origin.y + object.height && here.y > object.origin.y;
-      if (centre < lo || centre > hi || !touches) {
-        continue;
-      }
-      for (const start of startsFor(centre, centre)) {
-        const { done, steps: ran } = use(tuning, layout, start, object);
-        steps += ran;
-        if (done?.cleared) {
+    if (!cleared && here.right > area.exitX && hi > area.exitX) {
+      for (const start of startsFor(area.exitX, area.exitX)) {
+        const off = walkOff(tuning, layout, start);
+        steps += off.steps;
+        if (off.cleared) {
           cleared = true;
-        } else if (done?.using) {
-          arrive(enterArea(tuning, layout, done.using, done));
-        }
-        if (done) {
           break;
         }
       }

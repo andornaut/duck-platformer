@@ -232,7 +232,8 @@ const shiftInstance = (col: number, instance: Instance): Instance => ({
 // A zone of chunks ids, left to right, drawn in theme: each chunk's contents moved to its zone
 // columns, each terrain look as the theme's tileset draws it, the theme's repeated backdrops
 // across the whole zone, and fills (event ids, then door rooms, by kind) placed in its slots by
-// random. She starts on the first chunk's entry seam, half its footing in.
+// random. A filled door slot places the theme's door, sized to the slot, leading to its room.
+// She starts on the first chunk's entry seam, half its footing in.
 export function zonePlanOf(
   library: ChunkLibrary,
   random: Random,
@@ -281,6 +282,12 @@ export function zonePlanOf(
     }
     want.forEach((fill, index) => filled.set(open[index] as FilledSlot, fill));
   }
+  const doors = slots.flatMap((slot): Instance[] => {
+    const room = filled.get(slot);
+    return slot.kind === "door" && room !== undefined
+      ? [{ character: theme.door, ...slot.area, room }]
+      : [];
+  });
   const first = chunks[0];
   return {
     areas: {
@@ -307,6 +314,7 @@ export function zonePlanOf(
           ...chunks.flatMap((chunk, index) =>
             chunk.objects.map((instance) => shiftInstance(at(index), instance)),
           ),
+          ...doors,
         ],
         outOfReach: chunks.flatMap((chunk, index) =>
           (chunk.outOfReach ?? []).map((spot) => shiftPoint(at(index), spot)),

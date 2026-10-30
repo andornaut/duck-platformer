@@ -63,7 +63,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     ],
     theme: "park",
   },
-  // Difficulty 1, the zone's end: a lawn with a bench and the park gate, the exit.
+  // Difficulty 1, the zone's end: a lawn with a bench.
   "park-finish": {
     backdrops: [
       { character: "park-bench-frame", col: 22, row: 48 },
@@ -74,10 +74,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     difficulty: 1,
     entry: { row: 50 },
     exit: { row: 50 },
-    objects: [
-      { character: "park-bench", col: 22, row: 48 },
-      { character: "park-gate", col: 48, row: 45 },
-    ],
+    objects: [{ character: "park-bench", col: 22, row: 48 }],
     solids: [{ col: 0, cols: 60, look: "ground", row: 50, rows: 10 }],
     theme: "park",
   },

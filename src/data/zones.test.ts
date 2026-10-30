@@ -11,6 +11,7 @@ import { lookTiles, type Tileset } from "../view/tiles";
 import { ARCHETYPES, NO_INTERACTION, NO_REACTION, STATIC_MOTION } from "./archetypes";
 import { CHARACTERS } from "./characters";
 import { ZONE_MAP } from "./map";
+import { ROOMS } from "./rooms";
 import { SCREEN, TILE } from "./screen";
 import { TEXT } from "./text";
 import type { AreaPlan, Instance, TileRect, Tuning } from "./types";
@@ -113,13 +114,17 @@ describe("the zones", () => {
     expect(area.solids.every((rect) => inside(area, rect))).toBe(true);
   });
 
-  it.each(areas)("area %s's doors lead to an entry that exists", (_, zone, area) => {
-    for (const { to } of area.objects) {
-      if (to) {
-        expect(zone.areas[to.area]?.entries[to.entry], JSON.stringify(to)).toBeDefined();
+  it.each(instances)(
+    "instance %s is a door with a room that exists, or names no room",
+    (_, __, instance) => {
+      const { archetype } = resolveNames(CATALOGUE, instance);
+      if (archetype.collision === "use") {
+        expect(instance.room && ROOMS[instance.room], `${instance.room} in ROOMS`).toBeDefined();
+      } else {
+        expect(instance.room).toBeUndefined();
       }
-    }
-  });
+    },
+  );
 
   it.each(areas)(
     "area %s draws from a tileset art has, with a look for each terrain run",
@@ -141,17 +146,9 @@ describe("the zones", () => {
   );
 
   it.each(ZONES.map((zone, index) => [index + 1, zone] as const))(
-    "zone %i starts at an entry that exists and has an exit",
+    "zone %i starts at an entry that exists",
     (_, zone) => {
       expect(zone.areas[zone.start.area]?.entries[zone.start.entry]).toBeDefined();
-      const exits = Object.values(zone.areas).flatMap((area) =>
-        area.objects.filter(
-          (instance) =>
-            !instance.to &&
-            ARCHETYPES[CHARACTERS[instance.character]?.archetype ?? ""]?.collision === "use",
-        ),
-      );
-      expect(exits.length).toBeGreaterThan(0);
     },
   );
 });

@@ -12,7 +12,7 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 3,
     rows: 1,
   },
-  // A canopy: one-way, 6 above the sidewalk, over the exit door.
+  // A canopy: one-way, 6 above the sidewalk.
   canopy: {
     archetype: "ledge",
     art: "one-way-canopy",
@@ -40,14 +40,6 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 4,
     rows: 3,
   },
-  // PLACEHOLDER: a zone's exit, drawn with the street's door art until what it is is decided.
-  // Use there clears the zone.
-  "exit-door": {
-    archetype: "exit",
-    art: "door",
-    cols: 3,
-    rows: 4,
-  },
   // Facades, each a backdrop repeated across its run: the ground and second storeys standing on
   // the sidewalk line, and a walk-up's upper storey stacked above.
   "facade-brownstone": {
@@ -74,7 +66,7 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 4,
     rows: 15,
   },
-  // The ferret's first trap, set near zone 1's exit.
+  // The ferret's first trap, set near zone 1's end.
   "ferret-trap-snap": {
     animations: { idle: "set", move: "set", react: "set", talk: "set" },
     archetype: "hazard",
@@ -217,14 +209,6 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     art: "park-far-trees",
     cols: 20,
     rows: 10,
-  },
-  // The park gate, the zone's exit: a wrought-iron arch she uses to leave.
-  "park-gate": {
-    animations: { idle: "idle", move: "idle", react: "idle", talk: "idle" },
-    archetype: "exit",
-    art: "park-gate",
-    cols: 3,
-    rows: 5,
   },
   "park-lamp": {
     archetype: "scenery",
@@ -384,9 +368,9 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 6,
     rows: 5,
   },
-  // PLACEHOLDER: the test zones' objects, drawn as flat rectangles: exits and a door (Use
-  // zones), hazards, moving platforms whose motion each placement sets, a wandering cart and a
-  // pigeon that hops about and flies from her.
+  // PLACEHOLDER: the test zones' objects, drawn as flat rectangles: a door (a Use zone),
+  // hazards, moving platforms whose motion each placement sets, a wandering cart and a pigeon
+  // that hops about and flies from her.
   "test-cart": {
     archetype: "hazard-wanderer",
     art: "test-cart",
@@ -397,12 +381,6 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     archetype: "door",
     art: "test-door",
     cols: 3,
-    rows: 4,
-  },
-  "test-exit": {
-    archetype: "exit",
-    art: "test-exit",
-    cols: 2,
     rows: 4,
   },
   "test-hazard": {

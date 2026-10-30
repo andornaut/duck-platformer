@@ -6,9 +6,10 @@ import type { ZonePlan } from "./types";
 // filling rows 50 to 59, so on the sidewalk she stands two thirds down the screen. A pit-floor
 // hazard 4 below the sidewalk's top in every opening restarts the zone soon after she drops in.
 // Awnings and the canopy sit on row 44, 6 above the sidewalk. Along the sidewalk, left to right,
-// it teaches: walk, hop, jump, a gap, a cellar hatch, the courier, then the ferret's trap at the
-// exit door. Over the makeup store and its neighbour, a detour climbs the buildings into the
-// upper screen and drops back down: a fall onto the sidewalk is safe, as every fall flutters.
+// it teaches: walk, hop, jump, a gap, a cellar hatch, the courier, then the ferret's trap before
+// the street's end, which clears the zone. Over the makeup store and its neighbour, a detour
+// climbs the buildings into the upper screen and drops back down: a fall onto the sidewalk is
+// safe, as every fall flutters.
 export const ZONE_1: ZonePlan = {
   areas: {
     street: {
@@ -24,7 +25,7 @@ export const ZONE_1: ZonePlan = {
         // Each roofline carries a cornice along its top. Left to right: a brownstone, the cross
         // street's gap, one-storey brick, the walk-up whose fire escape the detour climbs, the
         // brownstone with the water tower, one-storey brick, a second walk-up and a brownstone to
-        // the exit.
+        // the street's end.
         { character: "facade-brownstone", col: 0, cols: 40, row: 24 },
         { character: "roofline-brownstone", col: 0, cols: 40, row: 20 },
         { character: "cornice", col: 1, cols: 39, row: 20 },
@@ -124,10 +125,9 @@ export const ZONE_1: ZonePlan = {
         { character: "pedestrian-cat", col: 172, row: 45 },
         { character: "frog-courier", col: 186, row: 47 },
         { character: "pedestrian-raccoon", col: 200, phase: 0.5, row: 45 },
-        // The ferret's trap, then the zone's exit door under a canopy.
+        // The ferret's trap, then a canopy before the street's end.
         { character: "ferret-trap-snap", col: 212, row: 48 },
         { character: "canopy", col: 218, cols: 12, row: 44 },
-        { character: "exit-door", col: 222, row: 46 },
       ],
       // The roofs the detour doesn't reach: the second walk-up's and the last brownstone's
       // cornices, and the top of the wall at the street's left edge. The first brownstone's

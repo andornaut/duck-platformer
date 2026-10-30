@@ -19,6 +19,7 @@ import { installOffer } from "./pwa/installOffer";
 import { BootScene } from "./scenes/BootScene";
 import { MapScene } from "./scenes/MapScene";
 import { PauseScene } from "./scenes/PauseScene";
+import { RoomScene } from "./scenes/RoomScene";
 import { SettingsScene } from "./scenes/SettingsScene";
 import { StartScene } from "./scenes/StartScene";
 import { ZoneScene } from "./scenes/ZoneScene";
@@ -115,7 +116,7 @@ function startGame(): void {
     scale: { autoCenter: Scale.CENTER_HORIZONTALLY, mode: Scale.EXPAND },
     // Later scenes draw over earlier ones: the pause card over the zone, the settings card over
     // the pause card's dim.
-    scene: [BootScene, StartScene, MapScene, ZoneScene, PauseScene, SettingsScene],
+    scene: [BootScene, StartScene, MapScene, ZoneScene, PauseScene, RoomScene, SettingsScene],
     // WebGL only: the build's Phaser has no Canvas renderer (src/tools/phaserBuild.ts).
     type: WEBGL,
     width: SCREEN.width,

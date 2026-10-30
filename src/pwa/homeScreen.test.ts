@@ -27,6 +27,11 @@ describe("trackHomeScreen", () => {
       steps: [["shown"], ["cover", "pauseCard", true], ["cover", "pauseCard", false]],
     },
     {
+      name: "away while a room shows",
+      seen: [true, false, true],
+      steps: [["shown"], ["cover", "room", true], ["cover", "room", false]],
+    },
+    {
       name: "home only once a cover from before the zone is gone",
       seen: [true],
       steps: [["cover", "pauseCard", true], ["shown"], ["cover", "pauseCard", false]],
