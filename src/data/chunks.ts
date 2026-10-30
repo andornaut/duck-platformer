@@ -93,10 +93,6 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { character: "red-edge-top", col: 46, cols: 16, row: 34 },
       { character: "red-edge-support", col: 46, cols: 16, row: 35 },
     ],
-    outOfReach: [
-      { col: 20, row: 35 },
-      { col: 46, row: 35 },
-    ],
     solids: [
       { col: 20, cols: 12, look: "raised", row: 36, rows: 24 },
       { col: 46, cols: 16, look: "raised", row: 36, rows: 24 },
@@ -144,7 +140,6 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { character: "red-edge-top", col: 20, cols: 18, row: 42 },
       { character: "red-edge-support", col: 20, cols: 18, row: 43, rows: 2 },
     ],
-    outOfReach: [{ col: 20, row: 43 }],
     solids: [
       { col: 0, cols: 26, look: "ground", row: 50, rows: 10 },
       { col: 26, cols: 6, look: "raised", row: 49, rows: 11 },
