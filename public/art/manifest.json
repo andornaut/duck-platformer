@@ -945,6 +945,24 @@
       "repeat": "none"
     },
     {
+      "key": "street-city-far",
+      "png": "backdrops/street-city-far.png",
+      "width": 720,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
+      "key": "street-city-mid",
+      "png": "backdrops/street-city-mid.png",
+      "width": 720,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
       "key": "street-sky",
       "png": "backdrops/street-sky.png",
       "width": 48,

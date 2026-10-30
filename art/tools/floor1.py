@@ -20,11 +20,13 @@ Scale
   row 5). Indoors (the lobby) is a separate scene at full scale, also 720px tall, its floor at y 672.
 
 Palette (the street; the lobby keeps its own)
-- A pale steel morning: an lgrey sky over grey, faded downtown skyscrapers in grey and slate, buildings and
-  shopfronts in slate, dslate and grey, play tiles with white lips over a pale concrete band and a slate fill, and
-  warm accents kept where they guide the eye: the ochre-and-cream awnings, the cream sign icons, the amber door and
-  cab, the frog's bike. The pieces are drawn with warm ramp names and recoloured at export through the COOL_* maps,
-  so their shapes, sizes and tile indices do not depend on the palette.
+- A pale steel atmosphere: flat lgrey sky, grey window-free distant skyline and sparse slate middle-distance
+  buildings. The two city layers repeat at 720px and stay separate for parallax. Near facades and shopfronts use
+  slate, dslate and grey, with quiet windows. Cream icons, ochre awnings and amber room doors provide warm accents.
+- street-city-far: 720x600, bottom y 600, repeat x; suggested horizontal scroll factor 0.15.
+- street-city-mid: 720x600, bottom y 600, repeat x; suggested horizontal scroll factor 0.4.
+- street-sky stays fixed; near facades, storefronts, doors, ledges and attached props share gameplay motion.
+- street-skyline remains a 336x600 combined fallback. Use it or the separate city layers, never both.
 
 Tilesets
 - A tileset is one PNG of 12x12 tiles in rows of COLUMNS (8), no spacing or margin, transparent where a tile has no
@@ -96,9 +98,8 @@ Backdrops
   tiles it horizontally across a run; "none" places it once. Street y values are in the two-screen frame (the
   sidewalk's top at y 600, row 50); the sidewalk and road tiles fill rows 50 to 59 below it. Draw order, back to front: sky, skyline, facades and
   their upper storeys and rooflines, facade pieces, storefronts, street furniture, then the play layer.
-- Sky and skyline (repeat x): street-sky 48x600 (y 600); street-skyline 336x600 (y 600): far blue buildings and
-  water towers, seen above one-storey buildings and down cross streets, and two towers that rise above the near
-  roofs in the upper screen.
+- Sky and city (repeat x): street-sky 48x600 (y 600), flat lgrey. street-city-far and street-city-mid are each
+  720x600 (y 600), window-free grey and slate silhouettes. street-skyline 336x600 is their combined fallback.
 - Facades (repeat x, one per building type; a run per building): facade-one-storey 48x192 (y 600, a parapet 192
   up), facade-walkup 48x312, facade-brownstone 48x312, facade-hotel 48x312 (y 600 each). Each shows the 180px
   ground storey with a band over the shopfronts and the next storey's windows above, up to y 288.
@@ -617,34 +618,46 @@ def icon(g, kind, x, y, c):
 
 
 def street_sky():
-    """48x600, repeat x: a pale steel sky (lgrey) for the top 48px, then grey behind the whole street, so every
-    rooftop and ledge stands against grey."""
-    return R(Grid(48, STREET_FY), (0, 0, 48, STREET_FY, "grey"), (0, 0, 48, 48, "lgrey"))
+    """48x600, repeat x: one flat lgrey atmosphere, fixed behind the scrolling city layers."""
+    return R(Grid(48, STREET_FY), (0, 0, 48, STREET_FY, "lgrey"))
 
 
-def towers(g, x0, x1, bottom, height, base, shade, seed):
-    """A layer of downtown towers between x0 and x1 standing on row bottom: set-back crowns and spires, a 2px shade
-    down each tower's right side. Seeded, so it is the same every build."""
-    x, k = x0, seed
-    while x < x1:
-        k = (k * 37 + 11) % 97
-        w = min(28 + k % 34, x1 - x)
-        top = bottom - height + 20 + (k * 7) % (height // 2)
-        R(g, (x, top, w, bottom - top, base), (x + w - 3, top, 3, bottom - top, shade))
-        if k % 3 == 0 and w > 14:                               # a set-back crown
-            R(g, (x + 6, top - 18, w - 12, 18, base))
-        if k % 4 == 1:                                          # a spire
-            R(g, (x + w // 2 - 1, top - 30, 2, 30, base))
-        x += w + 2
+def city_blocks(g, colour, blocks):
+    """Window-free silhouettes, with occasional small water tanks, on a seamless 720px repeat."""
+    for x, width, top, tank in blocks:
+        R(g, (x, top, width, STREET_FY - top, colour))
+        if tank:
+            R(g, (x + 12, top - 18, 18, 14, colour), (x + 14, top - 4, 2, 4, colour),
+              (x + 26, top - 4, 2, 4, colour))
+            g.tri((x + 10, top - 18), (x + 21, top - 26), (x + 32, top - 18), colour)
+    return g
+
+
+def street_city_far():
+    """720x600, bottom y 600, repeat x: grey distant city against lgrey sky. No windows or outlined edges.
+    Suggested horizontal scroll factor 0.15; keep its vertical motion weak during climbs."""
+    return city_blocks(Grid(720, STREET_FY), "grey", (
+        (12, 54, 218, False), (90, 72, 148, True), (184, 42, 276, False),
+        (250, 66, 182, False), (342, 50, 110, False), (416, 60, 232, True),
+        (500, 54, 164, False), (580, 72, 254, False), (676, 32, 202, False),
+    ))
+
+
+def street_city_mid():
+    """720x600, bottom y 600, repeat x: sparse slate blocks behind the near facades. No windows or play lips.
+    Suggested horizontal scroll factor 0.4; all near facades and their attached objects keep factor 1."""
+    return city_blocks(Grid(720, STREET_FY), "slate", (
+        (24, 78, 432, False), (182, 58, 386, False), (302, 72, 446, False),
+        (438, 62, 410, False), (576, 90, 462, False),
+    ))
 
 
 def street_skyline():
-    """The far skyline, 336x600 (its bottom on the sidewalk line): faded downtown skyscrapers in two layers pushed
-    back towards the sky, the far layer grey with slate shade (y 120 to 540), the nearer slate with dslate shade
-    (y 270 to 600)."""
-    g = Grid(336, 600)
-    towers(g, 0, 336, 540, 420, "grey", "slate", 5)
-    towers(g, 0, 336, 600, 330, "slate", "dslate", 17)
+    """336x600 legacy composite for callers without separate far and middle layers. Do not place with both
+    street-city-far and street-city-mid: those two keys replace this combined backdrop."""
+    far, middle = street_city_far(), street_city_mid()
+    g = Grid(336, STREET_FY)
+    g.px = [[middle.px[y][x] or far.px[y][x] for x in range(g.w)] for y in range(g.h)]
     return g
 
 
@@ -921,6 +934,8 @@ def lobby_balustrade():
 STREET_DEFS = {
     "street-sky": (street_sky, STREET_FY, "x"),
     "street-skyline": (street_skyline, STREET_FY, "x"),
+    "street-city-far": (street_city_far, STREET_FY, "x"),
+    "street-city-mid": (street_city_mid, STREET_FY, "x"),
     **{f"facade-{k}": ((lambda k=k: facade(k)), STREET_FY, "x") for k in BUILDINGS},
     "fire-escape": (fire_escape, 473, "none"),
     "hotel-crest": (hotel_crest, 478, "none"),
@@ -945,7 +960,12 @@ STREET_DEFS = {
 # pieces standing on the sidewalk keep the line just above it darker than the sidewalk's white lip: the tree's
 # trunk and the canopy's poles take grey, not lgrey
 NEAR_FOR = {"street-tree": dict(COOL_NEAR, tan="grey"), "canopy-poles": dict(COOL_NEAR, tan="grey")}
-BACKDROP_DEFS = {k: (fn if k in ("street-sky", "street-skyline") else cool(fn, NEAR_FOR.get(k, COOL_NEAR)), y, rep)
+# Quiet glass stays one value step below the architecture; shop icons keep their cream callout.
+for _key in STREET_DEFS:
+    if _key.startswith(("facade-", "storefront-")):
+        NEAR_FOR[_key] = dict(COOL_NEAR, navy="dslate")
+ATMOSPHERE_KEYS = ("street-sky", "street-skyline", "street-city-far", "street-city-mid")
+BACKDROP_DEFS = {k: (fn if k in ATMOSPHERE_KEYS else cool(fn, NEAR_FOR.get(k, COOL_NEAR)), y, rep)
                  for k, (fn, y, rep) in STREET_DEFS.items()}
 BACKDROP_DEFS.update({
     "lobby-wall": (lobby_wall, LOBBY_H, "x"),
@@ -999,7 +1019,8 @@ def build():
 # jump 8). Backdrop runs are (key, x0, x1, bottom y); pieces (key, x, bottom y); one-way rows (tile, row, first
 # col, width).
 STREET_EXAMPLE = dict(
-    runs=[("street-sky", 0, 720, STREET_FY), ("street-skyline", 0, 720, STREET_FY),
+    runs=[("street-sky", 0, 720, STREET_FY), ("street-city-far", 0, 720, STREET_FY),
+          ("street-city-mid", 0, 720, STREET_FY),
           ("facade-walkup", 0, 288, STREET_FY), ("facade-walkup-upper", 0, 288, 288),
           ("roofline-walkup", 0, 288, 108),
           ("facade-brownstone", 288, 528, STREET_FY), ("roofline-brownstone", 288, 528, 288),
