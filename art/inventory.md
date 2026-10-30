@@ -77,7 +77,6 @@ Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with 
 | ui-answer           | sprite                                                     | 208x36 | normal, selected, pressed                 |
 | ui-button           | nine-slice (2,4,2,6)                                       | 16x28  | normal, pressed                           |
 | ui-button-primary   | nine-slice (2,4,2,6)                                       | 16x28  | normal, pressed                           |
-| ui-checkbox         | sprite                                                     | 20x20  | off, on                                   |
 | ui-close            | sprite                                                     | 24x24  | normal, pressed                           |
 | ui-dialogue-box     | sprite                                                     | 640x96 | rest                                      |
 | ui-focus            | nine-slice (4,4,4,4)                                       | 16x16  | rest                                      |
@@ -94,7 +93,6 @@ Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with 
 | ui-quit             | sprite                                                     | 20x20  | normal, pressed                           |
 | ui-resume           | sprite                                                     | 160x44 | normal, pressed                           |
 | ui-settings-card    | nine-slice (2,2,2,2)                                       | 16x16  | rest                                      |
-| ui-settings-row     | nine-slice (2,2,2,2)                                       | 12x48  | rest                                      |
 | ui-skip             | sprite                                                     | 78x20  | normal, pressed, disabled                 |
 | ui-start            | sprite                                                     | 192x52 | normal, pressed                           |
 | ui-switch           | sprite                                                     | 32x16  | on, off                                   |

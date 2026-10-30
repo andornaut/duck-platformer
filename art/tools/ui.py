@@ -107,7 +107,6 @@ Pause card, settings card and install steps card (each over the game dimmed two 
   cut corners. Draw it at (x-4, y-4, w+8, h+8) round the focused element's hit area or face: a row (360x56, the
   Install row included), Resume (168x52), Start (200x60), an answer (216x44), a nav button (44x44) or the close
   X's 24x24 mark (32x32). One tag, rest.
-- ui-checkbox, 20x20. Tags off (empty box), on (a green tick).
 - ui-switch, 32x16, dog-walker-game's switch: an ink-rimmed track with a white knob, at the right with a white tick
   on dgreen when on, at the left with a white cross on slate when off, so the state reads by knob side and glyph as
   well as colour. Tags on, off.
@@ -305,25 +304,6 @@ def settings_card():
     on the top and left, a grey rim on the bottom and right. No header."""
     g = Grid(16, 16)
     panel(g, 0, 0, 16, 16, "lgrey", rim=("white", "grey"))
-    return g.px
-
-
-def settings_row():
-    g = Grid(12, 48)
-    panel(g, 0, 0, 12, 48, "dslate", rim=None, border="dslate")
-    return g.px
-
-
-TICK = [(4 + i, 8 + i) for i in range(4)] + [(7 + i, 11 - i) for i in range(1, 8)]  # 2x2 stamps: a 3px stroke
-
-
-def checkbox(on):
-    g = Grid(20, 20)
-    g.rect(0, 0, 20, 20, "cream")
-    g.rect(2, 2, 16, 16, "ink")
-    if on:
-        for x, y in TICK:
-            g.rect(x, y, 2, 2, "green")
     return g.px
 
 
@@ -633,7 +613,6 @@ SLICES = {
     "ui-focus": (4, 4, 4, 4),
     "ui-quip-strip": (2, 2, 2, 2),
     "ui-settings-card": (2, 2, 2, 2),
-    "ui-settings-row": (2, 2, 2, 2),
 }
 
 
@@ -659,7 +638,6 @@ def sprites():
     yield "ui-button", [(s, [button(s)], 100) for s in ("normal", "pressed")]
     yield "ui-button-primary", [(s, [button_primary(s)], 100) for s in ("normal", "pressed")]
     yield "ui-switch", [(s, [switch(s == "on")], 100) for s in ("on", "off")]
-    yield "ui-checkbox", [("off", [checkbox(False)], 100), ("on", [checkbox(True)], 100)]
     yield "ui-close", [(s, [close(s)], 100) for s in ("normal", "pressed")]
     yield "ui-dialogue-box", one(dialogue_box())
     yield "ui-focus", one(focus())
@@ -677,7 +655,6 @@ def sprites():
     yield "ui-quip-strip", one(quip_strip())
     yield "ui-resume", [(s, [resume(s)], 100) for s in ("normal", "pressed")]
     yield "ui-settings-card", one(settings_card())
-    yield "ui-settings-row", one(settings_row())
     yield "ui-start", [(s, [start(s)], 100) for s in ("normal", "pressed")]
     yield "ui-skip", [(s, [skip(s)], 100) for s in ("normal", "pressed", "disabled")]
     yield "ui-touch-jump", touch_button("jump")
