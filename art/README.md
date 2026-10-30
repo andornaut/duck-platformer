@@ -149,7 +149,7 @@ The villain is a champagne ferret standing up on its hind legs in a stovepipe ha
 
 ## UI
 
-All positions are in base pixels (x, y, w, h) of the 720x360 layout as drawn. The game derives every press area from the drawn button at runtime: Use and the pause button get 8px around, Jump 16px toward Use and the game and out to the screen's edges, and every other button 6px around, at least 44x44. Art gives only the drawn rects.
+All positions are in base pixels (x, y, w, h) of the 720x360 layout as drawn. The game derives every press area from the drawn button at runtime: the button plus 25% of its shorter side on each side, clamped between 6 and 16px, and at least 48x48; Jump's also reaches the screen's corner. Art gives only the drawn rects.
 
 ### Dialogue box
 
