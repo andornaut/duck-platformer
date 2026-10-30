@@ -13,7 +13,7 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 - **Characters:** the duck is the one the player controls: a small, round, cream duck with tiny wings and feet, an orange bill and a dot eye. Her full design is in the [art plan](../art/README.md). Animals talk, and most interactions are with animals. PLACEHOLDER: whether there are humans (see [`ideas.md`](ideas.md))
 - **Ferret:** the villain, who schemes against the duck's journey home: a champagne (cream-coloured) ferret, about twice the duck's height, standing upright, with a tall plum stovepipe hat and a red bow tie. Its full design is in the [art plan](../art/README.md)
 - **World:** the modern day, mixing fantasy and reality
-- **Zones:** each zone is one place, indoors, outdoors or a hybrid of both. Zone 1 is a New York street. PLACEHOLDER: the later zones, the beginning and where home is
+- **Zones:** each zone is one place, indoors, outdoors or a hybrid of both. Zone 1 is a New York street; zone 2 is a park. PLACEHOLDER: the later zones, the beginning and where home is
 
 ## Core loop
 
@@ -65,10 +65,10 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 ### Map
 
 - **Between zones:** the map shows before the first zone and after each zone's exit. She walks on to the next fork where she must choose, or stays at her place when only one path leads on. Where she has been and the paths she has travelled are marked
-- **Choose:** at a fork, the fork buttons or ←/→ pick a path; tapping the map does not. Where only one path leads on, Continue moves her on
+- **Choose:** tapping a zone's marker that she can go to picks it and starts it; at a fork, the fork buttons or ←/→ also pick a path. Where only one path leads on, Continue moves her on
 - **Forks:** at a fork she picks one of two or three paths. Paths split and rejoin, and every path reaches the same ending
 - **No backtracking:** she only moves forward on the map, and never returns to a zone she has left
-- **V1:** one path is built. Its forks still show, with the unbuilt paths and zones marked as unbuilt and not selectable. After home, a new lap starts and the saved progress resets (PLACEHOLDER: until the ending exists). The map's look is in the [art plan](../art/README.md)
+- **V1:** one path is built: the street, the corner fork, the park, then home. Its forks still show, with the unbuilt paths and zones marked as unbuilt and not selectable. After home, a new lap starts and the saved progress resets (PLACEHOLDER: until the ending exists). The map's look is in the [art plan](../art/README.md)
 
 ### Zones
 
@@ -111,6 +111,11 @@ Everything in a zone except its terrain is placed in data, in three layers.
 - **Kind:** outdoor
 - **Length:** 4 screens (240 tiles)
 - **Street:** a day-time New York street, 2 screens tall: she walks the sidewalk along the bottom and climbs fire escapes, awnings and ledges into the upper screen, past a row of shops: a café, a florist, a gift shop, a makeup store, a pet shop and two restaurants. Its hazards are open cellar hatches in the sidewalk, a frog courier riding a delivery bike back and forth along it, and the ferret's first trap, a giant snap trap with a quip. Pigeons in flocks flee from her, a pug approaches her, and pedestrians walk past
+
+### Zone 2
+
+- **Kind:** outdoor, an autumn park
+- **Layout:** assembled from the park's chunks: 6 to 10 screens (360 to 600 tiles), difficulty rising from 1 to 3, ending at the park gate. PLACEHOLDER: a basic test version until its events, doors and rooms exist
 
 ### Rooms
 
