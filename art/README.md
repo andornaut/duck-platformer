@@ -149,16 +149,16 @@ The villain is a champagne ferret standing up on its hind legs in a stovepipe ha
 
 ## UI
 
-All positions are in base pixels (x, y, w, h) of the 720x360 layout as drawn. A touch target is at least 44x44. The game sizes hit areas at runtime from the drawn element plus a margin (6 to 8px for most buttons), so a hit area given here is the base layout's.
+All positions are in base pixels (x, y, w, h) of the 720x360 layout as drawn. The game derives every press area from the drawn button at runtime: Use and the pause button get 8px around, Jump 16px toward Use and the game and out to the screen's edges, and every other button 6px around, at least 44x44. Art gives only the drawn rects.
 
 ### Dialogue box
 
 - A box at the bottom, 40,256,640,96, with the speaker's 64px portrait in a 68px frame at 48,270 and a name tab on the box's top edge. Two or three speakers use the same box: the portrait and name tab change.
 - The name tab's fill is the speaker's colour: amber, green, pink or tan. Ink text holds at least 6.6:1 on each, and each holds at least 5:1 on the box's navy.
 - Text area at x 128, y 268, 504 wide, 3 lines at a 20px pitch, one paragraph per box.
-- Forward mark 10x14, hit area 636,308,44,44. A tap anywhere or a key also advances. There is no back button and no timer.
-- Skip at the top right: mark 634,8,78,20, hit area 634,8,78,44. It runs ahead to the next choice; while a choice shows, it is disabled (greyed with the grey ramp, and changed in shape).
-- Choices: a row of two or three answer buttons above the box, each 208x36 (hit 208x44), 8 apart, row top y 192, at most 166px of text. Three sit at x 40, 256 and 472, spanning the box; two at 148 and 364. The selected answer shows a cursor as well as a fill.
+- Forward mark 10x14 at 653,323. A tap anywhere or a key also advances. There is no back button and no timer.
+- Skip at the top right: mark 634,8,78,20. It runs ahead to the next choice; while a choice shows, it is disabled (greyed with the grey ramp, and changed in shape).
+- Choices: a row of two or three answer buttons above the box, each 208x36, 8 apart, row top y 192, at most 166px of text. Three sit at x 40, 256 and 472, spanning the box; two at 148 and 364. The selected answer shows a cursor as well as a fill.
 - The touch controls hide while a box is open.
 
 ### Quip
@@ -174,7 +174,7 @@ Two round buttons for the right thumb, Use above and to the left of Jump. Each i
 | Use     | 592,210          | 75x75 | 73px wide | three dots | 580,207                | 55         |
 | Jump    | 667,307          | 75x75 | 73px wide | caret      | 650,306                | 53         |
 
-- Centres and label origins are the base 720x360 layout, as drawn. At runtime the game anchors Jump, Use and the pause button to the screen's corners, so on a wide or tall screen they sit in the spare space outside the game, and sizes their hit areas from the drawn button plus a margin: about 8px for Use and Pause, about 16px plus the screen's corner for Jump. The label keeps its offset from its button's centre.
+- Centres and label origins are the base 720x360 layout, as drawn. At runtime the game anchors Jump, Use and the pause button to the screen's corners, so on a wide or tall screen they sit in the spare space outside the game. The label keeps its offset from its button's centre.
 - Labels: "Use" and "Jump" in `font-body` at 2x, set by the game from text data and never baked in. Each is centred on its button's centre x, 4 rows below the icon. Label room is the widest ink that keeps 2px of face on each side while pressed.
 - Press: the ring turns white and thickens 1px and the face lifts a step, swelling 1px for the first frame (frame 0, then frame 1, 60ms each), then holds until release, which snaps back to rest.
 - Movement has no art: a touch anywhere off a button sets its own neutral point, and nothing marks it.
@@ -184,16 +184,16 @@ Two round buttons for the right thumb, Use above and to the left of Jump. Each i
 The game boots into the start screen; Start goes to the map. A nav bar runs across the top with icon buttons at its right, and Start sits below the logo.
 
 - Nav bar `ui-nav-bar`, 0,0,720,48.
-- Icon buttons `ui-icon-button`, 36x36 at y 6, each with a 44x44 hit area and a 20x20 icon 8 in and 6 down (8 down while pressed). With Exit: Settings at x 632 (hit 628,2,44,44) and Exit at x 676 (hit 672,2,44,44), so Exit is at the far right. Without Exit (Firefox for Android's installed app hides it): Settings alone at x 676.
+- Icon buttons `ui-icon-button`, 36x36 at y 6, each with a 20x20 icon 8 in and 6 down (8 down while pressed). With Exit: Settings at x 632 and Exit at x 676, so Exit is at the far right. Without Exit (Firefox for Android's installed app hides it): Settings alone at x 676.
 - Logo (`logo`, 360x193) at 180,60, with Start (`ui-start`, 192x52) at 264,268, 15 below it. Without the logo, Start sits at 264,178, centred under the nav bar. The logo layout is the recommended one.
 - Icons share their shapes with dog-walker-game's: the cog (8 square teeth round a ring with a round hole), the exit (a doorway in 2px strokes, open on the right, with a solid arrow leaving it) and the home (a solid house with a 1:1 pitched roof, a chimney on the right slope and a door gap). Each comes as a 20x20 nav icon and a 16x16 row icon.
 - Button labels are centred: origin x = the button's centre x minus floor(ink width / 2), where the ink width is the label's visible width. Start, Resume and Continue lead with the play mark (`ui-play-mark`, 5x10): the mark, a 6px gap, then the label's ink, centred as one group on the button by the same rule. The mark and the label sink 2px while the button is pressed.
 
 ### Pause, settings and install cards
 
-A pause button at the top left opens the pause card over the game, which is dimmed by stepping every colour two ramp steps darker. The pause card reads Settings, Return home and Resume; Settings opens the settings card over the same dim, and Install opens the install steps card for browsers that install from their own menu. One card shows at a time. Every card is the same frame, 368 wide at 176,88, with a 36px header holding its title and a close X (hit area 500,88,44,44). Rows are 352x48 at x 184, 4px apart, each its own hit area, with a 16x16 icon at x 198 and a label origin at x 228.
+A pause button at the top left opens the pause card over the game, which is dimmed by stepping every colour two ramp steps darker. The pause card reads Settings, Return home and Resume; Settings opens the settings card over the same dim, and Install opens the install steps card for browsers that install from their own menu. One card shows at a time. Every card is the same frame, 368 wide at 176,88, with a 36px header holding its title and a close X (24x24 at 510,94). Rows are 352x48 at x 184, 4px apart, each pressed as a whole, with a 16x16 icon at x 198 and a label origin at x 228.
 
-- Pause button: the Use and Jump disc, 33px across, with two pause bars and no label, centred at 26,26 as drawn (35x35 frame), anchored to the top-left corner at runtime with its hit area sized from the drawn button, as for Use and Jump. It is a touch control: hidden on desktop and while a dialogue box is open, and its press matches Use and Jump.
+- Pause button: the Use and Jump disc, 33px across, with two pause bars and no label, centred at 26,26 as drawn (35x35 frame), anchored to the top-left corner at runtime, as Use and Jump are to theirs. It is a touch control: hidden on desktop and while a dialogue box is open, and its press matches Use and Jump.
 
 | Card     | Rect           | Title    | Rows (y)                                         | Below the rows                             |
 | -------- | -------------- | -------- | ------------------------------------------------ | ------------------------------------------ |
@@ -203,9 +203,9 @@ A pause button at the top left opens the pause card over the game, which is dimm
 
 - Settings card without Install: 368x132, the build label at origin y 192.
 - Touch controls row: its icon at 198,152, the checkbox (20x20) at 504,150, and Shown or Hidden ending at x 494, left of it. The checkbox stays: the user picked it, its two states differ in shape, and the state word reads it a second time.
-- Install row: its icon at 198,204 and a secondary button (`ui-button`, 72x28) at 452,198 whose label the game centres in it, at most 56 wide. The whole row is the hit area.
+- Install row: its icon at 198,204 and a secondary button (`ui-button`, 72x28) at 452,198 whose label the game centres in it, at most 56 wide. The whole row presses it.
 - Build label: tan in `font-body`, centred on x 360, for example "v0.0.1 · dev".
-- Keyboard focus: `ui-focus`, a nine-slice ring (margins 4) drawn 4px outside the focused element on every side, at (x-4, y-4, w+8, h+8): a 2px yellow band between 1px ink lines, so it holds 3:1 on the card, the rows, the buttons and the dim. It rings the focused element's hit area or face: a settings row (the Install row included), Resume, Start, an answer button, a nav button or the close X (round its 24x24 mark).
+- Keyboard focus: `ui-focus`, a nine-slice ring (margins 4) drawn 4px outside the focused element on every side, at (x-4, y-4, w+8, h+8): a 2px yellow band between 1px ink lines, so it holds 3:1 on the card, the rows, the buttons and the dim. It rings the focused element's face: a settings row (the Install row included), Resume, Start, an answer button, a nav button or the close X (round its 24x24 mark).
 - Install steps: each step is a 16x16 glyph at x 198 and up to two lines of text at x 228 (20px pitch, at most 296 wide). Step 1 shows the iOS Share glyph or the browser-menu glyph, whichever the browser uses; step 2 the install glyph.
 
 ## Map
@@ -219,7 +219,7 @@ The map screen shows the zones and the forks between them as a paper map, before
 - The duck's marker `map-duck` (26x22, `idle` 2 x 400ms) stands on the current node's ring.
 - Paths have no art. The game draws each from node to node as a gentle curve (a quadratic Bezier bent 8% of its length, alternating sides), trimmed 3px outside the markers, by stamping squares along it: built a 2px dbrown dash (6 on, 4 off), travelled a 4px solid dred line, unbuilt 2x2 slate dots every 6px. At a fork the paths she can take carry an arrowhead, and the selected one turns to 4px dred dashes.
 - Labels: the zone's name in `font-title` at 2x, plum, centred under its marker: origin (cx - floor((A - 4) / 2) - 2, cy + 12), where A is its advance width at 2x, over a cream knock-out (ox - 2, cy + 17, A + 4, 16) that hides the paths behind it.
-- Continue is `ui-resume` at 280,300. At a fork, one `ui-fork-choice` (160x36, hit 160x44, as `ui-answer`) per path replaces it, 8 apart and centred on x 360 at y 304, each with the zone's name and a `ui-fork-arrow` (up, level or down) for the direction the path leaves the fork.
+- Continue is `ui-resume` at 280,300. At a fork, one `ui-fork-choice` (160x36, as `ui-answer`) per path replaces it, 8 apart and centred on x 360 at y 304, each with the zone's name and a `ui-fork-arrow` (up, level or down) for the direction the path leaves the fork.
 
 ## Animation
 
