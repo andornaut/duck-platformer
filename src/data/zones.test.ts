@@ -4,9 +4,11 @@ import { describe, expect, it } from "vitest";
 import manifestJson from "../../public/art/manifest.json";
 import lobbyTiles from "../../public/art/tilesets/tiles-lobby.json";
 import streetTiles from "../../public/art/tilesets/tiles-street.json";
+import { STEP_SECONDS } from "../rules/step";
 import { resolveNames, zoneLayout } from "../rules/tiles";
-import { startZone } from "../rules/zone";
+import { startZone, stepZone } from "../rules/zone";
 import { zonePlanFor } from "../rules/zonePlans";
+import { HITBOXES, TILESETS as TILESETS_ALL } from "../testing/walkSuite";
 import type { ArtManifest } from "../view/aseprite";
 import { DUCK_FRAME } from "../view/duck";
 import { artKind } from "../view/objectArt";
@@ -205,6 +207,36 @@ describe("every zone's start", () => {
   it.each(Object.keys(RECIPES))("starts recipe %s clear of its first column", (key) => {
     const failing = START_SEEDS.filter((seed) => !startsClear(zonePlanFor(seed, key)));
     expect(failing).toEqual([]);
+  });
+});
+
+// Whether, held left with no jump from the plan's start, on art's real tiles and sprites, she
+// turns back within seconds: nothing in a zone's first column may stop her reaching it.
+const turnsBackWithin = (seconds: number, plan: ZonePlan) => {
+  const layout = zoneLayout(TILE, DUCK_FRAME, CATALOGUE, HITBOXES, TILESETS_ALL, new Set(), plan);
+  let zone = startZone(DUCK, layout, 1);
+  for (let step = 0; step < Math.round(seconds / STEP_SECONDS) && !zone.turnedBack; step++) {
+    zone = stepZone(
+      DUCK,
+      layout,
+      STEP_SECONDS,
+      { jumpHeld: false, move: -1, useHeld: false },
+      zone,
+    );
+  }
+  return zone.turnedBack;
+};
+
+describe("going back from a zone's start", () => {
+  it.each([
+    ["zone 1", ZONE_1],
+    ...TEST_ZONES.map((plan, index): [string, ZonePlan] => [`test zone ${index + 1}`, plan]),
+    ...Object.keys(RECIPES).map((key): [string, ZonePlan] => [
+      `recipe ${key}`,
+      zonePlanFor(1, key),
+    ]),
+  ])("held left from %s's start, she turns back", (_, plan) => {
+    expect(turnsBackWithin(3, plan)).toBe(true);
   });
 });
 

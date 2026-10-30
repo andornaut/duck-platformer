@@ -82,7 +82,7 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 - **Crush:** a moving platform that pushes her sideways carries her to its leading edge. If it squeezes her into terrain or another solid, she is crushed and the zone restarts from its start, as a hazard does. Layouts leave room beside every moving platform's path so she is never pinned on a required route
 - **Doors:** doors lead only into rooms. Use enters a door when any part of her drawn frame overlaps the door's drawn art; where she overlaps more than one, the door whose centre is nearest hers wins
 - **Exit:** reaching the end of the zone clears it, and the game moves straight on to the map
-- **Going back:** walking all the way back to the zone's left edge leaves it without completing it: the screen fades and the map shows with her on that zone, and nothing is saved. Every zone starts her clear of that edge
+- **Going back:** walking all the way back to the zone's left edge leaves it without completing it: the screen fades and the map shows with her on that zone, and nothing is saved. Every zone starts her clear of that edge and has no wall in front of it
 - **Kinds:** indoor, outdoor, or a hybrid with both
 - **Layout:** zone 1 is hand-built as the tutorial. Every later zone is assembled from hand-built chunks: a fixed start chunk, a seeded run of chunks whose entry and exit heights match, then a fixed finish chunk. The rules for chunks are under Chunks
 - **Reroll:** an assembled zone's layout changes each time she enters it from the map. Restarts within the zone keep it
