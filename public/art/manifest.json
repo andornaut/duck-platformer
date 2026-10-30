@@ -477,6 +477,24 @@
       "repeat": "none"
     },
     {
+      "key": "depot-loading-bay",
+      "png": "backdrops/depot-loading-bay.png",
+      "width": 120,
+      "height": 120,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "none"
+    },
+    {
+      "key": "depot-wall",
+      "png": "backdrops/depot-wall.png",
+      "width": 48,
+      "height": 180,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
       "key": "doorman-podium",
       "png": "backdrops/doorman-podium.png",
       "width": 18,
@@ -717,6 +735,15 @@
       "height": 240,
       "anchor": "bottom-left",
       "y": 552,
+      "repeat": "none"
+    },
+    {
+      "key": "parcel-open",
+      "png": "backdrops/parcel-open.png",
+      "width": 72,
+      "height": 36,
+      "anchor": "bottom-left",
+      "y": 600,
       "repeat": "none"
     },
     {
