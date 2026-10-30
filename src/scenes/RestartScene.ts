@@ -7,16 +7,16 @@ import { focusKeyAction, stepFocus } from "../pause/focusInput";
 import { clearProgress } from "../save";
 import {
   addCardText,
+  addCardTitle,
   addSlice,
   addTextButton,
   BODY_FONT,
-  closeOnOutsideTap,
   paletteColour,
   pressTextButton,
   ringFocus,
   type TextButton,
-  TITLE_FONT,
 } from "./cardParts";
+import { catchModalTaps } from "./modalTaps";
 import { fitPlayCamera, playPoint } from "./playCamera";
 
 // The scene that opens the restart card, the start screen or the celebration: it passes the card
@@ -62,22 +62,20 @@ export class RestartScene extends Scene {
 
   create(): void {
     fitPlayCamera(this);
-    const { card, question, title } = RESTART_CARD;
+    const { card, question } = RESTART_CARD;
     const words = TEXT.restart;
-    const cream = paletteColour(this, "cream");
     addSlice(this, "ui-settings-card", card);
-    addCardText(this, TITLE_FONT, title, words.title, cream);
-    addCardText(this, BODY_FONT, question, words.question, cream);
+    addCardTitle(this, card, words.title);
+    addCardText(this, BODY_FONT, question, words.question, paletteColour(this, "ink"));
     this.buttons = {
       cancel: addTextButton(this, RESTART_CARD.cancel, words.cancel),
       restart: addTextButton(this, RESTART_CARD.restart, words.restart),
     };
     this.render();
-    closeOnOutsideTap(
-      this,
-      () => [RESTART_CARD.card, ...TARGETS.map((target) => RESTART_CARD[target].hit)],
-      () => this.back(),
-    );
+    catchModalTaps(this, this.cameras.main, {
+      close: () => this.back(),
+      covered: () => [RESTART_CARD.card, ...TARGETS.map((target) => RESTART_CARD[target].hit)],
+    });
     this.input.on("pointerdown", (pointer: Input.Pointer) => {
       this.pressed = this.targetAt(pointer);
       this.render();
@@ -110,7 +108,11 @@ export class RestartScene extends Scene {
   // Back, Escape, P and a tap outside the card cancel.
   back(): void {
     this.scene.stop();
-    (this.scene.get(this.opener) as Scene & RestartOpener).restartClosed();
+    this.openerScene().restartClosed();
+  }
+
+  private openerScene(): RestartOpener {
+    return this.scene.get(this.opener) as Scene & RestartOpener;
   }
 
   private act(target: Target): void {

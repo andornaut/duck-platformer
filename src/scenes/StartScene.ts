@@ -229,6 +229,7 @@ export class StartScene extends Scene implements RestartOpener, SettingsOpener {
 
   private watchPresses(): void {
     this.input.on("pointerdown", (pointer: Input.Pointer) => {
+      // While a card shows, nothing on the start screen responds.
       this.showPressed(this.card === undefined ? this.controlAt(pointer) : undefined);
     });
     this.input.on("pointerup", (pointer: Input.Pointer) => {

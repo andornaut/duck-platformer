@@ -15,18 +15,18 @@ import { setTouchSettingShown, type TouchSetting, touchSettings } from "../setti
 import { dimColour, type Palette } from "../view/dim";
 import {
   addCardText,
+  addCardTitle,
   addSlice,
   addTextButton,
   captureTab,
-  closeOnOutsideTap,
   palette,
   paletteColour,
   pressTextButton,
   PRIMARY_BUTTON,
   ringFocus,
   type TextButton,
-  TITLE_FONT,
 } from "./cardParts";
+import { catchModalTaps } from "./modalTaps";
 import { canvasRect, fitCanvasCamera, fitPlayCamera, playPoint } from "./playCamera";
 import type { SettingsData, SettingsOpener, SettingsScene } from "./SettingsScene";
 import type { ZoneScene } from "./ZoneScene";
@@ -102,15 +102,13 @@ export class PauseScene extends Scene implements SettingsOpener {
     this.card = this.drawCard();
     this.showCard(false);
     this.watchPresses();
-    closeOnOutsideTap(
-      this,
-      () =>
+    catchModalTaps(this, this.cardCamera, {
+      close: () => this.close(),
+      covered: () =>
         this.state === "open"
           ? [PAUSE_CARD.card, PAUSE_CARD.close.hit, ...BUTTONS.map((name) => PAUSE_CARD[name].hit)]
           : undefined,
-      () => this.close(),
-      this.cardCamera,
-    );
+    });
     this.watchKeys();
     const onBack = () => {
       if (this.state === "settings") {
@@ -266,11 +264,11 @@ export class PauseScene extends Scene implements SettingsOpener {
   }
 
   private drawCard(): GameObjects.Container {
-    const { card, close, title } = PAUSE_CARD;
+    const { card, close } = PAUSE_CARD;
     const words = TEXT.pause;
     const objects: GameObjects.GameObject[] = [
       this.slice("ui-settings-card", card),
-      this.text(TITLE_FONT, title.x, title.y, words.title, this.colour("cream")),
+      addCardTitle(this, card, words.title),
     ];
     this.closeX = this.add.sprite(close.at.x, close.at.y, "ui-close").setOrigin(0);
     this.buttons = {

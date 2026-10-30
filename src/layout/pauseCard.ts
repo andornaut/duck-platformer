@@ -1,29 +1,33 @@
 import type { Point, Rect } from "../data/types";
+import { CARD_FRAME, cardRect } from "./cardFrame";
 import { hitAround } from "./hitAreas";
 import { CONTROL_EDGE } from "./playView";
 import { type LabelledButton, labelledButton } from "./restartCard";
 
-// Art's pause card (art/README.md, Pause, settings and install cards), in base pixels: a 9-slice
-// card with the title in its header and the close X at its top right, then three buttons of one
-// shape, stacked: Resume, the primary, then Settings and Back to title. Each button's label is
+// Art's pause card (art/README.md, Pause, settings and install cards), in base pixels: every
+// card's frame, title and close X (cardFrame.ts), then three buttons of one shape, stacked from
+// its first row down: Resume, the primary, then Settings and Back to title. Each button's label is
 // centred across it (Resume's led by the play mark), labelDy below its top and 2 lower while
 // pressed. Each button's press area, hit, is its drawn button grown by hitAreas.ts's rule.
-const CLOSE_ART: Rect = { height: 24, width: 24, x: 510, y: 94 };
-const BUTTON = { height: 40, labelDy: 9, width: 320, x: 200 } as const;
-const button = (y: number): LabelledButton =>
-  labelledButton({ height: BUTTON.height, width: BUTTON.width, x: BUTTON.x, y }, BUTTON.labelDy);
+const BUTTON = { gap: 8, height: 40, labelDy: 9, width: 320, x: 200 } as const;
+// The button at index down the stack.
+const button = (index: number): LabelledButton =>
+  labelledButton(
+    {
+      height: BUTTON.height,
+      width: BUTTON.width,
+      x: BUTTON.x,
+      y: CARD_FRAME.firstRowY + index * (BUTTON.height + BUTTON.gap),
+    },
+    BUTTON.labelDy,
+  );
 
 export const PAUSE_CARD = {
-  card: { height: 200, width: 368, x: 176, y: 88 } satisfies Rect,
-  close: {
-    art: CLOSE_ART,
-    at: { x: CLOSE_ART.x, y: CLOSE_ART.y } satisfies Point,
-    hit: hitAround(CLOSE_ART),
-  },
-  home: button(232),
-  resume: button(136),
-  settings: button(184),
-  title: { x: 190, y: 93 } satisfies Point,
+  card: cardRect(200),
+  close: CARD_FRAME.close,
+  home: button(2),
+  resume: button(0),
+  settings: button(1),
 } as const;
 
 // Art's pause button in the game's top-left corner: where its frame is drawn, and the area a

@@ -1,5 +1,4 @@
 import { type AsepriteSheet, sheetTags } from "@andornaut/game-kit/art/aseprite";
-import { catchOutsideTaps } from "@andornaut/game-kit/input/phaser/catchOutsideTaps";
 import { inkWidth } from "@andornaut/game-kit/text/bitmapFont";
 import {
   phaserBitmapFont,
@@ -7,18 +6,18 @@ import {
 } from "@andornaut/game-kit/text/phaser/phaserBitmapFont";
 import type { GameObjects, Scene } from "phaser";
 
-import { TOUCH } from "../data/touch";
 import type { Point, Rect } from "../data/types";
 import { centredLabel, MARK_DROP, PLAY_MARK } from "../layout/buttonLabel";
+import { cardTitleAt } from "../layout/cardFrame";
 import { CARD_TEXT_SCALE } from "../layout/pauseCard";
 import type { LabelledButton } from "../layout/restartCard";
 import { focusRingAround } from "../layout/settingsCard";
 import { ART_MANIFEST_KEY, type ArtManifest } from "../view/aseprite";
 import type { Palette } from "../view/dim";
-import { canvasRect } from "./playCamera";
+import { advanceWidth } from "../view/mapMarks";
 
 // What the pause, settings, install steps and restart cards draw with: art's 9-slices, card text,
-// buttons and the palette's colours, and how each modal card closes on a press outside it.
+// buttons and the palette's colours.
 
 const PALETTE = "palette";
 export const BODY_FONT = "font-body";
@@ -71,6 +70,14 @@ export function addCardText(
     .setScale(CARD_TEXT_SCALE)
     .setOrigin(0)
     .setTint(colour);
+}
+
+// A card's title in ink, centred across card near its top, as every card's frame places it
+// (cardFrame.ts's cardTitleAt).
+export function addCardTitle(scene: Scene, card: Rect, text: string): GameObjects.BitmapText {
+  const font = phaserBitmapFont(scene.cache.bitmapFont.get(TITLE_FONT).data as PhaserFontData);
+  const at = cardTitleAt(card, advanceWidth(font, CARD_TEXT_SCALE, text));
+  return addCardText(scene, TITLE_FONT, at, text, paletteColour(scene, "ink"));
 }
 
 // A button's label: its text, and art's play mark before it on Start, Resume and Continue.
@@ -159,34 +166,4 @@ export function pressTextButton({ faces, label, layout }: TextButton, pressed: b
   faces.normal.setVisible(!pressed);
   faces.pressed.setVisible(pressed);
   placeButtonLabel(label, pressed ? layout.pressedLabelY : layout.labelY);
-}
-
-// Closes a modal card, as its close X or back would, on a tap outside it (the kit's
-// catchOutsideTaps, as dog-walker's panels close): a press that lands on the canvas off the card
-// and off every control it lists, the bars beside the game's view included, travels no further
-// than the tap distance, and lifts outside them too. covered gives the card's rect and each
-// control's press area in camera's view while it shows, or undefined while it shows none. The
-// press is kept from the scenes under this one, so a modal scene sits above the scenes it covers
-// (main.ts's scene order), and the zone, paused under the pause card, never hears it. Every modal
-// card closes this way.
-export function closeOnOutsideTap(
-  scene: Scene,
-  covered: () => readonly Rect[] | undefined,
-  close: () => void,
-  camera = scene.cameras.main,
-): void {
-  catchOutsideTaps(
-    TOUCH.tapMaxDistance,
-    scene,
-    () => {
-      const rects = covered();
-      return rects === undefined
-        ? undefined
-        : {
-            bounds: canvasRect(scene),
-            covered: rects.map((rect) => ({ ...rect, x: rect.x + camera.x, y: rect.y + camera.y })),
-          };
-    },
-    close,
-  );
 }

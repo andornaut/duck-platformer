@@ -18,14 +18,8 @@ import { focusRingAround, SETTINGS_CARD, STEPS_CARD } from "../layout/settingsCa
 import { focusKeyAction, stepFocus } from "../pause/focusInput";
 import { installOffer } from "../pwa/installOffer";
 import { TOUCH_SETTINGS, type TouchSetting, touchSettingShown } from "../settings/touchControls";
-import {
-  addCardText,
-  addSlice,
-  BODY_FONT,
-  closeOnOutsideTap,
-  paletteColour,
-  TITLE_FONT,
-} from "./cardParts";
+import { addCardText, addCardTitle, addSlice, BODY_FONT, paletteColour } from "./cardParts";
+import { catchModalTaps } from "./modalTaps";
 import { fitPlayCamera, playPoint } from "./playCamera";
 
 // The scene that opens the settings card, the pause card's or the start screen's: it saves each
@@ -106,11 +100,10 @@ export class SettingsScene extends Scene {
     this.focusRing = undefined;
     this.render();
     this.watchPresses();
-    closeOnOutsideTap(
-      this,
-      () => this.covered(),
-      () => this.back(),
-    );
+    catchModalTaps(this, this.cameras.main, {
+      close: () => this.back(),
+      covered: () => this.covered(),
+    });
     // The Install row comes and goes as the game becomes installable or installed.
     const stopWatching = installOffer().onChange(() =>
       this.scene.restart({ opener: this.opener } satisfies SettingsData),
@@ -206,15 +199,15 @@ export class SettingsScene extends Scene {
 
   private openSteps(browser: MenuInstallBrowser): void {
     const words = TEXT.settings.installSteps;
-    const { close, linePitch, lines, room, steps, title } = STEPS_CARD;
-    const cream = this.colour("cream");
+    const { card, close, linePitch, lines, room, steps } = STEPS_CARD;
+    const ink = this.colour("ink");
     const style = { lines, scale: CARD_TEXT_SCALE };
     const measure = bitmapMeasure(this.font());
     const texts = [words[browser].first, words[browser].second];
     const stepObjects = steps.flatMap(({ glyph, text: at }, index) => [
       this.add.image(glyph.x, glyph.y, index === 0 ? STEPS_GLYPHS[browser] : "icon-install"),
       ...fittingText(style, measure, room, texts[index] ?? "").lines.map((line, row) =>
-        addCardText(this, BODY_FONT, { x: at.x, y: at.y + row * linePitch }, line, cream),
+        addCardText(this, BODY_FONT, { x: at.x, y: at.y + row * linePitch }, line, ink),
       ),
     ]);
     for (const image of stepObjects) {
@@ -222,7 +215,7 @@ export class SettingsScene extends Scene {
     }
     this.steps = this.add.container(0, 0, [
       addSlice(this, "ui-settings-card", STEPS_CARD.card),
-      addCardText(this, TITLE_FONT, title, words.title, cream),
+      addCardTitle(this, card, words.title),
       this.add.sprite(close.at.x, close.at.y, "ui-close").setOrigin(0),
       ...stepObjects,
     ]);
@@ -241,12 +234,13 @@ export class SettingsScene extends Scene {
   }
 
   private drawCard(installRow: boolean): GameObjects.Container {
-    const { buildLabel, card, cardWithoutInstall, close, install, title } = SETTINGS_CARD;
+    const { buildLabel, card, cardWithoutInstall, close, install } = SETTINGS_CARD;
     const words = TEXT.settings;
     const cream = this.colour("cream");
+    const frame = installRow ? card : cardWithoutInstall;
     const objects: GameObjects.GameObject[] = [
-      addSlice(this, "ui-settings-card", installRow ? card : cardWithoutInstall),
-      addCardText(this, TITLE_FONT, title, words.title, cream),
+      addSlice(this, "ui-settings-card", frame),
+      addCardTitle(this, frame, words.title),
     ];
     this.settingRows = new Map();
     for (const setting of TOUCH_SETTINGS) {
@@ -301,7 +295,7 @@ export class SettingsScene extends Scene {
       BODY_FONT,
       { x: buildLabel.centreX - Math.floor(this.inkWidth(BUILD_LABEL) / 2), y: labelY },
       BUILD_LABEL,
-      this.colour("tan"),
+      this.colour("dslate"),
     );
     objects.push(label);
     for (const object of objects) {

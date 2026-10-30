@@ -9,6 +9,7 @@ import { PHONE_EVENTS } from "../pwa";
 import {
   addButtonLabel,
   addCardText,
+  addCardTitle,
   addSlice,
   addTextButton,
   BODY_FONT,
@@ -19,7 +20,6 @@ import {
   pressTextButton,
   ringFocus,
   type TextButton,
-  TITLE_FONT,
 } from "./cardParts";
 import { fitPlayCamera, playPoint } from "./playCamera";
 import type { RestartData, RestartOpener, RestartScene } from "./RestartScene";
@@ -57,13 +57,12 @@ export class CelebrationScene extends Scene implements RestartOpener {
     this.focusRing = undefined;
     this.pressed = undefined;
     this.restartOpen = false;
-    const { card, message, title } = CELEBRATION;
+    const { card, message } = CELEBRATION;
     const words = TEXT.celebration;
-    const cream = this.colour("cream");
     this.cameras.main.setBackgroundColor(this.colour("ink"));
     addSlice(this, "ui-settings-card", card);
-    addCardText(this, TITLE_FONT, title, words.title, cream);
-    addCardText(this, BODY_FONT, message, words.message, cream);
+    addCardTitle(this, card, words.title);
+    addCardText(this, BODY_FONT, message, words.message, this.colour("ink"));
     this.restartButton = addTextButton(this, CELEBRATION.restart, words.restart);
     const go = CELEBRATION.continue;
     this.continueFace = this.add.sprite(go.button.x, go.button.y, "ui-resume").setOrigin(0);

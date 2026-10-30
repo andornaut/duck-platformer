@@ -19,6 +19,7 @@ import { TEXT } from "../data/text";
 import type { Point, Rect } from "../data/types";
 import type { ArtManifest } from "../view/aseprite";
 import { centredLabel, PLAY_MARK } from "./buttonLabel";
+import { CARD_FRAME } from "./cardFrame";
 import { HIT_RULE, type PressArea, pressedArea } from "./hitAreas";
 import { CARD_TEXT_SCALE, PAUSE_BUTTON, PAUSE_CARD } from "./pauseCard";
 import { focusRingAround, SETTINGS_CARD, STEPS_CARD } from "./settingsCard";
@@ -289,9 +290,9 @@ describe("settings words", () => {
   });
 
   it("has a glyph for every character of the build label, which fits across the card", () => {
-    const { buildLabel, card, title } = SETTINGS_CARD;
+    const { buildLabel, card } = SETTINGS_CARD;
     const half = inkWidth(FONT, CARD_TEXT_SCALE, BUILD_LABEL) / 2;
-    const margin = title.x - card.x;
+    const margin = CARD_FRAME.padding;
     expect({
       fits:
         buildLabel.centreX - half >= card.x + margin &&

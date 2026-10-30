@@ -1,22 +1,18 @@
 import type { Point, Rect } from "../data/types";
+import { CARD_FRAME, cardRect } from "./cardFrame";
 import { hitAround } from "./hitAreas";
 
-// Art's settings card (art/README.md, Pause, settings and install cards), in base pixels: the
-// pause card's frame, title and close X, then the Move controls and Action buttons rows and,
+// Art's settings card (art/README.md, Pause, settings and install cards), in base pixels: every
+// card's frame, title and close X (cardFrame.ts), then the Move controls and Action buttons rows and,
 // while the game can be installed, the Install row, over the build label. Each row is its own
 // hit area. Each label's point is its text's top-left. A setting row's state text ends at
 // stateRight, before its checkbox; the Install button's label is centred across the button at
 // labelY, or pressedLabelY while pressed, in at most room pixels; the build label is centred on
 // centreX.
-// The close X, drawn at the card's top right on every card, and its press area.
-const CLOSE_ART: Rect = { height: 24, width: 24, x: 510, y: 94 };
-const CLOSE = {
-  art: CLOSE_ART,
-  at: { x: CLOSE_ART.x, y: CLOSE_ART.y } satisfies Point,
-  hit: hitAround(CLOSE_ART),
-};
 const ROW = { height: 48, width: 352, x: 184 } as const;
-const INSTALL_ROW: Rect = { ...ROW, y: 240 };
+// Each row is this far below the one before.
+const ROW_PITCH = 52;
+const INSTALL_ROW: Rect = { ...ROW, y: CARD_FRAME.firstRowY + 2 * ROW_PITCH };
 
 // A setting row at y: its checkbox, icon and label, each placed from the row's top, and its
 // state text ending at stateRight.
@@ -34,11 +30,11 @@ function settingRow(y: number) {
 
 // Each row's press area, hit, is the row grown by hitAreas.ts's rule.
 export const SETTINGS_CARD = {
-  actionButtons: settingRow(188),
+  actionButtons: settingRow(CARD_FRAME.firstRowY + ROW_PITCH),
   buildLabel: { centreX: 360, y: 296, yWithoutInstall: 244 },
-  card: { height: 236, width: 368, x: 176, y: 88 } satisfies Rect,
-  cardWithoutInstall: { height: 184, width: 368, x: 176, y: 88 } satisfies Rect,
-  close: CLOSE,
+  card: cardRect(236),
+  cardWithoutInstall: cardRect(184),
+  close: CARD_FRAME.close,
   install: {
     button: { height: 28, width: 72, x: 452, y: 250 } satisfies Rect,
     buttonLabel: { pressedY: 255, room: 56, y: 253 },
@@ -47,8 +43,7 @@ export const SETTINGS_CARD = {
     label: { x: 228, y: 255 } satisfies Point,
     row: INSTALL_ROW,
   },
-  moveControls: settingRow(136),
-  title: { x: 190, y: 93 } satisfies Point,
+  moveControls: settingRow(CARD_FRAME.firstRowY),
 } as const;
 
 // Art's install steps card, over the settings for a browser that installs only from its own
@@ -56,16 +51,18 @@ export const SETTINGS_CARD = {
 // text linePitch apart, at most room wide. The first step's glyph is the browser's button; the
 // second's is the install glyph.
 export const STEPS_CARD = {
-  card: { height: 160, width: 368, x: 176, y: 88 } satisfies Rect,
-  close: CLOSE,
+  card: cardRect(160),
+  close: CARD_FRAME.close,
   linePitch: 20,
   lines: 2,
   room: 296,
-  steps: [
-    { glyph: { x: 198, y: 145 } satisfies Point, text: { x: 228, y: 144 } satisfies Point },
-    { glyph: { x: 198, y: 197 } satisfies Point, text: { x: 228, y: 196 } satisfies Point },
-  ],
-  title: { x: 190, y: 93 } satisfies Point,
+  steps: [0, 1].map((step) => {
+    const y = CARD_FRAME.firstRowY + step * ROW_PITCH;
+    return {
+      glyph: { x: 198, y: y + 9 } satisfies Point,
+      text: { x: 228, y: y + 8 } satisfies Point,
+    };
+  }),
 } as const;
 
 // Art's keyboard focus ring, a 9-slice drawn this far outside the focused row, button or close X
