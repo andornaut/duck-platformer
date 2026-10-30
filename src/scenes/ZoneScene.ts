@@ -42,7 +42,7 @@ import type {
 } from "../data/types";
 import { ZONE_1 } from "../data/zone1";
 import { RECIPES, TEST_ZONES } from "../data/zones";
-import { pageFrameTurn } from "../input/frameTurn";
+import { FRAME_TURN } from "../input/frameTurn";
 import {
   combineIntents,
   type HeldTouch,
@@ -616,13 +616,13 @@ export class ZoneScene extends Scene {
   // the nav bar or a link or button, on the pause button, or while the pause card is open. A
   // touch's role is read where it starts on the game's nearest edge pixel (clampInto), and a move
   // touch's travel unclamped (pageToGame), so a drag within the bars still moves her. Both
-  // read through the page frame's turn (pageFrameTurn). Only a touch on the canvas can be on the
+  // read through the page frame's turn (FRAME_TURN). Only a touch on the canvas can be on the
   // pause button: one in the bar beside it lands on the game's edge, inside the button's hit
   // area, and moves her.
   private watchTouches(): void {
     const unclamped = (event: PagePointerEvent) =>
       pageToGame(
-        pageFrameTurn(),
+        FRAME_TURN.turn(),
         this.game.canvas.getBoundingClientRect(),
         SCREEN,
         clientPoint(event),

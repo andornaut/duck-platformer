@@ -1,11 +1,6 @@
-import type { FrameTurn } from "@andornaut/game-kit/view/pagePoint";
+import { watchFrameTurn } from "@andornaut/game-kit/view/frameTurn";
 
-// The media query under which src/main.css turns the page's game frame 90 degrees clockwise: a
-// touch screen in portrait, where the game is drawn on its side to be played with the phone held
-// sideways.
-export const TURNED_FRAME_QUERY = "(orientation: portrait) and (pointer: coarse)";
-
-// How far src/main.css turns the page's game frame now.
-export function pageFrameTurn(): FrameTurn {
-  return window.matchMedia(TURNED_FRAME_QUERY).matches ? 90 : 0;
-}
+// The game page's frame turn (the kit's view/frameTurn): the game is drawn for landscape, so on a
+// touch screen in portrait the frame turns onto its side, by the kit's stylesheet that
+// src/main.ts imports. Read by src/main.ts's Phaser setup and the zone's touch mapping.
+export const FRAME_TURN = watchFrameTurn(window, "landscape");
