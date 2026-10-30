@@ -45,7 +45,7 @@ Touch controls (two round buttons for the right thumb, a pause button at the top
   3px above the centre, and a caret (21x11) on Jump, its top 5px above. No label. Tags rest (100ms); press, once
   (frame 0 the band and icon turn white and the ring swells 1px; frame 1 the same at rest size; 60ms each); held (as
   press frame 1, 100ms).
-- ui-pause, 35x35, centre pixel 17,17: top-left 9,9 for the centre 26,26, towards the top-left corner. A disc 33px
+- ui-pause, 35x35, centre pixel 17,17: top-left 15,15 for the centre 32,32, its edge mirroring Jump's ring's inset. A disc 33px
   across: an ink edge, a 2px cream ring (3px pressed) and a navy face (dslate pressed), with two pause bars (11x13,
   each 4 wide, 3 apart) centred on the centre; no label. Tags as for Use and Jump: rest; press, once (2 frames at
   60ms, frame 0 swells 1px); held.

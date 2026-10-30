@@ -1,5 +1,7 @@
+import { SCREEN } from "../data/screen";
 import type { Point, Rect } from "../data/types";
 import { hitAround } from "./hitAreas";
+import { TOUCH_CONTROLS } from "./touchControls";
 
 // Art's pause card (art/README.md, Pause, settings and install cards), in base pixels: a 9-slice
 // card with the title in its header, the close X at its top right, the Settings and Return home
@@ -40,8 +42,16 @@ export const PAUSE_CARD = {
 } as const;
 
 // Art's pause button in the game's top-left corner: where its frame is drawn, and the area a
-// press must land in, its frame grown by hitAreas.ts's rule.
-const PAUSE_ART: Rect = { height: 35, width: 35, x: 9, y: 9 };
+// press must land in, its frame grown by hitAreas.ts's rule. Its frame sits as far in from the
+// top-left corner as Jump's from the bottom-right, so, each drawn 1px inside its frame, the
+// disc's edge mirrors Jump's ring's.
+const JUMP_ART = TOUCH_CONTROLS.jump.art;
+const PAUSE_ART: Rect = {
+  height: 35,
+  width: 35,
+  x: SCREEN.width - (JUMP_ART.x + JUMP_ART.width),
+  y: SCREEN.height - (JUMP_ART.y + JUMP_ART.height),
+};
 
 export const PAUSE_BUTTON = {
   art: PAUSE_ART,
