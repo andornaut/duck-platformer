@@ -15,10 +15,6 @@ import {
 } from "@andornaut/game-kit/input/pagePresses";
 import { type Random, randomStream } from "@andornaut/game-kit/random";
 import { clampInto, containsPoint } from "@andornaut/game-kit/rect";
-import {
-  phaserBitmapFont,
-  type PhaserFontData,
-} from "@andornaut/game-kit/text/phaser/phaserBitmapFont";
 import { pageToGame } from "@andornaut/game-kit/view/pagePoint";
 import { Core, type GameObjects, Input, Scale, Scene, Scenes, type Tilemaps } from "phaser";
 
@@ -27,7 +23,6 @@ import { CHARACTERS } from "../data/characters";
 import { DUCK } from "../data/duck";
 import { ZONE_MAP } from "../data/map";
 import { SCREEN, TILE } from "../data/screen";
-import { TEXT } from "../data/text";
 import { TOUCH } from "../data/touch";
 import type {
   AreaLayout,
@@ -51,7 +46,7 @@ import {
 } from "../input/intent";
 import { PAUSE_BUTTON } from "../layout/pauseCard";
 import { bottomLeftShift, bottomRightShift, shifted } from "../layout/playView";
-import { LABEL_SCALE, MOVE_HINT, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
+import { MOVE_HINT, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
 import { nodeOf } from "../rules/map";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
 import { zoneLayout } from "../rules/tiles";
@@ -69,14 +64,7 @@ import { moveHintView } from "../view/moveHint";
 import { type ArtKind, artKind, artOffset } from "../view/objectArt";
 import { type PlayHold, stepAction } from "../view/playHold";
 import { loadedTileset, objectTiles, terrainTiles, type Tileset } from "../view/tiles";
-import {
-  buttonHeld,
-  centredAt,
-  controlTag,
-  labelAt,
-  labelColour,
-  trackPress,
-} from "../view/touchControls";
+import { buttonHeld, centredAt, controlTag, trackPress } from "../view/touchControls";
 import type { PauseScene } from "./PauseScene";
 import { canvasRect, fitCanvasCamera, fitPlayCamera } from "./playCamera";
 import type { RoomData } from "./RoomScene";
@@ -123,7 +111,6 @@ const CONTROL_SPRITES: Readonly<Record<TouchControl, string>> = {
   jump: "ui-touch-jump",
   use: "ui-touch-use",
 };
-const LABEL_FONT = "font-body";
 // Back to front: repeated backdrops, placed backdrops, the terrain, objects, her, and the touch
 // controls. An area's art is added whenever it is drawn.
 const DEPTHS: Readonly<Record<ArtKind | "terrain", number>> = {
@@ -146,7 +133,6 @@ interface ObjectArt {
   readonly quirk?: { at: number; readonly random: Random };
   readonly sprite: GameObjects.Sprite | undefined;
 }
-const PALETTE = "palette";
 
 // Starts a sprite's tag, unless it already shows it, playing or finished on its last frame.
 function show(sprite: GameObjects.Sprite, tag: string): void {
@@ -168,12 +154,8 @@ export interface ZoneData {
 export class ZoneScene extends Scene {
   private clock: StepClock = startStepClock;
   private readonly controls = new Map<TouchControl, GameObjects.Sprite>();
-  private readonly labels = new Map<TouchControl, GameObjects.BitmapText>();
   // The move hint's ring and knob.
   private moveHint!: { readonly knob: GameObjects.Sprite; readonly ring: GameObjects.Sprite };
-  // Where each label sits in a canvas the game's own size, before placeControls shifts it.
-  private readonly labelOrigins = new Map<TouchControl, Point>();
-  private colours: Readonly<Record<string, string>> = {};
   private duck!: GameObjects.Sprite;
   private duckPose: DuckPose = startPose;
   private zone!: ZoneState;
@@ -276,31 +258,16 @@ export class ZoneScene extends Scene {
       this.loadZone(this.zoneIndex);
     }
 
-    const font = phaserBitmapFont(this.cache.bitmapFont.get(LABEL_FONT).data as PhaserFontData);
-    this.colours = (this.cache.json.get(PALETTE) as { colours: Record<string, string> }).colours;
     for (const control of Object.keys(CONTROL_SPRITES) as TouchControl[]) {
       const sprite = this.add
         .sprite(0, 0, CONTROL_SPRITES[control])
         .setOrigin(0)
         .setScrollFactor(0)
         .setDepth(OVERLAY_DEPTH);
-      const { centre, labelRaise } = TOUCH_CONTROLS[control];
-      const at = centredAt(centre, sprite.frame);
+      const at = centredAt(TOUCH_CONTROLS[control].centre, sprite.frame);
       this.controls.set(control, sprite.setPosition(at.x, at.y));
-      const text = TEXT.buttons[control];
-      const origin = labelAt(font, centre, labelRaise, text);
-      this.labelOrigins.set(control, origin);
-      const label = this.add
-        .bitmapText(origin.x, origin.y, LABEL_FONT, text)
-        .setScale(LABEL_SCALE)
-        .setOrigin(0)
-        .setScrollFactor(0)
-        .setDepth(OVERLAY_DEPTH);
-      this.labels.set(control, label);
-      this.cameras.main.ignore([sprite, label]);
-      for (const shown of [sprite, label]) {
-        shown.cameraFilter &= ~controlsCamera.id;
-      }
+      this.cameras.main.ignore(sprite);
+      sprite.cameraFilter &= ~controlsCamera.id;
     }
     this.moveHint = {
       knob: this.add.sprite(0, 0, MOVE_KNOB_SPRITE).setOrigin(0),
@@ -357,11 +324,6 @@ export class ZoneScene extends Scene {
       const { centre } = TOUCH_CONTROLS[control];
       const at = shifted(shift, centredAt(centre, sprite.frame));
       sprite.setPosition(at.x, at.y);
-      const origin = this.labelOrigins.get(control);
-      if (origin) {
-        const moved = shifted(shift, origin);
-        this.labels.get(control)?.setPosition(moved.x, moved.y);
-      }
     }
   }
 
@@ -370,9 +332,8 @@ export class ZoneScene extends Scene {
   showTouchControls(settings: Readonly<Record<TouchSetting, boolean>>): void {
     const touch = window.matchMedia("(pointer: coarse)").matches;
     const buttons = settings.actionButtons && touch;
-    for (const [control, sprite] of this.controls) {
+    for (const sprite of this.controls.values()) {
       sprite.setVisible(buttons);
-      this.labels.get(control)?.setVisible(buttons);
     }
     this.moveHint.ring.setVisible(settings.moveControls && touch);
     this.moveHint.knob.setVisible(settings.moveControls && touch);
@@ -814,7 +775,6 @@ export class ZoneScene extends Scene {
       }
       const tag = controlTag(this.sheet(sprite.texture.key), nowMs, since);
       show(sprite, tag);
-      this.labels.get(control)?.setVisible(shown).setTint(labelColour(this.colours, tag));
     }
   }
 }

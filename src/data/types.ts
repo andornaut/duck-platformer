@@ -60,7 +60,7 @@ export interface GameText {
     readonly title: string;
     readonly zones: Readonly<Record<string, string>>;
   };
-  // The touch buttons' labels.
+  // The touch buttons' names, which the home page's controls text uses.
   readonly buttons: {
     readonly jump: string;
     readonly use: string;

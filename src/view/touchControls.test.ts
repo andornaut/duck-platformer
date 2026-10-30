@@ -1,21 +1,9 @@
 import type { AnimationFrame } from "@andornaut/game-kit/art/aseprite";
-import { parseBitmapFont } from "@andornaut/game-kit/text/bitmapFont";
-import { overflowingTexts } from "@andornaut/game-kit/text/overflow";
-import { bitmapMeasure } from "@andornaut/game-kit/text/textFit";
 import { describe, expect, it } from "vitest";
 
-import fontBody from "../../public/art/fonts/font-body.fnt?raw";
-import { TEXT } from "../data/text";
 import type { HeldTouch } from "../input/intent";
-import { LABEL_SCALE, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
-import {
-  buttonHeld,
-  centredAt,
-  controlTag,
-  labelAt,
-  labelColour,
-  trackPress,
-} from "./touchControls";
+import { TOUCH_CONTROLS } from "../layout/touchControls";
+import { buttonHeld, centredAt, controlTag, trackPress } from "./touchControls";
 
 const JUMP: HeldTouch = { role: "jump", startX: 600, startY: 200, x: 600 };
 const MOVE: HeldTouch = { role: "move", startX: 100, startY: 200, x: 140 };
@@ -63,41 +51,6 @@ describe("centredAt", () => {
     [77, 67, { x: 62, y: 167 }],
   ])("puts a %ix%i frame's centre pixel on 100,200", (width, height, at) => {
     expect(centredAt({ x: 100, y: 200 }, { height, width })).toEqual(at);
-  });
-});
-
-const FONT = parseBitmapFont(fontBody);
-
-describe("labelAt", () => {
-  it.each([
-    ["jump", TEXT.buttons.jump, { x: 650, y: 306 }],
-    ["use", TEXT.buttons.use, { x: 580, y: 207 }],
-  ] as const)("sets the %s label, %s, where art places it", (control, label, at) => {
-    const { centre, labelRaise } = TOUCH_CONTROLS[control];
-    expect(labelAt(FONT, centre, labelRaise, label)).toEqual(at);
-  });
-});
-
-describe("button labels", () => {
-  it("fit their rooms", () => {
-    const roles = (Object.keys(TOUCH_CONTROLS) as TouchControl[]).map((control) => ({
-      name: `${control} label`,
-      room: TOUCH_CONTROLS[control].labelRoom,
-      style: { scale: LABEL_SCALE },
-      texts: [TEXT.buttons[control]],
-    }));
-    expect(overflowingTexts(bitmapMeasure(FONT), roles)).toEqual([]);
-  });
-});
-
-describe("labelColour", () => {
-  const colours = { cream: "#ead4aa", white: "#ffffff" };
-  it.each([
-    ["rest", 0xead4aa],
-    ["press", 0xffffff],
-    ["held", 0xffffff],
-  ])("colours a %s label %i", (tag, colour) => {
-    expect(labelColour(colours, tag)).toBe(colour);
   });
 });
 

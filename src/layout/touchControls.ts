@@ -33,23 +33,13 @@ const JUMP_HIT: PressShape = [
   },
 ];
 
-// Art's touch buttons, in base pixels: each button's centre, where it is drawn, the area a touch
-// must start in to take it (hitAreas.ts), how far its label's origin sits above the centre, and
-// the room for its label: the widest label's ink at LABEL_SCALE.
+// Art's touch buttons, in base pixels: each button's centre, where it is drawn, and the area a
+// touch must start in to take it (hitAreas.ts).
 export const TOUCH_CONTROLS: Readonly<
-  Record<
-    TouchControl,
-    { art: Rect; centre: Point; hit: PressShape; labelRaise: number; labelRoom: number }
-  >
+  Record<TouchControl, { art: Rect; centre: Point; hit: PressShape }>
 > = {
-  jump: { art: JUMP_ART, centre: JUMP_CENTRE, hit: JUMP_HIT, labelRaise: 1, labelRoom: 53 },
-  use: {
-    art: USE_ART,
-    centre: USE_CENTRE,
-    hit: { centre: USE_CENTRE, radius: RADIUS },
-    labelRaise: 3,
-    labelRoom: 55,
-  },
+  jump: { art: JUMP_ART, centre: JUMP_CENTRE, hit: JUMP_HIT },
+  use: { art: USE_ART, centre: USE_CENTRE, hit: { centre: USE_CENTRE, radius: RADIUS } },
 };
 
 // The touch buttons' press areas, for pressedArea.
@@ -69,6 +59,3 @@ export const MOVE_HINT = {
   centre: MOVE_HINT_CENTRE,
   knobReach: 12,
 } as const;
-
-// A button's label is set in font-body at this scale.
-export const LABEL_SCALE = 2;
