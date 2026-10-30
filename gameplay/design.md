@@ -54,7 +54,7 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 
 - **Duck:** 2 tiles wide and 3 tall
 - **Reaches:** zones are built to the duck's reaches, measured in tiles from the top of the ground she leaves to the top of the ledge she lands on. A quick tap rises 1 tile (clearing a 1-tile ledge with a little room); a full jump rises 6; a full running jump with flutter crosses a 19-tile gap at the same height, with the jump pressed at its best moment, coyote time included. A ledge at a reach is always makeable, and one tile beyond it never is
-- **Tiles:** zones are built on a grid of 12 px tiles, so the screen is 60 columns by 30 rows. Every solid, ledge, hazard and exit sits on whole tiles and spans whole tiles
+- **Tiles:** zones are built on a grid of 12 px tiles, so the screen is 60 columns by 30 rows. Every solid, ledge, hazard and door sits on whole tiles and spans whole tiles
 
 ### The duck
 
@@ -65,7 +65,7 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 
 ### Map
 
-- **Between zones:** the map shows before the first zone and after each zone's exit. She walks on to the next fork where she must choose, or stays at her place when only one path leads on. Where she has been and the paths she has travelled are marked
+- **Between zones:** the map shows before the first zone and after she clears each zone. She walks on to the next fork where she must choose, or stays at her place when only one path leads on. Where she has been and the paths she has travelled are marked
 - **Choose:** tapping a zone's marker that she can go to picks it and starts it; at a fork, the fork buttons or ←/→ also pick a path. Where only one path leads on, Continue moves her on
 - **Forks:** at a fork she picks one of two or three paths. Paths split and rejoin, and every path reaches the same ending
 - **No backtracking:** she only moves forward on the map, and never returns to a zone she has left
@@ -100,8 +100,8 @@ A landscape platformer: a lost duck travels zone to zone across a map to get hom
 Everything in a zone except its terrain is placed in data, in three layers.
 
 - **Archetypes:** a behaviour: collision (none, solid, one-way ledge, hazard or Use), movement, reaction, interaction (such as talking on Use or a quip on approach) and default tuning
-- **Characters:** who something is: one archetype plus tuning overrides, its art and animations, hit box, size, its dialogue and quip lines, and quirks. No character inherits from another. Props (platforms, hazards, doors, exits and backdrops) are characters with art but no voice
-- **Instances:** one placement in a zone: a character, a position, size and phase, last-word overrides, its own lines or dialogue scene, door targets, and flags for carried choices
+- **Characters:** who something is: one archetype plus tuning overrides, its art and animations, hit box, size, its dialogue and quip lines, and quirks. No character inherits from another. Props (platforms, hazards, doors and backdrops) are characters with art but no voice
+- **Instances:** one placement in a zone: a character, a position, size and phase, last-word overrides, its own lines or dialogue scene, a door's room, and flags for carried choices
 - **Movement:** an algorithm (static, linear, ease, hop or wander), a direction, a distance, a speed, a pause at each end, and a random variance that rolls fresh on every attempt
 - **Overrides:** flow one way: an instance overrides its character, which overrides its archetype. Everything resolves and is checked when the game loads
 - **Reaction:** none, avoiding the duck, or approaching her, within a range
@@ -110,12 +110,14 @@ Everything in a zone except its terrain is placed in data, in three layers.
 
 - **Kind:** outdoor
 - **Length:** 4 screens (240 tiles)
+- **Rooms:** a door in the brownstone before the subway entrance leads to the test room
 - **Street:** a day-time New York street, 2 screens tall: she walks the sidewalk along the bottom and climbs fire escapes, awnings and ledges into the upper screen, past a row of shops: a café, a florist, a gift shop, a makeup store, a pet shop and two restaurants. Its hazards are open cellar hatches in the sidewalk, a frog courier riding a delivery bike back and forth along it, and the ferret's first trap, a giant snap trap with a quip. Pigeons in flocks flee from her, a pug approaches her, and pedestrians walk past
 
 ### Zone 2
 
 - **Kind:** outdoor, an autumn park
-- **Layout:** assembled from the park's chunks: 6 to 10 screens (360 to 600 tiles), difficulty rising from 1 to 3. PLACEHOLDER: a basic test version until its events, doors and rooms exist
+- **Layout:** assembled from the park's chunks: 6 to 10 screens (360 to 600 tiles), difficulty rising from 1 to 3. PLACEHOLDER: a basic test version until its events exist
+- **Rooms:** one door, in a door slot, leads to the test room
 
 ### Rooms
 

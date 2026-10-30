@@ -343,6 +343,13 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 9,
     rows: 10,
   },
+  // A street door to a room, drawn with the street's door art.
+  "street-door": {
+    archetype: "door",
+    art: "door",
+    cols: 3,
+    rows: 4,
+  },
   // The street's sky and far skyline, backdrops repeated across the street.
   "street-sky": {
     archetype: "scenery",

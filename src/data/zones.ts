@@ -281,11 +281,11 @@ export const ZONES: Readonly<Record<string, ZonePlan>> = {
 
 // The zones assembled from chunks, by key. A key here is never also a key in ZONES.
 export const RECIPES: Readonly<Record<string, ZoneRecipe>> = {
-  // The park: 6 to 10 screens, from difficulty 1 at its start to 3 at its end. No events or doors
-  // exist yet.
+  // The park: 6 to 10 screens, from difficulty 1 at its start to 3 at its end, with one door to
+  // the test room. No events exist yet.
   park: {
     difficulty: { from: 1, to: 3 },
-    doors: [],
+    doors: [{ count: 1, room: "test" }],
     events: [],
     finish: "park-finish",
     length: { max: 600, min: 360 },

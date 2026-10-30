@@ -101,6 +101,8 @@ export const ZONE_1: ZonePlan = {
         { character: "pigeon", col: 88, row: 48 },
         { character: "pigeon", col: 91, phase: 0.4, row: 48 },
         { character: "pigeon", col: 93, phase: 0.7, row: 48 },
+        // A door to the test room, in the brownstone's ground storey.
+        { character: "street-door", col: 97, room: "test", row: 46 },
         // A gap: a subway entrance, 10 across.
         { character: "subway-railing", col: 102, row: 45 },
         { character: "pit-floor", col: 108, cols: 10, row: 54 },
