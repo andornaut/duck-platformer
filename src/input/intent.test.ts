@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { SCREEN } from "../data/screen";
 import { TOUCH } from "../data/touch";
 import { TOUCH_CIRCLE_RADIUS } from "../layout/hitAreas";
-import { TOUCH_CONTROLS } from "../layout/touchControls";
+import { MOVE_HINT, TOUCH_CONTROLS } from "../layout/touchControls";
 import {
   combineIntents,
   type HeldTouch,
@@ -36,36 +36,52 @@ describe("keyIntent", () => {
 
 describe("touchRoleAt", () => {
   const { jump, use } = TOUCH_CONTROLS;
-  // A point at distance from centre, toward the left, away from the other button.
+  // A point at distance from centre, toward the left.
   const left = (centre: { x: number; y: number }, distance: number) => ({
     x: centre.x - distance,
     y: centre.y,
   });
+  // A button's press radius: its clear circle and the move hint's radius beyond it.
+  const reach = TOUCH_CIRCLE_RADIUS + (MOVE_HINT.art.width - 1) / 2;
   it.each<[string, { x: number; y: number }, string]>([
     ["Use's centre", use.centre, "use"],
-    ["inside Use's circle", left(use.centre, TOUCH_CIRCLE_RADIUS - 0.1), "use"],
-    ["outside Use's circle", left(use.centre, TOUCH_CIRCLE_RADIUS + 0.1), "move"],
+    ["inside Use's area", left(use.centre, reach - 0.1), "use"],
+    ["outside Use's area", left(use.centre, reach + 0.1), "move"],
     ["Jump's centre", jump.centre, "jump"],
-    ["inside Jump's circle", left(jump.centre, TOUCH_CIRCLE_RADIUS - 0.1), "jump"],
-    ["outside Jump's circle", left(jump.centre, TOUCH_CIRCLE_RADIUS + 0.1), "move"],
+    ["inside Jump's area", left(jump.centre, reach - 0.1), "jump"],
+    ["outside Jump's area", left(jump.centre, reach + 0.1), "move"],
     [
-      "halfway between them, in the gap between the circles",
-      { x: (use.centre.x + jump.centre.x) / 2, y: (use.centre.y + jump.centre.y) / 2 },
-      "move",
+      "just on Use's side of the midway line",
+      { x: (use.centre.x + jump.centre.x) / 2 - 0.1, y: (use.centre.y + jump.centre.y) / 2 },
+      "use",
     ],
-    ["the screen's bottom-right corner, past Jump's circle", { x: 719, y: 359 }, "jump"],
+    [
+      "just on Jump's side of the midway line",
+      { x: (use.centre.x + jump.centre.x) / 2 + 0.1, y: (use.centre.y + jump.centre.y) / 2 },
+      "jump",
+    ],
+    ["the screen's bottom-right corner", { x: 719, y: 359 }, "jump"],
     ["the open middle", { x: 320, y: 180 }, "move"],
   ])("takes %s as %s", (_, point, role) => {
     expect(touchRoleAt(point)).toBe(role);
   });
 
-  it("puts the screen's corner beyond Jump's circle and the circles apart", () => {
-    const fromJump = (x: number, y: number) => Math.hypot(x - jump.centre.x, y - jump.centre.y);
-    const between = Math.hypot(use.centre.x - jump.centre.x, use.centre.y - jump.centre.y);
-    expect({
-      apart: between > 2 * TOUCH_CIRCLE_RADIUS,
-      cornerOutside: fromJump(SCREEN.width - 1, SCREEN.height - 1) > TOUCH_CIRCLE_RADIUS,
-    }).toEqual({ apart: true, cornerOutside: true });
+  // Every point a drag can start from on a grid over the screen draws the hint, centred there,
+  // clear of each button's clear circle.
+  it("starts a drag only where the hint stays clear of both buttons' circles", () => {
+    const hint = (MOVE_HINT.art.width - 1) / 2;
+    const clashes: { x: number; y: number }[] = [];
+    for (let x = 0; x < SCREEN.width; x += 2) {
+      for (let y = 0; y < SCREEN.height; y += 2) {
+        const near = [use.centre, jump.centre].some(
+          (centre) => Math.hypot(x - centre.x, y - centre.y) < TOUCH_CIRCLE_RADIUS + hint,
+        );
+        if (near && touchRoleAt({ x, y }) === "move") {
+          clashes.push({ x, y });
+        }
+      }
+    }
+    expect(clashes).toEqual([]);
   });
 });
 

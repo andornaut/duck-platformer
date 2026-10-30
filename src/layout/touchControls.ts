@@ -1,6 +1,6 @@
 import { SCREEN } from "../data/screen";
 import type { Point, Rect } from "../data/types";
-import { type PressArea, type PressShape, touchRadius } from "./hitAreas";
+import { type PressArea, type PressShape, TOUCH_CIRCLE_RADIUS } from "./hitAreas";
 
 export type TouchControl = "jump" | "use";
 
@@ -19,12 +19,18 @@ const JUMP_CENTRE = { x: 667, y: 307 };
 const USE_ART = buttonArt(USE_CENTRE);
 const JUMP_ART = buttonArt(JUMP_CENTRE);
 
-// Each button presses within a circle about its centre (TOUCH_CIRCLE_RADIUS, touchRadius), and
-// Jump's reaches on into the screen's bottom-right corner, away from Use: the rect from its
-// centre to the corner, where a thumb reaching for it lands.
-const RADIUS = touchRadius(USE_CENTRE, JUMP_CENTRE);
+// The move hint's radius: its frame, the buttons' size, from its centre pixel to its edge.
+const HINT_RADIUS = (BUTTON_FRAME - 1) / 2;
+
+// Each button presses within TOUCH_CIRCLE_RADIUS plus the hint's radius of its centre, so a drag,
+// which starts only off the buttons, draws the hint clear of each button's TOUCH_CIRCLE_RADIUS;
+// the two circles are cut along the line midway between the centres, so they meet and never
+// overlap. Jump's reaches on into the screen's bottom-right corner, away from Use: the rect from
+// its centre to the corner, where a thumb reaching for it lands.
+const RADIUS = TOUCH_CIRCLE_RADIUS + HINT_RADIUS;
+const USE_HIT: PressShape = { awayFrom: JUMP_CENTRE, centre: USE_CENTRE, radius: RADIUS };
 const JUMP_HIT: PressShape = [
-  { centre: JUMP_CENTRE, radius: RADIUS },
+  { awayFrom: USE_CENTRE, centre: JUMP_CENTRE, radius: RADIUS },
   {
     height: SCREEN.height - JUMP_CENTRE.y,
     width: SCREEN.width - JUMP_CENTRE.x,
@@ -39,7 +45,7 @@ export const TOUCH_CONTROLS: Readonly<
   Record<TouchControl, { art: Rect; centre: Point; hit: PressShape }>
 > = {
   jump: { art: JUMP_ART, centre: JUMP_CENTRE, hit: JUMP_HIT },
-  use: { art: USE_ART, centre: USE_CENTRE, hit: { centre: USE_CENTRE, radius: RADIUS } },
+  use: { art: USE_ART, centre: USE_CENTRE, hit: USE_HIT },
 };
 
 // The touch buttons' press areas, for pressedArea.

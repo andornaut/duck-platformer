@@ -1,14 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  HIT_RULE,
-  hitAround,
-  hitMargin,
-  pressArea,
-  pressedArea,
-  TOUCH_CIRCLE_RADIUS,
-  touchRadius,
-} from "./hitAreas";
+import { HIT_RULE, hitAround, hitMargin, pressArea, pressedArea } from "./hitAreas";
 import { MAP_SCREEN } from "./mapScreen";
 import { PAUSE_BUTTON, PAUSE_CARD } from "./pauseCard";
 import { SETTINGS_CARD } from "./settingsCard";
@@ -82,26 +74,31 @@ describe("pressedArea", () => {
   });
 });
 
-describe("touchRadius", () => {
-  // Buttons the drawn distance apart, and with one anchor moved closer, where the circles shrink
-  // to half the distance so they still never overlap.
-  it.each<[string, { x: number; y: number }, number]>([
-    ["far apart", { x: 200, y: 0 }, TOUCH_CIRCLE_RADIUS],
-    ["exactly two radii apart", { x: 2 * TOUCH_CIRCLE_RADIUS, y: 0 }, TOUCH_CIRCLE_RADIUS],
-    ["moved closer", { x: 60, y: 80 }, 50],
-  ])("keeps circles %s at radius %d", (_, other, radius) => {
-    expect(touchRadius({ x: 0, y: 0 }, other)).toBe(radius);
+describe("a circle cut away from a point", () => {
+  // Circles of radius 100 about centres 100 apart, each cut toward the other.
+  const a = { x: 0, y: 0 };
+  const b = { x: 100, y: 0 };
+  const art = { height: 1, width: 1, x: 0, y: 0 };
+  const areas = [
+    { art, hit: { awayFrom: b, centre: a, radius: 100 }, key: "a" },
+    { art: { ...art, x: 100 }, hit: { awayFrom: a, centre: b, radius: 100 }, key: "b" },
+  ];
+  it.each<[string, { x: number; y: number }, string | undefined]>([
+    ["just short of the midline, on a's side", { x: 49.9, y: 0 }, "a"],
+    ["just past the midline, on b's side", { x: 50.1, y: 0 }, "b"],
+    ["on the midline, nearer neither", { x: 50, y: 0 }, undefined],
+    ["inside a's radius and past b, but nearer b", { x: 95, y: 0 }, "b"],
+    ["outside both radii", { x: 50, y: 90 }, undefined],
+  ])("takes a press %s as %s", (_, point, key) => {
+    expect(pressedArea(areas, point)).toBe(key);
   });
 
-  it("leaves a press halfway between moved-closer buttons to neither", () => {
-    const a = { x: 0, y: 0 };
-    const b = { x: 60, y: 80 };
-    const radius = touchRadius(a, b);
-    const art = { height: 1, width: 1, x: 0, y: 0 };
-    const areas = [
-      { art, hit: { centre: a, radius }, key: "a" },
-      { art: { ...art, x: 60, y: 80 }, hit: { centre: b, radius }, key: "b" },
-    ];
-    expect(pressedArea(areas, { x: 30, y: 40 })).toBeUndefined();
+  it("never takes a press into both", () => {
+    const both = [
+      { x: 30, y: 20 },
+      { x: 70, y: -20 },
+      { x: 50, y: 50 },
+    ].filter((point) => areas.every(({ hit }) => pressedArea([{ art, hit, key: 1 }], point)));
+    expect(both).toEqual([]);
   });
 });
