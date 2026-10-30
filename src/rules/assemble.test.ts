@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { AreaPlan, ChunkPlan, ZoneRecipe } from "../data/types";
 import { ASSEMBLED_AREA, assembleZone, type ChunkLibrary } from "./assemble";
+import { recipeProblems } from "./chunk";
 
 const ROWS = 60;
 const SEEDS = Array.from({ length: 20 }, (_, i) => i + 1);
@@ -45,7 +46,7 @@ function library(chunks: Readonly<Record<string, ChunkPlan>>): ChunkLibrary {
 function recipe(middles: number, extra: Partial<ZoneRecipe> = {}): ZoneRecipe {
   const cols = 60 * (middles + 2);
   return {
-    difficulty: { from: 1, to: 1 },
+    difficulty: { max: 1, min: 1 },
     doors: [],
     events: [],
     finish: "finish",
@@ -88,16 +89,16 @@ describe("assembleZone", () => {
       ["a b a"],
     ],
     [
-      "keeps each chunk within 1 of the difficulty curve, at 2.2, 3 and 3.8 here",
+      "keeps every middle chunk in the same inclusive band, with either extreme first or last",
       {
         easy: chunk(50, 50, { difficulty: 1 }),
         hard: chunk(50, 50, { difficulty: 5 }),
-        x: chunk(50, 50, { difficulty: 2 }),
-        y: chunk(50, 50, { difficulty: 4 }),
+        x: chunk(50, 50, { difficulty: 2, maxPerZone: 1 }),
+        y: chunk(50, 50, { difficulty: 4, maxPerZone: 1 }),
         z: chunk(50, 50, { difficulty: 3, maxPerZone: 1 }),
       },
-      recipe(3, { difficulty: { from: 1, to: 5 } }),
-      ["x y z", "x z y", "z x y"],
+      recipe(3, { difficulty: { max: 4, min: 2 } }),
+      ["x y z", "x z y", "y x z", "y z x", "z x y", "z y x"],
     ],
     [
       "keeps the whole zone within its length",
@@ -119,7 +120,7 @@ describe("assembleZone", () => {
       { a: chunk(50, 50, { maxPerZone: 1 }), b: chunk(50, 50, { maxPerZone: 1 }) },
       recipe(3),
     ],
-    ["no chunk is near the curve", { a: chunk(50, 50, { difficulty: 4 }) }, recipe(1)],
+    ["no chunk is in the band", { a: chunk(50, 50, { difficulty: 4 }) }, recipe(1)],
     [
       "too few slots for the events",
       {
@@ -131,6 +132,34 @@ describe("assembleZone", () => {
     ],
   ])("fails clearly when %s", (_, chunks, zone) => {
     expect(() => assembleZone(library(chunks), 1, "z", zone)).toThrow(/^No assembly of zone z/);
+  });
+
+  it("supports one selected difficulty while keeping safe boundary chunks exempt", () => {
+    const lib = library({
+      a: chunk(50, 50, { difficulty: 3 }),
+      b: chunk(50, 50, { difficulty: 3 }),
+      easy: chunk(50, 50, { difficulty: 2 }),
+      hard: chunk(50, 50, { difficulty: 4 }),
+    });
+    expect([...runs(lib, recipe(2, { difficulty: { max: 3, min: 3 } }))].sort()).toEqual([
+      "a b",
+      "b a",
+    ]);
+  });
+
+  it.each([
+    [0, 3],
+    [2, 6],
+    [4, 2],
+    [1.5, 3],
+    [2, 3.5],
+    [NaN, 3],
+    [1, Infinity],
+  ])("refuses an invalid difficulty band %s to %s", (min, max) => {
+    const difficulty = { max, min } as ZoneRecipe["difficulty"];
+    expect(recipeProblems(library({}), recipe(0, { difficulty }))).toContain(
+      `difficulty ${min} to ${max} is not an ordered band from 1 to 5`,
+    );
   });
 
   it("gives the same zone for the same seed, and different zones across seeds", () => {

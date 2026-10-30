@@ -389,12 +389,11 @@ export interface ThemePlan {
 
 // How a zone is assembled from chunks (RECIPES by key, in src/data/zones.ts): its theme, its
 // fixed start and finish chunks, and between them a seeded run of the theme's chunks. length:
-// the zone's whole width range in columns, start and finish chunks included. difficulty: a line
-// from `from` at the zone's left edge to `to` at its right; each chunk between start and finish
-// is within 1 of it at the chunk's centre. events and doors: what the seed places in the chunks'
-// slots, count of each.
+// the zone's whole width range in columns, start and finish chunks included. difficulty: the
+// inclusive band for every middle chunk, independent of position. Safe start and finish chunks
+// are exempt. events and doors: what the seed places in the chunks' slots, count of each.
 export interface ZoneRecipe {
-  readonly difficulty: { readonly from: Difficulty; readonly to: Difficulty };
+  readonly difficulty: { readonly max: Difficulty; readonly min: Difficulty };
   readonly doors: readonly { readonly count: number; readonly room: string }[];
   readonly events: readonly { readonly count: number; readonly id: string }[];
   readonly finish: string;

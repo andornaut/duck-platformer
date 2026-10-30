@@ -165,7 +165,7 @@ export const FIXTURE_LIBRARY: ChunkLibrary = {
 };
 
 export const FIXTURE_RECIPE: ZoneRecipe = {
-  difficulty: { from: 1, to: 5 },
+  difficulty: { max: 5, min: 1 },
   doors: [{ count: 1, room: "test" }],
   events: [{ count: 1, id: "test-event" }],
   finish: "test-finish",

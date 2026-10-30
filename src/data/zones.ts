@@ -284,7 +284,7 @@ export const RECIPES: Readonly<Record<string, ZoneRecipe>> = {
   // The park: 6 to 10 screens, from difficulty 1 at its start to 3 at its end, with one door to
   // the test room. No events exist yet.
   park: {
-    difficulty: { from: 1, to: 3 },
+    difficulty: { max: 3, min: 1 },
     doors: [{ count: 1, room: "test" }],
     events: [],
     finish: "park-finish",

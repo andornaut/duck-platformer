@@ -275,6 +275,20 @@ describe("the map", () => {
     }
   });
 
+  it("keeps only the first playable zone fixed, with every later built zone assembled", () => {
+    const first = ZONE_MAP.nodes.find(({ id }) => id === ZONE_MAP.start);
+    expect(first?.kind).toBe("zone");
+    expect(first?.zone).toBeDefined();
+    expect(Object.keys(ZONES_BY_KEY)).toEqual([first?.zone]);
+    const built = reach(ZONE_MAP.start, (id) => after(id, true));
+    const later = ZONE_MAP.nodes.filter(
+      (node) => node.kind === "zone" && node.id !== first?.id && built.has(node.id),
+    );
+    expect(
+      later.map(({ zone }) => zone).filter((key) => key === undefined || !(key in RECIPES)),
+    ).toEqual([]);
+  });
+
   it("leads every node from the start and on to the finish, never back", () => {
     expect([...reach(ZONE_MAP.start, (id) => after(id))].sort()).toEqual([...ids].sort());
     for (const id of ids) {

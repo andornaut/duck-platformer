@@ -177,9 +177,20 @@ export function chunkProblems(
 
 // Why a recipe cannot be assembled as written, if it can't: its theme, start and finish chunks
 // exist, both chunks are drawn in its theme, its length range holds them, and its counts are
-// whole numbers. Whether any assembly fits is assembleZone's to find.
+// whole numbers, and its difficulty is an ordered band from 1 to 5. Whether any assembly fits
+// is assembleZone's to find.
 export function recipeProblems(library: ChunkLibrary, recipe: ZoneRecipe): string[] {
   const problems: string[] = [];
+  const { max: hardest, min: easiest } = recipe.difficulty;
+  if (
+    !Number.isInteger(easiest) ||
+    !Number.isInteger(hardest) ||
+    easiest < 1 ||
+    hardest > 5 ||
+    easiest > hardest
+  ) {
+    problems.push(`difficulty ${easiest} to ${hardest} is not an ordered band from 1 to 5`);
+  }
   if (!library.themes[recipe.theme]) {
     problems.push(`no theme ${recipe.theme}`);
   }

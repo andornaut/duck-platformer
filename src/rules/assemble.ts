@@ -35,42 +35,6 @@ export function themesOf(chunk: ChunkPlan): readonly string[] {
   return typeof chunk.theme === "string" ? [chunk.theme] : chunk.theme;
 }
 
-// The difficulty curve's value at column col of a zone total columns wide: a line from the
-// recipe's `from` at its left edge to its `to` at its right.
-export function curveAt(recipe: ZoneRecipe, total: number, col: number): number {
-  const { from, to } = recipe.difficulty;
-  return from + ((to - from) * col) / total;
-}
-
-// Rounding slack when a difficulty is compared with the curve.
-export const CURVE_SLACK = 1e-9;
-
-// The whole totals T for which a chunk of difficulty d centred on column centre is within 1 of
-// the curve, as [lo, hi] (hi may be Infinity), or undefined when none is.
-function curveTotals(
-  recipe: ZoneRecipe,
-  centre: number,
-  difficulty: number,
-): [number, number] | undefined {
-  const { from, to } = recipe.difficulty;
-  const slope = (to - from) * centre;
-  if (slope === 0) {
-    return Math.abs(difficulty - from) <= 1 ? [0, Infinity] : undefined;
-  }
-  // slope / T must lie in [low, high]; with a negative slope, -slope / T in [-high, -low].
-  const [low, high] =
-    slope > 0
-      ? [difficulty - 1 - from, difficulty + 1 - from]
-      : [from - difficulty - 1, from - difficulty + 1];
-  const size = Math.abs(slope);
-  if (high <= 0) {
-    return undefined;
-  }
-  const lo = Math.ceil(size / high - CURVE_SLACK);
-  const hi = low > 0 ? Math.floor(size / low + CURVE_SLACK) : Infinity;
-  return lo <= hi ? [lo, hi] : undefined;
-}
-
 function chunkOf(library: ChunkLibrary, id: string): ChunkPlan {
   const chunk = library.chunks[id];
   if (!chunk) {
@@ -95,19 +59,18 @@ function weightedOrder(random: Random, library: ChunkLibrary, ids: readonly stri
 }
 
 // Where the search stands: the chunks so far after the start, the columns they take with the
-// start's, the totals the curve still allows, and the event and door slots so far.
+// start's, and the event and door slots so far.
 interface Run {
   readonly counts: ReadonlyMap<string, number>;
   readonly doors: number;
   readonly events: number;
   readonly ids: readonly string[];
-  readonly totals: readonly [number, number];
   readonly width: number;
 }
 
 // The ids of the chunks between the recipe's start and finish, left to right: a seeded run
 // whose seams join, never the same chunk twice in a row, each chunk at most its maxPerZone
-// times, within 1 of the difficulty curve, with slots enough for the recipe's events and doors,
+// times, within the difficulty band, with slots enough for the recipe's events and doors,
 // and the whole zone within the recipe's length. It aims for a length drawn from the seed, tries
 // the chunks in a seeded weighted order, and backtracks when stuck. Undefined when none exists.
 function searchRun(
@@ -120,6 +83,10 @@ function searchRun(
   const pool = Object.keys(library.chunks)
     .filter((id) => id !== recipe.start && id !== recipe.finish)
     .filter((id) => themesOf(chunkOf(library, id)).includes(recipe.theme))
+    .filter((id) => {
+      const { difficulty } = chunkOf(library, id);
+      return difficulty >= recipe.difficulty.min && difficulty <= recipe.difficulty.max;
+    })
     .sort();
   const { max, min } = recipe.length;
   const target = randomInt(random, min, max + 1);
@@ -130,7 +97,6 @@ function searchRun(
     [
       run.width,
       run.ids.at(-1) ?? recipe.start,
-      run.totals.join("-"),
       Math.min(run.events, needEvents),
       Math.min(run.doors, needDoors),
       ...pool.flatMap((id) =>
@@ -143,31 +109,21 @@ function searchRun(
     return (
       prev !== recipe.finish &&
       exitRow === finish.entry.row &&
-      total >= Math.max(min, run.totals[0]) &&
-      total <= Math.min(max, run.totals[1]) &&
+      total >= min &&
+      total <= max &&
       run.events + slotCount(finish, "event") >= needEvents &&
       run.doors + slotCount(finish, "door") >= needDoors
     );
   };
 
-  const extend = (run: Run, id: string): Run | undefined => {
+  const extend = (run: Run, id: string): Run => {
     const chunk = chunkOf(library, id);
     const width = run.width + chunk.cols;
-    const allowed = curveTotals(recipe, run.width + chunk.cols / 2, chunk.difficulty);
-    if (!allowed) {
-      return undefined;
-    }
-    const lo = Math.max(run.totals[0], allowed[0], width + finish.cols, min);
-    const hi = Math.min(run.totals[1], allowed[1], max);
-    if (lo > hi) {
-      return undefined;
-    }
     return {
       counts: new Map(run.counts).set(id, (run.counts.get(id) ?? 0) + 1),
       doors: run.doors + slotCount(chunk, "door"),
       events: run.events + slotCount(chunk, "event"),
       ids: [...run.ids, id],
-      totals: [lo, hi],
       width,
     };
   };
@@ -203,7 +159,7 @@ function searchRun(
         continue;
       }
       const longer = extend(run, id);
-      const found = longer && search(longer);
+      const found = search(longer);
       if (found) {
         return found;
       }
@@ -217,7 +173,6 @@ function searchRun(
     doors: slotCount(start, "door"),
     events: slotCount(start, "event"),
     ids: [],
-    totals: [0, Infinity],
     width: start.cols,
   });
 }
@@ -375,7 +330,7 @@ export function assembleZone(
     throw new Error(
       `No assembly of zone ${key} fits its recipe: its theme's chunks never join from ` +
         `${recipe.start} to ${recipe.finish} within ${recipe.length.min} to ` +
-        `${recipe.length.max} columns, the difficulty curve and each chunk's maxPerZone, ` +
+        `${recipe.length.max} columns, the difficulty band and each chunk's maxPerZone, ` +
         "with slots for its events and doors",
     );
   }

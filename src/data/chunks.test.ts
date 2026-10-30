@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ASSEMBLED_AREA, assembleZone, CURVE_SLACK, curveAt, themesOf } from "../rules/assemble";
+import { ASSEMBLED_AREA, assembleZone, themesOf } from "../rules/assemble";
 import { chunkProblems, recipeProblems } from "../rules/chunk";
 import { ALL_CHUNKS, ALL_RECIPES, ALL_THEMES, FIXTURE_LIBRARY } from "../testing/chunks";
 import { lookTiles, type Tileset } from "../view/tiles";
@@ -152,16 +152,16 @@ describe.each(ALL_RECIPES)("recipe %s", (key, library, recipe) => {
     }
   });
 
-  it("fits its length, follows the difficulty curve and keeps each chunk's maxPerZone", () => {
+  it("fits its length and difficulty band and keeps each chunk's maxPerZone", () => {
     for (const plan of plans()) {
       const area = plan.areas[ASSEMBLED_AREA];
       const placed = area?.chunks ?? [];
       const total = area?.cols ?? 0;
       expect(total).toBeGreaterThanOrEqual(recipe.length.min);
       expect(total).toBeLessThanOrEqual(recipe.length.max);
-      const off = placed.slice(1, -1).filter(({ chunk, col, cols }) => {
-        const curve = curveAt(recipe, total, col + cols / 2);
-        return Math.abs(chunkAt(chunk).difficulty - curve) > 1 + CURVE_SLACK;
+      const off = placed.slice(1, -1).filter(({ chunk }) => {
+        const { difficulty } = chunkAt(chunk);
+        return difficulty < recipe.difficulty.min || difficulty > recipe.difficulty.max;
       });
       expect(off).toEqual([]);
       const counts = new Map<string, number>();
