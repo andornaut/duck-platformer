@@ -5,8 +5,8 @@ import { SCREEN } from "../data/screen";
 import { TOUCH } from "../data/touch";
 import type { Point } from "../data/types";
 import type { HeldTouch } from "../input/intent";
-import { bottomLeftShift, shifted } from "../layout/playView";
-import { MOVE_HINT } from "../layout/touchControls";
+import { bottomLeftShift, bottomRightShift, shifted } from "../layout/playView";
+import { MOVE_HINT, TOUCH_CONTROLS } from "../layout/touchControls";
 import { knobOffset, moveHintView } from "./moveHint";
 import { centredAt } from "./touchControls";
 
@@ -29,6 +29,21 @@ describe("the move hint at rest", () => {
       x: MOVE_HINT.art.x,
       y: MOVE_HINT.art.y,
     });
+  });
+
+  // Level with Jump and mirroring Use across the canvas, each where the canvas anchors it: Use's
+  // centre is as far in from the right edge as the hint's is from the left.
+  it.each([
+    ["the game's own size", SCREEN],
+    ["a wider canvas", { height: SCREEN.height, width: SCREEN.width + 180 }],
+    ["a turned portrait canvas", { height: SCREEN.height, width: 779.08 }],
+    ["a taller canvas", { height: SCREEN.height + 40, width: SCREEN.width }],
+  ])("sits level with Jump and opposite Use in %s", (_, canvas) => {
+    const buttons = bottomRightShift(canvas);
+    const use = shifted(buttons, TOUCH_CONTROLS.use.centre);
+    const jump = shifted(buttons, TOUCH_CONTROLS.jump.centre);
+    const hint = shifted(bottomLeftShift(canvas), MOVE_HINT.centre);
+    expect(hint).toEqual({ x: Math.floor(canvas.width) - 1 - use.x, y: jump.y });
   });
 
   // Anchored to the canvas's bottom-left corner: into a left bar it stays at the canvas's left,
