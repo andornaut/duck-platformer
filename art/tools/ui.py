@@ -35,16 +35,19 @@ Quip
   line cream in font-body, origin x+15+An, y 11.
 
 Touch controls (two round buttons for the right thumb and a pause button at the top left; movement has no art)
-- ui-touch-use, 75x75, centre pixel 37,37: top-left 555,173 for the centre 592,210 (hit 522,152,198,104).
-- ui-touch-jump, 75x75, centre pixel 37,37: top-left 630,270 for the centre 667,307 (hit 522,256,198,104, the
-  bottom-right corner; Use's hit area sits directly above it).
+- Positions here are the base 720x360 layout as drawn. At runtime the game anchors Use, Jump and ui-pause to the
+  screen's corners and sizes their hit areas from the drawn button plus a margin; each label keeps its offset from
+  its button's centre.
+- ui-touch-use, 75x75, centre pixel 37,37: top-left 555,173 for the centre 592,210.
+- ui-touch-jump, 75x75, centre pixel 37,37: top-left 630,270 for the centre 667,307, towards the bottom-right
+  corner, with Use above and to its left.
 - Each is an opaque disc: an ink edge, a 3px cream ring and a navy face, 73px across for both,
   with its icon above the centre in 2px strokes: three round dots (25x7) on Use with their top 10px above the
   centre, a caret (21x11) on Jump with its top 12px above. Tags rest (100ms); press, once (frame 0 the ring turns
   white and thickens to 4px, the face lifts to dslate and the whole disc swells 1px; frame 1 the same at rest
   size; 60ms each); held (as press frame 1, 100ms).
-- ui-pause, 35x35, centre pixel 17,17: top-left 9,9 for the centre 26,26 (hit 0,0,52,52, reaching the screen's
-  corner). The same disc, 33px across with a 2px ring (3px pressed), with two pause bars (11x13, each 4 wide,
+- ui-pause, 35x35, centre pixel 17,17: top-left 9,9 for the centre 26,26, towards the top-left corner. The same
+  disc, 33px across with a 2px ring (3px pressed), with two pause bars (11x13, each 4 wide,
   3 apart) centred on the centre; no label. Tags as for Use and Jump: rest; press, once (2 frames at 60ms,
   frame 0 swells 1px); held.
 - Label "Use" or "Jump" in font-body at 2x, never baked in: centred on the button's centre x (origin x = centre x

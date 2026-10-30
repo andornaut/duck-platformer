@@ -149,7 +149,7 @@ The villain is a champagne ferret standing up on its hind legs in a stovepipe ha
 
 ## UI
 
-All positions are in base pixels (x, y, w, h). A touch target is at least 44x44.
+All positions are in base pixels (x, y, w, h) of the 720x360 layout as drawn. A touch target is at least 44x44. The game sizes hit areas at runtime from the drawn element plus a margin (6 to 8px for most buttons), so a hit area given here is the base layout's.
 
 ### Dialogue box
 
@@ -169,12 +169,12 @@ A one-line strip at the top centre (x 360), y 8, height 24, sized to its text an
 
 Two round buttons for the right thumb, Use above and to the left of Jump. Each is an opaque disc: an ink edge, a 3px cream ring and a navy face, so it holds 3:1 on light and dark ground, with its icon above its label. Hidden on desktop and when the setting is off.
 
-| Control | Centre  | Hit area        | Disc      | Icon       | Label origin | Label room |
-| ------- | ------- | --------------- | --------- | ---------- | ------------ | ---------- |
-| Use     | 592,210 | 522,152,198,104 | 73px wide | three dots | 580,207      | 55         |
-| Jump    | 667,307 | 522,256,198,104 | 73px wide | caret      | 650,306      | 53         |
+| Control | Centre, as drawn | Frame | Disc      | Icon       | Label origin, as drawn | Label room |
+| ------- | ---------------- | ----- | --------- | ---------- | ---------------------- | ---------- |
+| Use     | 592,210          | 75x75 | 73px wide | three dots | 580,207                | 55         |
+| Jump    | 667,307          | 75x75 | 73px wide | caret      | 650,306                | 53         |
 
-- The hit areas fill the right of the screen from y 152 down, Jump's in the bottom-right corner and Use's directly above it. Each disc sits inside its own hit area.
+- Centres and label origins are the base 720x360 layout, as drawn. At runtime the game anchors Jump, Use and the pause button to the screen's corners, so on a wide or tall screen they sit in the spare space outside the game, and sizes their hit areas from the drawn button plus a margin: about 8px for Use and Pause, about 16px plus the screen's corner for Jump. The label keeps its offset from its button's centre.
 - Labels: "Use" and "Jump" in `font-body` at 2x, set by the game from text data and never baked in. Each is centred on its button's centre x, 4 rows below the icon. Label room is the widest ink that keeps 2px of face on each side while pressed.
 - Press: the ring turns white and thickens 1px and the face lifts a step, swelling 1px for the first frame (frame 0, then frame 1, 60ms each), then holds until release, which snaps back to rest.
 - Movement has no art: a touch anywhere off a button sets its own neutral point, and nothing marks it.
@@ -193,7 +193,7 @@ The game boots into the start screen; Start goes to the map. A nav bar runs acro
 
 A pause button at the top left opens the pause card over the game, which is dimmed by stepping every colour two ramp steps darker. The pause card reads Settings, Return home and Resume; Settings opens the settings card over the same dim, and Install opens the install steps card for browsers that install from their own menu. One card shows at a time. Every card is the same frame, 368 wide at 176,88, with a 36px header holding its title and a close X (hit area 500,88,44,44). Rows are 352x48 at x 184, 4px apart, each its own hit area, with a 16x16 icon at x 198 and a label origin at x 228.
 
-- Pause button: the Use and Jump disc, 33px across, with two pause bars and no label, centred at 26,26 with hit area 0,0,52,52 (reaching the screen's corner). It is a touch control: hidden on desktop and while a dialogue box is open, and its press matches Use and Jump.
+- Pause button: the Use and Jump disc, 33px across, with two pause bars and no label, centred at 26,26 as drawn (35x35 frame), anchored to the top-left corner at runtime with its hit area sized from the drawn button, as for Use and Jump. It is a touch control: hidden on desktop and while a dialogue box is open, and its press matches Use and Jump.
 
 | Card     | Rect           | Title    | Rows (y)                                         | Below the rows                             |
 | -------- | -------------- | -------- | ------------------------------------------------ | ------------------------------------------ |
