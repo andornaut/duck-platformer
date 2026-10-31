@@ -230,7 +230,8 @@ export interface Archetype {
 }
 
 // The states an animation tag can play for. open: a door as she uses it, before its room shows.
-export type CharacterState = "idle" | "move" | "open" | "react" | "talk";
+export type CharacterState =
+  "crouch" | "idle" | "move" | "open" | "react" | "rest" | "rush" | "talk";
 
 // An idle tic: tag plays once every `every` seconds, give or take variance (0 to 1) of that,
 // rolled fresh each attempt like random motion.

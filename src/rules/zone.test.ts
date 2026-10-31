@@ -37,10 +37,13 @@ const STATIC: Motion = {
 function object(fields: Partial<ObjectLayout> & { origin: Point }): ObjectLayout {
   return {
     animations: {
+      crouch: undefined,
       idle: undefined,
       move: undefined,
       open: undefined,
       react: undefined,
+      rest: undefined,
+      rush: undefined,
       talk: undefined,
     },
     art: "block",

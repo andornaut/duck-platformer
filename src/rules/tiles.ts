@@ -5,6 +5,7 @@ import type {
   ArtHitbox,
   Character,
   CharacterState,
+  Charge,
   Instance,
   Interaction,
   Motion,
@@ -39,7 +40,15 @@ export interface Catalogue {
   readonly characters: Readonly<Record<string, Character>>;
 }
 
-const STATES: readonly CharacterState[] = ["idle", "move", "react", "talk"];
+const STATES: readonly CharacterState[] = [
+  "crouch",
+  "idle",
+  "move",
+  "react",
+  "rest",
+  "rush",
+  "talk",
+];
 // The tag a door's open state plays when its character names none.
 const OPEN_TAG = "open";
 
@@ -94,6 +103,31 @@ export function objectLayout(
     ...character.tuning?.interaction,
     ...instance.overrides?.interaction,
   };
+  const charge = character.charge;
+  if (charge) {
+    const positive: readonly (keyof Charge)[] = [
+      "crouchSeconds",
+      "restSeconds",
+      "rushSeconds",
+      "rushSpeed",
+    ];
+    if (
+      Object.values(charge).some((value) => !Number.isFinite(value) || value < 0) ||
+      positive.some((key) => charge[key] <= 0) ||
+      archetype.collision !== "hazard" ||
+      motion.algorithm !== "linear" ||
+      (motion.direction !== "left" && motion.direction !== "right") ||
+      !Number.isFinite(motion.distance) ||
+      motion.distance <= 0 ||
+      !Number.isFinite(motion.speed) ||
+      motion.speed <= 0 ||
+      motion.pause !== 0 ||
+      motion.variance !== 0 ||
+      reaction.kind !== "none"
+    ) {
+      throw new Error(`Invalid charge patrol for ${instance.character}`);
+    }
+  }
   const parallax = instance.parallax;
   if (parallax) {
     if (
@@ -129,6 +163,14 @@ export function objectLayout(
     art: character.art,
     ...(character.tileset !== undefined && { tileset: character.tileset }),
     character: instance.character,
+    ...(charge && {
+      charge: {
+        ...charge,
+        groundTolerance: charge.groundTolerance * tile,
+        rushSpeed: charge.rushSpeed * tile,
+        triggerRange: charge.triggerRange * tile,
+      },
+    }),
     collision: archetype.collision,
     height,
     hitbox: art
