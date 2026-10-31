@@ -29,6 +29,13 @@ export const TEXT: GameText = {
     skip: "Skip",
     speakers: { dog: "Dog", duck: "Duck" },
   },
+  homePage: {
+    description: "Help a duck get home after his former best friend, a ferret, mails him far away.",
+    keyboard: "Keyboard: arrow keys to walk and jump; E to use; P to pause.",
+    play: "Play",
+    subline: "Jump through city streets, avoid red-edged hazards and get past the dog.",
+    touch: "Touch: drag left or right to walk; press {jump} or {use}.",
+  },
   lines: {
     "depot-dog-intro-1": "The ferret asked me to stop you.",
     "depot-dog-intro-2": "I am going home.",
