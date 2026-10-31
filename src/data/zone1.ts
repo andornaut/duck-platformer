@@ -73,20 +73,15 @@ export const ZONE_1: ZonePlan = {
         { character: "water-tower", col: 158, row: 13 },
         { character: "water-tank", col: 158, row: 14 },
         { character: "street-tree", col: 130, row: 39 },
-        // A second flock, under the tree.
-        { character: "pigeon", col: 136, row: 48 },
-        { character: "pigeon", col: 139, phase: 0.4, row: 48 },
-        { character: "pigeon", col: 141, phase: 0.7, row: 48 },
         // A door to the test room, in the brownstone's ground storey.
         { character: "street-door", col: 145, room: "test", row: 46 },
         // A gap: a subway entrance, 10 across.
         { character: "subway-railing", col: 150, row: 45 },
         { character: "red-edge-top", col: 156, cols: 10, row: 54 },
         { character: "red-edge-support", col: 156, cols: 10, row: 55, rows: 5 },
-        // A cellar hatch open 4 across, past the pet shop's dog; then one open 6 across. Each
+        // A cellar hatch open 4 across, past the pet shop; then one open 6 across. Each
         // has a steel leaf 2 up at each edge.
         { character: "storefront-pet-shop", col: 168, row: 40 },
-        { character: "dog-pug", col: 170, row: 47 },
         { character: "hatch-left", col: 182, row: 48 },
         { character: "pit-opening", col: 183, cols: 4, row: 50 },
         { character: "red-edge-top", col: 183, cols: 4, row: 54 },
@@ -108,8 +103,6 @@ export const ZONE_1: ZonePlan = {
         { character: "red-edge-right", col: 238, row: 39, rows: 2 },
         { character: "red-edge-top", col: 220, cols: 18, row: 38 },
         { character: "red-edge-support", col: 220, cols: 18, row: 39, rows: 2 },
-        { character: "pedestrian-cat", col: 242, row: 45 },
-        { character: "pedestrian-raccoon", col: 248, phase: 0.5, row: 45 },
         // Another red edge, then a canopy before the street's end.
         { character: "red-edge-top", col: 260, cols: 4, row: 49 },
         { character: "red-edge-support", col: 260, cols: 4, row: 50, rows: 10 },

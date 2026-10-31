@@ -254,15 +254,13 @@ export const TEST_ZONES: readonly ZonePlan[] = [
     },
     start: { area: "main", entry: "start" },
   },
-  // A street 10 screens wide: a pigeon that hops about and flies from her, a door to the test
-  // room, then a cart wandering its floor.
+  // A street 10 screens wide: a door to the test room, then a cart wandering its floor.
   {
     areas: {
       street: {
         cols: 600,
         entries: { start: { col: 3, row: 56 } },
         objects: [
-          { character: "test-pigeon", col: 30, row: 54 },
           { character: "test-door", col: 228, room: "test", row: 52 },
           { character: "test-cart", col: 280, row: 54 },
         ],
