@@ -33,10 +33,10 @@ head and bill 10px on the right, and she stops 2px below its top. The raised win
 | flutter | 3     | 100 | wing back                                                    | 2    | 33 x 26    | 26       |
 | land    | 0     | 100 | contact: squash, feet planted wide                           | 0    | 39 x 22    | 40       |
 | land    | 1     | 80  | recover: half squash                                         | 0    | 36 x 24    | 36       |
-| death   | 0     | 100 | small recoil, closed eye, feet tucked                        | 1    | 36 x 24    | 36       |
-| death   | 1     | 120 | falling pose, closed eye, feet tucked                        | 1    | 33 x 26    | 33       |
-| death   | 2     | 80  | ground impact: extra squash, flatter face, feet hidden        | -1   | 39 x 14    | 39       |
-| death   | 3     | 400 | spring back to seated rest, flatter face, feet hidden         | -1   | 39 x 17    | 39       |
+| death   | 0     | 100 | small recoil, closed eye, feet visible                       | 1    | 34 x 24    | 36       |
+| death   | 1     | 120 | slight fall tilt, closed eye, visible tucked soles           | 1    | 34 x 24    | 33       |
+| death   | 2     | 80  | brief landing compression, rounded belly, feet hidden        | -2   | 36 x 19    | 39       |
+| death   | 3     | 400 | spring to round sitting rest, soft contact ends, feet hidden | -2   | 34 x 21    | 39       |
 
 Lift is how far the body's bottom edge sits above its rest row, in pixels. Body w x h is the body's
 superellipse; normal locomotion keeps its area within 2% of rest. Shadow w is for a ground shadow the game
@@ -44,9 +44,11 @@ may draw under her: the land contact frame's is the largest. flutter and jump 1 
 is the game's to place. jump, land and death play once and hold their last frame (the manifest's "once"); every
 other tag loops. After land, play idle. Death is appended after the existing tags; frame indices stay fixed.
 Death has no baked world movement: the runtime uses frame 0 for recoil, holds frame 1 during the physical fall,
-then shows frame 2 on support and springs back to seated frame 3, held while the retry card is open. The camera stays
-fixed. Durations above are art playback defaults; gameplay owns state timing and falling behaviour. The death
-squat deliberately reduces body volume. The body-centre and frame-bottom anchor do not move.
+then shows frame 2 on support and springs back to seated frame 3, held while the retry card is open.
+The camera stays fixed. Durations above are art playback defaults; gameplay owns state timing and falling behaviour. The death
+impact briefly compresses the body; the final pose is a full, round sit with a short flat belly centre
+and rounded contact ends, resting on the frame bottom. Feet show during recoil and fall, not on support.
+The body-centre and frame-bottom anchor do not move.
 
 States: idle idle; move walk, and in the air jump, flutter and land; react none, falls back to land (its squash
 reads as a flinch); death death; talk none, falls back to idle (the portrait carries the speech); quirk none.
@@ -129,14 +131,15 @@ def flat(g, inside, c):
                 g.p(x, y, c)
 
 
-def draw(lift=0, bw=BRX, bh=BRY, wing=("fold", 0), feet=((-5, 0), (2, 0)), eye="open", head_squash=1):
+def draw(lift=0, bw=BRX, bh=BRY, wing=("fold", 0), feet=((-5, 0), (2, 0)), eye="open", head_squash=1, seated=False):
     """One 48x42 frame.
 
     lift: body bottom edge this many px above its rest row. bw, bh: body radii. wing: ("fold", dy) or
     ("raise", degrees), the raised wing's direction in screen degrees (180 straight back, above 180 up and
     back). feet: ((dx, up), (dx, up)) for the far foot (drawn behind the body) and the near foot, each its left
-    column relative to the body centre, or "tucked" (soles just under the belly), or "hidden" (no feet drawn). head_squash compresses the head
-    vertically while retaining its bottom edge. Its default preserves the normal round head.
+    column relative to the body centre, or "tucked" (soles just under the belly), or "hidden" (no feet drawn).
+    head_squash compresses the head vertically while retaining its bottom edge. Its default preserves the normal round head. seated rounds
+    the lower belly into a short flat contact centre without visible feet.
     """
     g = Grid(W, H)
     bottom = BODY_BOTTOM - lift
@@ -153,7 +156,17 @@ def draw(lift=0, bw=BRX, bh=BRY, wing=("fold", 0), feet=((-5, 0), (2, 0)), eye="
         foot(0)
     # a short tail tip at the lowered rear, its root under the body
     cel(g, in_ell(C - bw + 1, bcy - 1, 4.4, 2.2, -0.45), BASE, SHADE, None, 1, 1)
-    cel(g, in_body(C, bcy, bw, bh, hcx - HEAD_R * 0.7, NAPE_DROP, BACK_FLAT), BASE, SHADE, LIGHT, 3, 1)
+    body = in_body(C, bcy, bw, bh, hcx - HEAD_R * 0.7, NAPE_DROP, BACK_FLAT)
+    if seated:
+        upper = body
+        half_base = 7.5
+
+        def body(x, y):
+            if y + 0.5 < bcy:
+                return upper(x, y)
+            dx = max(0, abs(x + 0.5 - C) - half_base)
+            return (dx / (bw - half_base)) ** 2 + ((y + 0.5 - bcy) / bh) ** 2 <= 1
+    cel(g, body, BASE, SHADE, LIGHT, 3, 1)
     if feet == "tucked":
         for dx in (-5, 2):
             g.rect(int(C + dx), bottom, 4, 1, "orange")
@@ -182,6 +195,18 @@ SQUASH_LAND = (19.6, 10.8)
 SQUASH_RECOVER = (17.8, 11.9)
 
 
+def falling_pose():
+    """A small clockwise tilt, with visible tucked soles and no baked world translation."""
+    from PIL import Image
+
+    px = draw(lift=1, bw=17, bh=12, wing=("fold", 2), feet="tucked", eye="closed")
+    im = Image.new("RGBA", (W, H))
+    im.putdata([pixel.rgb(c) + (255,) if c else (0, 0, 0, 0) for row in px for c in row])
+    im = im.rotate(-10, Image.Resampling.NEAREST, expand=False, center=(C, 29))
+    return [["%02x%02x%02x" % im.getpixel((x, y))[:3] if im.getpixel((x, y))[3] else None
+             for x in range(W)] for y in range(H)]
+
+
 def duck_tags():
     idle = [draw(), draw(lift=1, feet=((-5, -1), (2, -1)))]  # feet stay planted while the body rises
     walk = [
@@ -207,10 +232,12 @@ def duck_tags():
         ("flutter", flutter, 100),
         ("land", land, [100, 80]),
         ("death", [
-            draw(lift=1, bw=SQUASH_RECOVER[0], bh=SQUASH_RECOVER[1], feet="tucked", eye="closed"),
-            draw(lift=1, feet="tucked", eye="closed"),
-            draw(lift=-1, bw=SQUASH_LAND[0], bh=6.8, wing=("fold", -2), feet="hidden", eye="closed", head_squash=0.65),
-            draw(lift=-1, bw=SQUASH_LAND[0], bh=8.4, wing=("fold", -2), feet="hidden", eye="closed", head_squash=0.8),
+            draw(lift=1, bw=17, bh=12, wing=("fold", 2), eye="closed"),
+            falling_pose(),
+            draw(lift=-2, bw=18, bh=9.5, wing=("fold", 2), feet="hidden", eye="closed",
+                 head_squash=0.9, seated=True),
+            draw(lift=-2, bw=17, bh=10.5, wing=("fold", 2), feet="hidden", eye="closed",
+                 head_squash=0.95, seated=True),
         ], [100, 120, 80, 400]),
     ]
 
