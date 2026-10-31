@@ -274,8 +274,8 @@ export const TEST_ZONES: readonly ZonePlan[] = [
 // The zones the map leads to, by key.
 export const ZONES: Readonly<Record<string, ZonePlan>> = {};
 
-// The shared difficulty band for every randomized real zone, centred on 2 with variation of 1.
-export const ZONE_DIFFICULTY = { max: 3, min: 1 } as const;
+// The shared difficulty band for every randomized real zone, centred on 3 with variation of 1.
+export const ZONE_DIFFICULTY = { max: 4, min: 2 } as const;
 
 // The zones assembled from chunks, by key. A key here is never also a key in ZONES.
 export const RECIPES: Readonly<Record<string, ZoneRecipe>> = {
