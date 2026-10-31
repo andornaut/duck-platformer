@@ -30,9 +30,10 @@ Back to title is ui-button at164,300,192,48; Continue is ui-button-primary at364
 map-duck remains 26x22 with idle2x400ms, centred on the current node and standing on its top ring.
 Legacy map-fork and pen marks remain available but the six-zone V1 route needs no fork markers.
 
-The stage picker reuses ui-settings-card at176,88,368,176, an ink zone heading centred atx360,y96,
-the standard close X at510,94,24,24, and two352x48 stage buttons at184,136 and184,188. The latest
-available stage uses ui-button-primary with white text; the other uses ui-button with ink text.
+The stage picker reuses the content-fitted ui-settings-card, with a zone heading and standard 24x24
+close X included in the measured content union. Add 16px outer padding on all four sides. Its two
+48px stage buttons use equal widths derived from their actual labels and the shared control padding.
+The latest available stage uses ui-button-primary with white text; the other uses ui-button with ink.
 It opens only when more than one stage is unlocked. Close, back and outside taps return to the map.
 """
 

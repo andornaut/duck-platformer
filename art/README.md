@@ -207,7 +207,9 @@ Approved target for paired runtime integration. The rulebook owns failure behavi
 - Progress is a restrained 2px line at the top of the game view. Its filled length shows percentage through the stage, using the current destination's canonical primary from `zone-themes` over a `dslate` track. Keep it separate from UI buttons, with no glow or pulse.
 - On failure, show a small recoil, a physical fall to support, an extra impact squash and a small spring back up into a visibly deflated seated rest. The face is flatter and the feet are completely hidden in the impact and seated poses. Keep the camera at the failure view; the sprite has no baked world movement. Show the retry card as soon as the seated pose is reached, holding that pose beneath it without an extra timed pause or automatic retry.
 - Dim the frozen environment two palette ramp steps. Keep the duck and the small hazard contact area readable at their world positions, without an added ring or flash. The compact card stays above the ground-level contact area rather than covering it.
-- Reuse `ui-settings-card` at 176,16,368,176, with no close X or title bar. Its four text rows stay in this order: zone name; `Stage <number>: <stage name>`; `Progress: X%`; `Time: 0:00`. Stage numbers are 1 or 2 within the selected zone, not global route numbers. Keep the standard fonts and sizes; never shrink text to fit.
+- Reuse the content-fitted `ui-settings-card`, top-centred at y16, with no close X or title bar. Its four text rows stay in this order: zone name; `Stage <number>: <stage name>`; `Progress: X%`; `Time: 0:00`. Stage numbers are 1 or 2 within the selected zone, not global route numbers. Keep the standard fonts and sizes; never shrink text to fit.
+- Use the [shared modal content-fitting rule](controls.md#modal-content-fitting): 16px padding on all four sides, four 16px text line boxes with 4px gaps, then an 8px gap before the 48px action row. Each equal-width action fits the widest action label's visible ink plus 32px. Card width is the larger of the widest stat line and the complete action row, plus 32px; card height is 164px for four single-line rows.
+- Measured example: Blue cityscape / `Stage 2: City boundary`, `Progress: 50%`, `Time: 0:42`. The widest stat ink is 152px; Back to title is 82px wide and Try again is 60px at 2x. Equal 114px actions with their 8px gap make a 236px action row, so the fitted card is 268x164, top-left 226,16 in the 720px view. Glyph ink is centred in its line boxes without changing font size. Longer actual strings grow the fitted width or wrap permitted paragraphs.
 - The time is cumulative play time on this stage across attempts since its last clear (or first entry). It is not the current attempt's duration and resets on clear. Progress is percentage at the current position through the stage.
 - Place the secondary Back to title action on the left and primary Try again on the right, using the standard faces, equal sizes, label font and focus treatment in [the form control guide](controls.md#retry-actions). Neither an outside tap nor an elapsed timer retries the stage.
 
@@ -240,23 +242,24 @@ The game boots into the start screen; Start goes to the map. A nav bar runs acro
 
 ### Pause, settings and install cards
 
-A pause button at the top left opens the pause card over the game, which is dimmed by stepping every colour two ramp steps darker. The pause card reads Resume, Settings and Back to title, three buttons of one shape stacked, Resume the primary; Settings opens the settings card over the same dim, and Install opens the install steps card for browsers that install from their own menu. One card shows at a time. Every card is the same frame, 368 wide at 176,88: no header, an lgrey face (pale steel) in an ink border, its title in ink centred near the top (origin y 96) and the close X (24x24 at 510,94, an ink X) at the top right. Text on the face is ink, or dslate for the build label. Rows, as on dog-walker-game's settings card, have no box: each is a 352x48 hit area at x 184, 4px apart, pressed as a whole, with a dslate 16x16 icon at x 198 and an ink label origin at x 228.
+A pause button at the top left opens the pause card over the game, dimmed two palette ramp steps. The pause card offers Resume, Settings and Back to title, stacked in that order with Resume primary. Settings replaces it over the same dim, and Install opens the browser-specific steps. One card shows at a time.
+
+Every ordinary modal uses the [shared content-fitting rule](controls.md#modal-content-fitting): its actual title, close control, body rows and actions determine its size, with 16px clear padding on every side. The pale steel `ui-settings-card` frame has an ink border, no title bar, an ink title and an ink close X where closing is allowed. Text remains at its normal size. Settings rows have no box: a dslate icon, ink label and switch or compact action form a measured group, and the complete 48px row responds.
 
 - Pause button: a disc 33px across (an ink edge, a 2px cream ring and a navy face, the ring white and 1px thicker and the face a step lighter while pressed), with two pause bars and no label, centred at 24,24 as drawn (35x35 frame, top-left 7,7), its edge 8px in from the game view's top and left. Every control stays inside the view across; Use, Jump and the move hint sit at the screen's bottom, so on a screen taller than 2:1 they move into the bar below, with Jump's ring 8px in from the view's right and 20px up from the bottom, and no drawn edge closer than 8px to the edge it is placed against. It is a touch control: hidden on desktop and while a dialogue box is open. Its press area is the drawn frame grown by the rect rule above.
 
-| Card     | Rect           | Title    | Rows (y)                                                                       | Below the rows                             |
-| -------- | -------------- | -------- | ------------------------------------------------------------------------------ | ------------------------------------------ |
-| Pause    | 176,88,368,236 | Paused   | buttons 352x48 at x 184: Resume 136 (primary), Settings 188, Back to title 240 |                                            |
-| Settings | 176,88,368,236 | Settings | Move controls 136, Action buttons 188, Install 240 (if installable)            | build label centred on x 360, origin y 296 |
-| Steps    | 176,88,368,160 | Install  | none: two steps at y 144 and 196                                               |                                            |
+| Card     | Title    | Contents                                                                        |
+| -------- | -------- | ------------------------------------------------------------------------------- |
+| Pause    | Paused   | Resume, Settings and Back to title buttons                                      |
+| Settings | Settings | Move controls and Action buttons rows; Install only when available; build label |
+| Steps    | Install  | Two browser-specific instruction steps                                          |
 
-- Buttons on a card come in two styles of the same shape, both nine-slices (16x28, margins 2,4,2,6) drawn at any size with an ink label that sinks 2px while pressed: `ui-button-primary` (a dslate face on a navy lip, white label) for the card's main action, first on the card, and `ui-button` (a grey face on a slate lip, ink label, one step darker than the card) for the rest. Neither has an outline, as on dog-walker-game.
-- Settings card without Install: 368x184, the build label at origin y 244.
-- Move controls and Action buttons rows: two independent toggles, the left hint and the right buttons (Use and Jump), both Shown by default; hiding the hint hides only its drawing. Each row has its icon at 198,y+16 (`icon-move-controls`, `icon-touch-controls`), and `ui-switch` (32x16) at 496,y+16: the knob right with a tick on green when on, left with a cross on slate when off.
-- Install row: its icon at 198,256 and a secondary button (`ui-button`, 72x28) at 452,250 whose label the game centres in it, at most 56 wide. The whole row presses it.
-- Build label: dslate in `font-body`, centred on x 360, for example "v0.0.1 · dev".
-- Keyboard focus: `ui-focus`, a nine-slice ring (margins 4) drawn 4px outside the focused element on every side, at (x-4, y-4, w+8, h+8): a 2px yellow band between 1px ink lines, so it holds 3:1 on the card, the rows, the buttons and the dim. It rings the focused element's face: a settings row (the Install row included), Resume, Start, an answer button, a nav button or the close X (round its 24x24 mark).
-- Install steps: each step is a 16x16 glyph at x 198 and up to two lines of text at x 228 (20px pitch, at most 296 wide). Step 1 shows the iOS Share glyph or the browser-menu glyph, whichever the browser uses; step 2 the install glyph.
+- Buttons: `ui-button-primary` has a dslate face on a navy lip with a white label; `ui-button` has a grey face on a slate lip with an ink label. Both keep their 16x28 nine-slice shape and margins 2,4,2,6. Labels sink 2px while pressed. Equal actions share a width measured from their content, with the standard padding and gaps.
+- Settings rows: `icon-move-controls` and `icon-touch-controls` remain 16x16; `ui-switch` remains 32x16. Its knob is right with a tick on green when on, left with a cross on slate when off. Rows align their icon, label and switch within the fitted content column. Hiding a control hides only its drawing.
+- Install row: its 16x16 icon and compact secondary action form one full-height interactive row. Removing Install also removes its row and gap before the build label; no blank slot remains.
+- Build label: dslate in `font-body`, centred within the fitted card and included in its measured content.
+- Keyboard focus: `ui-focus`, with nine-slice margins 4, stays 4px outside the focused element on every side. Its 2px yellow band between ink lines remains visible on the card, rows, buttons and dim. Focus follows each fitted row, button or close control.
+- Install steps: each uses a 16x16 glyph and up to two lines of text at the existing font size. The first shows Share or the browser-menu glyph; the second shows the install glyph. Fit the frame to the actual wrapped steps and close control instead of a shared modal canvas.
 
 ## Map
 
@@ -285,8 +288,8 @@ The map presents the six V1 zone destinations on a cool pastel overview. `art/to
 
 Selecting a zone with only one unlocked stage enters that stage directly. With more than one unlocked stage, the picker reuses the standard modal card and controls, with no new asset shapes.
 
-- Frame: `ui-settings-card` at 176,88,368,176. The zone heading is centred at x360, origin y96, in ink, with the standard 24x24 close X at 510,94.
-- Rows: stage buttons at 184,136,352,48 and 184,188,352,48. The latest reached available stage uses `ui-button-primary` and white text; the other uses `ui-button` and ink text. Labels use `font-body` at 2x, centred with the standard button-label inset.
+- Frame: content-fitted `ui-settings-card`, centred in the view, with the zone heading and 24x24 close X included in its measured header. Apply the shared 16px outer padding.
+- Rows: two standard 48px stage actions stacked with the shared gap and equal content-fitted widths. The latest reached available stage uses `ui-button-primary` and white text; the other uses `ui-button` and ink text. Labels use `font-body` at 2x, centred with the standard button-label inset.
 - Return: close, back and outside taps close the picker and return to the map. No extra Back button repeats the close action. The normal modal input isolation and keyboard focus apply.
 - Unbuilt stages stay unavailable. A preview showing two unlocked choices illustrates the future state, not the current content's availability.
 
