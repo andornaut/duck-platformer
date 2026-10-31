@@ -544,6 +544,71 @@ City boundary is Blue cityscape, Zone 1 Stage 2. It reuses the street's existing
 - Play surfaces: `tiles-street` supplies the sidewalk ground, raised steps and safe ledges. Existing red contact-edge art remains distinct from safe white lips. Gameplay data owns the randomized layout, hazards and encounter placement.
 - Room: the existing street-door piece supplies the start room's entrance. There are no new story props, characters, palette colours or asset keys.
 
+## Apartment appearance pack
+
+`art/tools/apartment.py`, `art/tools/apartment_props.py` and `art/tools/apartment_wayfinding.py` provide reusable building blocks for Entrance and lobby and Climb to the apartment. The canonical dusty-rose `zone-red` ties together the entrance, restaurant, pool, spa, residential sections and exterior fire escapes. Wood, sage and muted blue are secondary accents. Saturated hazard red retains its separate meaning.
+
+The artwork separates geometry from appearance. `tiles-apartment` contains 42 cells of 12x12 in eight columns, exported as a 96x72 sheet. Its six families are `apartment-wood`, `apartment-tile`, `apartment-plaster`, `apartment-stone`, `apartment-brick` and `apartment-metal`. Each supplies the common `top`, `top-left`, `top-right`, `top-joint`, `face`, `face-left` and `face-right` suffixes. Data can mix these families across short floor sections while using the existing ground, raised, wall and ceiling structures. Standable tops retain the dark edge and white lip. Shared ledges, movers and red contact bands keep their existing geometry and skins.
+
+| Section     | Wall or facade             | Material cues    | Decorative cues                     |
+| ----------- | -------------------------- | ---------------- | ----------------------------------- |
+| Exterior    | apartment-facade           | Brick and metal  | Existing fire-escape railing        |
+| Lobby       | apartment-wall-lobby       | Wood and plaster | Desk, sofa and plant                |
+| Pool        | apartment-wall-pool        | Tile and stone   | Water panel and bench               |
+| Residential | apartment-wall-residential | Wood and plaster | Shelf and existing room furnishings |
+| Restaurant  | apartment-wall-restaurant  | Wood and tile    | Counter and booth                   |
+| Spa         | apartment-wall-spa         | Tile and plaster | Folding screen and bench            |
+
+Short wall pieces belong to each section, rather than repeating one indoor wall over an entire stage. Leave exterior sections open to the sky, far city and middle-distance silhouettes. Whole-stage atmosphere may repeat with sky factors 0,0; far factors 0.15,0.05; middle factors 0.4,0.15. Wall panels, facades, props, doors and stairwell markers stay on the gameplay plane at factors 1,1 and align through placement data to their local floor. All new backdrop metadata uses a bottom-left anchor and default bottom y 720; this default does not prescribe world placement.
+
+| Backdrop                   | Size    | Repeat | Plane                |
+| -------------------------- | ------- | ------ | -------------------- |
+| apartment-exterior-mid     | 720x720 | x      | Middle distance      |
+| apartment-facade           | 48x180  | x      | Gameplay, decorative |
+| apartment-far              | 720x720 | x      | Far distance         |
+| apartment-sky              | 48x720  | x      | Fixed sky            |
+| apartment-wall-lobby       | 48x144  | x      | Gameplay, decorative |
+| apartment-wall-pool        | 48x144  | x      | Gameplay, decorative |
+| apartment-wall-residential | 48x144  | x      | Gameplay, decorative |
+| apartment-wall-restaurant  | 48x144  | x      | Gameplay, decorative |
+| apartment-wall-spa         | 48x144  | x      | Gameplay, decorative |
+
+| Prop                         | Size  | Repeat |
+| ---------------------------- | ----- | ------ |
+| apartment-lobby-desk         | 96x48 | none   |
+| apartment-lobby-plant        | 36x60 | none   |
+| apartment-lobby-sofa         | 96x48 | none   |
+| apartment-pool-bench         | 72x36 | none   |
+| apartment-pool-water         | 96x24 | x      |
+| apartment-residential-shelf  | 72x96 | none   |
+| apartment-restaurant-booth   | 72x48 | none   |
+| apartment-restaurant-counter | 96x48 | none   |
+| apartment-room-door          | 48x72 | none   |
+| apartment-spa-bench          | 72x36 | none   |
+| apartment-spa-screen         | 72x96 | none   |
+| apartment-stairwell          | 48x72 | none   |
+| apartment-stairwell-down     | 48x72 | none   |
+
+The marked stairwells and optional room door share a 48x72 canvas at the duck's scale. The stairwells' ascending or descending silhouettes and white directional arrows on dark signs identify the reversible main route. `apartment-stairwell` is the up marker; `apartment-stairwell-down` is the down marker. The optional room door uses warm framing and a handle without an up arrow. These images contain no input prompt or text; the runtime owns their interaction. The approved stair trigger activates when walked into. It is distinct from an optional room entrance.
+
+Props are decorative, with no collision, continuous white safe lip or hazard band. Place actual platforms independently using the common structures. Pool water does not imply lethal contact; only an explicitly marked red hazard does. Room scenery contains no foreground friendly animals, people or new story details. The existing ferret story sprite and portrait remain available; his obstacle skin does not decide the friendship's outcome.
+
+### Ferret obstacle skin
+
+`art/tools/ferret_antagonist.py` draws `ferret-antagonist`, a compact encounter skin for the familiar patrol and charge pattern. It retains the champagne coat, small wedge head, plum stovepipe hat, red band and bow tie, and warm brown legs and tail. The original 64x80 story sprite and dialogue portrait remain unchanged. Costume accents do not replace the shared red terrain hazard markings, and the enemy has no red outline.
+
+The frame is 48x48, bottom-centre anchor 24,48, with constant contact box x 2, y 2, width 44, height 46. All visible poses fit this box, including mirrored versions. Every state remains lethal; this is a regular obstacle using the existing generic behaviour graph. Gameplay owns movement, warning and recovery durations.
+
+| Tag    | Art cycle               | Pose                       |
+| ------ | ----------------------- | -------------------------- |
+| crouch | Two frames, 140ms each  | Preparation for the charge |
+| idle   | Two frames, 400ms each  | Quiet standing             |
+| rest   | Two frames, 400ms each  | Recovery pause             |
+| rush   | Four frames, 80ms each  | Committed charge           |
+| walk   | Four frames, 120ms each | Patrol steps               |
+
+All tags loop, with `once: []`. These are art playback defaults, not gameplay state durations. There is no boss-specific visual system or new ending artwork.
+
 ## Countryside material pack
 
 Farmland and River crossing use the countryside destination's muted straw primary, `zone-yellow`. `art/tools/countryside.py` supplies appearance bindings for the same terrain roles and structures used by the other zones. It adds no collision rules or obstacle behaviours.
@@ -765,5 +830,5 @@ Backdrops repeat in x at widths that divide 720, so chunk seams never show; prop
 
 ## Remaining for the first build
 
-- The ferret's later traps, each carrying his badge, and the hazards of the floors above.
-- The zones after Zone 1, reached across the map's forks.
+- Any further encounter-specific animation or trap artwork requires an approved behaviour and asset contract.
+- Runtime placement and integration of the apartment appearance pack remain with the stage implementation.

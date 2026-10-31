@@ -49,6 +49,18 @@
       "once": []
     },
     {
+      "key": "ferret-antagonist",
+      "png": "sprites/ferret-antagonist.png",
+      "json": "sprites/ferret-antagonist.json",
+      "once": [],
+      "hitbox": {
+        "x": 2,
+        "y": 2,
+        "width": 44,
+        "height": 46
+      }
+    },
+    {
       "key": "ferret-trap-snap",
       "png": "sprites/ferret-trap-snap.png",
       "json": "sprites/ferret-trap-snap.json",
@@ -571,6 +583,11 @@
   ],
   "tilesets": [
     {
+      "key": "tiles-apartment",
+      "png": "tilesets/tiles-apartment.png",
+      "json": "tilesets/tiles-apartment.json"
+    },
+    {
       "key": "tiles-countryside",
       "png": "tilesets/tiles-countryside.png",
       "json": "tilesets/tiles-countryside.json"
@@ -612,6 +629,204 @@
     }
   ],
   "backdrops": [
+    {
+      "key": "apartment-exterior-mid",
+      "png": "backdrops/apartment-exterior-mid.png",
+      "width": 720,
+      "height": 720,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "x"
+    },
+    {
+      "key": "apartment-facade",
+      "png": "backdrops/apartment-facade.png",
+      "width": 48,
+      "height": 180,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "x"
+    },
+    {
+      "key": "apartment-far",
+      "png": "backdrops/apartment-far.png",
+      "width": 720,
+      "height": 720,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "x"
+    },
+    {
+      "key": "apartment-lobby-desk",
+      "png": "backdrops/apartment-lobby-desk.png",
+      "width": 96,
+      "height": 48,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "none"
+    },
+    {
+      "key": "apartment-lobby-plant",
+      "png": "backdrops/apartment-lobby-plant.png",
+      "width": 36,
+      "height": 60,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "none"
+    },
+    {
+      "key": "apartment-lobby-sofa",
+      "png": "backdrops/apartment-lobby-sofa.png",
+      "width": 96,
+      "height": 48,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "none"
+    },
+    {
+      "key": "apartment-pool-bench",
+      "png": "backdrops/apartment-pool-bench.png",
+      "width": 72,
+      "height": 36,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "none"
+    },
+    {
+      "key": "apartment-pool-water",
+      "png": "backdrops/apartment-pool-water.png",
+      "width": 96,
+      "height": 24,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "x"
+    },
+    {
+      "key": "apartment-residential-shelf",
+      "png": "backdrops/apartment-residential-shelf.png",
+      "width": 72,
+      "height": 96,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "none"
+    },
+    {
+      "key": "apartment-restaurant-booth",
+      "png": "backdrops/apartment-restaurant-booth.png",
+      "width": 72,
+      "height": 48,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "none"
+    },
+    {
+      "key": "apartment-restaurant-counter",
+      "png": "backdrops/apartment-restaurant-counter.png",
+      "width": 96,
+      "height": 48,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "none"
+    },
+    {
+      "key": "apartment-room-door",
+      "png": "backdrops/apartment-room-door.png",
+      "width": 48,
+      "height": 72,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "none"
+    },
+    {
+      "key": "apartment-sky",
+      "png": "backdrops/apartment-sky.png",
+      "width": 48,
+      "height": 720,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "x"
+    },
+    {
+      "key": "apartment-spa-bench",
+      "png": "backdrops/apartment-spa-bench.png",
+      "width": 72,
+      "height": 36,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "none"
+    },
+    {
+      "key": "apartment-spa-screen",
+      "png": "backdrops/apartment-spa-screen.png",
+      "width": 72,
+      "height": 96,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "none"
+    },
+    {
+      "key": "apartment-stairwell",
+      "png": "backdrops/apartment-stairwell.png",
+      "width": 48,
+      "height": 72,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "none"
+    },
+    {
+      "key": "apartment-stairwell-down",
+      "png": "backdrops/apartment-stairwell-down.png",
+      "width": 48,
+      "height": 72,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "none"
+    },
+    {
+      "key": "apartment-wall-lobby",
+      "png": "backdrops/apartment-wall-lobby.png",
+      "width": 48,
+      "height": 144,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "x"
+    },
+    {
+      "key": "apartment-wall-pool",
+      "png": "backdrops/apartment-wall-pool.png",
+      "width": 48,
+      "height": 144,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "x"
+    },
+    {
+      "key": "apartment-wall-residential",
+      "png": "backdrops/apartment-wall-residential.png",
+      "width": 48,
+      "height": 144,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "x"
+    },
+    {
+      "key": "apartment-wall-restaurant",
+      "png": "backdrops/apartment-wall-restaurant.png",
+      "width": 48,
+      "height": 144,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "x"
+    },
+    {
+      "key": "apartment-wall-spa",
+      "png": "backdrops/apartment-wall-spa.png",
+      "width": 48,
+      "height": 144,
+      "anchor": "bottom-left",
+      "y": 720,
+      "repeat": "x"
+    },
     {
       "key": "cab",
       "png": "backdrops/cab.png",
