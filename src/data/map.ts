@@ -44,7 +44,9 @@ const DESTINATIONS: readonly MapDestination[] = [
 // Only built stages have playable keys; unbuilt catalogue entries remain unavailable.
 const BUILT_STAGES: Readonly<Record<string, string>> = {
   "city-boundary": "city-boundary",
+  farmland: "farmland",
   "freight-terminal": "freight-terminal",
+  "river-crossing": "river-crossing",
   street: "street",
   "warehouse-district": "warehouse-district",
 };

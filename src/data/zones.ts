@@ -289,6 +289,16 @@ export const RECIPES: Readonly<Record<string, ZoneRecipe>> = {
     start: "city-boundary-start",
     theme: "city-boundary",
   },
+  farmland: {
+    difficulty: ZONE_DIFFICULTY,
+    doors: [{ count: 1, room: "test" }],
+    events: [],
+    finish: "farmland-finish",
+    length: { max: 480, min: 360 },
+    spawnCol: 2,
+    start: "farmland-start",
+    theme: "farmland",
+  },
   "freight-terminal": {
     difficulty: ZONE_DIFFICULTY,
     doors: [{ count: 1, room: "test" }],
@@ -310,6 +320,16 @@ export const RECIPES: Readonly<Record<string, ZoneRecipe>> = {
     spawnCol: 2,
     start: "park-start",
     theme: "park",
+  },
+  "river-crossing": {
+    difficulty: ZONE_DIFFICULTY,
+    doors: [{ count: 1, room: "test" }],
+    events: [],
+    finish: "river-crossing-finish",
+    length: { max: 480, min: 360 },
+    spawnCol: 2,
+    start: "river-crossing-start",
+    theme: "river-crossing",
   },
   street: {
     difficulty: ZONE_DIFFICULTY,
