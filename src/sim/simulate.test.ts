@@ -112,3 +112,57 @@ describe("bounded stage simulation", () => {
     },
   );
 });
+
+describe("simulation sections and diagnostics", () => {
+  it("caps per-attempt death events and reports dropped diagnostics", () => {
+    const run = simulateStage(DUCK, prepareStage(fixture([])), {
+      ...config,
+      maxRetries: 2,
+      maxSteps: 500,
+      trace: { maxEvents: 2, stallTicks: 10 },
+    });
+    expect(run.trace.map(({ attempt, kind }) => [attempt, kind])).toEqual([
+      [0, "death"],
+      [1, "death"],
+    ]);
+    expect(run.traceDropped).toBe(1);
+    expect(run.trace[0]).toMatchObject({ deathReason: "fall", input: { move: 1 } });
+  });
+  it("diagnoses blocked movement without recording unbounded per-tick samples", () => {
+    const stage = prepareStage(fixture([...ground, { height: 120, width: 12, x: 90, y: 0 }]));
+    const run = simulateStage(DUCK, stage, { ...config, trace: { maxEvents: 3, stallTicks: 10 } });
+    expect(run.trace).toHaveLength(3);
+    expect(run.trace.every(({ kind, x, y }) => kind === "stall" && x === 66 && y === 84)).toBe(
+      true,
+    );
+    expect(run.traceDropped).toBeGreaterThan(0);
+  });
+  it("starts from a validated section and rejects an embedded or out-of-bounds start", () => {
+    const stage = prepareStage(fixture(ground));
+    const start = { area: "main", x: 400, y: 84 };
+    const run = simulateStage(DUCK, stage, { ...config, maxSteps: 1, start });
+    expect(run.start).toEqual(start);
+    expect(run.progress).toBeGreaterThan(0.4);
+    for (const invalid of [
+      { ...start, y: 110 },
+      { ...start, x: -1 },
+    ]) {
+      expect(() => simulateStage(DUCK, stage, { ...config, start: invalid })).toThrow();
+    }
+  });
+  it("resolves independent seeds and uses the layout seed only for preparation", () => {
+    const requested: number[] = [];
+    const stage = prepareStage(fixture(ground));
+    const report = simulateBatch(
+      DUCK,
+      (seed) => {
+        requested.push(seed);
+        return stage;
+      },
+      { ...config, maxSteps: 1, seeds: { bot: 23, layout: 19, motion: 29 } },
+      [3],
+    );
+    expect(requested).toEqual([19]);
+    expect(report.runs[0]?.seeds).toEqual({ bot: 23, layout: 19, motion: 29 });
+  });
+});

@@ -11,8 +11,24 @@ import {
   prepareSensors,
   type SensorIndex,
 } from "./bot";
+import { type TraceEvent, traceEvent, type TraceOptions } from "./diagnostics";
+import { layoutAtStart, type SimulationStart, validateStart } from "./start";
+
+export interface SimulationSeeds {
+  readonly bot: number;
+  readonly layout: number;
+  readonly motion: number;
+}
+export interface SimulationProvenance {
+  readonly build?: string;
+  readonly data?: string;
+}
 
 export interface SimulationConfig {
+  readonly provenance?: SimulationProvenance;
+  readonly seeds?: Partial<SimulationSeeds>;
+  readonly start?: SimulationStart;
+  readonly trace?: TraceOptions;
   readonly maxRetries: number;
   readonly maxSteps: number;
   readonly policy: BotPolicy;
@@ -21,6 +37,11 @@ export interface SimulationConfig {
 }
 export type RunStatus = "cleared" | "retry-budget" | "step-budget" | "turned-back";
 export interface RunResult {
+  readonly config: SimulationConfig;
+  readonly seeds: SimulationSeeds;
+  readonly start: { readonly area: string; readonly x: number; readonly y: number };
+  readonly trace: readonly TraceEvent[];
+  readonly traceDropped: number;
   readonly activeSeconds: number;
   readonly deaths: number;
   readonly deathsByReason: Readonly<Record<ZoneDeath["reason"], number>>;
@@ -51,6 +72,14 @@ export function prepareStage(layout: ZoneLayout): PreparedStage {
   };
 }
 
+export function simulationSeeds(config: Pick<SimulationConfig, "seed" | "seeds">): SimulationSeeds {
+  return {
+    bot: config.seeds?.bot ?? config.seed,
+    layout: config.seeds?.layout ?? config.seed,
+    motion: config.seeds?.motion ?? config.seed,
+  };
+}
+
 export function validateSimulation(config: SimulationConfig): void {
   for (const [name, value, min] of [
     ["maxSteps", config.maxSteps, 1],
@@ -62,6 +91,24 @@ export function validateSimulation(config: SimulationConfig): void {
     if (!Number.isSafeInteger(value) || value < min) {
       throw new Error(`Invalid ${name}`);
     }
+  }
+  for (const value of Object.values(simulationSeeds(config))) {
+    if (!Number.isSafeInteger(value) || value < 0 || value > 0xffffffff) {
+      throw new Error("Invalid simulation seed");
+    }
+  }
+  if (
+    config.trace &&
+    (!Number.isSafeInteger(config.trace.maxEvents) ||
+      config.trace.maxEvents < 1 ||
+      config.trace.maxEvents > 10000 ||
+      !Number.isSafeInteger(config.trace.stallTicks) ||
+      config.trace.stallTicks < 1 ||
+      (config.trace.sampleEveryTicks !== undefined &&
+        (!Number.isSafeInteger(config.trace.sampleEveryTicks) ||
+          config.trace.sampleEveryTicks < 1)))
+  ) {
+    throw new Error("Invalid trace budget");
   }
   if (
     config.seed > 0xffffffff ||
@@ -90,9 +137,20 @@ export function simulateStage(
 ): RunResult {
   validateSimulation(config);
   const started = performance.now();
-  const { layout, sensors } = stage;
-  let zone = startZone(tuning, layout, config.seed);
-  let bot = newBot(config.seed);
+  const { sensors } = stage;
+  const layout = layoutAtStart(tuning, stage.layout, config.start);
+  const seeds = simulationSeeds(config);
+  let zone = startZone(tuning, layout, seeds.motion);
+  if (config.start) {
+    validateStart(tuning, layout, zone);
+  }
+  const start = { area: zone.area, x: zone.duck.x, y: zone.duck.y };
+  let bot = newBot(seeds.bot);
+  const trace: TraceEvent[] = [];
+  let traceDropped = 0;
+  let attemptTick = 0;
+  let lastAdvance = 0;
+  let furthest = config.policy.move * zone.duck.x;
   const heard = new Set<number>();
   let previousArea = zone.area;
   let steps = 0;
@@ -124,6 +182,44 @@ export function simulateStage(
         : { jumpHeld: false, move: 0 as const, useHeld: false };
     zone = stepZone(tuning, layout, STEP_SECONDS, input, zone);
     steps++;
+    attemptTick++;
+    if (config.trace) {
+      if (config.policy.move * zone.duck.x > furthest + 1e-6) {
+        furthest = config.policy.move * zone.duck.x;
+        lastAdvance = attemptTick;
+      }
+      const stalled = input.move !== 0 && attemptTick - lastAdvance >= config.trace.stallTicks;
+      const sampled =
+        config.trace.sampleEveryTicks !== undefined &&
+        attemptTick % config.trace.sampleEveryTicks === 0;
+      if (zone.death || stalled || sampled) {
+        if (trace.length < config.trace.maxEvents) {
+          trace.push(
+            traceEvent(
+              tuning,
+              layout,
+              zone.death ? "death" : stalled ? "stall" : "sample",
+              steps,
+              attemptTick,
+              input,
+              zone,
+            ),
+          );
+        } else {
+          traceDropped++;
+          if (zone.death) {
+            const expendable = trace.findIndex((event) => event.kind !== "death");
+            if (expendable >= 0) {
+              trace.splice(expendable, 1);
+              trace.push(traceEvent(tuning, layout, "death", steps, attemptTick, input, zone));
+            }
+          }
+        }
+        if (stalled) {
+          lastAdvance = attemptTick;
+        }
+      }
+    }
     progress = Math.max(
       0,
       Math.min(1, (zone.duck.x + tuning.width - area.backX) / (area.exitX - area.backX)),
@@ -150,11 +246,15 @@ export function simulateStage(
       zone = retryZone(tuning, layout, zone);
       retries++;
       heard.clear();
-      bot = newBot(config.seed + retries);
+      bot = newBot((seeds.bot + retries) >>> 0);
+      attemptTick = 0;
+      lastAdvance = 0;
+      furthest = config.policy.move * zone.duck.x;
     }
   }
   return {
     activeSeconds: steps * STEP_SECONDS,
+    config,
     deaths: deathsByReason.crush + deathsByReason.fall + deathsByReason.hazard,
     deathsByReason,
     dialogues,
@@ -163,7 +263,11 @@ export function simulateStage(
     retries,
     runtimeMs: performance.now() - started,
     seed: config.seed,
+    seeds,
+    start,
     status,
     steps,
+    trace,
+    traceDropped,
   };
 }

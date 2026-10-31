@@ -1,0 +1,99 @@
+import type { DuckTuning, ZoneDeath, ZoneLayout } from "../data/types";
+import { contactBox } from "../rules/behaviour";
+import { duckBox } from "../rules/duck";
+import { overlaps } from "../rules/rect";
+import type { ZoneInput, ZoneState } from "../rules/zone";
+
+export interface TraceOptions {
+  readonly maxEvents: number;
+  readonly sampleEveryTicks?: number;
+  readonly stallTicks: number;
+}
+export interface TraceEvent {
+  readonly area: string;
+  readonly attempt: number;
+  readonly attemptTick: number;
+  readonly chunk: number | undefined;
+  readonly deathReason: ZoneDeath["reason"] | undefined;
+  readonly input: ZoneInput;
+  readonly kind: "death" | "sample" | "stall";
+  // An overlapping or nearest object is a diagnostic candidate, not proof of causation.
+  readonly object:
+    | {
+        readonly character: string;
+        readonly distance: number;
+        readonly facing: -1 | 1 | undefined;
+        readonly index: number;
+        readonly overlapsDuck: boolean;
+        readonly stateKey: string | undefined;
+        readonly x: number;
+        readonly y: number;
+      }
+    | undefined;
+  readonly tick: number;
+  readonly x: number;
+  readonly y: number;
+}
+
+export function traceEvent(
+  tuning: DuckTuning,
+  layout: ZoneLayout,
+  kind: TraceEvent["kind"],
+  tick: number,
+  attemptTick: number,
+  input: ZoneInput,
+  zone: ZoneState,
+): TraceEvent {
+  const area = layout.areas[zone.area];
+  if (!area) {
+    throw new Error(`No area ${zone.area}`);
+  }
+  const box = duckBox(tuning, zone.duck);
+  let closest: TraceEvent["object"];
+  for (let index = 0; index < area.objects.length; index++) {
+    const object = area.objects[index];
+    if (!object || object.collision === "none") {
+      continue;
+    }
+    const at = zone.objects[index] ?? object.origin;
+    const behaviour = zone.behaviours[index];
+    const rect = contactBox(object, at, behaviour?.facing ?? 1);
+    const distance = Math.hypot(
+      Math.max(0, rect.x - box.x - box.width, box.x - rect.x - rect.width),
+      Math.max(0, rect.y - box.y - box.height, box.y - rect.y - rect.height),
+    );
+    const touching = overlaps(box, rect);
+    if (
+      closest === undefined ||
+      (touching && !closest.overlapsDuck) ||
+      (touching === closest.overlapsDuck && distance < closest.distance)
+    ) {
+      closest = {
+        character: object.character,
+        distance,
+        facing: behaviour?.facing,
+        index,
+        overlapsDuck: touching,
+        stateKey: behaviour?.stateKey,
+        x: at.x,
+        y: at.y,
+      };
+    }
+  }
+  const chunk = area.chunks.findIndex(
+    ({ width, x }) => box.x + box.width / 2 >= x && box.x + box.width / 2 < x + width,
+  );
+  return {
+    area: zone.area,
+    attempt: zone.attempt,
+    attemptTick,
+    chunk: chunk < 0 ? undefined : chunk,
+    deathReason: zone.death?.reason,
+    input,
+    kind,
+    object: closest,
+    tick,
+    x: zone.duck.x,
+    y: zone.duck.y,
+  };
+}

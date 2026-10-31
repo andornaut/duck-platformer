@@ -4,6 +4,7 @@ import {
   type RunResult,
   simulateStage,
   type SimulationConfig,
+  simulationSeeds,
 } from "./simulate";
 
 export interface BatchResult {
@@ -35,7 +36,10 @@ export function simulateBatch(
     throw new Error("A batch needs explicit seeds");
   }
   const started = performance.now();
-  const runs = seeds.map((seed) => simulateStage(tuning, prepare(seed), { ...config, seed }));
+  const runs = seeds.map((seed) => {
+    const runConfig = { ...config, seed };
+    return simulateStage(tuning, prepare(simulationSeeds(runConfig).layout), runConfig);
+  });
   const sum = (read: (run: RunResult) => number) =>
     runs.reduce((total, run) => total + read(run), 0);
   const steps = sum((run) => run.steps);
