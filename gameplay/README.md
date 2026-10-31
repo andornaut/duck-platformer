@@ -29,7 +29,7 @@ Gameplay owns the rulebook and the values and content in the data value files (e
 
 The target is about 30 minutes across six themed map destinations (zones), each with two playable levels, on a linear route back to the shared apartment. The ordered zones and agreed story are in [`design.md`](design.md). The first level combines the depot and streets of the blue cityscape in a fixed tutorial; every later level is randomized. The park remains a prototype, not the final second level. Branching routes and boss encounters are deferred to Next.
 
-The current change implements the six-destination V1 map and conditional level selection. Only Parcel depot and streets, level key `street`, is built; the other catalogued levels and zones are visibly unavailable. A zone with one unlocked playable level enters directly; more than one opens a choice modal with the latest available level as the highlighted default and the earlier level secondary. Clearing a level returns to the map; completing a first level unlocks its second when built, and completing the second opens the next zone. Replays preserve unlocks. The park is a debug prototype outside the V1 map. Current code still calls an individual level `ZonePlan`.
+The six-destination V1 map has two built levels in Blue cityscape: Parcel depot and streets, level key `street`, and City boundary, level key `city-boundary`. The other catalogued levels and zones are visibly unavailable. A zone with one unlocked playable level enters directly; more than one opens a choice modal with the latest available level as the highlighted default and the earlier level secondary. Clearing a level returns to the map; completing a first level unlocks its second when built, and completing the second opens the next zone. Replays preserve unlocks. The park is a debug prototype outside the V1 map. Current code still calls an individual level `ZonePlan`.
 
 ## Targets
 
@@ -43,7 +43,7 @@ Each target is a band, not a point, that the simulator reports per level and ski
 
 ## Remaining for the first build
 
-**Current implementation scope:** the death and retry flow, persistent active level time, six-zone map and conditional level-choice modal, paired with their runtime changes. Only the first level and its dog encounter are built. The remaining V1 levels are planned content; the finish celebration belongs only to Apartment building's final level.
+**Current implementation scope:** playable City boundary as Blue cityscape's second level, using the existing map, level-choice modal and unlock flow. Completing Parcel depot and streets unlocks City boundary; both remain replayable. Existing catalogue and progress IDs and the save format are unchanged. The remaining zones are planned content; the finish celebration belongs only to Apartment building's final level.
 
 Open questions:
 

@@ -34,7 +34,7 @@ A landscape platformer: a duck travels back to the apartment he shared with his 
 
 ## Rules
 
-A level is the individual playable layout, currently represented by `ZonePlan` in code. A zone is the themed map destination containing two levels. The V1 map has six themed destinations with two catalogued levels each. Only Parcel depot and streets is built; the other levels remain visibly unavailable. The map and selection rules below are the approved scope for the current implementation change.
+A level is the individual playable layout, currently represented by `ZonePlan` in code. A zone is the themed map destination containing two levels. The V1 map has six themed destinations with two catalogued levels each. Blue cityscape's Parcel depot and streets and City boundary are built; all other V1 levels remain visibly unavailable. The map and selection rules below are the approved scope for the current implementation change.
 
 ### Screen and controls
 
@@ -69,14 +69,14 @@ A level is the individual playable layout, currently represented by `ZonePlan` i
 
 ### Map
 
-- **Availability:** all six V1 zones appear in route order. Each has two catalogued levels. Only the first zone's Parcel depot and streets is currently built, using level key `street`. Unbuilt zones and levels are visibly unavailable and cannot be entered. The park is a debug prototype outside the V1 map
+- **Availability:** all six V1 zones appear in route order. Each has two catalogued levels. The first zone's Parcel depot and streets, using level key `street`, and City boundary, using level key `city-boundary`, are built. Unbuilt zones and levels are visibly unavailable and cannot be entered. The park is a debug prototype outside the V1 map
 - **Backtracking:** unlocked built levels remain available for replay. Replaying an earlier level never removes later unlocks
 - **Between levels:** clearing a level returns to the map on its zone. Completed levels and opened paths are marked
 - **Buttons:** Back to title is on the left; Continue is on the right and is the default keyboard action
 - **Celebration:** only clearing Apartment building's second level, Climb to the apartment, shows the finish celebration, including on replay. Clearing the depot does not finish V1. Continue returns to the map; Restart asks first, as on the start screen
 - **Checkpoints:** each level begins at its own checkpoint, with unlimited retries. Walking left from either level checkpoint returns to the map
 - **Forks:** branching routes are deferred to Next. V1 is linear and has no laps
-- **Progression:** the first level is unlocked from the start. Completing a zone's first level unlocks its second level when built; completing its second level opens the next zone. Unbuilt content remains unavailable
+- **Progression:** the first level is unlocked from the start. Completing Parcel depot and streets unlocks City boundary. Completing a zone's first level unlocks its second level when built; completing its second level opens the next zone. Unbuilt content remains unavailable
 - **Selection:** selecting a zone with one unlocked playable level enters that level directly. A zone with more than one unlocked playable level opens a level-choice modal. The latest available level is highlighted and is the default; the earlier level is secondary. Unbuilt or locked levels are visibly unavailable. Persisted unlocks survive replays
 - **Walk:** the duck stands on a zone. Left and Right move through available zones, and Continue selects the zone he stands on
 
@@ -133,7 +133,7 @@ Everything in a level except its terrain is placed in data through archetypes, c
 
 ### V1 route
 
-The target play time is about 30 minutes across six themed zones of two levels, in this order. Only Parcel depot and streets and its first dog encounter are built; the six-zone map and conditional level-selection flow are the current implementation scope, not additional built levels. Its depot and streets form one fixed tutorial; every later level, including the final climb, is randomized.
+The target play time is about 30 minutes across six themed zones of two levels, in this order. Both Blue cityscape levels are built; the later zones remain unavailable. The six-zone map and conditional level-selection flow preserve unlocked levels for replay. Its depot and streets form one fixed tutorial; every later level, including the final climb, is randomized.
 
 | Zone                 | First level              | Second level           |
 | -------------------- | ------------------------ | ---------------------- |
@@ -148,9 +148,16 @@ The target play time is about 30 minutes across six themed zones of two levels, 
 
 - **Layout:** the fixed tutorial combines the parcel depot and streets of the blue cityscape in one area. The duck starts beside his opened parcel on safe ground, then crosses a three-tile step, a full-jump block and a short red-edged gap before entering the streets. A later low ceiling over a one-tile step requires a short press
 - **Rooms:** the street door leads to the prototype test room
-- **Route:** the main path continues right toward the city boundary; the upper street ledges are an optional detour. The city boundary is planned as the zone's second level and is not built by this change
+- **Route:** the main path continues right toward the city boundary; the upper street ledges are an optional detour. City boundary is the zone's second level and unlocks when this tutorial is completed
 
 The park is a prototype for randomized levels, not V1's second level. The identities of the ferret's friends beyond the first dog and the later encounters along the route are undecided.
+
+### City boundary
+
+- **Encounter:** the finish uses the same dog behaviour and timing as the first level, with refuge ledges on either side of its patrol. The dog is active without a dialogue scene; there is no new introduction
+- **Layout:** the second Blue cityscape level is randomized from a fixed start, seeded middle chunks and a fixed finish. It uses the existing street backgrounds and sidewalk terrain, with steps, full-jump rises, red-edged gaps and low-ceiling short-jump challenges inside the shared difficulty band. The finish has sparse facades and an open outward view
+- **Replay:** entering from the map draws a fresh assembly seed; retries keep that layout. Completing Parcel depot and streets unlocks this level, and the existing level-choice modal keeps both available for replay
+- **Rooms:** one door in the fixed start leads to the existing prototype test room
 
 ### First dog encounter
 
@@ -159,7 +166,7 @@ The park is a prototype for randomized levels, not V1's second level. The identi
 - **Contact:** the dog is always lethal on contact, including during crouch and rest, with a thin red contact outline
 - **Cycle:** patrol, crouch, rush, rest, then patrol again. A nearby duck on the same ground triggers the crouch; the rush direction locks when crouching starts, and the rush stays inside the patrol area
 - **Dialogue:** the first introduction has three lines: the dog says the ferret asked him to stop the duck; the duck says he is going home; the dog tells him to get past. The player-facing wording lives in the text data files, with Skip available
-- **Timing:** the dog uses the same timing across both planned levels of the first zone; their layouts vary. The first encounter is in the first level
+- **Timing:** the dog uses the same timing across both levels of the first zone; their layouts vary. The first encounter is in the first level
 
 ### Rooms
 
