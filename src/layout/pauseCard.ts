@@ -1,35 +1,33 @@
-import type { Point, Rect } from "../data/types";
-import { TEXT_BUTTON } from "./buttonLabel";
-import { CARD_FRAME, cardRect } from "./cardFrame";
+import { SCREEN } from "../data/screen";
+import type { GameText, Point, Rect } from "../data/types";
+import {
+  cardActions,
+  cardActionsSize,
+  type CardFonts,
+  cardTextSize,
+  contentCardLayout,
+} from "./contentCard";
 import { hitAround } from "./hitAreas";
 import { CONTROL_EDGE } from "./playView";
-import { type LabelledButton, labelledButton } from "./restartCard";
 
-// Art's pause card (art/README.md, Pause, settings and install cards), in base pixels: every
-// card's frame, title and close X (cardFrame.ts), then three buttons of one shape, stacked from
-// its first row down, the settings rows' size and pitch: Resume, the primary, then Settings and
-// Back to title. Each button's label is centred across it, labelDy below its top and 2 lower
-// while pressed. Each button's press area, hit, is its drawn button grown by hitAreas.ts's rule.
-const BUTTON = { ...TEXT_BUTTON, gap: 4, width: 352, x: 184 } as const;
-// The button at index down the stack.
-const button = (index: number): LabelledButton =>
-  labelledButton(
-    {
-      height: BUTTON.height,
-      width: BUTTON.width,
-      x: BUTTON.x,
-      y: CARD_FRAME.firstRowY + index * (BUTTON.height + BUTTON.gap),
-    },
-    BUTTON.labelDy,
+// Pause actions share the width of their widest label.
+export function pauseCard(fonts: CardFonts, words: GameText["pause"]) {
+  const labels = [words.resume, words.settings, words.home];
+  const layout = contentCardLayout(
+    { ...SCREEN, x: 0, y: 0 },
+    [{ key: "actions", ...cardActionsSize(fonts.body, "stack", labels) }],
+    { close: true, titleWidth: cardTextSize(fonts.title, words.title).width },
   );
-
-export const PAUSE_CARD = {
-  card: cardRect(236),
-  close: CARD_FRAME.close,
-  home: button(2),
-  resume: button(0),
-  settings: button(1),
-} as const;
+  const [resume, settings, home] = cardActions(fonts.body, "stack", layout.groups.actions!, labels);
+  return {
+    card: layout.card,
+    close: layout.close!,
+    home: home!,
+    resume: resume!,
+    settings: settings!,
+    title: layout.title!,
+  };
+}
 
 // Art's pause button in the game's top-left corner: where its frame is drawn, and the area a
 // press must land in, its frame grown by hitAreas.ts's rule. Art draws the disc 1px inside its
@@ -43,4 +41,4 @@ export const PAUSE_BUTTON = {
 } as const;
 
 // Text on the card is set at this scale: art's fonts are native at 8px and drawn at 2x.
-export const CARD_TEXT_SCALE = 2;
+export { CARD_TEXT_SCALE } from "./cardFrame";

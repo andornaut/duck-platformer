@@ -1,38 +1,36 @@
-import type { Rect } from "../data/types";
-import { TEXT_BUTTON } from "./buttonLabel";
-import { CARD_AT, CARD_FRAME, CARD_WIDTH } from "./cardFrame";
-import { labelledButton } from "./restartCard";
+import type { BitmapFont } from "@andornaut/game-kit/text/bitmapFont";
 
-const ACTION_INSET = 8;
-const STACK_GAP = 4;
-export const DIALOGUE_CHOICE = {
-  labelRoom: CARD_WIDTH - 2 * ACTION_INSET - 2 * TEXT_BUTTON.inset,
-  prompt: { lines: 3, pitch: 20, scale: 2, width: CARD_WIDTH - 2 * CARD_FRAME.padding },
-} as const;
+import { SCREEN } from "../data/screen";
+import { dialogueLines } from "../dialogue/conversation";
+import {
+  CARD_CONTENT,
+  cardActions,
+  cardActionsSize,
+  cardTextSize,
+  contentCardLayout,
+} from "./contentCard";
 
-// A required card has no close control. Its shared-height buttons follow the wrapped prompt.
-export function dialogueChoiceLayout(promptLines: number, ids: readonly string[]) {
-  const question = { x: CARD_AT.x + CARD_FRAME.padding, y: CARD_FRAME.titleY };
-  const first = Math.max(
-    CARD_FRAME.firstRowY,
-    question.y + promptLines * DIALOGUE_CHOICE.prompt.pitch + TEXT_BUTTON.gap,
-  );
-  const buttons = ids.map((id, index) => ({
-    id,
-    layout: labelledButton(
-      {
-        height: TEXT_BUTTON.height,
-        width: CARD_WIDTH - 2 * ACTION_INSET,
-        x: CARD_AT.x + ACTION_INSET,
-        y: first + index * (TEXT_BUTTON.height + STACK_GAP),
-      },
-      TEXT_BUTTON.labelDy,
-    ),
-  }));
-  const bottom = first + ids.length * (TEXT_BUTTON.height + STACK_GAP) - STACK_GAP + ACTION_INSET;
+export function dialogueChoiceLayout(
+  font: BitmapFont,
+  prompt: string,
+  options: readonly { readonly id: string; readonly label: string }[],
+) {
+  const text = dialogueLines(
+    font,
+    { lines: 3, scale: 2 },
+    SCREEN.width - 2 * CARD_CONTENT.padding,
+    prompt,
+  ).join("\n");
+  const labels = options.map(({ label }) => label);
+  const layout = contentCardLayout({ ...SCREEN, x: 0, y: 0 }, [
+    { key: "question", ...cardTextSize(font, text) },
+    { key: "actions", ...cardActionsSize(font, "stack", labels) },
+  ]);
+  const buttons = cardActions(font, "stack", layout.groups.actions!, labels);
   return {
-    buttons,
-    card: { height: bottom - CARD_AT.y, width: CARD_WIDTH, ...CARD_AT } satisfies Rect,
-    question,
+    buttons: options.map(({ id }, index) => ({ id, layout: buttons[index]! })),
+    card: layout.card,
+    question: layout.groups.question!,
+    text,
   };
 }

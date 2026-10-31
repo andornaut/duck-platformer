@@ -8,10 +8,12 @@ import resumeSheet from "../../public/art/sprites/ui-resume.json";
 import { SCREEN } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
+import { CARD_FONTS } from "../testing/cardFonts";
 import { centredLabel, PLAY_MARK } from "./buttonLabel";
 import { HIT_RULE, pressedArea } from "./hitAreas";
 import { CARD_TEXT_SCALE } from "./pauseCard";
-import { CELEBRATION, type LabelledButton, RESTART_CARD } from "./restartCard";
+import { CELEBRATION, type LabelledButton, restartCard } from "./restartCard";
+const RESTART_CARD = restartCard(CARD_FONTS, TEXT.restart);
 
 const FONT = parseBitmapFont(fontBody);
 const SCREEN_RECT: Rect = { ...SCREEN, x: 0, y: 0 };

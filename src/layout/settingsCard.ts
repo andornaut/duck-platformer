@@ -1,67 +1,125 @@
-import type { Point, Rect } from "../data/types";
-import { CARD_FRAME, cardRect } from "./cardFrame";
+import { SCREEN } from "../data/screen";
+import type { GameText, Point, Rect } from "../data/types";
+import {
+  CARD_CONTENT,
+  cardActionsSize,
+  type CardFonts,
+  cardTextSize,
+  contentCardLayout,
+} from "./contentCard";
 import { hitAround } from "./hitAreas";
+import { labelledButton } from "./labelledButton";
 
-// Art's settings card (art/README.md, Pause, settings and install cards), in base pixels: every
-// card's frame, title and close X (cardFrame.ts), then the Move controls and Action buttons rows and,
-// while the game can be installed, the Install row, over the build label. Each row is its own
-// hit area, with no box drawn. Each label's point is its text's top-left. A setting row shows its
-// state with art's switch, toggle; the Install button's label is centred across the button at
-// labelY, or pressedLabelY while pressed, in at most room pixels; the build label is centred on
-// centreX.
-const ROW = { height: 48, width: 352, x: 184 } as const;
-// Each row is this far below the one before.
-const ROW_PITCH = 52;
-const INSTALL_ROW: Rect = { ...ROW, y: CARD_FRAME.firstRowY + 2 * ROW_PITCH };
+const ICON = 16;
+const SWITCH = { height: 16, width: 32 };
+const ROW_HEIGHT = 48;
 
-// A setting row at y: its icon, label and switch, each placed from the row's top.
-function settingRow(y: number) {
-  const row: Rect = { ...ROW, y };
+export function settingsCard(
+  fonts: CardFonts,
+  words: GameText["settings"],
+  build: string,
+  hasInstall: boolean,
+) {
+  const actionWidth = cardActionsSize(fonts.body, "row", [words.installButton]).width;
+  const labelWidth = (label: string) => cardTextSize(fonts.body, label).width;
+  const widths = [words.moveControls, words.actionButtons].map(
+    (text) => ICON + CARD_CONTENT.gap + labelWidth(text) + CARD_CONTENT.gap + SWITCH.width,
+  );
+  if (hasInstall) {
+    widths.push(
+      ICON + CARD_CONTENT.gap + labelWidth(words.install) + CARD_CONTENT.gap + actionWidth,
+    );
+  }
+  const rowWidth = Math.max(...widths);
+  const rows = hasInstall ? 3 : 2;
+  const layout = contentCardLayout(
+    { ...SCREEN, x: 0, y: 0 },
+    [
+      {
+        height: rows * ROW_HEIGHT + (rows - 1) * CARD_CONTENT.rowGap,
+        key: "rows",
+        width: rowWidth,
+      },
+      { key: "build", ...cardTextSize(fonts.body, build) },
+    ],
+    { close: true, titleWidth: cardTextSize(fonts.title, words.title).width },
+  );
+  const group = layout.groups.rows!;
+  const row = (index: number, text: string) => {
+    const rect = {
+      height: ROW_HEIGHT,
+      width: rowWidth,
+      x: group.x,
+      y: group.y + index * (ROW_HEIGHT + CARD_CONTENT.rowGap),
+    };
+    return {
+      hit: hitAround(rect),
+      icon: { x: rect.x, y: rect.y + (ROW_HEIGHT - ICON) / 2 },
+      label: {
+        height: CARD_CONTENT.lineHeight,
+        width: labelWidth(text),
+        x: rect.x + ICON + CARD_CONTENT.gap,
+        y: rect.y + (ROW_HEIGHT - CARD_CONTENT.lineHeight) / 2,
+      },
+      row: rect,
+      toggle: { x: rect.x + rowWidth - SWITCH.width, y: rect.y + (ROW_HEIGHT - SWITCH.height) / 2 },
+    };
+  };
+  const install = row(2, words.install);
+  const button = labelledButton(
+    {
+      height: ROW_HEIGHT,
+      width: actionWidth,
+      x: install.row.x + rowWidth - actionWidth,
+      y: install.row.y,
+    },
+    13,
+  );
   return {
-    hit: hitAround(row),
-    icon: { x: 198, y: y + 16 } satisfies Point,
-    label: { x: 228, y: y + 15 } satisfies Point,
-    row,
-    toggle: { x: 496, y: y + 16 } satisfies Point,
+    actionButtons: row(1, words.actionButtons),
+    buildLabel: { ...layout.groups.build!, centreX: layout.card.x + layout.card.width / 2 },
+    card: layout.card,
+    close: layout.close!,
+    install: {
+      ...install,
+      button: button.button,
+      buttonLabel: { pressedY: button.pressedLabelY, room: actionWidth - 32, y: button.labelY },
+    },
+    moveControls: row(0, words.moveControls),
+    title: layout.title!,
   };
 }
 
-// Each row's press area, hit, is the row grown by hitAreas.ts's rule.
-export const SETTINGS_CARD = {
-  actionButtons: settingRow(CARD_FRAME.firstRowY + ROW_PITCH),
-  buildLabel: { centreX: 360, y: 296, yWithoutInstall: 244 },
-  card: cardRect(236),
-  cardWithoutInstall: cardRect(184),
-  close: CARD_FRAME.close,
-  install: {
-    button: { height: 28, width: 72, x: 452, y: 250 } satisfies Rect,
-    buttonLabel: { pressedY: 255, room: 56, y: 253 },
-    hit: hitAround(INSTALL_ROW),
-    icon: { x: 198, y: 256 } satisfies Point,
-    label: { x: 228, y: 255 } satisfies Point,
-    row: INSTALL_ROW,
-  },
-  moveControls: settingRow(CARD_FRAME.firstRowY),
-} as const;
-
-// Art's install steps card, over the settings for a browser that installs only from its own
-// menu: the same frame, title and close X, and two steps, each a glyph and up to lines lines of
-// text linePitch apart, at most room wide. The first step's glyph is the browser's button; the
-// second's is the install glyph.
-export const STEPS_CARD = {
-  card: cardRect(160),
-  close: CARD_FRAME.close,
-  linePitch: 20,
-  lines: 2,
-  room: 296,
-  steps: [0, 1].map((step) => {
-    const y = CARD_FRAME.firstRowY + step * ROW_PITCH;
-    return {
-      glyph: { x: 198, y: y + 9 } satisfies Point,
-      text: { x: 228, y: y + 8 } satisfies Point,
-    };
-  }),
-} as const;
+export function stepsCard(fonts: CardFonts, title: string, texts: readonly string[]) {
+  const widths = texts.map((text) => cardTextSize(fonts.body, text).width);
+  const sizes = texts.map((text) => cardTextSize(fonts.body, text));
+  const layout = contentCardLayout(
+    { ...SCREEN, x: 0, y: 0 },
+    sizes.map((size, index) => ({
+      height: Math.max(ICON, size.height),
+      key: String(index),
+      width: ICON + CARD_CONTENT.gap + size.width,
+    })),
+    { close: true, titleWidth: cardTextSize(fonts.title, title).width },
+  );
+  return {
+    card: layout.card,
+    close: layout.close!,
+    steps: texts.map((_, index) => {
+      const rect = layout.groups[String(index)]!;
+      return {
+        glyph: { x: rect.x, y: rect.y + (rect.height - ICON) / 2 } satisfies Point,
+        text: {
+          height: rect.height,
+          width: widths[index]!,
+          x: rect.x + ICON + CARD_CONTENT.gap,
+          y: rect.y,
+        } satisfies Rect,
+      };
+    }),
+    title: layout.title!,
+  };
+}
 
 // Art's keyboard focus ring, a 9-slice drawn this far outside the focused row, button or close X
 // on every side.

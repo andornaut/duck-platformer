@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 
 import { SCREEN } from "../data/screen";
 import type { Rect } from "../data/types";
+import { TEXT_BUTTON } from "./buttonLabel";
 import { type PressArea, pressedArea } from "./hitAreas";
-import { PAUSE_CARD } from "./pauseCard";
 import type { LabelledButton } from "./restartCard";
 import { type IconButtonLayout, startScreenLayout } from "./startScreen";
 
@@ -69,7 +69,7 @@ describe.each([
         below: button.y >= layout.nav.y + layout.nav.height,
         height: button.height,
         onScreen: inside(SCREEN_RECT, button),
-      }).toEqual({ below: true, height: PAUSE_CARD.resume.button.height, onScreen: true });
+      }).toEqual({ below: true, height: TEXT_BUTTON.height, onScreen: true });
     },
   );
 

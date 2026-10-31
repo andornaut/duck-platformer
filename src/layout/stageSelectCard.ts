@@ -1,23 +1,22 @@
-import { TEXT_BUTTON } from "./buttonLabel";
-import { CARD_AT, CARD_FRAME, CARD_WIDTH, cardRect } from "./cardFrame";
-import { labelledButton } from "./restartCard";
+import { SCREEN } from "../data/screen";
+import {
+  cardActions,
+  cardActionsSize,
+  type CardFonts,
+  cardTextSize,
+  contentCardLayout,
+} from "./contentCard";
 
-const ACTION_INSET = 8;
-const STACK_GAP = 4;
-
-// The two-stage picker uses the standard closeable card, one row per catalogue stage.
-export const STAGE_SELECT_CARD = {
-  buttons: [0, 1].map((index) =>
-    labelledButton(
-      {
-        height: TEXT_BUTTON.height,
-        width: CARD_WIDTH - 2 * ACTION_INSET,
-        x: CARD_AT.x + ACTION_INSET,
-        y: CARD_FRAME.firstRowY + index * (TEXT_BUTTON.height + STACK_GAP),
-      },
-      TEXT_BUTTON.labelDy,
-    ),
-  ),
-  card: cardRect(176),
-  close: CARD_FRAME.close,
-} as const;
+export function stageSelectCard(fonts: CardFonts, title: string, labels: readonly string[]) {
+  const layout = contentCardLayout(
+    { ...SCREEN, x: 0, y: 0 },
+    [{ key: "actions", ...cardActionsSize(fonts.body, "stack", labels) }],
+    { close: true, titleWidth: cardTextSize(fonts.title, title).width },
+  );
+  return {
+    buttons: cardActions(fonts.body, "stack", layout.groups.actions!, labels),
+    card: layout.card,
+    close: layout.close!,
+    title: layout.title!,
+  };
+}

@@ -1,39 +1,36 @@
-import type { Point, Rect } from "../data/types";
+import { SCREEN } from "../data/screen";
+import type { GameText, Point } from "../data/types";
 import { CARD_FRAME, cardRect } from "./cardFrame";
-import { hitAround } from "./hitAreas";
+import {
+  cardActions,
+  cardActionsSize,
+  type CardFonts,
+  cardTextSize,
+  contentCardLayout,
+} from "./contentCard";
+import { labelledButton } from "./labelledButton";
+export { type LabelledButton, labelledButton } from "./labelledButton";
 
-// A button with a label: where it is drawn, its press area, and its label's origin y, at rest and
-// pressed (the label sinks with the pressed face).
-export interface LabelledButton {
-  readonly button: Rect;
-  readonly hit: Rect;
-  readonly labelY: number;
-  readonly pressedLabelY: number;
-}
-
-// A pressed button's label sinks this far.
-const PRESSED_SINK = 2;
-
-// A labelled button drawn at button, its label's origin labelDy below its top.
-export function labelledButton(button: Rect, labelDy: number): LabelledButton {
+export function restartCard(fonts: CardFonts, words: GameText["restart"]) {
+  const labels = [words.cancel, words.restart];
+  const layout = contentCardLayout(
+    { ...SCREEN, x: 0, y: 0 },
+    [
+      { key: "question", ...cardTextSize(fonts.body, words.question) },
+      { key: "actions", ...cardActionsSize(fonts.body, "row", labels) },
+    ],
+    { close: false, titleWidth: cardTextSize(fonts.title, words.title).width },
+  );
+  const [cancel, restart] = cardActions(fonts.body, "row", layout.groups.actions!, labels);
   return {
-    button,
-    hit: hitAround(button),
-    labelY: button.y + labelDy,
-    pressedLabelY: button.y + labelDy + PRESSED_SINK,
+    cancel: cancel!,
+    card: layout.card,
+    question: layout.groups.question!,
+    restart: restart!,
+    room: layout.groups.question!.width,
+    title: layout.title!,
   };
 }
-
-// The card that asks before Restart clears progress, in base pixels, from the settings card's
-// parts: the card and its title, the question in body text at most room wide, then Cancel and
-// Restart side by side, each art's `ui-button` stretched, its label centred across it.
-export const RESTART_CARD = {
-  cancel: labelledButton({ height: 36, width: 144, x: 208, y: CARD_FRAME.firstRowY + 60 }, 7),
-  card: cardRect(168),
-  question: { x: 198, y: CARD_FRAME.firstRowY + 4 } satisfies Point,
-  restart: labelledButton({ height: 36, width: 144, x: 368, y: CARD_FRAME.firstRowY + 60 }, 7),
-  room: 324,
-} as const;
 
 // PLACEHOLDER: the celebration screen after the last zone, until art draws one: the settings
 // card's parts over ink, its title, the message in body text at most room wide, then Restart (art's

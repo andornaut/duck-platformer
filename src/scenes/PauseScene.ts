@@ -6,7 +6,7 @@ import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
 import { FRAME_TURN } from "../input/frameTurn";
 import { type PressArea, pressedArea } from "../layout/hitAreas";
-import { PAUSE_BUTTON, PAUSE_CARD } from "../layout/pauseCard";
+import { PAUSE_BUTTON, pauseCard } from "../layout/pauseCard";
 import { shifted, topShift } from "../layout/playView";
 import { type CardAction, cardBackAction, cardKeyAction, cardTurnAction } from "../pause/cardInput";
 import { focusKeyAction, stepFocus } from "../pause/focusInput";
@@ -15,16 +15,18 @@ import { setTouchSettingShown, type TouchSetting, touchSettings } from "../setti
 import { dimColour, type Palette } from "../view/dim";
 import {
   addCardText,
-  addCardTitle,
+  addCardTextIn,
   addSlice,
   addTextButton,
   captureTab,
+  cardFonts,
   palette,
   paletteColour,
   pressTextButton,
   PRIMARY_BUTTON,
   ringFocus,
   type TextButton,
+  TITLE_FONT,
 } from "./cardParts";
 import { catchModalTaps } from "./modalTaps";
 import { canvasRect, fitCanvasCamera, fitPlayCamera, playPoint } from "./playCamera";
@@ -61,6 +63,7 @@ const BUTTONS: readonly CardButton[] = ["resume", "settings", "home"];
 // Settings opens SettingsScene's card over the same dim in the pause card's place, and passes it
 // the keys and back until it closes; Back to title ends the zone for the start screen.
 export class PauseScene extends Scene implements SettingsOpener {
+  private layout!: ReturnType<typeof pauseCard>;
   private card!: GameObjects.Container;
   // The control the keyboard's focus is on, and art's ring round it.
   private focus: CardControl | undefined;
@@ -99,6 +102,7 @@ export class PauseScene extends Scene implements SettingsOpener {
     const toCards = (object: GameObjects.GameObject) => canvasCamera.ignore(object);
     this.events.on(Scenes.Events.ADDED_TO_SCENE, toCards);
     this.events.once("shutdown", () => this.events.off(Scenes.Events.ADDED_TO_SCENE, toCards));
+    this.layout = pauseCard(cardFonts(this), TEXT.pause);
     this.card = this.drawCard();
     this.showCard(false);
     this.watchPresses();
@@ -106,7 +110,11 @@ export class PauseScene extends Scene implements SettingsOpener {
       close: () => this.close(),
       covered: () =>
         this.state === "open"
-          ? [PAUSE_CARD.card, PAUSE_CARD.close.hit, ...BUTTONS.map((name) => PAUSE_CARD[name].hit)]
+          ? [
+              this.layout.card,
+              this.layout.close.hit,
+              ...BUTTONS.map((name) => this.layout[name].hit),
+            ]
           : undefined,
     });
     this.watchKeys();
@@ -243,10 +251,10 @@ export class PauseScene extends Scene implements SettingsOpener {
   // What the focus ring surrounds: a button, or the close X itself.
   private focusedRect(control: CardControl): Rect {
     if (control === "close") {
-      const { at } = PAUSE_CARD.close;
+      const { at } = this.layout.close;
       return { height: this.closeX.height, width: this.closeX.width, ...at };
     }
-    return PAUSE_CARD[control].button;
+    return this.layout[control].button;
   }
 
   // The pause button shows on a touch screen while a zone plays and the card is closed. The map
@@ -275,17 +283,17 @@ export class PauseScene extends Scene implements SettingsOpener {
   }
 
   private drawCard(): GameObjects.Container {
-    const { card, close } = PAUSE_CARD;
+    const { card, close } = this.layout;
     const words = TEXT.pause;
     const objects: GameObjects.GameObject[] = [
       this.slice("ui-settings-card", card),
-      addCardTitle(this, card, words.title),
+      addCardTextIn(this, TITLE_FONT, this.layout.title, words.title, paletteColour(this, "ink")),
     ];
     this.closeX = this.add.sprite(close.at.x, close.at.y, "ui-close").setOrigin(0);
     this.buttons = {
-      home: addTextButton(this, PAUSE_CARD.home, words.home),
-      resume: addTextButton(this, PAUSE_CARD.resume, words.resume, { style: PRIMARY_BUTTON }),
-      settings: addTextButton(this, PAUSE_CARD.settings, words.settings),
+      home: addTextButton(this, this.layout.home, words.home),
+      resume: addTextButton(this, this.layout.resume, words.resume, { style: PRIMARY_BUTTON }),
+      settings: addTextButton(this, this.layout.settings, words.settings),
     };
     this.setPressed(undefined);
     return this.add.container(0, 0, [
@@ -326,14 +334,14 @@ export class PauseScene extends Scene implements SettingsOpener {
     if (this.playCovered()) {
       return undefined;
     }
-    const { close } = PAUSE_CARD;
+    const { close } = this.layout;
     const areas: PressArea<Control>[] =
       this.state === "open"
         ? [
             { art: close.art, hit: close.hit, key: "close" },
             ...BUTTONS.map((key) => ({
-              art: PAUSE_CARD[key].button,
-              hit: PAUSE_CARD[key].hit,
+              art: this.layout[key].button,
+              hit: this.layout[key].hit,
               key,
             })),
           ]

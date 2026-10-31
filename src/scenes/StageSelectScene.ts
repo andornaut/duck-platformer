@@ -13,20 +13,23 @@ import { stageSelectKey } from "../input/stageSelectInput";
 import { TEXT_BUTTON } from "../layout/buttonLabel";
 import { type PressArea, pressedArea } from "../layout/hitAreas";
 import { CARD_TEXT_SCALE } from "../layout/pauseCard";
-import { STAGE_SELECT_CARD } from "../layout/stageSelectCard";
+import { stageSelectCard } from "../layout/stageSelectCard";
 import { openMap } from "../rules/map";
 import { destinationOf, destinationSelection } from "../rules/mapDestinations";
 import { savedMap } from "../save";
 import {
-  addCardTitle,
+  addCardTextIn,
   addSlice,
   addTextButton,
   BODY_FONT,
   captureTab,
+  cardFonts,
+  paletteColour,
   pressTextButton,
   PRIMARY_BUTTON,
   ringFocus,
   type TextButton,
+  TITLE_FONT,
 } from "./cardParts";
 import { catchModalTaps } from "./modalTaps";
 import { fitPlayCamera, playPoint } from "./playCamera";
@@ -45,6 +48,7 @@ const PLANS = new Set([...Object.keys(ZONES), ...Object.keys(RECIPES)]);
 // Only reached stages appear here. The latest reached stage is primary; selecting or cancelling
 // never changes completed stages. Outside taps, back and Escape return to the map.
 export class StageSelectScene extends Scene {
+  private layout!: ReturnType<typeof stageSelectCard>;
   private stages: readonly string[] = [];
   private latest = "";
   private destination = "";
@@ -79,15 +83,20 @@ export class StageSelectScene extends Scene {
   }
   create(): void {
     fitPlayCamera(this);
-    addSlice(this, "ui-settings-card", STAGE_SELECT_CARD.card);
     const title = TEXT.map.zones[this.destination];
     if (title === undefined) {
       throw new Error(`No destination label ${this.destination}`);
     }
-    addCardTitle(this, STAGE_SELECT_CARD.card, title);
+    this.layout = stageSelectCard(
+      cardFonts(this),
+      title,
+      this.stages.map((id) => TEXT.map.stages[id]!),
+    );
+    addSlice(this, "ui-settings-card", this.layout.card);
+    addCardTextIn(this, TITLE_FONT, this.layout.title, title, paletteColour(this, "ink"));
     const font = phaserBitmapFont(this.cache.bitmapFont.get(BODY_FONT).data as PhaserFontData);
     this.stages.forEach((id, index) => {
-      const layout = STAGE_SELECT_CARD.buttons[index];
+      const layout = this.layout.buttons[index];
       const label = TEXT.map.stages[id];
       if (
         !layout ||
@@ -102,15 +111,15 @@ export class StageSelectScene extends Scene {
       );
     });
     this.closeX = this.add
-      .sprite(STAGE_SELECT_CARD.close.at.x, STAGE_SELECT_CARD.close.at.y, "ui-close")
+      .sprite(this.layout.close.at.x, this.layout.close.at.y, "ui-close")
       .setOrigin(0);
     this.render();
     catchModalTaps(this, this.cameras.main, {
       close: () => this.back(),
       covered: () => [
-        STAGE_SELECT_CARD.card,
-        STAGE_SELECT_CARD.close.hit,
-        ...this.stages.map((_, index) => STAGE_SELECT_CARD.buttons[index]!.hit),
+        this.layout.card,
+        this.layout.close.hit,
+        ...this.stages.map((_, index) => this.layout.buttons[index]!.hit),
       ],
     });
     this.watchInput();
@@ -134,7 +143,7 @@ export class StageSelectScene extends Scene {
     );
     const at =
       this.focus === "close"
-        ? STAGE_SELECT_CARD.close.art
+        ? this.layout.close.art
         : this.focus === undefined
           ? undefined
           : this.buttons.get(this.focus)?.layout.button;
@@ -143,11 +152,11 @@ export class StageSelectScene extends Scene {
   private targetAt(pointer: Input.Pointer): Target | undefined {
     const areas: PressArea<string>[] = [
       ...this.stages.map((key, index) => ({
-        art: STAGE_SELECT_CARD.buttons[index]!.button,
-        hit: STAGE_SELECT_CARD.buttons[index]!.hit,
+        art: this.layout.buttons[index]!.button,
+        hit: this.layout.buttons[index]!.hit,
         key,
       })),
-      { art: STAGE_SELECT_CARD.close.art, hit: STAGE_SELECT_CARD.close.hit, key: "close" },
+      { art: this.layout.close.art, hit: this.layout.close.hit, key: "close" },
     ];
     const key = pressedArea(areas, playPoint(this, pointer));
     return key === undefined

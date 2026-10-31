@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { HIT_RULE, hitAround, hitMargin, pressArea, pressedArea } from "./hitAreas";
-import { PAUSE_BUTTON, PAUSE_CARD } from "./pauseCard";
+import { PAUSE_BUTTON } from "./pauseCard";
 import { startScreenLayout } from "./startScreen";
 import { TOUCH_CONTROLS } from "./touchControls";
 
@@ -23,7 +23,7 @@ describe("hitAround", () => {
   it.each<[string, { height: number; width: number }, { height: number; width: number }]>([
     ["the pause button, a 35 px frame", PAUSE_BUTTON.art, { height: 52.5, width: 52.5 }],
     ["a 16 px icon, at the least size", square(16), { height: 48, width: 48 }],
-    ["a pause card button", PAUSE_CARD.resume.button, { height: 72, width: 376 }],
+    ["a standard action button", { height: 48, width: 192 }, { height: 72, width: 216 }],
     ["Start", start.button, { height: 72, width: 216 }],
     ["a nav icon button", startScreenLayout(true, false).settings.art, { height: 54, width: 54 }],
   ])("grows %s", (_, art, size) => {

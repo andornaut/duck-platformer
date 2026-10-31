@@ -6,7 +6,6 @@ import {
   phaserBitmapFont,
   type PhaserFontData,
 } from "@andornaut/game-kit/text/phaser/phaserBitmapFont";
-import { bitmapMeasure, fittingText } from "@andornaut/game-kit/text/textFit";
 import { type GameObjects, type Input, Scene } from "phaser";
 
 import { TEXT } from "../data/text";
@@ -14,11 +13,20 @@ import type { Rect } from "../data/types";
 import { centredLabel } from "../layout/buttonLabel";
 import { type PressArea, pressedArea } from "../layout/hitAreas";
 import { CARD_TEXT_SCALE } from "../layout/pauseCard";
-import { focusRingAround, SETTINGS_CARD, STEPS_CARD } from "../layout/settingsCard";
+import { focusRingAround, settingsCard, stepsCard } from "../layout/settingsCard";
 import { focusKeyAction, stepFocus } from "../pause/focusInput";
 import { installOffer } from "../pwa/installOffer";
 import { TOUCH_SETTINGS, type TouchSetting, touchSettingShown } from "../settings/touchControls";
-import { addCardText, addCardTitle, addSlice, BODY_FONT, BUTTON, paletteColour } from "./cardParts";
+import {
+  addCardText,
+  addCardTextIn,
+  addSlice,
+  BODY_FONT,
+  BUTTON,
+  cardFonts,
+  paletteColour,
+  TITLE_FONT,
+} from "./cardParts";
 import { catchModalTaps } from "./modalTaps";
 import { fitPlayCamera, playPoint } from "./playCamera";
 
@@ -66,6 +74,8 @@ const STEPS_GLYPHS: Readonly<Record<MenuInstallBrowser, string>> = {
 // focus through the controls; Enter and Space press the focused one. The opener passes this
 // scene its keys and back.
 export class SettingsScene extends Scene {
+  private layout!: ReturnType<typeof settingsCard>;
+  private stepsLayout!: ReturnType<typeof stepsCard>;
   private card!: GameObjects.Container;
   private closeX!: GameObjects.Sprite;
   private focus: Target | undefined;
@@ -131,15 +141,14 @@ export class SettingsScene extends Scene {
   // settings card, with or without its Install row, and each control it shows.
   private covered(): Rect[] {
     if (this.steps !== undefined) {
-      return [STEPS_CARD.card, STEPS_CARD.close.hit];
+      return [this.stepsLayout.card, this.stepsLayout.close.hit];
     }
-    const card =
-      this.installButton === undefined ? SETTINGS_CARD.cardWithoutInstall : SETTINGS_CARD.card;
+    const card = this.layout.card;
     const hits: Record<Target, Rect> = {
-      actionButtons: SETTINGS_CARD.actionButtons.hit,
-      close: SETTINGS_CARD.close.hit,
-      install: SETTINGS_CARD.install.hit,
-      moveControls: SETTINGS_CARD.moveControls.hit,
+      actionButtons: this.layout.actionButtons.hit,
+      close: this.layout.close.hit,
+      install: this.layout.install.hit,
+      moveControls: this.layout.moveControls.hit,
     };
     return [card, ...this.targets().map((target) => hits[target])];
   }
@@ -198,23 +207,22 @@ export class SettingsScene extends Scene {
 
   private openSteps(browser: MenuInstallBrowser): void {
     const words = TEXT.settings.installSteps;
-    const { card, close, linePitch, lines, room, steps } = STEPS_CARD;
-    const ink = this.colour("ink");
-    const style = { lines, scale: CARD_TEXT_SCALE };
-    const measure = bitmapMeasure(this.font());
-    const texts = [words[browser].first, words[browser].second];
-    const stepObjects = steps.flatMap(({ glyph, text: at }, index) => [
-      this.add.image(glyph.x, glyph.y, index === 0 ? STEPS_GLYPHS[browser] : "icon-install"),
-      ...fittingText(style, measure, room, texts[index] ?? "").lines.map((line, row) =>
-        addCardText(this, BODY_FONT, { x: at.x, y: at.y + row * linePitch }, line, ink),
-      ),
+    this.stepsLayout = stepsCard(cardFonts(this), words.title, [
+      words[browser].first,
+      words[browser].second,
     ]);
-    for (const image of stepObjects) {
-      image.setOrigin(0);
-    }
+    const { close, steps } = this.stepsLayout;
+    const ink = this.colour("ink");
+    const texts = [words[browser].first, words[browser].second];
+    const stepObjects = steps.flatMap(({ glyph, text }, index) => [
+      this.add
+        .image(glyph.x, glyph.y, index === 0 ? STEPS_GLYPHS[browser] : "icon-install")
+        .setOrigin(0),
+      addCardTextIn(this, BODY_FONT, text, texts[index]!, ink),
+    ]);
     this.steps = this.add.container(0, 0, [
-      addSlice(this, "ui-settings-card", STEPS_CARD.card),
-      addCardTitle(this, card, words.title),
+      addSlice(this, "ui-settings-card", this.stepsLayout.card),
+      addCardTextIn(this, TITLE_FONT, this.stepsLayout.title, words.title, ink),
       this.add.sprite(close.at.x, close.at.y, "ui-close").setOrigin(0),
       ...stepObjects,
     ]);
@@ -233,19 +241,20 @@ export class SettingsScene extends Scene {
   }
 
   private drawCard(installRow: boolean): GameObjects.Container {
-    const { buildLabel, card, cardWithoutInstall, close, install } = SETTINGS_CARD;
+    this.layout = settingsCard(cardFonts(this), TEXT.settings, BUILD_LABEL, installRow);
+    const { buildLabel, card, close, install } = this.layout;
     const words = TEXT.settings;
     const ink = this.colour("ink");
-    const frame = installRow ? card : cardWithoutInstall;
+    const frame = card;
     const objects: GameObjects.GameObject[] = [
       addSlice(this, "ui-settings-card", frame),
-      addCardTitle(this, frame, words.title),
+      addCardTextIn(this, TITLE_FONT, this.layout.title, words.title, ink),
     ];
     this.settingRows = new Map();
     for (const setting of TOUCH_SETTINGS) {
-      const { icon, label, toggle } = SETTINGS_CARD[setting];
+      const { icon, label, toggle } = this.layout[setting];
       const drawn: SettingRow = {
-        label: addCardText(this, BODY_FONT, label, words[setting], ink),
+        label: addCardTextIn(this, BODY_FONT, label, words[setting], ink),
         toggle: this.add.sprite(toggle.x, toggle.y, "ui-switch"),
       };
       this.settingRows.set(setting, drawn);
@@ -261,7 +270,7 @@ export class SettingsScene extends Scene {
     this.installButtonLabel = undefined;
     this.installLabel = undefined;
     if (installRow) {
-      this.installLabel = addCardText(this, BODY_FONT, install.label, words.install, ink);
+      this.installLabel = addCardTextIn(this, BODY_FONT, install.label, words.install, ink);
       const frames = sheetTags(this.cache.json.get(BUTTON.art) as AsepriteSheet);
       const face = (tag: "normal" | "pressed") =>
         addSlice(this, BUTTON.art, install.button, frames.get(tag)?.[0]?.frame);
@@ -284,14 +293,7 @@ export class SettingsScene extends Scene {
         this.installButtonLabel,
       );
     }
-    const labelY = installRow ? buildLabel.y : buildLabel.yWithoutInstall;
-    const label = addCardText(
-      this,
-      BODY_FONT,
-      { x: buildLabel.centreX - Math.floor(this.inkWidth(BUILD_LABEL) / 2), y: labelY },
-      BUILD_LABEL,
-      this.colour("dslate"),
-    );
+    const label = addCardTextIn(this, BODY_FONT, buildLabel, BUILD_LABEL, this.colour("dslate"));
     objects.push(label);
     for (const object of objects) {
       (object as GameObjects.Image).setOrigin(0);
@@ -301,7 +303,7 @@ export class SettingsScene extends Scene {
 
   // Each control as the setting, the press and the focus leave it.
   private render(): void {
-    const { install } = SETTINGS_CARD;
+    const { install } = this.layout;
     const pressed = this.pressed;
     // A pressed row's label turns dslate, from ink.
     const label = (target: Target) => this.colour(pressed === target ? "dslate" : "ink");
@@ -329,20 +331,23 @@ export class SettingsScene extends Scene {
 
   // What the focus ring surrounds: a row, or the close X itself.
   private focusedRect(target: Target): Rect {
+    if (this.steps !== undefined) {
+      return this.stepsLayout.close.art;
+    }
     if (target === "close") {
-      const { x, y } = SETTINGS_CARD.close.at;
+      const { x, y } = this.layout.close.at;
       return { height: this.closeX.height, width: this.closeX.width, x, y };
     }
-    return SETTINGS_CARD[target].row;
+    return this.layout[target].row;
   }
 
   private targetAt(pointer: Input.Pointer): Target | undefined {
     const point = playPoint(this, pointer);
     if (this.steps !== undefined) {
-      const { close } = STEPS_CARD;
+      const { close } = this.stepsLayout;
       return pressedArea([{ art: close.art, hit: close.hit, key: "close" as const }], point);
     }
-    const { actionButtons, close, install, moveControls } = SETTINGS_CARD;
+    const { actionButtons, close, install, moveControls } = this.layout;
     const areas: Record<Target, PressArea<Target>> = {
       actionButtons: { art: actionButtons.row, hit: actionButtons.hit, key: "actionButtons" },
       close: { art: close.art, hit: close.hit, key: "close" },

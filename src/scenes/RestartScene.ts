@@ -2,19 +2,20 @@ import { type GameObjects, type Input, Scene } from "phaser";
 
 import { TEXT } from "../data/text";
 import { type PressArea, pressedArea } from "../layout/hitAreas";
-import { RESTART_CARD } from "../layout/restartCard";
+import { restartCard } from "../layout/restartCard";
 import { focusKeyAction, stepFocus } from "../pause/focusInput";
 import { clearProgress } from "../save";
 import {
-  addCardText,
-  addCardTitle,
+  addCardTextIn,
   addSlice,
   addTextButton,
   BODY_FONT,
+  cardFonts,
   paletteColour,
   pressTextButton,
   ringFocus,
   type TextButton,
+  TITLE_FONT,
 } from "./cardParts";
 import { catchModalTaps } from "./modalTaps";
 import { fitPlayCamera, playPoint } from "./playCamera";
@@ -42,6 +43,7 @@ const TARGETS: readonly Target[] = ["cancel", "restart"];
 // focus, and Enter and Space press the focused one. The opener passes this scene its keys and
 // back.
 export class RestartScene extends Scene {
+  private layout!: ReturnType<typeof restartCard>;
   private buttons!: Readonly<Record<Target, TextButton>>;
   private focus: Target | undefined;
   private focusRing: GameObjects.NineSlice | undefined;
@@ -62,19 +64,20 @@ export class RestartScene extends Scene {
 
   create(): void {
     fitPlayCamera(this);
-    const { card, question } = RESTART_CARD;
+    this.layout = restartCard(cardFonts(this), TEXT.restart);
+    const { card, question } = this.layout;
     const words = TEXT.restart;
     addSlice(this, "ui-settings-card", card);
-    addCardTitle(this, card, words.title);
-    addCardText(this, BODY_FONT, question, words.question, paletteColour(this, "ink"));
+    addCardTextIn(this, TITLE_FONT, this.layout.title, words.title, paletteColour(this, "ink"));
+    addCardTextIn(this, BODY_FONT, question, words.question, paletteColour(this, "ink"));
     this.buttons = {
-      cancel: addTextButton(this, RESTART_CARD.cancel, words.cancel),
-      restart: addTextButton(this, RESTART_CARD.restart, words.restart),
+      cancel: addTextButton(this, this.layout.cancel, words.cancel),
+      restart: addTextButton(this, this.layout.restart, words.restart),
     };
     this.render();
     catchModalTaps(this, this.cameras.main, {
       close: () => this.back(),
-      covered: () => [RESTART_CARD.card, ...TARGETS.map((target) => RESTART_CARD[target].hit)],
+      covered: () => [this.layout.card, ...TARGETS.map((target) => this.layout[target].hit)],
     });
     this.input.on("pointerdown", (pointer: Input.Pointer) => {
       this.pressed = this.targetAt(pointer);
@@ -127,8 +130,8 @@ export class RestartScene extends Scene {
 
   private targetAt(pointer: Input.Pointer): Target | undefined {
     const areas: PressArea<Target>[] = TARGETS.map((key) => ({
-      art: RESTART_CARD[key].button,
-      hit: RESTART_CARD[key].hit,
+      art: this.layout[key].button,
+      hit: this.layout[key].hit,
       key,
     }));
     return pressedArea(areas, playPoint(this, pointer));
@@ -142,7 +145,7 @@ export class RestartScene extends Scene {
     this.focusRing = ringFocus(
       this,
       this.focusRing,
-      this.focus === undefined ? undefined : RESTART_CARD[this.focus].button,
+      this.focus === undefined ? undefined : this.layout[this.focus].button,
     );
   }
 }

@@ -1,4 +1,3 @@
-import { inkWidth } from "@andornaut/game-kit/text/bitmapFont";
 import {
   phaserBitmapFont,
   type PhaserFontData,
@@ -11,13 +10,12 @@ import type { DialogueChoice } from "../data/types";
 import {
   dialogueChoice,
   dialogueChoiceKey,
-  dialogueLines,
   type ResolvedDialogueChoice,
 } from "../dialogue/conversation";
-import { DIALOGUE_CHOICE, dialogueChoiceLayout } from "../layout/dialogueChoice";
+import { dialogueChoiceLayout } from "../layout/dialogueChoice";
 import { type PressArea, pressedArea } from "../layout/hitAreas";
 import {
-  addCardText,
+  addCardTextIn,
   addSlice,
   addTextButton,
   BODY_FONT,
@@ -68,32 +66,17 @@ export class DialogueChoiceScene extends Scene {
   create(): void {
     fitPlayCamera(this);
     const font = phaserBitmapFont(this.cache.bitmapFont.get(BODY_FONT).data as PhaserFontData);
-    const prompt = DIALOGUE_CHOICE.prompt;
-    const lines = dialogueLines(font, prompt, prompt.width, this.choice.prompt);
-    this.layouts = dialogueChoiceLayout(
-      lines.length,
-      this.choice.options.map(({ id }) => id),
-    );
+    this.layouts = dialogueChoiceLayout(font, this.choice.prompt, this.choice.options);
     addSlice(this, "ui-settings-card", this.layouts.card);
-    lines.forEach((line, index) =>
-      addCardText(
-        this,
-        BODY_FONT,
-        {
-          x:
-            this.layouts.card.x +
-            (this.layouts.card.width - inkWidth(font, prompt.scale, line)) / 2,
-          y: this.layouts.question.y + index * prompt.pitch,
-        },
-        line,
-        paletteColour(this, "ink"),
-      ),
+    addCardTextIn(
+      this,
+      BODY_FONT,
+      this.layouts.question,
+      this.layouts.text,
+      paletteColour(this, "ink"),
     );
     for (const { id, layout } of this.layouts.buttons) {
-      const label = this.choice.options.find((option) => option.id === id)?.label;
-      if (label === undefined || inkWidth(font, prompt.scale, label) > DIALOGUE_CHOICE.labelRoom) {
-        throw new Error(`Dialogue choice label does not fit: ${id}`);
-      }
+      const label = this.choice.options.find((option) => option.id === id)!.label;
       this.buttons.set(id, addTextButton(this, layout, label));
     }
     this.render();
