@@ -9,7 +9,7 @@ export const DUCK: DuckTuning = {
   groundAccel: 2880,
   height: 36,
   jumpBuffer: 0.1,
-  jumpHopHeight: 38,
+  jumpHopHeight: 40,
   jumpReleaseBlendTime: 0.09,
   jumpRiseTime: 0.32,
   jumpSpeed: 535,
