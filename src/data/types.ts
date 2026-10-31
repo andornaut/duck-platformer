@@ -67,13 +67,13 @@ export interface DuckTuning {
   readonly jumpBuffer: number;
   // Height of the low hop, including releases during the tap window.
   readonly jumpHopHeight: number;
-  // Seconds to the low-hop apex. Descent uses normal gravity.
-  readonly jumpHopTime: number;
-  // Seconds after the tap window over which held input smoothly adds full-jump lift.
-  readonly jumpLiftTime: number;
+  // Seconds to the full-jump apex under constant ascent gravity.
+  readonly jumpRiseTime: number;
+  // Seconds after the tap window over which releasing retains more upward speed.
+  readonly jumpReleaseBlendTime: number;
   // Defines the existing full-jump height: speed squared divided by twice gravity.
   readonly jumpSpeed: number;
-  // Seconds of forgiving low-hop input before held input starts adding lift.
+  // Seconds of forgiving low-hop input before releasing retains extra upward speed.
   readonly jumpTapWindow: number;
   readonly walkSpeed: number;
 }
