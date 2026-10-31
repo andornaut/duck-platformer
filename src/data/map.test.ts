@@ -34,6 +34,7 @@ describe("ZONE_MAP", () => {
   });
   it.each([
     {
+      apartment: { kind: "unavailable" },
       completed: ["street"],
       countryside: { kind: "unavailable" },
       homeCity: { kind: "unavailable" },
@@ -43,6 +44,7 @@ describe("ZONE_MAP", () => {
       woodland: { kind: "unavailable" },
     },
     {
+      apartment: { kind: "unavailable" },
       completed: ["street", "city-boundary"],
       countryside: { kind: "unavailable" },
       homeCity: { kind: "unavailable" },
@@ -52,6 +54,7 @@ describe("ZONE_MAP", () => {
       woodland: { kind: "unavailable" },
     },
     {
+      apartment: { kind: "unavailable" },
       completed: ["street", "city-boundary", "warehouse-district"],
       countryside: { kind: "unavailable" },
       homeCity: { kind: "unavailable" },
@@ -65,6 +68,7 @@ describe("ZONE_MAP", () => {
       woodland: { kind: "unavailable" },
     },
     {
+      apartment: { kind: "unavailable" },
       completed: ["street", "city-boundary", "warehouse-district", "freight-terminal"],
       countryside: { kind: "play", stage: "farmland" },
       homeCity: { kind: "unavailable" },
@@ -78,6 +82,7 @@ describe("ZONE_MAP", () => {
       woodland: { kind: "unavailable" },
     },
     {
+      apartment: { kind: "unavailable" },
       completed: ["street", "city-boundary", "warehouse-district", "freight-terminal", "farmland"],
       countryside: {
         kind: "choose",
@@ -102,6 +107,7 @@ describe("ZONE_MAP", () => {
       woodland: { kind: "unavailable" },
     },
     {
+      apartment: { kind: "unavailable" },
       completed: [
         "street",
         "city-boundary",
@@ -134,6 +140,7 @@ describe("ZONE_MAP", () => {
       woodland: { kind: "play", stage: "forest-paths" },
     },
     {
+      apartment: { kind: "unavailable" },
       completed: [
         "street",
         "city-boundary",
@@ -168,6 +175,7 @@ describe("ZONE_MAP", () => {
       woodland: { kind: "choose", latest: "ravine", stages: ["forest-paths", "ravine"] },
     },
     {
+      apartment: { kind: "unavailable" },
       completed: [
         "street",
         "city-boundary",
@@ -204,6 +212,7 @@ describe("ZONE_MAP", () => {
       woodland: { kind: "choose", latest: "ravine", stages: ["forest-paths", "ravine"] },
     },
     {
+      apartment: { kind: "unavailable" },
       completed: [
         "street",
         "city-boundary",
@@ -246,6 +255,7 @@ describe("ZONE_MAP", () => {
       woodland: { kind: "choose", latest: "ravine", stages: ["forest-paths", "ravine"] },
     },
     {
+      apartment: { kind: "play", stage: "entrance-and-lobby" },
       completed: [
         "street",
         "city-boundary",
@@ -284,13 +294,65 @@ describe("ZONE_MAP", () => {
         "ravine",
         "city-outskirts",
         "familiar-neighbourhood",
+        "entrance-and-lobby",
       ],
       stage: "after both home city stages clear",
       woodland: { kind: "choose", latest: "ravine", stages: ["forest-paths", "ravine"] },
     },
+    {
+      apartment: {
+        kind: "choose",
+        latest: "climb-to-apartment",
+        stages: ["entrance-and-lobby", "climb-to-apartment"],
+      },
+      completed: [
+        "street",
+        "city-boundary",
+        "warehouse-district",
+        "freight-terminal",
+        "farmland",
+        "river-crossing",
+        "forest-paths",
+        "ravine",
+        "city-outskirts",
+        "familiar-neighbourhood",
+        "entrance-and-lobby",
+      ],
+      countryside: {
+        kind: "choose",
+        latest: "river-crossing",
+        stages: ["farmland", "river-crossing"],
+      },
+      homeCity: {
+        kind: "choose",
+        latest: "familiar-neighbourhood",
+        stages: ["city-outskirts", "familiar-neighbourhood"],
+      },
+      industrial: {
+        kind: "choose",
+        latest: "freight-terminal",
+        stages: ["warehouse-district", "freight-terminal"],
+      },
+      open: [
+        "street",
+        "city-boundary",
+        "warehouse-district",
+        "freight-terminal",
+        "farmland",
+        "river-crossing",
+        "forest-paths",
+        "ravine",
+        "city-outskirts",
+        "familiar-neighbourhood",
+        "entrance-and-lobby",
+        "climb-to-apartment",
+      ],
+      stage: "after the entrance and lobby clear",
+      woodland: { kind: "choose", latest: "ravine", stages: ["forest-paths", "ravine"] },
+    },
   ])(
     "preserves replays and unlocks only built stages $stage",
-    ({ completed, countryside, homeCity, industrial, open: expectedOpen, woodland }) => {
+    ({ apartment, completed, countryside, homeCity, industrial, open: expectedOpen, woodland }) => {
       const plans = new Set([...Object.keys(ZONES), ...Object.keys(RECIPES)]);
       const open = openMap(ZONE_MAP, new Set(completed));
       expect(open.zones).toEqual(expectedOpen);
@@ -304,7 +366,7 @@ describe("ZONE_MAP", () => {
       for (const id of open.zones) {
         const node = ZONE_MAP.nodes.find((item) => item.id === id)!;
         expect(node.zone !== undefined && plans.has(node.zone)).toBe(true);
-        expect(isLastZone(ZONE_MAP, id)).toBe(false);
+        expect(isLastZone(ZONE_MAP, id)).toBe(id === ZONE_MAP.finish);
       }
       expect(
         destinationSelection(
@@ -328,11 +390,14 @@ describe("ZONE_MAP", () => {
           destinationForStage(ZONE_MAP, "city-outskirts"),
         ),
       ).toEqual(homeCity);
-      for (const destination of ZONE_MAP.destinations.slice(5)) {
-        expect(destinationSelection(plans, ZONE_MAP, open, destination)).toEqual({
-          kind: "unavailable",
-        });
-      }
+      expect(
+        destinationSelection(
+          plans,
+          ZONE_MAP,
+          open,
+          destinationForStage(ZONE_MAP, "entrance-and-lobby"),
+        ),
+      ).toEqual(apartment);
     },
   );
   it("identifies the catalogue's final apartment stage", () => {

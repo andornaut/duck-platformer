@@ -3,7 +3,7 @@
 import { CHARACTERS } from "../data/characters";
 import { CHUNK_RULES, CHUNKS, SEAM_ROWS, THEMES } from "../data/chunks";
 import { ZONE_ROWS } from "../data/screen";
-import type { ChunkPlan, TerrainRect, ThemePlan, ZoneRecipe } from "../data/types";
+import type { ChunkPlan, StageRecipe, TerrainRect, ThemePlan, ZoneRecipe } from "../data/types";
 import { RECIPES } from "../data/zones";
 import type { ChunkLibrary } from "../rules/assemble";
 import { CHUNK_LIBRARY } from "../rules/zonePlans";
@@ -194,7 +194,7 @@ export const ALL_THEMES: readonly (readonly [string, ThemePlan])[] = [
 ];
 
 // Every recipe, by zone key, with its library.
-export const ALL_RECIPES: readonly (readonly [string, ChunkLibrary, ZoneRecipe])[] = [
+export const ALL_RECIPES: readonly (readonly [string, ChunkLibrary, StageRecipe])[] = [
   ["fixture", FIXTURE_LIBRARY, FIXTURE_RECIPE],
   ...Object.entries(RECIPES).map(([key, recipe]) => [key, CHUNK_LIBRARY, recipe] as const),
 ];

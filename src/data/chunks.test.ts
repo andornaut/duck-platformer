@@ -163,16 +163,37 @@ describe.each(ALL_RECIPES)("recipe %s", (key, library, recipe) => {
   });
 
   it("starts and finishes on its chunks, joined where their seams meet, never one twice in a row", () => {
-    const ids = (plan().areas[ASSEMBLED_AREA]?.chunks ?? []).map(({ chunk }) => chunk);
+    const layout = plan();
+    const areas = (layout.areaOrder ?? Object.keys(layout.areas)).map((id) => layout.areas[id]!);
+    const ids = areas.flatMap((area) => (area.chunks ?? []).map(({ chunk }) => chunk));
     expect([ids[0], ids.at(-1)]).toEqual([recipe.start, recipe.finish]);
-    ids.slice(1).forEach((id, index) => {
-      const prev = ids[index] as string;
-      expect(id, `${prev} then ${id}`).not.toBe(prev);
-      expect(chunkAt(prev).exit.row, `${prev} into ${id}`).toBe(chunkAt(id).entry.row);
-    });
+    for (const area of areas) {
+      const local = (area.chunks ?? []).map(({ chunk }) => chunk);
+      local.slice(1).forEach((id, index) => {
+        const prev = local[index] as string;
+        expect(id, `${prev} then ${id}`).not.toBe(prev);
+        expect(chunkAt(prev).exit.row, `${prev} into ${id}`).toBe(chunkAt(id).entry.row);
+      });
+    }
   });
 
   it("fits its length and difficulty band and keeps each chunk's maxPerZone", () => {
+    if ("sections" in recipe) {
+      expect(plan().areaOrder).toEqual(recipe.sections.map(({ id }) => id));
+      recipe.sections.forEach((section, index) => {
+        const placed = plan().areas[section.id]?.chunks ?? [];
+        const capStart = index === 0 ? 1 : 0;
+        const capEnd = index === recipe.sections.length - 1 ? 1 : 0;
+        const middle = placed.slice(capStart, placed.length - capEnd);
+        expect(middle).toHaveLength(1);
+        for (const { chunk } of middle) {
+          expect(section.chunks).toContain(chunk);
+          expect(chunkAt(chunk).difficulty).toBeGreaterThanOrEqual(section.difficulty.min);
+          expect(chunkAt(chunk).difficulty).toBeLessThanOrEqual(section.difficulty.max);
+        }
+      });
+      return;
+    }
     const area = plan().areas[ASSEMBLED_AREA];
     const placed = area?.chunks ?? [];
     const total = area?.cols ?? 0;
@@ -192,17 +213,23 @@ describe.each(ALL_RECIPES)("recipe %s", (key, library, recipe) => {
   });
 
   it("asks for doors only to rooms that exist", () => {
-    expect(recipe.doors.filter(({ room }) => !(room in ROOMS))).toEqual([]);
+    const sections = "sections" in recipe ? recipe.sections : [recipe];
+    expect(sections.flatMap(({ doors }) => doors).filter(({ room }) => !(room in ROOMS))).toEqual(
+      [],
+    );
   });
 
   it("places every event and door it asks for in a slot of that kind", () => {
-    const wanted = [
-      ...recipe.events.flatMap(({ count, id }) => Array<string>(count).fill(`event ${id}`)),
-      ...recipe.doors.flatMap(({ count, room }) => Array<string>(count).fill(`door ${room}`)),
-    ].sort();
-    const placed = (plan().areas[ASSEMBLED_AREA]?.slots ?? []).flatMap(({ fill, kind }) =>
-      fill === undefined ? [] : [`${kind} ${fill}`],
-    );
-    expect(placed.sort()).toEqual(wanted);
+    const sections = "sections" in recipe ? recipe.sections : [{ ...recipe, id: ASSEMBLED_AREA }];
+    for (const section of sections) {
+      const wanted = [
+        ...section.events.flatMap(({ count, id }) => Array<string>(count).fill(`event ${id}`)),
+        ...section.doors.flatMap(({ count, room }) => Array<string>(count).fill(`door ${room}`)),
+      ].sort();
+      const placed = (plan().areas[section.id]?.slots ?? []).flatMap(({ fill, kind }) =>
+        fill === undefined ? [] : [`${kind} ${fill}`],
+      );
+      expect(placed.sort()).toEqual(wanted);
+    }
   });
 });
