@@ -3,6 +3,7 @@ import type { ChunkPlan, ChunkRules, ElementBinding, ThemePlan } from "./types";
 import { STREET_CHUNKS } from "./zone1";
 import { INDUSTRIAL_CHUNKS } from "./zone2";
 import { COUNTRYSIDE_CHUNKS } from "./zone3";
+import { WOODLAND_CHUNKS } from "./zone4";
 
 // The rows a chunk's entry and exit stand on.
 export const SEAM_ROWS = [30, 40, 50] as const;
@@ -16,7 +17,9 @@ export const CHUNK_RULES: ChunkRules = {
 const MECHANICAL_THEMES = [
   "city-boundary",
   "farmland",
+  "forest-paths",
   "freight-terminal",
+  "ravine",
   "river-crossing",
   "street",
   "warehouse-district",
@@ -116,6 +119,18 @@ const COUNTRYSIDE_BINDINGS: Readonly<Record<string, ElementBinding>> = {
   sky: { character: "street-sky", skin: { art: "countryside-sky", tileset: null } },
 };
 
+const WOODLAND_BINDINGS: Readonly<Record<string, ElementBinding>> = {
+  ...COMMON_BINDINGS,
+  antagonist: { character: "owl-antagonist", scene: null },
+  "boundary-wall": { character: "facade-one-storey", skin: { art: "forest-shrub", tileset: null } },
+  door: { character: "street-door", skin: { art: "door", tileset: "tiles-street" } },
+  "far-background": { character: "street-city-far", skin: { art: "woodland-far", tileset: null } },
+  "loading-bay": { character: "depot-loading-bay", skin: { art: "forest-tree", tileset: null } },
+  "mid-background": { character: "street-city-mid", skin: { art: "forest-mid", tileset: null } },
+  "near-wall": { character: "facade-one-storey", skin: { art: "forest-tree", tileset: null } },
+  sky: { character: "street-sky", skin: { art: "woodland-sky", tileset: null } },
+};
+
 // The themes chunks are drawn in, by key.
 export const THEMES: Readonly<Record<string, ThemePlan>> = {
   "city-boundary": CITY_THEME,
@@ -125,6 +140,13 @@ export const THEMES: Readonly<Record<string, ThemePlan>> = {
     door: "door",
     looks: { ground: "country-ground", raised: "hay-stack" },
     tileset: "tiles-countryside",
+  },
+  "forest-paths": {
+    backdrops: COMMON_BACKDROPS,
+    bindings: WOODLAND_BINDINGS,
+    door: "door",
+    looks: { ground: "forest-ground", raised: "root-stack" },
+    tileset: "tiles-woodland",
   },
   "freight-terminal": {
     backdrops: COMMON_BACKDROPS,
@@ -188,6 +210,28 @@ export const THEMES: Readonly<Record<string, ThemePlan>> = {
     door: "door",
     looks: { ground: "grass", raised: "grass" },
     tileset: "tiles-park",
+  },
+  ravine: {
+    backdrops: COMMON_BACKDROPS,
+    bindings: {
+      ...WOODLAND_BINDINGS,
+      "boundary-wall": {
+        character: "facade-one-storey",
+        skin: { art: "ravine-rock", tileset: null },
+      },
+      "loading-bay": {
+        character: "depot-loading-bay",
+        skin: { art: "ravine-rock", tileset: null },
+      },
+      "mid-background": {
+        character: "street-city-mid",
+        skin: { art: "ravine-mid", tileset: null },
+      },
+      "near-wall": { character: "facade-one-storey", skin: { art: "ravine-rock", tileset: null } },
+    },
+    door: "door",
+    looks: { ground: "ravine-ground", raised: "stone-stack" },
+    tileset: "tiles-woodland",
   },
   "river-crossing": {
     backdrops: COMMON_BACKDROPS,
@@ -499,7 +543,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { col: 0, cols: 34, look: "raised", row: 40, rows: 20 },
       { col: 34, cols: 50, look: "raised", row: 30, rows: 30 },
     ],
-    theme: ["freight-terminal", "warehouse-district"],
+    theme: ["forest-paths", "freight-terminal", "ravine", "warehouse-district"],
     weight: 2,
   },
   // Difficulty 2, up from the lawn (50) to the high terrace (30): a bench (up 2), a terrace (up 4),
@@ -772,4 +816,5 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
   ...COUNTRYSIDE_CHUNKS,
   ...INDUSTRIAL_CHUNKS,
   ...STREET_CHUNKS,
+  ...WOODLAND_CHUNKS,
 };
