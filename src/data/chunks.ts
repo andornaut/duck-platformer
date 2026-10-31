@@ -5,6 +5,7 @@ import { INDUSTRIAL_CHUNKS } from "./zone2";
 import { COUNTRYSIDE_CHUNKS } from "./zone3";
 import { WOODLAND_CHUNKS } from "./zone4";
 import { HOME_CITY_CHUNKS } from "./zone5";
+import { APARTMENT_CHUNKS } from "./zone6";
 
 // The rows a chunk's entry and exit stand on.
 export const SEAM_ROWS = [30, 40, 50] as const;
@@ -15,7 +16,18 @@ export const CHUNK_RULES: ChunkRules = {
   headroom: 6,
 };
 
+const APARTMENT_THEMES = [
+  "apartment-entrance",
+  "apartment-exterior",
+  "apartment-lobby",
+  "apartment-pool",
+  "apartment-residential",
+  "apartment-restaurant",
+  "apartment-spa",
+];
+
 const MECHANICAL_THEMES = [
+  ...APARTMENT_THEMES,
   "city-boundary",
   "city-outskirts",
   "familiar-neighbourhood",
@@ -28,6 +40,7 @@ const MECHANICAL_THEMES = [
   "warehouse-district",
 ];
 const PATROL_THEMES = [
+  ...APARTMENT_THEMES,
   "city-boundary",
   "city-outskirts",
   "familiar-neighbourhood",
@@ -159,8 +172,121 @@ const HOME_CITY_BINDINGS: Readonly<Record<string, ElementBinding>> = {
   sky: { character: "street-sky", skin: { art: "homecity-sky", tileset: null } },
 };
 
+function apartmentTheme(
+  wall: string | null,
+  ground: string,
+  raised: string,
+  prop: string,
+): ThemePlan {
+  return {
+    backdrops:
+      wall === null
+        ? [
+            { character: "street-sky", parallax: { x: 0, y: 0 }, role: "sky", row: 10 },
+            {
+              character: "street-city-far",
+              parallax: { x: 0.15, y: 0.05 },
+              role: "far-background",
+              row: 10,
+            },
+            {
+              character: "street-city-mid",
+              parallax: { x: 0.4, y: 0.15 },
+              role: "mid-background",
+              row: 10,
+            },
+          ]
+        : [0, 12, 24, 36, 48].map((row) => ({
+            character: "apartment-wall-panel",
+            parallax: { x: 1, y: 1 },
+            role: "wall",
+            row,
+          })),
+    bindings: {
+      ...COMMON_BINDINGS,
+      antagonist: { character: "ferret-antagonist", scene: null },
+      door: {
+        character: "apartment-room-door",
+        skin: { art: "apartment-room-door", tileset: null },
+      },
+      "far-background": {
+        character: "street-city-far",
+        skin: { art: "apartment-far", tileset: null },
+      },
+      "final-goal": {
+        character: "apartment-stairwell",
+        skin: {
+          art:
+            wall === "apartment-wall-residential" ? "apartment-room-door" : "apartment-stairwell",
+          tileset: null,
+        },
+      },
+      "mid-background": {
+        character: "street-city-mid",
+        skin: { art: "apartment-exterior-mid", tileset: null },
+      },
+      "near-wall": { character: "facade-one-storey", skin: { art: prop, tileset: null } },
+      sky: { character: "street-sky", skin: { art: "apartment-sky", tileset: null } },
+      "transition-down": {
+        character: "apartment-stairwell",
+        skin: { art: "apartment-stairwell-down", tileset: null },
+      },
+      "transition-up": { character: "apartment-stairwell" },
+      wall: {
+        character: "apartment-wall-panel",
+        skin: { art: wall ?? "apartment-facade", tileset: null },
+      },
+    },
+    door: "door",
+    looks: { ground, raised },
+    tileset: "tiles-apartment",
+  };
+}
+
 // The themes chunks are drawn in, by key.
 export const THEMES: Readonly<Record<string, ThemePlan>> = {
+  "apartment-entrance": apartmentTheme(
+    null,
+    "apartment-stone",
+    "apartment-brick",
+    "apartment-facade",
+  ),
+  "apartment-exterior": apartmentTheme(
+    null,
+    "apartment-metal",
+    "apartment-brick",
+    "apartment-facade",
+  ),
+  "apartment-lobby": apartmentTheme(
+    "apartment-wall-lobby",
+    "apartment-wood",
+    "apartment-plaster",
+    "apartment-lobby-sofa",
+  ),
+  "apartment-pool": apartmentTheme(
+    "apartment-wall-pool",
+    "apartment-tile",
+    "apartment-stone",
+    "apartment-pool-water",
+  ),
+  "apartment-residential": apartmentTheme(
+    "apartment-wall-residential",
+    "apartment-wood",
+    "apartment-plaster",
+    "apartment-residential-shelf",
+  ),
+  "apartment-restaurant": apartmentTheme(
+    "apartment-wall-restaurant",
+    "apartment-wood",
+    "apartment-tile",
+    "apartment-restaurant-counter",
+  ),
+  "apartment-spa": apartmentTheme(
+    "apartment-wall-spa",
+    "apartment-tile",
+    "apartment-plaster",
+    "apartment-spa-screen",
+  ),
   "city-boundary": CITY_THEME,
   "city-outskirts": {
     backdrops: COMMON_BACKDROPS,
@@ -869,6 +995,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     ],
     theme: "park",
   },
+  ...APARTMENT_CHUNKS,
   ...COUNTRYSIDE_CHUNKS,
   ...HOME_CITY_CHUNKS,
   ...INDUSTRIAL_CHUNKS,
