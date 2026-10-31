@@ -59,6 +59,8 @@ const BUILT_STAGES: Readonly<Record<string, string>> = {
 const STAGES = DESTINATIONS.flatMap(({ stages }) => stages);
 const REGION_ORIGIN = { x: 60, y: 36 };
 
+export const MAP_TRAVEL = { speed: 180 } as const;
+
 export const ZONE_MAP: ZoneMap = {
   decorations: DESTINATIONS.map(({ at, id }) => ({
     art: `map-region-${id}`,
