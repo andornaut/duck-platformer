@@ -2,17 +2,15 @@ import { inkWidth, parseBitmapFont } from "@andornaut/game-kit/text/bitmapFont";
 import { describe, expect, it } from "vitest";
 
 import fontBody from "../../public/art/fonts/font-body.fnt?raw";
-import mapCompass from "../../public/art/sprites/map-compass.json";
-import mapHill from "../../public/art/sprites/map-hill.json";
-import mapWave from "../../public/art/sprites/map-wave.json";
+import fontTitle from "../../public/art/fonts/font-title.fnt?raw";
 import { ZONE_MAP } from "../data/map";
 import { SCREEN, TILE } from "../data/screen";
 import { TEXT } from "../data/text";
 import { MAP_ACTIONS } from "../input/mapInput";
-import { nodeCentre } from "../view/mapMarks";
+import { destinationCentre } from "../view/mapDestinations";
 import { TEXT_BUTTON } from "./buttonLabel";
 import { type PressArea, pressedArea } from "./hitAreas";
-import { MAP_SCREEN, mapLabel } from "./mapScreen";
+import { MAP_LABEL_PADDING, MAP_LABEL_WIDTH, MAP_SCREEN, mapLabel } from "./mapScreen";
 
 describe("mapLabel", () => {
   it.each([38, 91])("centres a name %i px in advance under its marker", (advance) => {
@@ -59,19 +57,30 @@ describe("map footer actions", () => {
     ).toEqual([key, key]);
   });
 
-  it.each(ZONE_MAP.nodes)("keeps node $id and its label above the footer", (node) => {
-    const centre = nodeCentre(TILE, node);
-    const label = mapLabel(0, centre);
-    expect(label.knockout.y + label.knockout.height).toBeLessThan(MAP_SCREEN.home.button.y);
-  });
+  it.each(ZONE_MAP.destinations)(
+    "keeps destination $id and its label above the footer",
+    (destination) => {
+      const centre = destinationCentre(TILE, destination);
+      const label = mapLabel(0, centre);
+      expect(label.knockout.y + label.knockout.height).toBeLessThan(MAP_SCREEN.home.button.y);
+      const name = TEXT.map.zones[destination.id]!;
+      expect(inkWidth(parseBitmapFont(fontTitle), MAP_SCREEN.textScale, name)).toBeLessThanOrEqual(
+        MAP_LABEL_WIDTH - 2 * MAP_LABEL_PADDING,
+      );
+    },
+  );
 
-  const frames: Readonly<Record<string, { frames: Record<string, { frame: { h: number } }> }>> = {
-    "map-compass": mapCompass,
-    "map-hill": mapHill,
-    "map-wave": mapWave,
-  };
+  const frames = import.meta.glob<{ frames: Record<string, { frame: { h: number } }> }>(
+    "../../public/art/sprites/map-region-*.json",
+    {
+      eager: true,
+      import: "default",
+    },
+  );
   it.each(ZONE_MAP.decorations)("keeps $art scenery above the footer", ({ art, at }) => {
-    const height = Object.values(frames[art]!.frames)[0]!.frame.h;
+    const sheet = frames[`../../public/art/sprites/${art}.json`];
+    expect(sheet).toBeDefined();
+    const height = Object.values(sheet!.frames)[0]!.frame.h;
     expect(at.y + height).toBeLessThan(MAP_SCREEN.home.button.y);
   });
 });

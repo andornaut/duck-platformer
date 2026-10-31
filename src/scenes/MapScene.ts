@@ -1,4 +1,5 @@
 import { animationKey } from "@andornaut/game-kit/art/aseprite";
+import { inkWidth } from "@andornaut/game-kit/text/bitmapFont";
 import {
   phaserBitmapFont,
   type PhaserFontData,
@@ -8,21 +9,37 @@ import { type GameObjects, type Input, Scene } from "phaser";
 import { ZONE_MAP } from "../data/map";
 import { TILE } from "../data/screen";
 import { TEXT } from "../data/text";
-import type { MapNode, Point, Rect } from "../data/types";
+import type { MapDestination, Point, Rect } from "../data/types";
+import { RECIPES, ZONES } from "../data/zones";
 import { MAP_ACTIONS, type MapAction, mapKeyAction } from "../input/mapInput";
 import { type PressArea, pressedArea } from "../layout/hitAreas";
-import { MAP_PATH, MAP_PATH_LOOKS, MAP_SCREEN, mapLabel, type PathLook } from "../layout/mapScreen";
-import { nodeOf, type OpenMap, openMap } from "../rules/map";
+import {
+  MAP_LABEL_PADDING,
+  MAP_LABEL_WIDTH,
+  MAP_PATH,
+  MAP_PATH_LOOKS,
+  MAP_SCREEN,
+  mapLabel,
+  type PathLook,
+} from "../layout/mapScreen";
+import { PHONE_EVENTS } from "../pwa";
+import { type OpenMap, openMap } from "../rules/map";
+import {
+  destinationForLevel,
+  destinationLevels,
+  destinationOf,
+  destinationSelection,
+  steppedDestination,
+} from "../rules/mapDestinations";
 import { savedMap, saveStand } from "../save";
 import { ART_MANIFEST_KEY, type ArtManifest } from "../view/aseprite";
 import {
-  advanceWidth,
-  markerState,
-  nodeCentre,
-  pathLook,
-  steppedZone,
-  zoneAtTap,
-} from "../view/mapMarks";
+  destinationAtTap,
+  destinationCentre,
+  destinationPathLook,
+  destinationState,
+} from "../view/mapDestinations";
+import { advanceWidth } from "../view/mapMarks";
 import { bentCurve, pathRects } from "../view/mapPath";
 import {
   addTextButton,
@@ -32,24 +49,23 @@ import {
   ringFocus,
   type TextButton,
 } from "./cardParts";
+import type { LevelSelectData, LevelSelectOpener, LevelSelectScene } from "./LevelSelectScene";
 import { fitPlayCamera, playPoint } from "./playCamera";
 import type { ZoneData } from "./ZoneScene";
 
 const PALETTE = "palette";
 const TITLE_FONT = "font-title";
-const ICON_FALLBACK = "map-icon-zone";
+const PLANS = new Set([...Object.keys(ZONES), ...Object.keys(RECIPES)]);
 // Paths are drawn in this order, so the open ones lie on top.
 const LOOK_ORDER: readonly PathLook[] = ["unbuilt", "built", "open"];
 
 // Footer actions, or an open zone node by its id.
 type Control = { readonly kind: MapAction } | { readonly kind: "node"; readonly id: string };
 
-// The map between zones, drawn as art's paper map: its pen marks, every path and node, each
-// zone's name, and the duck on the zone node she stands on. The zones she has completed open the
-// paths past them (openMap): she may stand on any open zone node, back or on, and play it. A tap
-// on an open zone node, or Left and Right through them in the map's order, walks her there;
-// Continue plays the zone she stands on. Where she stands is saved as it changes.
-export class MapScene extends Scene {
+// The V1 overview renders each themed destination once, with its two level nodes retained in
+// the progression graph. One unlocked level plays directly; multiple unlocked levels use the
+// closeable picker. The footer and saved stand keep Continue safe as the default action.
+export class MapScene extends Scene implements LevelSelectOpener {
   private colours: Readonly<Record<string, string>> = {};
   private completed: ReadonlySet<string> = new Set();
   private buttons!: Readonly<Record<MapAction, TextButton>>;
@@ -58,6 +74,7 @@ export class MapScene extends Scene {
   private open!: OpenMap;
   private pressed: Control | undefined;
   private stand = ZONE_MAP.start;
+  private selectionOpen = false;
 
   constructor() {
     super("map");
@@ -73,6 +90,7 @@ export class MapScene extends Scene {
     this.pressed = undefined;
     this.focus = undefined;
     this.focusRing = undefined;
+    this.selectionOpen = false;
   }
 
   create(): void {
@@ -89,16 +107,34 @@ export class MapScene extends Scene {
     this.add
       .bitmapText(title.x, title.y, TITLE_FONT, TEXT.map.title)
       .setScale(textScale)
-      .setTint(this.colour("plum"));
+      .setTint(this.colour("ink"));
     this.addActions();
     this.showPressed(undefined);
     this.input.keyboard?.on("keydown", (event: KeyboardEvent) => this.key(event));
     captureTab(this, true);
-    this.events.once("shutdown", () => captureTab(this, false));
+    const onBack = () => {
+      if (this.selectionOpen) {
+        (this.scene.get("levelSelect") as LevelSelectScene).back();
+      }
+    };
+    window.addEventListener(PHONE_EVENTS.backPressed, onBack);
+    this.events.once("shutdown", () => {
+      captureTab(this, false);
+      window.removeEventListener(PHONE_EVENTS.backPressed, onBack);
+      if (this.selectionOpen) {
+        this.scene.stop("levelSelect");
+      }
+      this.selectionOpen = false;
+    });
     this.input.on("pointerdown", (pointer: Input.Pointer) => {
-      this.showPressed(this.controlAt(pointer));
+      if (!this.selectionOpen) {
+        this.showPressed(this.controlAt(pointer));
+      }
     });
     this.input.on("pointerup", (pointer: Input.Pointer) => {
+      if (this.selectionOpen) {
+        return;
+      }
       const control = this.pressed;
       this.showPressed(undefined);
       const lifted = this.controlAt(pointer);
@@ -106,35 +142,34 @@ export class MapScene extends Scene {
         return;
       }
       if (control.kind === "node") {
-        this.walkTo(control.id);
+        this.selectDestination(control.id);
       } else {
         this.act(control.kind);
       }
     });
   }
 
-  private centre(node: MapNode): Point {
-    return nodeCentre(TILE, node);
+  private centre(destination: MapDestination): Point {
+    return destinationCentre(TILE, destination);
   }
 
   private drawPaths(): void {
     const paths = this.add.graphics();
-    const edges = ZONE_MAP.edges.map((edge, index) => ({
-      edge,
+    const edges = ZONE_MAP.destinations.slice(1).map((to, index) => ({
+      from: ZONE_MAP.destinations[index]!,
       index,
-      look: pathLook(this.open, edge),
+      look: destinationPathLook(PLANS, ZONE_MAP, this.open, to),
+      to,
     }));
     for (const look of LOOK_ORDER) {
       const { colour, stroke } = MAP_PATH_LOOKS[look];
       paths.fillStyle(this.colour(colour));
-      for (const { edge, index } of edges.filter((each) => each.look === look)) {
-        const from = nodeOf(ZONE_MAP, edge.from);
-        const to = nodeOf(ZONE_MAP, edge.to);
+      for (const { from, index, to } of edges.filter((edge) => edge.look === look)) {
         const ends = {
           from: this.centre(from),
-          fromTrim: MAP_PATH.trim[from.kind],
+          fromTrim: MAP_PATH.trim.zone,
           to: this.centre(to),
-          toTrim: MAP_PATH.trim[to.kind],
+          toTrim: MAP_PATH.trim.zone,
         };
         const curve = bentCurve(MAP_PATH.bend, ends.from, ends.to, index);
         for (const rect of pathRects(MAP_PATH.step, stroke, ends, curve)) {
@@ -144,52 +179,57 @@ export class MapScene extends Scene {
     }
   }
 
-  // Each zone's name over a cream knock-out that hides the paths behind it, then each marker
-  // with its zone's icon, each name, and the duck on the node she stands on.
+  // Every destination and regional miniature stays visible. Only open destinations accept
+  // input; locked and unbuilt markers use the authored padlock and question-mark states.
   private drawNodes(): void {
     const { duck, icon, marker, textScale } = MAP_SCREEN;
     const font = phaserBitmapFont(this.cache.bitmapFont.get(TITLE_FONT).data as PhaserFontData);
-    const knockouts = this.add.graphics().fillStyle(this.colour("cream"));
+    const knockouts = this.add.graphics().fillStyle(this.colour("lgrey"));
     const labels: { at: Point; name: string }[] = [];
-    for (const node of ZONE_MAP.nodes) {
-      const name = TEXT.map.zones[node.id];
-      if (node.kind === "zone" && name !== undefined) {
-        const { knockout, origin } = mapLabel(
-          advanceWidth(font, textScale, name),
-          this.centre(node),
-        );
-        knockouts.fillRect(knockout.x, knockout.y, knockout.width, knockout.height);
-        labels.push({ at: origin, name });
+    for (const destination of ZONE_MAP.destinations) {
+      const name = TEXT.map.zones[destination.id];
+      if (name === undefined) {
+        throw new Error(`No destination label ${destination.id}`);
       }
+      const advance = advanceWidth(font, textScale, name);
+      if (inkWidth(font, textScale, name) > MAP_LABEL_WIDTH - 2 * MAP_LABEL_PADDING) {
+        throw new Error(`Destination label does not fit: ${destination.id}`);
+      }
+      const { knockout, origin } = mapLabel(advance, this.centre(destination));
+      knockouts.fillRect(knockout.x, knockout.y, knockout.width, knockout.height);
+      labels.push({ at: origin, name });
     }
-    for (const node of ZONE_MAP.nodes) {
-      const centre = this.centre(node);
-      const state = markerState(ZONE_MAP, this.open, this.completed, this.stand, node);
-      const key = `map-${node.kind}`;
+    for (const destination of ZONE_MAP.destinations) {
+      const centre = this.centre(destination);
+      const state = destinationState(
+        PLANS,
+        ZONE_MAP,
+        this.open,
+        this.completed,
+        this.stand,
+        destination,
+      );
       this.add
-        .sprite(centre.x + marker[node.kind].x, centre.y + marker[node.kind].y, key)
+        .sprite(centre.x + marker.zone.x, centre.y + marker.zone.y, "map-zone")
         .setOrigin(0)
-        .play(animationKey(key, state));
-      // A locked zone shows art's padlock in place of its icon.
-      if (node.kind === "zone" && state !== "unbuilt" && state !== "locked") {
-        const own = `map-icon-${node.zone ?? ""}`;
-        const art = this.textures.exists(own) ? own : ICON_FALLBACK;
+        .play(animationKey("map-zone", state));
+      if (state !== "unbuilt" && state !== "locked") {
         this.add
-          .sprite(centre.x + icon.x, centre.y + icon.y, art)
+          .sprite(centre.x + icon.x, centre.y + icon.y, destination.icon)
           .setOrigin(0)
-          .play(animationKey(art, state === "visited" ? "visited" : "normal"));
+          .play(animationKey(destination.icon, state === "visited" ? "visited" : "normal"));
       }
     }
     for (const { at, name } of labels) {
       this.add
         .bitmapText(at.x, at.y, TITLE_FONT, name)
         .setScale(textScale)
-        .setTint(this.colour("plum"));
+        .setTint(this.colour("ink"));
     }
-    const at = nodeOf(ZONE_MAP, this.stand);
-    const centre = this.centre(at);
+    const current = destinationForLevel(ZONE_MAP, this.stand);
+    const centre = this.centre(current);
     this.add
-      .sprite(centre.x + duck[at.kind].x, centre.y + duck[at.kind].y, "map-duck")
+      .sprite(centre.x + duck.zone.x, centre.y + duck.zone.y, "map-duck")
       .setOrigin(0)
       .play(animationKey("map-duck", "idle"));
   }
@@ -212,7 +252,7 @@ export class MapScene extends Scene {
     this.focusRing = ringFocus(
       this,
       this.focusRing,
-      this.focus === undefined ? undefined : MAP_SCREEN[this.focus].button,
+      this.selectionOpen || this.focus === undefined ? undefined : MAP_SCREEN[this.focus].button,
     );
   }
 
@@ -227,14 +267,17 @@ export class MapScene extends Scene {
     if (action !== undefined) {
       return { kind: action };
     }
-    const id = zoneAtTap(TILE, MAP_SCREEN.nodeHit, ZONE_MAP, this.open, point);
+    const id = destinationAtTap(TILE, MAP_SCREEN.nodeHit, PLANS, ZONE_MAP, this.open, point);
     return id === undefined ? undefined : { id, kind: "node" };
   }
 
   private key(event: KeyboardEvent): void {
+    if (this.selectionOpen) {
+      return;
+    }
     const action = mapKeyAction(this.focus, event);
     if (action?.kind === "step") {
-      this.walkTo(steppedZone(this.open, this.stand, action.by));
+      this.walkToDestination(steppedDestination(PLANS, ZONE_MAP, this.open, this.stand, action.by));
     } else if (action?.kind === "focus") {
       this.focus = action.target;
       this.showPressed(this.pressed);
@@ -245,24 +288,60 @@ export class MapScene extends Scene {
 
   private act(action: MapAction): void {
     if (action === "continue") {
-      this.play();
+      this.selectDestination(destinationForLevel(ZONE_MAP, this.stand).id);
     } else {
       // Returning to the title changes no completed zones or saved map position.
       this.scene.start("start");
     }
   }
 
-  // She walks to an open zone node: the map shows her there, and saves it.
-  private walkTo(id: string): void {
-    if (id !== this.stand) {
-      saveStand(id);
+  private walkToDestination(id: string): void {
+    const levels = destinationLevels(PLANS, ZONE_MAP, this.open, destinationOf(ZONE_MAP, id));
+    const level = levels.at(-1);
+    if (level !== undefined && !destinationOf(ZONE_MAP, id).levels.includes(this.stand)) {
+      saveStand(level);
       this.scene.restart();
     }
   }
 
-  // Plays the zone she stands on.
-  private play(): void {
-    this.scene.start("zone", { node: this.stand } satisfies ZoneData);
+  private selectDestination(id: string): void {
+    const selection = destinationSelection(PLANS, ZONE_MAP, this.open, destinationOf(ZONE_MAP, id));
+    if (selection.kind === "unavailable") {
+      return;
+    }
+    if (selection.kind === "play") {
+      this.play(selection.level);
+      return;
+    }
+    this.stand = selection.latest;
+    saveStand(this.stand);
+    this.selectionOpen = true;
+    this.showPressed(undefined);
+    this.scene.launch("levelSelect", { destination: id } satisfies LevelSelectData);
+  }
+
+  levelSelectionClosed(): void {
+    if (this.selectionOpen) {
+      this.selectionOpen = false;
+      this.scene.restart();
+    }
+  }
+
+  levelSelected(level: string): void {
+    if (!this.selectionOpen) {
+      return;
+    }
+    const destination = destinationForLevel(ZONE_MAP, this.stand);
+    if (!destinationLevels(PLANS, ZONE_MAP, this.open, destination).includes(level)) {
+      return;
+    }
+    this.selectionOpen = false;
+    this.play(level);
+  }
+
+  private play(level: string): void {
+    saveStand(level);
+    this.scene.start("zone", { node: level } satisfies ZoneData);
   }
 
   private slice(key: string, rect: Rect): GameObjects.NineSlice {

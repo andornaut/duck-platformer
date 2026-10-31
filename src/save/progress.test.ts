@@ -66,6 +66,10 @@ describe("progressFormat", () => {
     ["no version", JSON.stringify({ at: "map", completed: [], stand: "start" })],
     ["version 1", stored({ at: "map", route: ["start"] }, 1)],
     ["version 2", stored({ at: "map", route: ["start"], seed: 7 }, 2)],
+    [
+      "the previous catalogue version",
+      stored({ at: "map", completed: [], stand: "start" }, PROGRESS_VERSION - 1),
+    ],
     ["an unknown place", stored({ at: "shop", completed: [], stand: "start" })],
     [
       "completed zones that are not a list",

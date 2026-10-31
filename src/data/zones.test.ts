@@ -284,7 +284,11 @@ describe("the map", () => {
     }
   });
 
-  it("has a built path from the start to the finish", () => {
-    expect(reach(ZONE_MAP.start, (id) => after(id, true)).has(ZONE_MAP.finish)).toBe(true);
+  it("keeps unbuilt continuation closed while the catalogue still leads to its actual final level", () => {
+    const allBuilt = ZONE_MAP.nodes.every(
+      (node) => node.kind !== "zone" || node.zone !== undefined,
+    );
+    expect(reach(ZONE_MAP.start, (id) => after(id, true)).has(ZONE_MAP.finish)).toBe(allBuilt);
+    expect(reach(ZONE_MAP.start, (id) => after(id)).has(ZONE_MAP.finish)).toBe(true);
   });
 });

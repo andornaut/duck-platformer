@@ -13,7 +13,7 @@ export const BEGINNING: Progress = { at: "beginning" };
 
 // The save format's version. Before the first release, a change to the format or a map node or
 // zone renamed bumps it, and older saves reset to the beginning.
-export const PROGRESS_VERSION = 3;
+export const PROGRESS_VERSION = 4;
 
 // Where she is on the map for progress: the beginning stands her on the map's start with
 // nothing completed.

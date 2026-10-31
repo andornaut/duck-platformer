@@ -53,24 +53,9 @@ export function openMap(map: ZoneMap, completed: ReadonlySet<string>): OpenMap {
   return { edges, reached, zones };
 }
 
-// Whether the zone node id is a last zone: a built path from it leads on to the map's finish,
-// through forks but no other zone.
+// The final actual level is the only celebration trigger; reaching an earlier catalogue
+// destination never substitutes for completing the map's configured finish level.
 export function isLastZone(map: ZoneMap, id: string): boolean {
-  const seen = new Set<string>();
-  const queue = [id];
-  for (let at = queue.shift(); at !== undefined; at = queue.shift()) {
-    for (const { edge, node } of pathsFrom(map, at)) {
-      if (!edge.built || seen.has(node.id)) {
-        continue;
-      }
-      if (node.id === map.finish) {
-        return true;
-      }
-      seen.add(node.id);
-      if (node.kind === "fork") {
-        queue.push(node.id);
-      }
-    }
-  }
-  return false;
+  const node = nodeOf(map, id);
+  return id === map.finish && node.kind === "zone" && node.zone !== undefined;
 }

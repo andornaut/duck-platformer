@@ -12,6 +12,8 @@ import { labelledButton } from "./restartCard";
 // primary right. Labels use shared placement and press displacement without play marks; each
 // press area grows by hitAreas.ts's rule. A tap on a zone marker lands within nodeHit, the zone
 // marker's frame (ZONE_MARKER square) grown the same way.
+export const MAP_LABEL_WIDTH = 212;
+export const MAP_LABEL_PADDING = 2;
 const ACTION_WIDTH = 192;
 const ACTION_Y = 300;
 const actionButton = (x: number) =>
@@ -56,8 +58,8 @@ export const MAP_PATH = {
 // Each look a path takes, in a palette colour: unbuilt, built but not yet opened (locked, dimmed a
 // step toward the paper), and opened by the zones she has completed (openMap).
 export const MAP_PATH_LOOKS = {
-  built: { colour: "brown", stroke: { kind: "dashes", off: 4, on: 6, width: 2 } },
-  open: { colour: "dred", stroke: { kind: "solid", width: 4 } },
+  built: { colour: "slate", stroke: { kind: "dashes", off: 4, on: 6, width: 2 } },
+  open: { colour: "dslate", stroke: { kind: "solid", width: 4 } },
   unbuilt: { colour: "slate", stroke: { every: 6, kind: "dots", width: 2 } },
 } as const satisfies Record<string, { readonly colour: string; readonly stroke: PathStroke }>;
 
@@ -68,7 +70,12 @@ export type PathLook = keyof typeof MAP_PATH_LOOKS;
 export function mapLabel(advance: number, centre: Point): { knockout: Rect; origin: Point } {
   const origin = { x: centre.x - Math.floor((advance - 4) / 2) - 2, y: centre.y + 12 };
   return {
-    knockout: { height: 16, width: advance + 4, x: origin.x - 2, y: centre.y + 17 },
+    knockout: {
+      height: 16,
+      width: MAP_LABEL_WIDTH,
+      x: centre.x - MAP_LABEL_WIDTH / 2,
+      y: centre.y + 17,
+    },
     origin,
   };
 }

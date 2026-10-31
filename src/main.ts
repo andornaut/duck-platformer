@@ -20,6 +20,7 @@ import { CelebrationScene } from "./scenes/CelebrationScene";
 import { DeathScene } from "./scenes/DeathScene";
 import { DialogueChoiceScene } from "./scenes/DialogueChoiceScene";
 import { DialogueScene } from "./scenes/DialogueScene";
+import { LevelSelectScene } from "./scenes/LevelSelectScene";
 import { MapScene } from "./scenes/MapScene";
 import { PauseScene } from "./scenes/PauseScene";
 import { RestartScene } from "./scenes/RestartScene";
@@ -65,6 +66,7 @@ function startGame(): void {
       DialogueScene,
       DialogueChoiceScene,
       DeathScene,
+      LevelSelectScene,
     ],
     // WebGL only: the build's Phaser has no Canvas renderer (src/tools/phaserBuild.ts).
     type: WEBGL,

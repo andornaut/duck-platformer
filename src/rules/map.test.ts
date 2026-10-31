@@ -83,26 +83,20 @@ describe("openMap", () => {
 });
 
 describe("isLastZone", () => {
-  // b leads on to the finish through a fork; d, behind an unbuilt path, does not.
-  const VIA_FORK: ZoneMap = {
-    ...MAP,
-    edges: [
-      { built: true, from: "a", to: "f" },
-      { built: true, from: "f", to: "b" },
-      { built: true, from: "b", to: "y" },
-      { built: true, from: "y", to: "z" },
-      { built: false, from: "f", to: "d" },
-      { built: false, from: "d", to: "z" },
-    ],
-    nodes: [...MAP.nodes, { at: { col: 0, row: 0 }, id: "y", kind: "fork" }],
+  const actualFinish: ZoneMap = { ...MAP, finish: "c" };
+  const unbuiltFinish: ZoneMap = {
+    ...actualFinish,
+    nodes: actualFinish.nodes.map((node) =>
+      node.id === "c" ? { at: node.at, id: node.id, kind: "zone" } : node,
+    ),
   };
   it.each([
-    ["b, straight to the finish", MAP, "b", true],
-    ["c, straight to the finish", MAP, "c", true],
-    ["a, through a fork to other zones", MAP, "a", false],
-    ["d, by an unbuilt path", MAP, "d", false],
-    ["b, through a fork to the finish", VIA_FORK, "b", true],
-  ])("takes %s as last: %s", (_, map, id, last) => {
+    ["the final actual level", actualFinish, "c", true],
+    ["the level before another level", actualFinish, "a", false],
+    ["another completed branch", actualFinish, "b", false],
+    ["an unbuilt final level", unbuiltFinish, "c", false],
+    ["a routing fork", MAP, "z", false],
+  ] as const)("recognizes %s without early celebration", (_, map, id, last) => {
     expect(isLastZone(map, id)).toBe(last);
   });
 });
