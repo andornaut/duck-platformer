@@ -1,0 +1,98 @@
+import { describe, expect, it } from "vitest";
+
+import { DEATH } from "../data/death";
+import { DUCK } from "../data/duck";
+import { SCREEN } from "../data/screen";
+import { TEXT } from "../data/text";
+import type { Rect, ZoneDeath } from "../data/types";
+import { STEP_SECONDS } from "../rules/step";
+import {
+  deathSummary,
+  type DeathView,
+  startDeathPresentation,
+  stepDeathPresentation,
+} from "./death";
+import { DUCK_FRAME } from "./duck";
+
+const view: DeathView = { body: DUCK, bounds: { ...SCREEN, x: 0, y: 0 }, frame: DUCK_FRAME };
+const ground: Rect = { height: 120, width: SCREEN.width, x: 0, y: (SCREEN.height * 2) / 3 };
+const death: ZoneDeath = {
+  position: { x: 100, y: ground.y - DUCK.height },
+  reason: "hazard",
+  support: ground,
+  velocity: { x: DUCK.walkSpeed, y: 0 },
+};
+
+describe("death presentation", () => {
+  it.each([-1, 1] as const)(
+    "recoils against facing %i, falls, squashes, bounces upward and seats",
+    (facing) => {
+      let pose = startDeathPresentation(DEATH, view, facing, death);
+      const phases = new Set([pose.phase]);
+      const x = pose.position.x;
+      let bounceRose = false;
+      for (let step = 0; step < 1200 && pose.phase !== "seated"; step++) {
+        const before = pose;
+        pose = stepDeathPresentation(DEATH, view, () => ground, STEP_SECONDS, pose);
+        phases.add(pose.phase);
+        if (before.phase === "bounce" && pose.position.y < before.position.y) {
+          bounceRose = true;
+        }
+      }
+      expect(phases).toEqual(new Set(["recoil", "fall", "impact", "bounce", "seated"]));
+      expect(Math.sign(pose.position.x - x)).toBe(Math.sign(DEATH.recoilVelocity.x * facing));
+      expect(bounceRose).toBe(true);
+      expect(pose.position.y + DUCK.height).toBe(ground.y);
+      expect(stepDeathPresentation(DEATH, view, () => ground, 100, pose)).toBe(pose);
+    },
+  );
+
+  it("keeps a void fall and seated rest visible in the frozen viewport", () => {
+    let pose = startDeathPresentation(DEATH, view, 1, {
+      ...death,
+      position: { ...death.position, y: SCREEN.height * 2 },
+      reason: "fall",
+      support: undefined,
+    });
+    expect(pose.phase).toBe("fall");
+    expect(pose.position.y + DUCK.height).toBeLessThan(SCREEN.height);
+    for (let step = 0; step < 1200 && pose.phase !== "seated"; step++) {
+      pose = stepDeathPresentation(DEATH, view, () => undefined, STEP_SECONDS, pose);
+    }
+    expect(pose.phase).toBe("seated");
+    expect(pose.position.y + DUCK.height).toBe(SCREEN.height);
+  });
+
+  it("queries frozen support at the recoil's new position", () => {
+    const queried: number[] = [];
+    const support = (position: { x: number }) => {
+      queried.push(position.x);
+      return ground;
+    };
+    let pose = startDeathPresentation(DEATH, view, 1, death);
+    for (let step = 0; step < 1200 && pose.phase !== "seated"; step++) {
+      pose = stepDeathPresentation(DEATH, view, support, STEP_SECONDS, pose);
+    }
+    expect(queried.length).toBeGreaterThan(0);
+    expect(queried[0]).toBeLessThan(death.position.x);
+  });
+});
+
+describe("death summary", () => {
+  it.each([
+    { activeSeconds: 65.8, percent: 0.25, progress: "25", time: "1:05" },
+    { activeSeconds: 0, percent: 0, progress: "0", time: "0:00" },
+  ])(
+    "formats active time and current-attempt progress without advancing either",
+    ({ activeSeconds, percent, progress, time }) => {
+      const result = deathSummary(TEXT.death, {
+        activeSeconds,
+        levelLabel: TEXT.map.zones.street!,
+        percent,
+      });
+      expect(result.time).toBe(TEXT.death.time.replace("{time}", time));
+      expect(result.progress).toBe(TEXT.death.progress.replace("{percent}", progress));
+      expect(result.title).toBe(TEXT.death.title.replace("{level}", TEXT.map.zones.street!));
+    },
+  );
+});

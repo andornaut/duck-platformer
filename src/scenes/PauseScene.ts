@@ -111,7 +111,7 @@ export class PauseScene extends Scene implements SettingsOpener {
     });
     this.watchKeys();
     const onBack = () => {
-      if (this.dialogueOpen()) {
+      if (this.playCovered()) {
         return;
       }
       if (this.state === "settings") {
@@ -133,7 +133,7 @@ export class PauseScene extends Scene implements SettingsOpener {
   }
 
   private act(action: CardAction | undefined): void {
-    if (this.dialogueOpen()) {
+    if (this.playCovered()) {
       return;
     }
     if (action === "open") {
@@ -147,7 +147,7 @@ export class PauseScene extends Scene implements SettingsOpener {
   // each, and
   // shows the card over the dim. Nothing of this scene shows while the zone is read back.
   private async open(): Promise<void> {
-    if (this.state !== "closed" || !this.scene.isActive(ZONE) || this.dialogueOpen()) {
+    if (this.state !== "closed" || !this.scene.isActive(ZONE) || this.playCovered()) {
       return;
     }
     this.state = "opening";
@@ -254,14 +254,14 @@ export class PauseScene extends Scene implements SettingsOpener {
   private showPauseButton(): void {
     this.pauseButton.setVisible(
       this.state === "closed" &&
-        !this.dialogueOpen() &&
+        !this.playCovered() &&
         this.scene.isActive(ZONE) &&
         window.matchMedia("(pointer: coarse)").matches,
     );
   }
 
-  private dialogueOpen(): boolean {
-    return (this.scene.get(ZONE) as ZoneScene).dialogueOpen();
+  private playCovered(): boolean {
+    return (this.scene.get(ZONE) as ZoneScene).playCovered();
   }
 
   override update(): void {
@@ -323,7 +323,7 @@ export class PauseScene extends Scene implements SettingsOpener {
   }
 
   private controlAt(pointer: Input.Pointer): Control | undefined {
-    if (this.dialogueOpen()) {
+    if (this.playCovered()) {
       return undefined;
     }
     const { close } = PAUSE_CARD;
@@ -374,7 +374,7 @@ export class PauseScene extends Scene implements SettingsOpener {
 
   private watchKeys(): void {
     this.input.keyboard?.on("keydown", (event: KeyboardEvent) => {
-      if (this.state === "opening" || this.dialogueOpen()) {
+      if (this.state === "opening" || this.playCovered()) {
         return;
       }
       if (this.state === "settings") {

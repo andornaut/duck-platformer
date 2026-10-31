@@ -33,6 +33,6 @@ export function cardRect(height: number): Rect {
 export function cardTitleAt(card: Rect, advance: number): Point {
   return {
     x: card.x + card.width / 2 - 2 - Math.floor((advance - 4) / 2),
-    y: CARD_FRAME.titleY,
+    y: card.y + CARD_FRAME.titleY - CARD_AT.y,
   };
 }

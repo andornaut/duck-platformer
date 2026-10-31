@@ -1,0 +1,41 @@
+import { inkWidth, parseBitmapFont } from "@andornaut/game-kit/text/bitmapFont";
+import { describe, expect, it } from "vitest";
+
+import fontBody from "../../public/art/fonts/font-body.fnt?raw";
+import { TEXT } from "../data/text";
+import { DEATH_ACTIONS } from "../input/deathInput";
+import { TEXT_BUTTON } from "./buttonLabel";
+import { cardTitleAt } from "./cardFrame";
+import { DEATH_CARD } from "./deathCard";
+import { type PressArea, pressedArea } from "./hitAreas";
+import { CARD_TEXT_SCALE } from "./pauseCard";
+
+const labels = { home: TEXT.pause.home, retry: TEXT.death.retry };
+
+describe("death card", () => {
+  it.each(DEATH_ACTIONS)("fits the %s action with standard height and padding", (key) => {
+    const { button } = DEATH_CARD[key];
+    const ink = inkWidth(parseBitmapFont(fontBody), CARD_TEXT_SCALE, labels[key]);
+    expect(button.height).toBe(TEXT_BUTTON.height);
+    expect((button.width - ink) / 2).toBeGreaterThanOrEqual(TEXT_BUTTON.inset);
+    expect(button.y + button.height).toBeLessThan(DEATH_CARD.card.y + DEATH_CARD.card.height);
+  });
+  it("centres the title relative to this top card instead of another card's fixed position", () => {
+    const title = cardTitleAt(DEATH_CARD.card, 100);
+    expect(title.y).toBeGreaterThan(DEATH_CARD.card.y);
+    expect(title.y).toBeLessThan(DEATH_CARD.time.y);
+  });
+  it("keeps Back to title left and Retry right with distinct press centres", () => {
+    expect(DEATH_CARD.home.button.x + DEATH_CARD.home.button.width + TEXT_BUTTON.gap).toBe(
+      DEATH_CARD.retry.button.x,
+    );
+    const areas: PressArea<string>[] = DEATH_ACTIONS.map((key) => ({
+      art: DEATH_CARD[key].button,
+      hit: DEATH_CARD[key].hit,
+      key,
+    }));
+    for (const { art, key } of areas) {
+      expect(pressedArea(areas, { x: art.x + art.width / 2, y: art.y + art.height / 2 })).toBe(key);
+    }
+  });
+});

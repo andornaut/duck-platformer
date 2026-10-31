@@ -21,9 +21,11 @@ import { type GameObjects, Input, Scale, Scene, Scenes, type Tilemaps } from "ph
 import { ARCHETYPES } from "../data/archetypes";
 import { CAMERA } from "../data/camera";
 import { CHARACTERS } from "../data/characters";
+import { DEATH, DEATH_PROGRESS } from "../data/death";
 import { DUCK } from "../data/duck";
 import { ZONE_MAP } from "../data/map";
 import { HAZARD_OUTLINE, SCREEN, TILE } from "../data/screen";
+import { TEXT } from "../data/text";
 import { TOUCH } from "../data/touch";
 import type {
   AreaLayout,
@@ -45,11 +47,13 @@ import {
   touchIntent,
   touchRoleAt,
 } from "../input/intent";
+import { DEATH_PROGRESS_HEIGHT } from "../layout/deathCard";
 import { PAUSE_BUTTON } from "../layout/pauseCard";
 import { bottomShift, shifted, topShift } from "../layout/playView";
 import { MOVE_HINT, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
-import { coverZone } from "../pwa";
+import { coverZone, startWakeLock, stopWakeLock } from "../pwa";
 import { contactBox } from "../rules/behaviour";
+import { attemptProgress, deathSupport } from "../rules/death";
 import { isLastZone, nodeOf } from "../rules/map";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
 import { zoneLayout } from "../rules/tiles";
@@ -57,6 +61,7 @@ import {
   activateBehaviour,
   areaOf,
   leaveRoom,
+  retryZone,
   roomOf,
   startZone,
   stepZone,
@@ -70,12 +75,19 @@ import {
   startZoneIndex,
 } from "../rules/zoneChain";
 import { zonePlanFor } from "../rules/zonePlans";
-import { saveCompleted } from "../save";
+import { activeLevelTime, flushStats, recordActiveLevelStep, saveCompleted } from "../save";
 import { type TouchSetting, touchSettings, touchSettingShown } from "../settings/touchControls";
 import { ART_MANIFEST_KEY, artHitboxes, type ArtManifest } from "../view/aseprite";
 import { behaviourPose } from "../view/behaviour";
 import { cameraScroll } from "../view/camera";
 import { characterState, nextQuirkAt } from "../view/character";
+import {
+  deathFrameIndex,
+  type DeathPresentation,
+  type DeathView,
+  startDeathPresentation,
+  stepDeathPresentation,
+} from "../view/death";
 import { doorPhase } from "../view/doorOpen";
 import { DUCK_FRAME, duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
 import { hazardOutline } from "../view/hazardOutline";
@@ -86,6 +98,7 @@ import { loadedTileset, objectTiles, terrainTiles, type Tileset } from "../view/
 import { buttonHeld, centredAt, controlTag, trackPress } from "../view/touchControls";
 import { proximityDialogue } from "../view/zoneDialogue";
 import { paletteColour } from "./cardParts";
+import type { DeathData, DeathOpener } from "./DeathScene";
 import type { DialogueData, DialogueOpener } from "./DialogueScene";
 import { canvasRect, fitCanvasCamera, fitPlayCamera } from "./playCamera";
 import type { RoomData } from "./RoomScene";
@@ -169,13 +182,17 @@ export interface ZoneData {
 }
 
 // One zone, played with the keyboard or the touch controls.
-export class ZoneScene extends Scene implements DialogueOpener {
+export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
   private clock: StepClock = startStepClock;
   private readonly controls = new Map<TouchControl, GameObjects.Sprite>();
   // The move hint's ring and knob.
   private moveHint!: { readonly knob: GameObjects.Sprite; readonly ring: GameObjects.Sprite };
   private duck!: GameObjects.Sprite;
   private duckPose: DuckPose = startPose;
+  private dying: DeathPresentation | undefined;
+  private deathView: DeathView | undefined;
+  private deathModal = false;
+  private progress!: GameObjects.Graphics;
   private zone!: ZoneState;
   private readonly heldKeys = new Set<string>();
   private readonly heldTouches = new Map<number, HeldTouch>();
@@ -241,6 +258,9 @@ export class ZoneScene extends Scene implements DialogueOpener {
     this.heardDialogues.clear();
     this.clock = startStepClock;
     this.duckPose = startPose;
+    this.dying = undefined;
+    this.deathView = undefined;
+    this.deathModal = false;
   }
 
   create(): void {
@@ -256,6 +276,9 @@ export class ZoneScene extends Scene implements DialogueOpener {
     this.cameras.main.setRoundPixels(true);
     this.areaArt = this.add.graphics();
     this.hazardArt = this.add.graphics().setDepth(DUCK_DEPTH);
+    this.progress = this.add.graphics().setDepth(OVERLAY_DEPTH);
+    this.cameras.main.ignore(this.progress);
+    this.progress.cameraFilter &= ~controlsCamera.id;
     this.events.once("shutdown", () => {
       if (this.dialogueOpen()) {
         this.scene.stop("dialogueChoice");
@@ -263,6 +286,11 @@ export class ZoneScene extends Scene implements DialogueOpener {
       }
       this.dialogueObject = undefined;
       coverZone("dialogue", false);
+      this.scene.stop("death");
+      coverZone("death", false);
+      if (!this.backdrop) {
+        void flushStats();
+      }
     });
 
     this.landMs = tagMs(this.sheet(DUCK_SPRITE), "land");
@@ -349,12 +377,13 @@ export class ZoneScene extends Scene implements DialogueOpener {
       const at = shifted(shift, centredAt(centre, sprite.frame));
       sprite.setPosition(at.x, at.y);
     }
+    this.drawProgress();
   }
 
   // Shows or hides the touch controls now as settings has them, for the pause card to show the
   // zone behind it as the settings change. They show only on a touch screen.
   showTouchControls(settings: Readonly<Record<TouchSetting, boolean>>): void {
-    const touch = !this.dialogueOpen() && window.matchMedia("(pointer: coarse)").matches;
+    const touch = !this.playCovered() && window.matchMedia("(pointer: coarse)").matches;
     const buttons = settings.actionButtons && touch;
     for (const sprite of this.controls.values()) {
       sprite.setVisible(buttons);
@@ -369,7 +398,7 @@ export class ZoneScene extends Scene implements DialogueOpener {
   private drawMoveHint(touches: readonly HeldTouch[]): void {
     const { knob, ring } = this.moveHint;
     const shown =
-      !this.dialogueOpen() &&
+      !this.playCovered() &&
       window.matchMedia("(pointer: coarse)").matches &&
       touchSettingShown("moveControls");
     const rest = shifted(bottomShift(this.scale.gameSize), MOVE_HINT.centre);
@@ -383,6 +412,10 @@ export class ZoneScene extends Scene implements DialogueOpener {
   }
 
   override update(time: number): void {
+    if (this.dying !== undefined) {
+      this.updateDeath(time);
+      return;
+    }
     const frame = frameSteps({ maxFrameMs: MAX_FRAME_MS, stepMs: STEP_MS }, time, this.clock);
     this.clock = frame.clock;
     const touches = [...this.heldTouches.values()];
@@ -402,6 +435,7 @@ export class ZoneScene extends Scene implements DialogueOpener {
       if (this.openProximityDialogue()) {
         break;
       }
+      const beforeZone = this.zone;
       const before = this.zone.duck;
       this.zone = stepZone(
         DUCK,
@@ -410,11 +444,20 @@ export class ZoneScene extends Scene implements DialogueOpener {
         { jumpHeld: intent.jump, move: intent.move, useHeld: intent.use },
         this.zone,
       );
+      recordActiveLevelStep(this.levelKey(), STEP_SECONDS, beforeZone, this.zone);
+      if (this.zone.death !== undefined) {
+        this.beginDeath();
+        break;
+      }
       this.duckPose = stepPose(this.landMs, STEP_MS, before, this.zone.duck, this.duckPose);
       if (this.zone.door !== undefined) {
         this.openDoor(time, this.zone.door);
         break;
       }
+    }
+    if (this.dying !== undefined) {
+      this.drawDeath();
+      return;
     }
     if (this.zone.area !== this.areaShown || this.zone.attempt !== this.attemptShown) {
       this.drawArea();
@@ -423,6 +466,154 @@ export class ZoneScene extends Scene implements DialogueOpener {
     this.drawDuck();
     this.drawControls(time, touches);
     this.drawMoveHint(touches);
+    this.drawProgress();
+  }
+
+  // Pause and page controls stay inert throughout dialogue, death presentation and its card.
+  playCovered(): boolean {
+    return this.dialogueOpen() || this.zone?.death !== undefined;
+  }
+
+  private levelKey(): string {
+    if (this.mapNode !== undefined) {
+      return nodeOf(ZONE_MAP, this.mapNode).zone ?? "";
+    }
+    return (
+      this.trial ?? (this.zoneIndex === 0 ? (nodeOf(ZONE_MAP, ZONE_MAP.start).zone ?? "") : "")
+    );
+  }
+
+  private progressFraction(): number {
+    const area = areaOf(this.layout, this.zone.area);
+    const startArea = areaOf(this.layout, this.layout.start.area);
+    const entry = startArea.entries[this.layout.start.entry];
+    if (entry === undefined) {
+      throw new Error("Missing level checkpoint");
+    }
+    return this.zone.cleared
+      ? 1
+      : attemptProgress(entry.x, area.exitX, this.zone.duck.x + DUCK.width / 2);
+  }
+
+  private drawProgress(): void {
+    const colours = DEATH_PROGRESS[this.levelKey()] ?? DEATH_PROGRESS.street;
+    if (colours === undefined) {
+      throw new Error("Missing default level progress colours");
+    }
+    const at = topShift(this.scale.gameSize);
+    this.progress
+      .clear()
+      .fillStyle(paletteColour(this, colours.track))
+      .fillRect(at.x, at.y, SCREEN.width, DEATH_PROGRESS_HEIGHT)
+      .fillStyle(paletteColour(this, colours.fill))
+      .fillRect(at.x, at.y, SCREEN.width * this.progressFraction(), DEATH_PROGRESS_HEIGHT);
+  }
+
+  private beginDeath(): void {
+    const death = this.zone.death;
+    if (death === undefined || this.dying !== undefined) {
+      return;
+    }
+    const camera = this.cameras.main;
+    this.deathView = {
+      body: DUCK,
+      bounds: { height: SCREEN.height, width: SCREEN.width, x: camera.scrollX, y: camera.scrollY },
+      frame: DUCK_FRAME,
+    };
+    this.dying = startDeathPresentation(DEATH, this.deathView, this.zone.duck.facing, death);
+    this.deathModal = false;
+    this.clearControls();
+    this.input.enabled = false;
+    this.drawObjects();
+    for (const art of this.objectArt) {
+      art.sprite?.anims.pause();
+    }
+    this.duck.anims.stop();
+    this.showTouchControls(touchSettings());
+    coverZone("death", true);
+    this.drawProgress();
+    void flushStats();
+  }
+
+  private updateDeath(time: number): void {
+    const view = this.deathView;
+    if (view === undefined || this.dying === undefined) {
+      return;
+    }
+    const frame = frameSteps({ maxFrameMs: MAX_FRAME_MS, stepMs: STEP_MS }, time, this.clock);
+    this.clock = frame.clock;
+    for (let step = 0; step < frame.steps; step++) {
+      this.dying = stepDeathPresentation(
+        DEATH,
+        view,
+        (position) => deathSupport(DUCK, this.layout, this.zone, position),
+        STEP_SECONDS,
+        this.dying,
+      );
+    }
+    this.drawDeath();
+    if (this.dying.phase === "seated" && !this.deathModal) {
+      this.deathModal = true;
+      const level = this.levelKey();
+      this.scene.launch("death", {
+        activeSeconds: activeLevelTime(level),
+        levelLabel: TEXT.map.zones[this.mapNode ?? level] ?? String(this.zoneIndex + 1),
+        percent: this.progressFraction(),
+      } satisfies DeathData);
+      stopWakeLock();
+      this.scene.pause();
+    }
+  }
+
+  private drawDeath(): void {
+    const pose = this.dying;
+    if (pose === undefined) {
+      return;
+    }
+    const frame = this.sheet(DUCK_SPRITE).get("death")?.[deathFrameIndex(pose.phase)]?.frame;
+    if (frame === undefined) {
+      throw new Error(`Missing duck death frame ${pose.phase}`);
+    }
+    this.duck.setFrame(frame);
+    const at = duckFrameAt(DUCK, this.duck.frame, { ...this.zone.duck, ...pose.position });
+    this.duck.setPosition(at.x, at.y).setFlipX(pose.facing < 0);
+  }
+
+  // The modal stops before returning here. Reuse the layout and cumulative clock, reset inputs
+  // and conversations, and let the core create the next explicit attempt.
+  retryDeath(): void {
+    if (this.zone.death === undefined) {
+      return;
+    }
+    this.zone = retryZone(DUCK, this.layout, this.zone);
+    this.dying = undefined;
+    this.deathView = undefined;
+    this.deathModal = false;
+    this.heardDialogues.clear();
+    this.dialogueAttempt = -1;
+    this.dialogueArea = "";
+    this.duckPose = startPose;
+    this.clearControls();
+    this.input.enabled = true;
+    coverZone("death", false);
+    this.drawArea();
+    this.drawObjects();
+    this.duck.play(animationKey(DUCK_SPRITE, startPose.tag));
+    this.drawDuck();
+    this.drawProgress();
+    this.showTouchControls(touchSettings());
+    startWakeLock();
+    this.scene.resume();
+  }
+
+  leaveDeath(): void {
+    if (this.zone.death === undefined) {
+      return;
+    }
+    void flushStats();
+    coverZone("death", false);
+    startWakeLock();
+    this.scene.start("start");
   }
 
   // The pause scene and page input stay inert during the conversation, including its launch.
@@ -826,7 +1017,7 @@ export class ZoneScene extends Scene implements DialogueOpener {
     // A key held from before the zone resumed, under the pause card or a room, counts only once
     // pressed again: its repeats never press it.
     keyboard.on("keydown", (event: KeyboardEvent) => {
-      if (!event.repeat && !this.dialogueOpen() && this.scene.isActive()) {
+      if (!event.repeat && !this.playCovered() && this.scene.isActive()) {
         this.heldKeys.add(event.code);
       }
     });
@@ -862,7 +1053,7 @@ export class ZoneScene extends Scene implements DialogueOpener {
         event.pointerType !== "touch" ||
         onPageControl(event.target) ||
         !this.scene.isActive() ||
-        this.dialogueOpen()
+        this.playCovered()
       ) {
         return false;
       }
@@ -899,7 +1090,7 @@ export class ZoneScene extends Scene implements DialogueOpener {
   // marks where a move touch started.
   private drawControls(nowMs: number, touches: readonly HeldTouch[]): void {
     const shown =
-      !this.dialogueOpen() &&
+      !this.playCovered() &&
       window.matchMedia("(pointer: coarse)").matches &&
       touchSettingShown("actionButtons");
     for (const [control, sprite] of this.controls) {

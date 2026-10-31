@@ -32,6 +32,11 @@ describe("trackHomeScreen", () => {
       steps: [["shown"], ["cover", "dialogue", true], ["cover", "dialogue", false]],
     },
     {
+      name: "away during death and its required card",
+      seen: [true, false, true],
+      steps: [["shown"], ["cover", "death", true], ["cover", "death", false]],
+    },
+    {
       name: "away while a room shows",
       seen: [true, false, true],
       steps: [["shown"], ["cover", "room", true], ["cover", "room", false]],
