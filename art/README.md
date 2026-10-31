@@ -23,6 +23,12 @@ Sky, distant skyline and middle-distance scenery are separate repeating images. 
 
 The design starts with horizontal camera factors of 0 for sky, 0.15 for the far skyline, 0.4 for middle scenery and 1 for play. Gameplay owns the runtime values; initial far and middle vertical factors are 0.05 and 0.15. Vertical movement should be weaker on distant layers to keep climbs legible. Windows between near buildings reveal the distant layers; do not fill every opening with foreground decoration. Repeating layers must cover camera travel without exposing an empty edge.
 
+### Reusable element skins
+
+Every stage element separates its behaviour, configuration and placement from its appearance. Reusable layout structures name logical roles; data bindings select their configuration and skin. This applies to terrain, static structures, ledges, hazards, enemies, doors, triggers, props and backdrop layers. Zones mix these elements and structures without introducing zone-specific behaviour types.
+
+Terrain skins bind the common ground and raised looks to tile families. Other visible skins select sprite, tile or backdrop assets. Keep the canonical footprint, collision profile and anchor compatible across skins; changing appearance must not change physics. Animation tags retain their logical state conventions, or use an explicit binding at the skin boundary. Invisible triggers need no artwork. Physical elements and attached art share the gameplay plane; independent backdrop layers keep their data-defined parallax.
+
 ## Process: critique and revise
 
 Every asset goes through 2 to 4 loops of render, critique against the checklist, and revise, until nothing on the checklist fails. A higher quality bar means more loops, not one bigger pass.
@@ -328,7 +334,7 @@ The duck's 48x42 `death` tag is appended after `land`, leaving all earlier frame
 
 ### Character states
 
-A placed thing has three layers: an archetype (its behaviour), a character (its art, animations, hit box, dialogue and quip pools and quirks) and an instance (one placement). A character's data names its art key and the tag that plays for each state, so every character sprite lists its tags by state (idle, move, react, talk, quirk) in its script docstring and in the table below. A state with no tag of its own says "none" or names the tag it falls back to. A state with more than one tag names each.
+A placed thing combines an archetype (its behaviour), a character configuration (its canonical animations, hit box, dialogue and quip pools and quirks) and an instance (one placement). Its resolved skin supplies compatible artwork. A character's data names the tag that plays for each state, so every character sprite lists its tags by state (idle, move, react, talk, quirk) in its script docstring and in the table below. A state with no tag of its own says "none" or names the tag it falls back to. A state with more than one tag names each.
 
 | Character          | idle   | move                                         | react                        | talk                       | quirk    |
 | ------------------ | ------ | -------------------------------------------- | ---------------------------- | -------------------------- | -------- |
