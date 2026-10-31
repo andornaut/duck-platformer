@@ -45,7 +45,7 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     rows: 15,
   },
   "dog-antagonist": {
-    animations: { idle: "idle", move: "walk" },
+    animations: { crouch: "crouch", idle: "idle", move: "walk", rest: "rest", rush: "rush" },
     archetype: "hazard",
     art: "dog-antagonist",
     charge: {
