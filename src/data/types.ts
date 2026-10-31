@@ -506,13 +506,15 @@ export interface ThemePlan {
 // fixed start and finish chunks, and between them a seeded run of the theme's chunks. length:
 // the zone's whole width range in columns, start and finish chunks included. difficulty: the
 // inclusive band for every middle chunk, independent of position. Safe start and finish chunks
-// are exempt. events and doors: what the seed places in the chunks' slots, count of each.
+// are exempt. spawnCol: her centre column within the opening chunk. events and doors: what the
+// seed places in the chunks' slots, count of each.
 export interface ZoneRecipe {
   readonly difficulty: { readonly max: Difficulty; readonly min: Difficulty };
   readonly doors: readonly { readonly count: number; readonly room: string }[];
   readonly events: readonly { readonly count: number; readonly id: string }[];
   readonly finish: string;
   readonly length: { readonly max: number; readonly min: number };
+  readonly spawnCol: number;
   readonly start: string;
   readonly theme: string;
 }
