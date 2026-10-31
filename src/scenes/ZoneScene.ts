@@ -22,7 +22,7 @@ import { ARCHETYPES } from "../data/archetypes";
 import { CHARACTERS } from "../data/characters";
 import { DUCK } from "../data/duck";
 import { ZONE_MAP } from "../data/map";
-import { SCREEN, TILE } from "../data/screen";
+import { HAZARD_OUTLINE, SCREEN, TILE } from "../data/screen";
 import { TOUCH } from "../data/touch";
 import type {
   AreaLayout,
@@ -47,10 +47,20 @@ import {
 import { PAUSE_BUTTON } from "../layout/pauseCard";
 import { bottomShift, shifted, topShift } from "../layout/playView";
 import { MOVE_HINT, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
+import { coverZone } from "../pwa";
+import { contactBox } from "../rules/behaviour";
 import { isLastZone, nodeOf } from "../rules/map";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
 import { zoneLayout } from "../rules/tiles";
-import { areaOf, leaveRoom, roomOf, startZone, stepZone, type ZoneState } from "../rules/zone";
+import {
+  activateBehaviour,
+  areaOf,
+  leaveRoom,
+  roomOf,
+  startZone,
+  stepZone,
+  type ZoneState,
+} from "../rules/zone";
 import {
   askedAssemblySeed,
   askedRecipe,
@@ -60,17 +70,22 @@ import {
 } from "../rules/zoneChain";
 import { zonePlanFor } from "../rules/zonePlans";
 import { saveCompleted } from "../save";
-import { type TouchSetting, touchSettingShown } from "../settings/touchControls";
+import { type TouchSetting, touchSettings, touchSettingShown } from "../settings/touchControls";
 import { ART_MANIFEST_KEY, artHitboxes, type ArtManifest } from "../view/aseprite";
+import { behaviourPose } from "../view/behaviour";
 import { cameraScroll } from "../view/camera";
 import { characterState, nextQuirkAt } from "../view/character";
 import { doorPhase } from "../view/doorOpen";
 import { DUCK_FRAME, duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
+import { hazardOutline } from "../view/hazardOutline";
 import { moveHintView } from "../view/moveHint";
 import { type ArtKind, artKind, artOffset, artScrollFactor } from "../view/objectArt";
 import { type PlayHold, stepAction } from "../view/playHold";
 import { loadedTileset, objectTiles, terrainTiles, type Tileset } from "../view/tiles";
 import { buttonHeld, centredAt, controlTag, trackPress } from "../view/touchControls";
+import { proximityDialogue } from "../view/zoneDialogue";
+import { paletteColour } from "./cardParts";
+import type { DialogueData, DialogueOpener } from "./DialogueScene";
 import { canvasRect, fitCanvasCamera, fitPlayCamera } from "./playCamera";
 import type { RoomData } from "./RoomScene";
 
@@ -153,7 +168,7 @@ export interface ZoneData {
 }
 
 // One zone, played with the keyboard or the touch controls.
-export class ZoneScene extends Scene {
+export class ZoneScene extends Scene implements DialogueOpener {
   private clock: StepClock = startStepClock;
   private readonly controls = new Map<TouchControl, GameObjects.Sprite>();
   // The move hint's ring and knob.
@@ -172,6 +187,7 @@ export class ZoneScene extends Scene {
   // ?assembly=<n> fixes the seed.
   private trial: string | undefined;
   private areaArt!: GameObjects.Graphics;
+  private hazardArt!: GameObjects.Graphics;
   // Drawn as the start screen's backdrop rather than played.
   private backdrop = false;
   // The hit boxes art's sprites declare, by art key.
@@ -189,6 +205,10 @@ export class ZoneScene extends Scene {
     { readonly at: number; readonly index: number; readonly ms?: number } | undefined;
   // Whether a room shows over the paused zone.
   private inRoom = false;
+  private dialogueObject: number | undefined;
+  private dialogueAttempt = -1;
+  private dialogueArea = "";
+  private readonly heardDialogues = new Set<number>();
   private objectArt: ObjectArt[] = [];
   private terrainMap: Tilemaps.Tilemap | undefined;
   // When each held button's press began.
@@ -214,6 +234,10 @@ export class ZoneScene extends Scene {
     this.hold = undefined;
     this.opening = undefined;
     this.inRoom = false;
+    this.dialogueObject = undefined;
+    this.dialogueAttempt = -1;
+    this.dialogueArea = "";
+    this.heardDialogues.clear();
     this.clock = startStepClock;
     this.duckPose = startPose;
   }
@@ -230,6 +254,15 @@ export class ZoneScene extends Scene {
     this.cameras.main.setBackgroundColor(BACKGROUND);
     this.cameras.main.setRoundPixels(true);
     this.areaArt = this.add.graphics();
+    this.hazardArt = this.add.graphics().setDepth(DUCK_DEPTH);
+    this.events.once("shutdown", () => {
+      if (this.dialogueOpen()) {
+        this.scene.stop("dialogueChoice");
+        this.scene.stop("dialogue");
+      }
+      this.dialogueObject = undefined;
+      coverZone("dialogue", false);
+    });
 
     this.landMs = tagMs(this.sheet(DUCK_SPRITE), "land");
 
@@ -320,7 +353,7 @@ export class ZoneScene extends Scene {
   // Shows or hides the touch controls now as settings has them, for the pause card to show the
   // zone behind it as the settings change. They show only on a touch screen.
   showTouchControls(settings: Readonly<Record<TouchSetting, boolean>>): void {
-    const touch = window.matchMedia("(pointer: coarse)").matches;
+    const touch = !this.dialogueOpen() && window.matchMedia("(pointer: coarse)").matches;
     const buttons = settings.actionButtons && touch;
     for (const sprite of this.controls.values()) {
       sprite.setVisible(buttons);
@@ -335,7 +368,9 @@ export class ZoneScene extends Scene {
   private drawMoveHint(touches: readonly HeldTouch[]): void {
     const { knob, ring } = this.moveHint;
     const shown =
-      window.matchMedia("(pointer: coarse)").matches && touchSettingShown("moveControls");
+      !this.dialogueOpen() &&
+      window.matchMedia("(pointer: coarse)").matches &&
+      touchSettingShown("moveControls");
     const rest = shifted(bottomShift(this.scale.gameSize), MOVE_HINT.centre);
     const view = moveHintView(TOUCH, MOVE_HINT.knobReach, rest, touches);
     show(ring, view.ringTag);
@@ -363,6 +398,9 @@ export class ZoneScene extends Scene {
         this.fadeOut();
         break;
       }
+      if (this.openProximityDialogue()) {
+        break;
+      }
       const before = this.zone.duck;
       this.zone = stepZone(
         DUCK,
@@ -384,6 +422,64 @@ export class ZoneScene extends Scene {
     this.drawDuck();
     this.drawControls(time, touches);
     this.drawMoveHint(touches);
+  }
+
+  // The pause scene and page input stay inert during the conversation, including its launch.
+  dialogueOpen(): boolean {
+    return this.dialogueObject !== undefined;
+  }
+
+  private clearControls(): void {
+    this.heldKeys.clear();
+    this.heldTouches.clear();
+    this.presses.clear();
+    this.clock = startStepClock;
+  }
+
+  private openProximityDialogue(): boolean {
+    if (this.dialogueOpen()) {
+      return true;
+    }
+    if (this.zone.attempt !== this.dialogueAttempt || this.zone.area !== this.dialogueArea) {
+      this.heardDialogues.clear();
+      this.dialogueAttempt = this.zone.attempt;
+      this.dialogueArea = this.zone.area;
+    }
+    const area = areaOf(this.layout, this.zone.area);
+    const index = proximityDialogue(area.objects, this.zone.objects, this.heardDialogues, {
+      height: DUCK.height,
+      width: DUCK.width,
+      x: this.zone.duck.x,
+      y: this.zone.duck.y,
+    });
+    const scene = index === undefined ? undefined : area.objects[index]?.scene;
+    if (index === undefined || scene === undefined) {
+      return false;
+    }
+    this.dialogueObject = index;
+    this.clearControls();
+    this.input.enabled = false;
+    this.showTouchControls(touchSettings());
+    coverZone("dialogue", true);
+    this.scene.launch("dialogue", { scene } satisfies DialogueData);
+    this.scene.pause();
+    return true;
+  }
+
+  // DialogueScene stops itself before returning control; the dog starts only after that.
+  dialogueClosed(): void {
+    const index = this.dialogueObject;
+    if (index === undefined) {
+      return;
+    }
+    this.heardDialogues.add(index);
+    this.zone = activateBehaviour(index, this.zone);
+    this.dialogueObject = undefined;
+    this.clearControls();
+    this.input.enabled = true;
+    this.showTouchControls(touchSettings());
+    coverZone("dialogue", false);
+    this.scene.resume();
   }
 
   // Fades out of the ended zone, play held still, then leaves it.
@@ -481,6 +577,9 @@ export class ZoneScene extends Scene {
   }
 
   private loadPlan(plan: ZonePlan): void {
+    this.heardDialogues.clear();
+    this.dialogueAttempt = -1;
+    this.dialogueArea = "";
     // PLACEHOLDER: carried choices set no flags yet.
     const tilesets = Object.fromEntries(
       this.manifest.tilesets.map(({ key }) => [key, this.cache.json.get(key) as Tileset]),
@@ -627,6 +726,7 @@ export class ZoneScene extends Scene {
     const area = areaOf(this.layout, this.zone.area);
     const { duck } = this.zone;
     const hers = { x: duck.x + DUCK.width / 2, y: duck.y + DUCK.height / 2 };
+    this.hazardArt.clear();
     this.zone.objects.forEach((at, index) => {
       const art = this.objectArt[index];
       const object = area.objects[index];
@@ -636,7 +736,25 @@ export class ZoneScene extends Scene {
       const x = Math.round(at.x + art.offset.x);
       const y = Math.round(at.y + art.offset.y);
       const moved = x !== art.item.x || y !== art.item.y;
-      if (art.sprite && index !== this.opening?.index) {
+      const behaviour = this.zone.behaviours[index];
+      if (behaviour) {
+        if (art.sprite) {
+          const pose = behaviourPose(object, behaviour);
+          art.sprite.setFlipX(pose.flipX);
+          if (pose.animation !== undefined) {
+            show(art.sprite, pose.animation);
+          }
+        }
+        if (object.collision === "hazard") {
+          for (const { band, rect } of hazardOutline(
+            HAZARD_OUTLINE,
+            contactBox(object, at, behaviour.facing),
+          )) {
+            this.hazardArt.fillStyle(paletteColour(this, HAZARD_OUTLINE[band]));
+            this.hazardArt.fillRect(rect.x, rect.y, rect.width, rect.height);
+          }
+        }
+      } else if (art.sprite && index !== this.opening?.index) {
         if (x !== art.item.x) {
           art.sprite.setFlipX(x < art.item.x);
         }
@@ -707,7 +825,7 @@ export class ZoneScene extends Scene {
     // A key held from before the zone resumed, under the pause card or a room, counts only once
     // pressed again: its repeats never press it.
     keyboard.on("keydown", (event: KeyboardEvent) => {
-      if (!event.repeat) {
+      if (!event.repeat && !this.dialogueOpen() && this.scene.isActive()) {
         this.heldKeys.add(event.code);
       }
     });
@@ -739,7 +857,12 @@ export class ZoneScene extends Scene {
     const roleAt = (point: Point) =>
       touchRoleAt(shifted(bottomShift(this.scale.gameSize), point, -1));
     const accepts = (event: PagePointerEvent) => {
-      if (event.pointerType !== "touch" || onPageControl(event.target) || !this.scene.isActive()) {
+      if (
+        event.pointerType !== "touch" ||
+        onPageControl(event.target) ||
+        !this.scene.isActive() ||
+        this.dialogueOpen()
+      ) {
         return false;
       }
       const point = shifted(topShift(this.scale.gameSize), onGame(event), -1);
@@ -775,7 +898,9 @@ export class ZoneScene extends Scene {
   // marks where a move touch started.
   private drawControls(nowMs: number, touches: readonly HeldTouch[]): void {
     const shown =
-      window.matchMedia("(pointer: coarse)").matches && touchSettingShown("actionButtons");
+      !this.dialogueOpen() &&
+      window.matchMedia("(pointer: coarse)").matches &&
+      touchSettingShown("actionButtons");
     for (const [control, sprite] of this.controls) {
       sprite.setVisible(shown);
       const since = trackPress(nowMs, buttonHeld(control, touches), this.presses.get(control));

@@ -27,6 +27,11 @@ describe("trackHomeScreen", () => {
       steps: [["shown"], ["cover", "pauseCard", true], ["cover", "pauseCard", false]],
     },
     {
+      name: "away while a conversation shows",
+      seen: [true, false, true],
+      steps: [["shown"], ["cover", "dialogue", true], ["cover", "dialogue", false]],
+    },
+    {
       name: "away while a room shows",
       seen: [true, false, true],
       steps: [["shown"], ["cover", "room", true], ["cover", "room", false]],
