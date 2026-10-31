@@ -1,5 +1,6 @@
 import type { ChunkPlan, ChunkRules, ElementBinding, ThemePlan } from "./types";
 import { STREET_CHUNKS } from "./zone1";
+import { INDUSTRIAL_CHUNKS } from "./zone2";
 
 // The rows a chunk's entry and exit stand on.
 export const SEAM_ROWS = [30, 40, 50] as const;
@@ -56,9 +57,67 @@ const CITY_THEME: ThemePlan = {
   tileset: "tiles-street",
 };
 
+const INDUSTRIAL_BINDINGS: Readonly<Record<string, ElementBinding>> = {
+  ...COMMON_BINDINGS,
+  antagonist: { character: "raccoon-antagonist", scene: null },
+  "boundary-wall": {
+    character: "facade-one-storey",
+    skin: { art: "warehouse-wall", tileset: null },
+  },
+  door: { character: "street-door", skin: { art: "door", tileset: "tiles-street" } },
+  "far-background": {
+    character: "street-city-far",
+    skin: { art: "industrial-far", tileset: null },
+  },
+  "loading-bay": {
+    character: "depot-loading-bay",
+    skin: { art: "warehouse-loading-bay", tileset: null },
+  },
+  "mid-background": {
+    character: "street-city-mid",
+    skin: { art: "warehouse-mid", tileset: null },
+  },
+  "near-wall": {
+    character: "facade-one-storey",
+    skin: { art: "warehouse-wall", tileset: null },
+  },
+  sky: { character: "street-sky", skin: { art: "industrial-sky", tileset: null } },
+};
+
+const INDUSTRIAL_BACKDROPS: ThemePlan["backdrops"] = [
+  { character: "street-sky", parallax: { x: 0, y: 0 }, role: "sky", row: 0 },
+  { character: "street-city-far", parallax: { x: 0.15, y: 0.05 }, role: "far-background", row: 0 },
+  { character: "street-city-mid", parallax: { x: 0.4, y: 0.15 }, role: "mid-background", row: 0 },
+];
+
 // The themes chunks are drawn in, by key.
 export const THEMES: Readonly<Record<string, ThemePlan>> = {
   "city-boundary": CITY_THEME,
+  "freight-terminal": {
+    backdrops: INDUSTRIAL_BACKDROPS,
+    bindings: {
+      ...INDUSTRIAL_BINDINGS,
+      "boundary-wall": {
+        character: "facade-one-storey",
+        skin: { art: "freight-gantry", tileset: null },
+      },
+      "loading-bay": {
+        character: "depot-loading-bay",
+        skin: { art: "freight-gantry", tileset: null },
+      },
+      "mid-background": {
+        character: "street-city-mid",
+        skin: { art: "freight-mid", tileset: null },
+      },
+      "near-wall": {
+        character: "facade-one-storey",
+        skin: { art: "freight-gantry", tileset: null },
+      },
+    },
+    door: "door",
+    looks: { ground: "terminal-floor", raised: "container-stack" },
+    tileset: "tiles-industrial",
+  },
   // The park, outdoors in autumn. Chunks name two looks, ground (the lawn, its top at row 50)
   // and raised (the terraces above it), both drawn as art's grass top over turf over soil. Its
   // backdrops, back to front: the sky, the clouds, the city, the far trees and the treetops,
@@ -98,6 +157,13 @@ export const THEMES: Readonly<Record<string, ThemePlan>> = {
     tileset: "tiles-park",
   },
   street: CITY_THEME,
+  "warehouse-district": {
+    backdrops: INDUSTRIAL_BACKDROPS,
+    bindings: INDUSTRIAL_BINDINGS,
+    door: "door",
+    looks: { ground: "industrial-floor", raised: "crate-stack" },
+    tileset: "tiles-industrial",
+  },
 };
 
 // The chunks zones are assembled from, by id. Rows are the chunk's own: seams at 50 (the lawn), 40
@@ -177,7 +243,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { col: 60, cols: 12, look: "raised", row: 45, rows: 15 },
       { col: 72, cols: 12, look: "raised", row: 40, rows: 20 },
     ],
-    theme: ["city-boundary", "street"],
+    theme: ["city-boundary", "freight-terminal", "street", "warehouse-district"],
   },
   "city-boundary-finish": {
     backdrops: [
@@ -216,7 +282,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { col: 72, cols: 6, look: "raised", row: 45, rows: 15 },
       { col: 78, cols: 6, look: "raised", row: 40, rows: 20 },
     ],
-    theme: ["city-boundary", "street"],
+    theme: ["city-boundary", "freight-terminal", "street", "warehouse-district"],
   },
   "city-boundary-ground-hazard": {
     backdrops: [{ character: "facade-one-storey", col: 8, cols: 12, role: "near-wall", row: 24 }],
@@ -230,7 +296,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { character: "platform-ledge", col: 44, cols: 8, role: "ledge", row: 35 },
     ],
     solids: [{ col: 0, cols: 84, look: "raised", row: 40, rows: 20 }],
-    theme: ["city-boundary", "street"],
+    theme: ["city-boundary", "freight-terminal", "street", "warehouse-district"],
     weight: 2,
   },
   "city-boundary-jumps": {
@@ -247,7 +313,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { col: 44, cols: 10, look: "raised", row: 44, rows: 16 },
       { col: 54, cols: 18, look: "raised", row: 40, rows: 20 },
     ],
-    theme: ["city-boundary", "street"],
+    theme: ["city-boundary", "freight-terminal", "street", "warehouse-district"],
   },
   "city-boundary-lift": {
     backdrops: [{ character: "facade-one-storey", col: 48, cols: 16, role: "near-wall", row: 14 }],
@@ -264,7 +330,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { col: 0, cols: 18, look: "raised", row: 40, rows: 20 },
       { col: 34, cols: 50, look: "raised", row: 30, rows: 30 },
     ],
-    theme: ["city-boundary", "street"],
+    theme: ["city-boundary", "freight-terminal", "street", "warehouse-district"],
     weight: 2,
   },
   // The red ceiling leaves room for a short hop over the step, but not a full held jump.
@@ -287,7 +353,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { col: 44, cols: 14, look: "raised", row: 45, rows: 15 },
       { col: 58, cols: 14, look: "raised", row: 40, rows: 20 },
     ],
-    theme: ["city-boundary", "street"],
+    theme: ["city-boundary", "freight-terminal", "street", "warehouse-district"],
   },
   "city-boundary-return-high": {
     cols: 72,
@@ -302,7 +368,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { col: 42, cols: 12, look: "raised", row: 45, rows: 15 },
       { col: 54, cols: 18, look: "ground", row: 50, rows: 10 },
     ],
-    theme: ["city-boundary", "street"],
+    theme: ["city-boundary", "freight-terminal", "street", "warehouse-district"],
   },
   "city-boundary-return-terrace": {
     cols: 60,
@@ -315,7 +381,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { col: 20, cols: 14, look: "raised", row: 45, rows: 15 },
       { col: 34, cols: 26, look: "ground", row: 50, rows: 10 },
     ],
-    theme: ["city-boundary", "street"],
+    theme: ["city-boundary", "freight-terminal", "street", "warehouse-district"],
   },
   "city-boundary-shuttle": {
     backdrops: [{ character: "facade-one-storey", col: 64, cols: 16, role: "near-wall", row: 24 }],
@@ -332,7 +398,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { col: 0, cols: 18, look: "raised", row: 40, rows: 20 },
       { col: 58, cols: 38, look: "raised", row: 40, rows: 20 },
     ],
-    theme: ["city-boundary", "street"],
+    theme: ["city-boundary", "freight-terminal", "street", "warehouse-district"],
     weight: 2,
   },
   "city-boundary-start": {
@@ -360,7 +426,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { col: 32, cols: 6, look: "raised", row: 41, rows: 19 },
       { col: 38, cols: 34, look: "raised", row: 40, rows: 20 },
     ],
-    theme: ["city-boundary", "street"],
+    theme: ["city-boundary", "freight-terminal", "street", "warehouse-district"],
   },
   "city-boundary-upper-climb": {
     backdrops: [{ character: "facade-one-storey", col: 42, cols: 12, role: "near-wall", row: 14 }],
@@ -374,7 +440,24 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { col: 18, cols: 12, look: "raised", row: 35, rows: 25 },
       { col: 30, cols: 42, look: "raised", row: 30, rows: 30 },
     ],
-    theme: ["city-boundary", "street"],
+    theme: ["city-boundary", "freight-terminal", "street", "warehouse-district"],
+  },
+  "climbing-enemy-lane": {
+    backdrops: [{ character: "facade-one-storey", col: 4, cols: 12, role: "near-wall", row: 24 }],
+    cols: 84,
+    difficulty: 4,
+    entry: { row: 40 },
+    exit: { row: 30 },
+    objects: [
+      { character: "platform-ledge", col: 24, cols: 6, role: "ledge", row: 35 },
+      { character: "raccoon-antagonist", col: 30, role: "antagonist", row: 36 },
+    ],
+    solids: [
+      { col: 0, cols: 34, look: "raised", row: 40, rows: 20 },
+      { col: 34, cols: 50, look: "raised", row: 30, rows: 30 },
+    ],
+    theme: ["freight-terminal", "warehouse-district"],
+    weight: 2,
   },
   // Difficulty 2, up from the lawn (50) to the high terrace (30): a bench (up 2), a terrace (up 4),
   // a bench on it (up 2), the bandstand's roof (up 4, 6 above its base), a step (up 4) and the
@@ -643,5 +726,6 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     ],
     theme: "park",
   },
+  ...INDUSTRIAL_CHUNKS,
   ...STREET_CHUNKS,
 };
