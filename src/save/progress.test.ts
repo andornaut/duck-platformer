@@ -103,7 +103,9 @@ describe("progressFormat", () => {
   });
 
   it("takes the game's map start, nothing completed, as a place to stand", () => {
-    expect(encodeSave(progressFormat(ZONE_MAP, ZONES), at(ZONE_MAP.start)).ok).toBe(true);
+    expect(
+      encodeSave(progressFormat(ZONE_MAP, { ...ZONES, ...RECIPES }), at(ZONE_MAP.start)).ok,
+    ).toBe(true);
   });
 });
 
