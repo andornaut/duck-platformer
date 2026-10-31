@@ -99,6 +99,13 @@ export interface GameText {
     readonly skip: string;
     readonly speakers: Readonly<Record<string, string>>;
   };
+  readonly homePage: {
+    readonly description: string;
+    readonly keyboard: string;
+    readonly play: string;
+    readonly subline: string;
+    readonly touch: string;
+  };
   // What characters say in dialogue, by key.
   readonly lines: Readonly<Record<string, string>>;
   // Map destination and stage names, indexed separately by catalogue and stage-node id.
