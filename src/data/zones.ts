@@ -6,10 +6,10 @@ import { ZONE_1 } from "./zone1";
 // Every zone is 60 rows, starts on the ground at the bottom left and clears at its right edge.
 // Each solid runs down to the bottom row, so every gap is a pit she falls out of. Rises and gaps
 // are in tiles, from the top of the ground she leaves to the top of the ledge she lands on: a tap
-// rises 1, a full jump 6, and a running jump crosses 18. Every mover's path is 2 tiles from every
+// rises 1, a full jump 6, and a running jump crosses 22. Every mover's path is 2 tiles from every
 // solid and every other mover's path, so a mover never meets her box where she stands at an edge.
-// Every gap she must not jump, a mover's gaps among them, is 19 or more across, counting the
-// speed she keeps from a mover she leaves.
+// The noCross pairs mark jumps that must remain impossible, accounting for the speed carried
+// from a mover on takeoff.
 export const TEST_ZONES: readonly ZonePlan[] = [
   // Ledges.
   {
@@ -30,7 +30,7 @@ export const TEST_ZONES: readonly ZonePlan[] = [
           // Gaps at the same height: 6, 12, then 18.
           { col: 46, cols: 10, row: 43, rows: 17 },
           { col: 68, cols: 10, row: 43, rows: 17 },
-          // GAP_LIMIT: a gap of 18, the running jump's reach.
+          // A gap of 18, below the running jump's reach.
           { col: 96, cols: 10, row: 43, rows: 17 },
           // Climb to the upper screen: three full jumps of 6.
           { col: 106, cols: 6, row: 37, rows: 23 },
@@ -45,10 +45,10 @@ export const TEST_ZONES: readonly ZonePlan[] = [
   {
     areas: {
       main: {
-        cols: 210,
+        cols: 211,
         entries: { start: { col: 3, row: 56 } },
         // She can't jump past the narrow landing.
-        noCross: [{ from: { col: 98, row: 52 }, to: { col: 130, row: 52 } }],
+        noCross: [{ from: { col: 98, row: 52 }, to: { col: 131, row: 52 } }],
         objects: [
           // Hazard strips on the ground under gaps of 8 and 16.
           { character: "test-hazard", col: 18, cols: 8, row: 55, rows: 1 },
@@ -63,7 +63,7 @@ export const TEST_ZONES: readonly ZonePlan[] = [
           { character: "test-hazard", col: 117, cols: 2, row: 50, rows: 10 },
           // Hazard spikes 5 above the floor, over a tiny ledge 1 up: a tap rises onto the ledge
           // under them, and a mid or full jump touches them.
-          { character: "test-hazard", col: 130, cols: 17, row: 45, rows: 2 },
+          { character: "test-hazard", col: 131, cols: 17, row: 45, rows: 2 },
         ],
         rows: 60,
         solids: [
@@ -76,17 +76,17 @@ export const TEST_ZONES: readonly ZonePlan[] = [
           // The ledge with hazard blocks, then a gap of 14 over a hazard post.
           { col: 48, cols: 32, row: 52, rows: 8 },
           { col: 94, cols: 10, row: 52, rows: 8 },
-          // The narrow landing: gaps of 9 to it and from it, 22 in all, so she can't jump past it.
+          // The narrow landing: gaps of 9 to it and 10 from it, 23 in all, beyond the running reach.
           { col: 113, cols: 4, row: 52, rows: 8 },
           // The tiny ledge under the spikes: a tap up 1 from the floor.
-          { col: 126, cols: 12, row: 52, rows: 8 },
-          { col: 138, cols: 26, row: 51, rows: 9 },
+          { col: 127, cols: 12, row: 52, rows: 8 },
+          { col: 139, cols: 26, row: 51, rows: 9 },
           // Climb to the upper screen: five full jumps of 6.
-          { col: 164, cols: 6, row: 45, rows: 15 },
-          { col: 170, cols: 6, row: 39, rows: 21 },
-          { col: 176, cols: 6, row: 33, rows: 27 },
-          { col: 182, cols: 6, row: 27, rows: 33 },
-          { col: 188, cols: 22, row: 21, rows: 39 },
+          { col: 165, cols: 6, row: 45, rows: 15 },
+          { col: 171, cols: 6, row: 39, rows: 21 },
+          { col: 177, cols: 6, row: 33, rows: 27 },
+          { col: 183, cols: 6, row: 27, rows: 33 },
+          { col: 189, cols: 22, row: 21, rows: 39 },
         ],
       },
     },
