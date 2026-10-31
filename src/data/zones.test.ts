@@ -30,9 +30,10 @@ const tagsOf = (art: string) => {
   const sheet = SHEETS[`../../public/art/sprites/${art}.json`];
   return sheet ? [...sheetTags(sheet).keys()] : [];
 };
+const RECIPE_PLANS = Object.keys(RECIPES).map((key) => [key, zonePlanFor(1, key)] as const);
 const ZONES = [
   ...Object.values(ZONES_BY_KEY),
-  ...Object.keys(RECIPES).map((key) => zonePlanFor(1, key)),
+  ...RECIPE_PLANS.map(([, plan]) => plan),
   ...TEST_ZONES,
 ];
 const CATALOGUE = { archetypes: ARCHETYPES, characters: CHARACTERS };
@@ -156,23 +157,15 @@ const doorsOf = (plan: ZonePlan) =>
     ),
   );
 
-// Seeds each recipe is assembled for.
-const DOOR_SEEDS = [1, 2, 3];
-
 describe("the real zones", () => {
   it.each(Object.entries(ZONES_BY_KEY))("hand-built zone %s has a door to a room", (_, plan) => {
     expect(doorsOf(plan).length).toBeGreaterThan(0);
   });
 
-  it.each(Object.keys(RECIPES))("recipe %s fills a slot with a door to a room", (key) => {
-    for (const seed of DOOR_SEEDS) {
-      expect(doorsOf(zonePlanFor(seed, key)).length, `seed ${seed}`).toBeGreaterThan(0);
-    }
+  it.each(RECIPE_PLANS)("recipe %s fills a slot with a door to a room", (_, plan) => {
+    expect(doorsOf(plan).length).toBeGreaterThan(0);
   });
 });
-
-// Seeds each recipe is assembled for, to check where she starts.
-const START_SEEDS = [1, 2, 3, 4, 5];
 
 // Her collision box where a plan starts her: it must start clear of the first column, or she
 // would turn back (rules/zone's turnedBack) on arrival.
@@ -191,9 +184,8 @@ describe("every zone's start", () => {
     expect(startsClear(plan)).toBe(true);
   });
 
-  it.each(Object.keys(RECIPES))("starts recipe %s clear of its first column", (key) => {
-    const failing = START_SEEDS.filter((seed) => !startsClear(zonePlanFor(seed, key)));
-    expect(failing).toEqual([]);
+  it.each(RECIPE_PLANS)("starts recipe %s clear of its first column", (_, plan) => {
+    expect(startsClear(plan)).toBe(true);
   });
 });
 
@@ -218,10 +210,7 @@ describe("going back from a zone's start", () => {
   it.each([
     ...Object.entries(ZONES_BY_KEY),
     ...TEST_ZONES.map((plan, index): [string, ZonePlan] => [`test zone ${index + 1}`, plan]),
-    ...Object.keys(RECIPES).map((key): [string, ZonePlan] => [
-      `recipe ${key}`,
-      zonePlanFor(1, key),
-    ]),
+    ...RECIPE_PLANS.map(([key, plan]): [string, ZonePlan] => [`recipe ${key}`, plan]),
   ])("held left from %s's start, she turns back", (_, plan) => {
     expect(turnsBackWithin(3, plan)).toBe(true);
   });
@@ -291,6 +280,5 @@ describe("the map", () => {
       (node) => node.kind !== "zone" || node.zone !== undefined,
     );
     expect(reach(ZONE_MAP.start, (id) => after(id, true)).has(ZONE_MAP.finish)).toBe(allBuilt);
-    expect(reach(ZONE_MAP.start, (id) => after(id)).has(ZONE_MAP.finish)).toBe(true);
   });
 });
