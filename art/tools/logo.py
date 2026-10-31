@@ -1,26 +1,17 @@
-"""The game's logo: the duck peeking over a big sky-blue DUCK, with PLATFORMER in cream below.
+"""The game's muted powder-blue wordmark and canonical cream duck, built from reusable pixel shapes.
 
 Usage, from the repository root:
-  python3 -I art/tools/logo.py build            write the three logos and list them in the manifest
-  python3 -I art/tools/logo.py preview OUT.png  every logo on ink and cream, at 1x and 3x
+  python3 -I art/tools/logo.py build            write the three logos and update their manifest image entries
+  python3 -I art/tools/logo.py preview OUT.png  each logo on pale steel and navy at 1x and 3x
 
-Plain PNGs on a transparent ground, every pixel fully opaque or fully transparent, listed in the manifest under
-"images" as {"key", "png", "width", "height"}:
+All images have transparent backgrounds and binary alpha. Canvases and keys stay fixed:
+- logo: 360x193, full cream duck standing on a simple platform above flat DUCK / PLATFORMER lettering.
+- logo-nav: 214x30, compact full duck beside DUCK PLATFORMER on one line.
+- logo-icon: 53x41, full duck standing on a short powder-blue platform, with no lettering.
 
-| Key       | Path                     | Use                                          |
-| --------- | ------------------------ | -------------------------------------------- |
-| logo      | public/art/logo.png      | the title screen                             |
-| logo-nav  | public/art/logo-nav.png  | the site's nav bar                           |
-| logo-icon | public/art/logo-icon.png | the /play/ page's nav column: her profile    |
-
-The wordmark is WORDMARK: the first word large, the rest small below it (one line in the nav logo). Its letters
-come from GLYPHS, a 5x7 pixel alphabet drawn at a block size, made bold, with rounded outer corners, a 1px
-light rim, a shade crescent, a 1px ink outline and an optional drop shadow. GLYPHS has A C D E F K L M O P R
-T U; a new title needs any other letters added there. The duck stands behind the second and third letters of
-the first word, so only her head and back show over their top edge: at 2x (redrawn from art/tools/duck.py's
-shapes, the outline and rim kept 1px) in the title logo, and at 1x from her idle frame in the nav logo. The
-icon logo has no lettering: her profile alone on the downstroke (the wing level behind her, feet tucked),
-redrawn at 1.25x.
+WORDMARK supplies the title. GLYPHS is the 5x7 alphabet. Lettering uses zone-blue over a flat dark-steel sign, with one quiet light
+edge and a dark outline, without extrusion, cyan highlights or drop shadows. Duck shapes come from duck.py;
+the cream body, tan wing, orange bill and dot eye retain the protagonist's identity on both backgrounds.
 """
 
 import json
@@ -52,11 +43,10 @@ GLYPHS = {
     "U": ["#...#", "#...#", "#...#", "#...#", "#...#", "#...#", ".###."],
 }
 
-BIG = dict(b=13, fill="sky", light="cyan", shade="blue")  # the first word
-SMALL = dict(b=6, fill="cream", light="white", shade="tan", shadow="blue")  # the rest, below it
-NAV = dict(b=2, fill="sky", light="cyan", shade="blue")
-ICON_SCALE = 1.25  # her size in the icon logo, against the game sprite
-PEEK = 50  # rows of the 2x duck that show above the big letters
+BIG = dict(b=11, fill="zone-blue", light="lgrey")
+SMALL = dict(b=3, fill="zone-blue", light="lgrey")
+NAV = dict(b=2, fill="zone-blue", light="zone-blue")
+CANVASES = {"logo": (360, 193), "logo-nav": (214, 30), "logo-icon": (53, 41)}
 
 
 def image(px):
@@ -71,71 +61,45 @@ def image(px):
     return im
 
 
-def word(text, b, fill, light, shade, shadow=None):
-    """One line of lettering at block size b: bold strokes, rounded corners, a 1px light rim on the upper left,
-    a shade crescent on the lower right, a 1px ink outline and an optional drop shadow 2px down."""
+def word(text, b, fill, light):
+    """Flat 5x7 lettering: one dark outline and a single upper-left light edge at larger sizes."""
     gap = b
     cw = 5 * b + gap
-    W = len(text) * cw - gap + 2
-    H = 7 * b + 2 + (2 if shadow else 0)
+    width, height = len(text) * cw - gap + 2, 7 * b + 2
     mask = set()
     for i, ch in enumerate(text):
         if ch == " ":
             continue
-        rows = GLYPHS[ch]
-        for gy, row in enumerate(rows):
+        for gy, row in enumerate(GLYPHS[ch]):
             for gx, c in enumerate(row):
                 if c == "#":
-                    mask |= {(1 + i * cw + gx * b + x, 1 + gy * b + y) for y in range(b) for x in range(b)}
-        if b >= 3:  # round each glyph's convex corners
+                    mask.update((1 + i * cw + gx * b + x, 1 + gy * b + y)
+                                for y in range(b) for x in range(b))
+    g = Grid(width, height)
+    for x, y in sorted(mask):
+        rim = b >= 3 and ((x - 1, y) not in mask or (x, y - 1) not in mask)
+        g.p(x, y, light if rim else fill)
+    return image(g.outlined(lambda c: K["ink"]))
 
-            def on(gx, gy):
-                return 0 <= gy < 7 and 0 <= gx < 5 and rows[gy][gx] == "#"
 
-            for gy, row in enumerate(rows):
-                for gx, c in enumerate(row):
-                    if c != "#":
-                        continue
-                    x0, y0 = 1 + i * cw + gx * b, 1 + gy * b
-                    for dx, dy, cx, cy in ((-1, -1, x0, y0), (1, -1, x0 + b - 1, y0), (-1, 1, x0, y0 + b - 1),
-                                           (1, 1, x0 + b - 1, y0 + b - 1)):
-                        if not on(gx + dx, gy) and not on(gx, gy + dy):
-                            mask.discard((cx, cy))
-    k = b // 3  # bold: thicken every stroke by k px on each side, then round the outer corners again
-    if k:
-        grown = {(x + dx + k, y + dy + k) for (x, y) in mask for dx in range(-k, k + 1) for dy in range(-k, k + 1)}
-        mask = grown
-        W, H = W + 2 * k, H + 2 * k
-        for _ in range(k):
-            mask -= {(x, y) for (x, y) in mask
-                     if sum(((x + dx, y + dy) not in mask) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))) >= 2}
-    g = Grid(W, H)
-    ks = 2 if b >= 3 else 1
-    for (x, y) in sorted(mask):
-        if (x + ks, y + ks) not in mask and ((x + ks, y) not in mask or (x, y + ks) not in mask):
-            c = shade
-        elif (x - 1, y) not in mask or (x, y - 1) not in mask:
-            c = light
-        else:
-            c = fill
-        g.p(x, y, c)
-    out = g.outlined(lambda c: K["ink"])
-    if shadow:
-        sh = [[None] * W for _ in range(H)]
-        for y in range(H - 2):
-            for x in range(W):
-                if out[y][x]:
-                    sh[y + 2][x] = K[shadow]
-        for y in range(H):
-            for x in range(W):
-                if out[y][x]:
-                    sh[y][x] = out[y][x]
-        out = sh
-    return image(out)
+def canvas(key):
+    from PIL import Image
+
+    return Image.new("RGBA", CANVASES[key], (0, 0, 0, 0))
+
+
+def platform(im, x, y, width):
+    """A restrained flat ledge: powder-blue face, light top and dark lower edge."""
+    from PIL import ImageDraw
+
+    d = ImageDraw.Draw(im)
+    d.rectangle((x, y, x + width - 1, y + 3), fill=pixel.rgb("ink") + (255,))
+    d.line((x + 1, y, x + width - 2, y), fill=pixel.rgb("lgrey") + (255,))
+    d.rectangle((x + 1, y + 1, x + width - 2, y + 2), fill=pixel.rgb("zone-blue") + (255,))
 
 
 def duck_at(s, pose="rest"):
-    """Her side view redrawn at s times her size from duck.py's shapes: every shape scales, the outline and rim
+    """The duck's side view redrawn at s times her size from duck.py's shapes: every shape scales, the outline and rim
     stay 1px. pose is "rest" (standing, wing folded) or "downstroke" (in the air, the wing level behind her,
     feet tucked under her belly)."""
     W, H = round(D.W * s), round(D.H * s)
@@ -171,39 +135,43 @@ def duck_at(s, pose="rest"):
 
 
 def logo():
-    from PIL import Image
+    im = canvas("logo")
+    d = duck_at(1.6)
+    d = d.crop(d.getbbox())
+    im.alpha_composite(d, ((im.width - d.width) // 2, 74 - d.height))
+    from PIL import ImageDraw
 
-    b = BIG["b"]
-    w1 = word(WORDMARK[0], **BIG)
-    w2 = word(" ".join(WORDMARK[1:]), **SMALL)
-    d = duck_at(2)
-    c = Image.new("RGBA", (max(w1.width, w2.width) + 20, d.height + w1.height + w2.height + 20), (0, 0, 0, 0))
-    x1 = (c.width - w1.width) // 2
-    top = PEEK + 2
-    # behind the second and third letters: only her head and back show above them
-    c.alpha_composite(d.crop((0, 0, d.width, PEEK + 4)), (x1 + 12 * b - d.width // 2 - b // 2, top - PEEK))
-    c.alpha_composite(w1, (x1, top))
-    c.alpha_composite(w2, ((c.width - w2.width) // 2, top + w1.height + 8))
-    return c.crop(c.getbbox())
+    draw = ImageDraw.Draw(im)
+    draw.rectangle((35, 76, 324, 192), fill=pixel.rgb("ink") + (255,))
+    draw.rectangle((36, 77, 323, 191), fill=pixel.rgb("dslate") + (255,))
+    platform(im, 75, 74, 210)
+    for text, spec, y in ((WORDMARK[0], BIG, 82), (" ".join(WORDMARK[1:]), SMALL, 168)):
+        line = word(text, **spec)
+        im.alpha_composite(line, ((im.width - line.width) // 2, y))
+    return im
 
 
 def logo_nav():
-    from PIL import Image
-
-    frames = {n: fs for n, fs, _ in D.duck_tags()}
-    d = image(frames["idle"][0])
+    im = canvas("logo-nav")
+    d = duck_at(0.65)
     d = d.crop(d.getbbox())
-    w = word(" ".join(WORDMARK), **NAV)
-    c = Image.new("RGBA", (d.width + w.width + 4, max(d.height, w.height)), (0, 0, 0, 0))
-    c.alpha_composite(d.crop((0, 0, d.width, 22)), (0, 0))
-    c.alpha_composite(w, (d.width - 8, 14))
-    return c.crop(c.getbbox())
+    im.alpha_composite(d, (0, (im.height - d.height) // 2))
+    line = word(" ".join(WORDMARK), **NAV)
+    from PIL import ImageDraw
+
+    draw = ImageDraw.Draw(im)
+    draw.rectangle((31, 6, 213, 23), fill=pixel.rgb("dslate") + (255,))
+    im.alpha_composite(line, (32, (im.height - line.height) // 2))
+    return im
 
 
 def logo_icon():
-    """Her profile alone on the downstroke, at ICON_SCALE times the sprite."""
-    d = duck_at(ICON_SCALE, "downstroke")
-    return d.crop(d.getbbox())
+    im = canvas("logo-icon")
+    d = duck_at(0.85)
+    d = d.crop(d.getbbox())
+    im.alpha_composite(d, ((im.width - d.width) // 2, 37 - d.height))
+    platform(im, 4, 37, 45)
+    return im
 
 
 def images():
@@ -234,7 +202,7 @@ def preview(out):
 
     ims = images()
     tiles = []
-    for ground in ("ink", "cream"):
+    for ground in ("lgrey", "navy"):
         for z in (1, 3):
             for im in ims.values():
                 t = Image.new("RGBA", (im.width + 16, im.height + 16), pixel.rgb(ground) + (255,))
