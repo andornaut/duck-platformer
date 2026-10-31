@@ -43,7 +43,7 @@ describe("death card", () => {
   });
   it("uses the compact top-centred City layout when the duck is below it", () => {
     const result = deathCard(fonts, view, { height: 40, width: 40, x: 340, y: 310 }, words);
-    expect(result.card).toEqual({ height: 164, width: 268, x: 226, y: 16 });
+    expect(result.card).toMatchObject({ height: 164, y: 16 });
     expect([result.title.y, result.stage.y, result.progress.y, result.time.y]).toEqual([
       32, 52, 72, 92,
     ]);

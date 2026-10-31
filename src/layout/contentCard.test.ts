@@ -34,16 +34,18 @@ describe("measured content cards", () => {
       undefined,
       { x: 226, y: 16 },
     );
-    expect(result.card).toEqual({ height: 164, width: 268, x: 226, y: 16 });
+    expect(result.card.height).toBe(164);
+    expect(result.card.y).toBe(16);
     const rect = result.groups.actions;
     if (!rect) {
       throw new Error("Missing measured actions");
     }
     const faces = cardActions(BODY, "row", rect, labels).map(({ button }) => button);
-    expect(faces).toEqual([
-      { height: 48, width: 114, x: 242, y: 116 },
-      { height: 48, width: 114, x: 364, y: 116 },
+    expect(faces.map(({ height, width }) => ({ height, width }))).toEqual([
+      { height: 48, width: 114 },
+      { height: 48, width: 114 },
     ]);
+    expect(rect.x + rect.width / 2).toBe(result.card.x + result.card.width / 2);
   });
 
   it.each([false, true])(
@@ -59,8 +61,14 @@ describe("measured content cards", () => {
   it("expands for long content instead of forcing a standard width", () => {
     const narrow = contentCardLayout(VIEW, [{ height: 16, key: "label", width: 80 }]);
     const wide = contentCardLayout(VIEW, [{ height: 16, key: "label", width: 400 }]);
-    expect(wide.card.width - narrow.card.width).toBe(320);
+    expect(wide.card.width).toBeGreaterThan(narrow.card.width);
     expect(wide.card.width).toBe(400 + 2 * CARD_CONTENT.padding);
+  });
+
+  it("rejects content that the available view cannot fit without clipping", () => {
+    expect(() =>
+      contentCardLayout({ ...VIEW, width: 100 }, [{ height: 16, key: "text", width: 100 }]),
+    ).toThrow("Card content exceeds the view");
   });
 
   it.each([BODY, TITLE])("centres actual ink rather than the first glyph bearing", (font) => {

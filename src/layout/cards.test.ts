@@ -112,7 +112,7 @@ it.each([false, true])(
 );
 
 it("grows a measured card for longer labels without changing font scale or button height", () => {
-  const longer = pauseCard(CARD_FONTS, { ...TEXT.pause, home: TEXT.pause.home.repeat(2) });
+  const longer = pauseCard(CARD_FONTS, { ...TEXT.pause, home: TEXT.pause.home.repeat(4) });
   expect(longer.card.width).toBeGreaterThan(pause.card.width);
   expect(longer.home.button.height).toBe(pause.home.button.height);
 });

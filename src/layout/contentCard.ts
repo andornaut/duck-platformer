@@ -1,3 +1,4 @@
+import { modalWidth } from "@andornaut/game-kit/modalLayout";
 import { insetRect } from "@andornaut/game-kit/rect";
 import { type BitmapFont, inkWidth, laidGlyphs } from "@andornaut/game-kit/text/bitmapFont";
 
@@ -117,14 +118,14 @@ export function contentCardLayout(
     : 0;
   const contentWidth = Math.max(headerWidth, 0, ...present.map(({ width }) => width));
   const count = present.length + (hasHeader ? 1 : 0);
-  const width = contentWidth + 2 * CARD_CONTENT.padding;
+  const width = modalWidth(bounds.width, contentWidth);
   const innerWidth = width - 2 * CARD_CONTENT.padding;
   const height =
     headerHeight +
     present.reduce((sum, group) => sum + group.height, 0) +
     Math.max(0, count - 1) * CARD_CONTENT.gap +
     2 * CARD_CONTENT.padding;
-  if (width > bounds.width || height > bounds.height) {
+  if (innerWidth < contentWidth || height > bounds.height) {
     throw new Error("Card content exceeds the view");
   }
   const card: Rect = {

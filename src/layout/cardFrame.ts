@@ -1,3 +1,5 @@
+import { MODAL_CONTENT } from "@andornaut/game-kit/modalLayout";
+
 import type { Point, Rect } from "../data/types";
 import { hitAround } from "./hitAreas";
 
@@ -8,7 +10,7 @@ export const CARD_CONTENT = {
   closeSize: 24,
   gap: 8,
   lineHeight: 16,
-  padding: 16,
+  padding: MODAL_CONTENT.padding,
   rowGap: 4,
 } as const;
 
@@ -32,7 +34,7 @@ export const CARD_FRAME = {
     hit: hitAround(CLOSE_ART),
   },
   firstRowY: CARD_AT.y + 48,
-  padding: 14,
+  padding: MODAL_CONTENT.padding,
   titleY: CARD_AT.y + 8,
 } as const;
 
