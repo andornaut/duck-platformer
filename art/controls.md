@@ -57,7 +57,7 @@ A texture's nine-slice margins preserve its corners and are not content padding.
 
 Vertical content is centred within the usable face, with the existing two-pixel press displacement. Do not shrink text to meet a size token: grow the button or reword its label. The compact Install exception uses its existing 8px horizontal inset rather than the standard 16px; the whole 48px row remains interactive. Standardizing height does not make every button equally wide; use a shared width within the same action group.
 
-Start-screen Start and Continue use `ui-button-primary`, dslate with white labels, at 192x48. Restart uses `ui-button`, grey with an ink label, also 192x48. With saved progress, Restart is on the left at 164,268 and Continue on the right at 364,268; the row has an 8px gap and is centred under the logo. Continue remains the default action for keyboard activation. Their labels start 13px below the button top and sink 2px while pressed. They use the shared press and focus handling, without a play mark. The map's Continue still uses the green `ui-resume` at 160x44; its approved target remains the standard primary style and 48px height. The unused `ui-start` remains 192x52 in the asset catalogue. Card actions are 352x48; Install is 72x28 within a 352x48 row.
+Start-screen Start and Continue use `ui-button-primary`, dslate with white labels, at 192x48. Restart uses `ui-button`, grey with an ink label, also 192x48. With saved progress, Restart is on the left at 164,268 and Continue on the right at 364,268; the row has an 8px gap and is centred under the logo. Continue remains the default action for keyboard activation. Their labels start 13px below the button top and sink 2px while pressed. They use the shared press and focus handling, without a play mark. The map pairs Back to title on the left, secondary grey with an ink label, with Continue on the right, primary dslate with a white label. Back to title is at 164,300,192,48 and Continue at 364,300,192,48, with an 8px gap. Neither uses a play mark. Continue is the first Tab stop and the default Enter or Space action before focus moves; arrows and A/D retain zone selection. The unused `ui-start` remains 192x52 in the asset catalogue. Card actions are 352x48; Install is 72x28 within a 352x48 row.
 
 ## Button roles and states
 
@@ -118,7 +118,7 @@ The switch uses knob position and a glyph: right with a tick for on; left with a
 | Geometry source           | Runtime layout values                                                                  | Add approved shared size/spacing tokens without copying literals between screens              |
 | Label rendering           | Runtime `font-body` at 2x                                                              | Light primary icon required                                                                   |
 | Nine-slice face           | 16x28, margins left/top/right/bottom 2/4/2/6                                           | Primary, secondary and disabled use the same outer geometry                                   |
-| Map Continue              | Green `ui-resume`, 160x44                                                              | Approved target: dslate face, white label and 48px height                                     |
+| Map actions               | Back to title: shared secondary on the left; Continue: shared primary on the right     | Equal widths, 48px height and an 8px gap                                                      |
 | Start-screen actions      | Start/Continue: shared primary; Restart: shared secondary; all 192x48 with 8px row gap | Implemented without play mark; nav icons remain explicit exceptions                           |
 | Switch asset              | `ui-switch`, tags `on`, `off`                                                          | Use shared focus ring and disabled tokens; retain knob position and value glyph               |
 
@@ -136,4 +136,4 @@ The switch uses knob position and a glyph: right with a tick for on; left with a
 
 None for the standard colours, dimensions, spacing or disabled navigation defined here. New bespoke controls require an explicit exception and a contextual review before implementation.
 
-Remaining implementation: standardize the map's Continue, provide a light primary play mark, add disabled states and supply checkbox/radio assets when implementing forms. The asset and code contract above records these gaps.
+Remaining implementation: provide a light primary play mark, add disabled states and supply checkbox/radio assets when implementing forms. The asset and code contract above records these gaps.
