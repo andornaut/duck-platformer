@@ -7,7 +7,6 @@ The art plan and pipeline for Duck Platformer. Art owns `art/` and the served ar
 - Pixel art: minimalist, cute, a little retro, refined.
 - Everything, UI included, is pixel art at one base resolution, 720x360. The game scales it to fill the screen at 2:1 with nearest-neighbour sampling and no smoothing, by a fractional factor, so on most screens some pixels come out one device pixel wider than others. On a landscape phone 1 base pixel is about 1 CSS pixel. Judge art at a fractional scale as well as at 3x, and avoid 1px patterns (checks, dashes, alternating rows) that turn uneven when pixels vary in width.
 - Chibi proportions: the head at least as big as the body, so a character reads from head shape and markings alone.
-- Style decisions are the user's (see Options and decisions).
 
 ## Zone design guide
 
@@ -48,13 +47,13 @@ In order:
 
 ### Options and decisions
 
-- Mock 2 to 4 clearly different options, side by side in context with the current one first, and ask the user with a recommendation and one reason. Build only the pick.
+- Routine refinements within the approved scope use judgement and contextual review where useful. Obtain explicit user approval for controversial changes.
+- When comparing visual directions, show distinct alternatives side by side in context at the same display scale.
 - Mocks live in scratch, never in the repo.
 
-### Subagents
+### Asset handoff
 
-- One subagent per asset or item, in its own worktree and branch. Its brief carries the checklist, the neighbours to compare against, and the render-in-context requirement.
-- Its report gives sizes, tags and timings, anything code needs (hit boxes, light anchor pixels), and a contact sheet.
+Include asset keys, frame sizes, animation tags and timings, anchors, hit boxes, relevant light offsets and a contextual contact sheet. State any requirements for runtime code.
 
 ### Rebuild discipline
 
