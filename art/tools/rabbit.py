@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+"""Home-city rabbit antagonist, facing right with upright ears and a small round tail.
+
+Usage: python3 -I art/tools/rabbit.py build | preview OUT.png, from the repository root.
+48x48 frames, bottom centre (24,48), fixed mirrored hitbox (2,2,44,46) enclosing every visible pixel.
+Soft grey-brown, cream and quiet warm ear accents distinguish the rabbit from the other antagonists.
+Idle 2x400ms, hop 4x100ms, rest 2x400ms; all loop. Gameplay owns hop displacement and state durations.
+Hop poses compress, extend, tuck and land without baking world movement into the frame anchor.
+Every state remains lethal. No red contact outline, portrait, clothing, name or dialogue is included.
+"""
+
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import duck  # noqa: E402
+import pixel  # noqa: E402
+from pixel import Grid, K  # noqa: E402
+
+KEY = "rabbit-antagonist"
+SRC = "art/antagonists"
+ONCE = {KEY: []}
+HITBOX = {KEY: (2, 2, 44, 46)}
+
+
+def draw(state="idle", phase=0):
+    g = Grid(48, 48)
+    squash = state == "hop" and phase in (0, 3)
+    tuck = state == "hop" and phase == 2
+    resting = state == "rest"
+    lift = 1 if phase % 2 and state != "hop" else 0
+    by = 35 - lift if not tuck else 32
+    bh = 9 if squash else 11
+    hx, hy = (31, 25 - lift) if squash else (31, 22 - lift)
+    if tuck:
+        hy -= 2
+    # Ears stay upright and recognisable even in the compressed preparation pose.
+    for ex, ey, angle in ((25, hy - 10, -0.12), (33, hy - 11, 0.12)):
+        duck.cel(g, duck.in_ell(ex, ey, 3, 6, angle), "grey", "dslate", "lgrey", 1, 1)
+        g.rect(ex - 1, ey - 3, 2, 6, "tan")
+    duck.cel(g, duck.in_ell(9, by - 1, 4, 4), "cream", "lgrey", "white", 1, 1)
+    duck.cel(g, duck.in_ell(22, by, 13, bh), "grey", "dslate", "lgrey", 2, 1)
+    # Broad haunch and short foreleg make a rabbit silhouette rather than a dog gait.
+    duck.cel(g, duck.in_ell(17, by + 3, 7, 6), "lgrey", "grey", None, 2, 1)
+    if tuck:
+        duck.cel(g, duck.in_ell(27, 39, 6, 3), "cream", "lgrey", None, 1, 1)
+    else:
+        g.rect(14, 43, 10, 4, "cream")
+        g.rect(30, 37 if not squash else 40, 4, 10 if not squash else 7, "lgrey")
+        g.rect(29, 45, 9, 2, "cream")
+    duck.cel(g, duck.in_ell(hx, hy, 8, 7), "grey", "dslate", "lgrey", 2, 1)
+    duck.cel(g, duck.in_ell(36, hy + 3, 5, 3), "cream", "lgrey", None, 1, 1)
+    g.rect(38, hy + 1, 3, 2, "brown")
+    g.rect(33, hy - 2, 3, 1 if resting else 3, "ink")
+    return g.outlined(lambda c: K["navy"] if c in (K["grey"], K["dslate"]) else K["dslate"])
+
+
+def sprites():
+    yield KEY, [("idle", [draw("idle", i) for i in range(2)], 400),
+                ("hop", [draw("hop", i) for i in range(4)], 100),
+                ("rest", [draw("rest", i) for i in range(2)], 400)]
+
+
+if __name__ == "__main__":
+    pixel.main(sys.argv, sprites, SRC, __doc__, grounds=(K["zone-peach"], K["slate"], K["cream"]),
+               once=ONCE, hitboxes=HITBOX)
