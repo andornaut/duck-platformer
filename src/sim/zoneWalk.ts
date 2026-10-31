@@ -20,6 +20,8 @@ import {
   type ZoneState,
 } from "../rules/zone";
 
+const BEHAVIOUR_INDICES = new WeakMap<AreaLayout, readonly number[]>();
+
 // Conversations do not move the world. The walker activates their patrols explicitly so it
 // verifies the active encounter, including on any fresh attempt.
 function stepZone(
@@ -29,7 +31,13 @@ function stepZone(
   input: ZoneInput,
   zone: ZoneState,
 ): ZoneState {
-  const active = zone.behaviours.reduce((state, _, index) => activateBehaviour(index, state), zone);
+  const area = areaOf(layout, zone.area);
+  let indices = BEHAVIOUR_INDICES.get(area);
+  if (!indices) {
+    indices = area.objects.flatMap((object, index) => (object.behaviour ? [index] : []));
+    BEHAVIOUR_INDICES.set(area, indices);
+  }
+  const active = indices.reduce((state, index) => activateBehaviour(index, state), zone);
   return stepActualZone(tuning, layout, seconds, input, active);
 }
 
@@ -582,9 +590,30 @@ function cycleSteps(object: ObjectLayout): number {
 
 // The things in an area that move and that she can touch, and how many waits cover the longest
 // cycle among them.
-function movingThings(area: AreaLayout): { count: number; moving: ObjectLayout[] } {
+interface MovingThings {
+  readonly carry: number;
+  readonly count: number;
+  readonly moving: readonly Rect[];
+}
+
+const MOVING_THINGS = new WeakMap<AreaLayout, MovingThings>();
+
+function movingThings(area: AreaLayout): MovingThings {
+  const cached = MOVING_THINGS.get(area);
+  if (cached) {
+    return cached;
+  }
   const moving = area.objects.filter((object) => !isStill(object) && object.collision !== "none");
-  return { count: Math.floor(Math.max(0, ...moving.map(cycleSteps)) / WAIT_STEP) + 1, moving };
+  const supports = moving.filter(
+    (object) => object.collision === "solid" || object.collision === "ledge",
+  );
+  const result = {
+    carry: Math.max(0, ...supports.map(movementSpeed)),
+    count: Math.floor(Math.max(0, ...moving.map(cycleSteps)) / WAIT_STEP) + 1,
+    moving: moving.map(sweptRect),
+  };
+  MOVING_THINGS.set(area, result);
+  return result;
 }
 
 // The tries from a spot toward a target: from each way she can run at it, pressing Jump at every
@@ -630,13 +659,18 @@ function triesToward(tuning: DuckTuning, from: Spot, here: Surface, target: Targ
     const preFor = (x: number) =>
       Math.min(Math.max(x - dir * RUN_UP + half, minCentre), maxCentre) - half;
     // Along her surface, her centre every TAKEOFF_STEP px from its left.
+    const first = Math.max(0, Math.floor((lo - here.left + half - width) / TAKEOFF_STEP));
+    const last = Math.min(
+      Math.floor((here.right - here.left) / TAKEOFF_STEP),
+      Math.ceil((hi - here.left + half + width) / TAKEOFF_STEP),
+    );
     const along = Array.from(
-      { length: Math.floor((here.right - here.left) / TAKEOFF_STEP) + 1 },
-      (_, i) => here.left + i * TAKEOFF_STEP - half,
+      { length: Math.max(0, last - first + 1) },
+      (_, i) => here.left + (first + i) * TAKEOFF_STEP - half,
     );
-    const before = [...EDGE_TAKEOFFS.map((back) => edge - dir * back), ...along].filter(
-      (x) => inReach(x) && dir * (x - edge) < 0,
-    );
+    const before = [
+      ...new Set([...EDGE_TAKEOFFS.map((back) => edge - dir * back), ...along]),
+    ].filter((x) => inReach(x) && dir * (x - edge) < 0);
     const relative = (attempt: Omit<Try, "dir" | "rise" | "target"> & { rise?: number }): Try => ({
       rise: 0,
       ...attempt,
@@ -682,14 +716,12 @@ function sweptSpan(
 // The stretches a spot might reach in one move: the other surfaces in its area within the
 // duck's bounds, and its own surface's buckets nearby.
 function targetsFrom(
-  tuning: DuckTuning,
   layout: ZoneLayout,
   surfaces: readonly Surface[],
+  bounds: ReturnType<typeof moveBounds>,
   from: Spot,
   here: Surface,
-  carry: number,
 ): { others: Target[]; own: Target[] } {
-  const bounds = moveBounds(tuning, carry);
   // A moving surface can take her anywhere along its track before she goes.
   const own = sweptSpan(layout, from.surface);
   const lo = from.surface.mover === undefined ? here.left + (from.bucket - 1) * BUCKET : own.left;
@@ -724,6 +756,7 @@ export function walkZone(tuning: DuckTuning, layout: ZoneLayout): ZoneWalk {
   const seen = new Map<string, Spot>();
   const reached = new Set<string>();
   const queue: Spot[] = [];
+  const areaBounds = new Map<AreaLayout, ReturnType<typeof moveBounds>>();
   let steps = 0;
   let cleared = false;
   const reach = (spot: Spot) => {
@@ -747,18 +780,19 @@ export function walkZone(tuning: DuckTuning, layout: ZoneLayout): ZoneWalk {
   for (let from = queue.shift(); from; from = queue.shift()) {
     const area = areaOf(layout, from.surface.area);
     const here = placed(from.surface, from.state, layout);
-    const { count, moving } = movingThings(area);
-    const carry = Math.max(0, ...moving.map(movementSpeed));
+    const { carry, count, moving } = movingThings(area);
+    let bounds = areaBounds.get(area);
+    if (!bounds) {
+      bounds = moveBounds(tuning, carry);
+      areaBounds.set(area, bounds);
+    }
     let waited: ZoneState[] | undefined;
     const trials = new Map<ZoneState, ReturnType<typeof trialsFrom>>();
     const startsFor = (lo: number, hi: number, target?: Surface) => {
       const near =
         from.surface.mover !== undefined ||
         target?.mover !== undefined ||
-        moving.some((object) => {
-          const rect = sweptRect(object);
-          return rect.x < hi + BUCKET && rect.x + rect.width > lo - BUCKET;
-        });
+        moving.some((rect) => rect.x < hi + BUCKET && rect.x + rect.width > lo - BUCKET);
       if (!near) {
         return [from.state];
       }
@@ -769,19 +803,25 @@ export function walkZone(tuning: DuckTuning, layout: ZoneLayout): ZoneWalk {
       }
       return waited;
     };
-    const { others, own } = targetsFrom(tuning, layout, surfaces, from, here, carry);
+    const { others, own } = targetsFrom(layout, surfaces, bounds, from, here);
     for (const target of [...own, ...others]) {
       const done = () =>
         target.surface === from.surface ? seen.has(target.key) : reached.has(target.key);
       if (done()) {
         continue;
       }
+      const tries = triesToward(tuning, from, here, target);
+      // Only the takeoffs reachable from this bucket participate in the run-up. Keep the
+      // existing margin for braking and landing, without including unrelated distant ground.
+      const positions = [
+        from.state.duck.x,
+        ...tries.flatMap(({ pre, takeoff }) => [here.left + pre, here.left + takeoff]),
+      ];
       const starts = startsFor(
-        Math.min(here.left, target.left),
-        Math.max(here.right, target.right),
+        Math.min(...positions, target.left),
+        Math.max(...positions, target.right) + tuning.width,
         target.surface,
       );
-      const tries = triesToward(tuning, from, here, target);
       for (const start of starts) {
         if (done()) {
           break;
