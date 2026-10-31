@@ -10,7 +10,7 @@ import type {
   ZoneDeath,
   ZoneMap,
 } from "../data/types";
-import { destinationForLevel } from "../rules/mapDestinations";
+import { destinationForStage } from "../rules/mapDestinations";
 
 export type DeathPhase = "bounce" | "fall" | "impact" | "recoil" | "seated";
 export interface DeathPresentation {
@@ -116,8 +116,9 @@ export function deathFrameIndex(phase: DeathPhase): number {
 
 export interface DeathSummary {
   readonly activeSeconds: number;
-  readonly levelLabel: string;
   readonly percent: number;
+  readonly stageLabel: string;
+  readonly stageNumber: string;
   readonly zoneLabel: string;
 }
 
@@ -125,13 +126,15 @@ export function deathLabels(
   map: ZoneMap,
   words: GameText["map"],
   fallback: string,
-  levelId: string,
-): Pick<DeathSummary, "levelLabel" | "zoneLabel"> {
-  const destination = map.nodes.some(({ id, kind }) => id === levelId && kind === "zone")
-    ? destinationForLevel(map, levelId)
+  stageId: string,
+): Pick<DeathSummary, "stageLabel" | "stageNumber" | "zoneLabel"> {
+  const destination = map.nodes.some(({ id, kind }) => id === stageId && kind === "zone")
+    ? destinationForStage(map, stageId)
     : undefined;
   return {
-    levelLabel: words.levels[levelId] ?? fallback,
+    stageLabel: words.stages[stageId] ?? fallback,
+    stageNumber:
+      destination === undefined ? fallback : String(destination.stages.indexOf(stageId) + 1),
     zoneLabel: destination === undefined ? fallback : (words.zones[destination.id] ?? fallback),
   };
 }
@@ -141,11 +144,11 @@ export function deathSummary(words: DeathText, summary: DeathSummary) {
   const seconds = Math.max(0, Math.floor(summary.activeSeconds));
   const time = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
   return {
-    level: fillNames(words.level, { level: summary.levelLabel }),
     progress: fillNames(words.progress, {
       percent: String(Math.round(Math.max(0, Math.min(1, summary.percent)) * 100)),
     }),
+    stage: fillNames(words.stage, { name: summary.stageLabel, number: summary.stageNumber }),
     time: fillNames(words.time, { time }),
-    title: fillNames(words.title, { level: summary.levelLabel, zone: summary.zoneLabel }),
+    title: fillNames(words.title, { zone: summary.zoneLabel }),
   };
 }

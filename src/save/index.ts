@@ -10,7 +10,7 @@ import { RECIPES, ZONES } from "../data/zones";
 import { activeStepSeconds } from "../rules/death";
 import type { ZoneState } from "../rules/zone";
 import { BEGINNING, mapProgress, type Progress, progressFormat } from "./progress";
-import { levelStatsStore } from "./stats";
+import { stageStatsStore } from "./stats";
 
 export { type Progress } from "./progress";
 
@@ -22,8 +22,8 @@ const store = saveStore(
   progressFormat(ZONE_MAP, { ...ZONES, ...RECIPES }),
 );
 let progress: Progress = BEGINNING;
-const LEVELS = new Set(ZONE_MAP.destinations.flatMap(({ levels }) => levels));
-const stats = levelStatsStore(localSaveStorage(), LEVELS);
+const STAGES = new Set(ZONE_MAP.destinations.flatMap(({ stages }) => stages));
+const stats = stageStatsStore(localSaveStorage(), STAGES);
 let statsLifecycleInstalled = false;
 
 function installStatsLifecycle(): void {
@@ -48,25 +48,25 @@ export async function loadProgress(): Promise<void> {
   installStatsLifecycle();
 }
 
-export function activeLevelTime(level: string): number {
-  return stats.seconds(level);
+export function activeStageTime(stage: string): number {
+  return stats.seconds(stage);
 }
 
-// Developer test chains have no persistent level identity and do not write real-level stats.
-export function recordActiveLevelStep(
-  level: string,
+// Developer test chains have no persistent stage identity and do not write real-stage stats.
+export function recordActiveStageStep(
+  stage: string,
   seconds: number,
   before: ZoneState,
   after: ZoneState,
 ): void {
-  if (LEVELS.has(level)) {
-    stats.addActiveTime(level, activeStepSeconds(seconds, before, after));
+  if (STAGES.has(stage)) {
+    stats.addActiveTime(stage, activeStepSeconds(seconds, before, after));
   }
 }
 
-export function clearLevelTime(level: string): void {
-  if (LEVELS.has(level)) {
-    stats.clearLevel(level);
+export function clearStageTime(stage: string): void {
+  if (STAGES.has(stage)) {
+    stats.clearStage(stage);
   }
 }
 
@@ -93,7 +93,7 @@ export function saveStand(stand: string): void {
 
 // She has completed the zone at node: it opens the map past it, and she stands on it.
 export function saveCompleted(node: string): void {
-  clearLevelTime(node);
+  clearStageTime(node);
   const { completed } = savedMap();
   write({
     at: "map",

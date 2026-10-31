@@ -5,8 +5,8 @@ import { labelledButton } from "./restartCard";
 const ACTION_INSET = 8;
 const STACK_GAP = 4;
 
-// The two-level picker uses the standard closeable card, one row per catalogue level.
-export const LEVEL_SELECT_CARD = {
+// The two-stage picker uses the standard closeable card, one row per catalogue stage.
+export const STAGE_SELECT_CARD = {
   buttons: [0, 1].map((index) =>
     labelledButton(
       {

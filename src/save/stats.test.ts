@@ -7,17 +7,17 @@ import { activeStepSeconds } from "../rules/death";
 import { zoneLayout } from "../rules/tiles";
 import { startZone, stepZone, type ZoneState } from "../rules/zone";
 import { DUCK_FRAME } from "../view/duck";
-import { levelStatsStore, STATS_VERSION, statsFormat } from "./stats";
+import { stageStatsStore, STATS_VERSION, statsFormat } from "./stats";
 
-const LEVELS = new Set(["park", "street"]);
-const FORMAT = statsFormat(LEVELS);
+const STAGES = new Set(["park", "street"]);
+const FORMAT = statsFormat(STAGES);
 
-describe("persistent active level clocks", () => {
+describe("persistent active stage clocks", () => {
   it("coalesces active steps into one checkpoint and makes explicit flush idempotent", async () => {
     vi.useFakeTimers();
     const storage = memoryStorage();
     const writes = vi.spyOn(storage, "write");
-    const clock = levelStatsStore(storage, LEVELS);
+    const clock = stageStatsStore(storage, STAGES);
     await clock.load();
     for (let step = 0; step < 60; step++) {
       clock.addActiveTime("street", 1 / 60);
@@ -32,35 +32,35 @@ describe("persistent active level clocks", () => {
     await clock.flush();
     expect(writes).toHaveBeenCalledTimes(2);
     expect(vi.getTimerCount()).toBe(0);
-    const reopened = levelStatsStore(storage, LEVELS);
+    const reopened = stageStatsStore(storage, STAGES);
     await reopened.load();
     expect(reopened.seconds("street")).toBeCloseTo(6);
   });
   it("retains independent unfinished clocks across reopen and resets each clear", async () => {
     const storage = memoryStorage();
-    const first = levelStatsStore(storage, LEVELS);
+    const first = stageStatsStore(storage, STAGES);
     await first.load();
     first.addActiveTime("street", 1.5);
     first.addActiveTime("park", 2);
     first.addActiveTime("street", 0.5);
     await first.flush();
-    const reopened = levelStatsStore(storage, LEVELS);
+    const reopened = stageStatsStore(storage, STAGES);
     await reopened.load();
     expect([reopened.seconds("street"), reopened.seconds("park")]).toEqual([2, 2]);
-    reopened.clearLevel("street");
+    reopened.clearStage("street");
     reopened.addActiveTime("street", 3);
-    reopened.clearLevel("street");
+    reopened.clearStage("street");
     await reopened.flush();
-    const again = levelStatsStore(storage, LEVELS);
+    const again = stageStatsStore(storage, STAGES);
     await again.load();
     expect([again.seconds("street"), again.seconds("park")]).toEqual([0, 2]);
   });
 
   it.each([
-    { levels: { street: { activeSeconds: -1 } } },
-    { levels: { street: { activeSeconds: "1" } } },
-    { levels: { unbuilt: { activeSeconds: 1 } } },
-    { levels: [] },
+    { stages: { street: { activeSeconds: -1 } } },
+    { stages: { street: { activeSeconds: "1" } } },
+    { stages: { unbuilt: { activeSeconds: 1 } } },
+    { stages: [] },
   ])("refuses invalid stats %j", (value) => {
     expect(loadSave(FORMAT, JSON.stringify({ ...value, version: STATS_VERSION })).status).toBe(
       "corrupt",
@@ -77,7 +77,7 @@ describe("persistent active level clocks", () => {
         throw new Error("blocked");
       },
     };
-    const clock = levelStatsStore(unavailable, LEVELS);
+    const clock = stageStatsStore(unavailable, STAGES);
     await clock.load();
     clock.addActiveTime("street", 1);
     await clock.flush();
@@ -119,7 +119,7 @@ describe("active-step time", () => {
       ACTIVE,
       0,
     ],
-    ["cleared level", { ...INITIAL, cleared: true }, ACTIVE, 0],
+    ["cleared stage", { ...INITIAL, cleared: true }, ACTIVE, 0],
     ["returned to map", { ...INITIAL, turnedBack: true }, ACTIVE, 0],
     ["room", { ...INITIAL, door: 0 }, ACTIVE, 0],
   ])("counts %s", (_, before, after, seconds) => {
@@ -132,12 +132,12 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-it("preserves stats on progress restart, then resets the level on every clear", async () => {
+it("preserves stats on progress restart, then resets the stage on every clear", async () => {
   const values = new Map<string, string>([
     [
       "duck-platformer.stats",
       JSON.stringify({
-        levels: { park: { activeSeconds: 2 }, street: { activeSeconds: 3 } },
+        stages: { park: { activeSeconds: 2 }, street: { activeSeconds: 3 } },
         version: STATS_VERSION - 1,
       }),
     ],
@@ -149,15 +149,20 @@ it("preserves stats on progress restart, then resets the level on every clear", 
   const save = await import("./index");
   await save.loadProgress();
   expect(values.has("duck-platformer.stats-backup")).toBe(true);
-  expect(save.activeLevelTime("street")).toBe(0);
-  save.recordActiveLevelStep("park", 0.1, INITIAL, ACTIVE);
-  expect(save.activeLevelTime("park")).toBe(0);
-  save.recordActiveLevelStep("street", 0.1, INITIAL, ACTIVE);
+  expect(save.activeStageTime("street")).toBe(0);
+  save.recordActiveStageStep("park", 0.1, INITIAL, ACTIVE);
+  expect(save.activeStageTime("park")).toBe(0);
+  save.recordActiveStageStep("street", 0.1, INITIAL, ACTIVE);
   save.clearProgress();
   await save.flushStats();
-  expect(save.activeLevelTime("street")).toBe(0.1);
+  expect(save.activeStageTime("street")).toBe(0.1);
   expect(values.has("duck-platformer.stats")).toBe(true);
   save.saveCompleted("street");
   await save.flushStats();
-  expect(save.activeLevelTime("street")).toBe(0);
+  expect(save.activeStageTime("street")).toBe(0);
+});
+
+it("resets version-two level clocks without migrating them", () => {
+  const raw = JSON.stringify({ levels: { street: { activeSeconds: 65 } }, version: 2 });
+  expect(loadSave(FORMAT, raw)).toMatchObject({ save: { stages: {} }, status: "corrupt" });
 });

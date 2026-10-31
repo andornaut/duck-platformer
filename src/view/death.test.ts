@@ -94,21 +94,37 @@ describe("death summary", () => {
       });
       expect(result.time).toBe(TEXT.death.time.replace("{time}", time));
       expect(result.progress).toBe(TEXT.death.progress.replace("{percent}", progress));
-      const destination = ZONE_MAP.destinations.find(({ levels }) =>
-        levels.includes(ZONE_MAP.start),
+      const destination = ZONE_MAP.destinations.find(({ stages }) =>
+        stages.includes(ZONE_MAP.start),
       );
       expect(result.title).toBe(
         TEXT.death.title.replace("{zone}", TEXT.map.zones[destination?.id ?? ""] ?? "1"),
       );
-      expect(result.level).toBe(
-        TEXT.death.level.replace("{level}", TEXT.map.levels[ZONE_MAP.start] ?? "1"),
+      expect(result.stage).toBe(
+        TEXT.death.stage
+          .replace("{number}", "1")
+          .replace("{name}", TEXT.map.stages[ZONE_MAP.start] ?? "1"),
       );
     },
   );
-  it("uses numeric debug labels outside the level catalogue", () => {
+  it("uses numeric debug labels outside the stage catalogue", () => {
     expect(deathLabels(ZONE_MAP, TEXT.map, "3", "test:3")).toEqual({
-      levelLabel: "3",
+      stageLabel: "3",
+      stageNumber: "3",
       zoneLabel: "3",
     });
   });
+});
+
+it.each(
+  ZONE_MAP.destinations.flatMap(({ stages }) =>
+    stages.map((id, index) => ({ id, number: String(index + 1) })),
+  ),
+)("derives $id stage number from its destination order", ({ id, number }) => {
+  const labels = deathLabels(ZONE_MAP, TEXT.map, "debug", id);
+  expect(labels.stageNumber).toBe(number);
+  const summary = deathSummary(TEXT.death, { ...labels, activeSeconds: 0, percent: 0 });
+  expect(summary.stage).toBe(
+    TEXT.death.stage.replace("{number}", number).replace("{name}", TEXT.map.stages[id]!),
+  );
 });

@@ -9,9 +9,9 @@ import {
 } from "../testing/mapDestinations";
 import { openMap } from "./map";
 import {
-  destinationForLevel,
-  destinationLevels,
+  destinationForStage,
   destinationSelection,
+  destinationStages,
   steppedDestination,
 } from "./mapDestinations";
 
@@ -32,21 +32,21 @@ describe("destination selection", () => {
     );
     expect(result.kind).toBe(kind);
     expect(
-      result.kind === "choose" ? result.latest : result.kind === "play" ? result.level : undefined,
+      result.kind === "choose" ? result.latest : result.kind === "play" ? result.stage : undefined,
     ).toBe(latest);
   });
 
-  it("never treats an unbuilt plan as playable just because its level node and name exist", () => {
+  it("never treats an unbuilt plan as playable just because its stage node and name exist", () => {
     const first = MAP.destinations[0]!;
     const open = openMap(MAP, new Set(["one"]));
-    expect(destinationLevels(new Set(["one"]), MAP, open, first)).toEqual(["one"]);
+    expect(destinationStages(new Set(["one"]), MAP, open, first)).toEqual(["one"]);
     expect(destinationSelection(new Set(["one"]), MAP, open, first)).toEqual({
       kind: "play",
-      level: "one",
+      stage: "one",
     });
   });
 
-  it("preserves level-two unlock and latest highlight while replaying level one", () => {
+  it("preserves stage-two unlock and latest highlight while replaying stage one", () => {
     const progress = { at: "map" as const, completed: ["one"], stand: "one" };
     const format = progressFormat(MAP, PLANS);
     const encoded = encodeSave(format, progress);
@@ -63,9 +63,9 @@ describe("destination selection", () => {
       AVAILABLE,
       MAP,
       openMap(MAP, new Set(loaded.completed)),
-      destinationForLevel(MAP, loaded.stand),
+      destinationForStage(MAP, loaded.stand),
     );
-    expect(result).toEqual({ kind: "choose", latest: "two", levels: ["one", "two"] });
+    expect(result).toEqual({ kind: "choose", latest: "two", stages: ["one", "two"] });
   });
 
   it("steps between only unlocked destinations", () => {

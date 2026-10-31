@@ -26,22 +26,24 @@ describe("death card", () => {
   it("centres the title relative to this top card instead of another card's fixed position", () => {
     const title = cardTitleAt(DEATH_CARD.card, 100);
     expect(title.y).toBeGreaterThan(DEATH_CARD.card.y);
-    expect(title.y).toBeLessThan(DEATH_CARD.level.y);
-    expect(DEATH_CARD.level.y + DEATH_CARD.level.height).toBeLessThanOrEqual(DEATH_CARD.time.y);
-    expect(DEATH_CARD.time.y + DEATH_CARD.time.height).toBeLessThanOrEqual(DEATH_CARD.progress.y);
+    expect(title.y).toBeLessThan(DEATH_CARD.stage.y);
+    expect(DEATH_CARD.stage.y + DEATH_CARD.stage.height).toBeLessThanOrEqual(DEATH_CARD.progress.y);
+    expect(DEATH_CARD.progress.y + DEATH_CARD.progress.height).toBeLessThanOrEqual(
+      DEATH_CARD.time.y,
+    );
   });
-  it.each(ZONE_MAP.destinations.flatMap(({ levels }) => levels))(
-    "fits the zone and level labels for %s without shrinking text",
-    (levelId) => {
+  it.each(ZONE_MAP.destinations.flatMap(({ stages }) => stages))(
+    "fits the zone and stage labels for %s without shrinking text",
+    (stageId) => {
       const words = deathSummary(TEXT.death, {
         activeSeconds: 65,
-        ...deathLabels(ZONE_MAP, TEXT.map, "1", levelId),
+        ...deathLabels(ZONE_MAP, TEXT.map, "1", stageId),
         percent: 0.5,
       });
       expect(
         inkWidth(parseBitmapFont(fontTitle), CARD_TEXT_SCALE, words.title),
-      ).toBeLessThanOrEqual(DEATH_CARD.level.width);
-      for (const key of ["level", "progress", "time"] as const) {
+      ).toBeLessThanOrEqual(DEATH_CARD.stage.width);
+      for (const key of ["stage", "progress", "time"] as const) {
         expect(
           inkWidth(parseBitmapFont(fontBody), CARD_TEXT_SCALE, words[key]),
         ).toBeLessThanOrEqual(DEATH_CARD[key].width);

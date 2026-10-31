@@ -41,7 +41,7 @@ describe("destination marks", () => {
       destinationAtTap(TILE, MAP_SCREEN.nodeHit, plans, MAP, open, destinationCentre(TILE, SECOND)),
     ).toBeUndefined();
   });
-  it("changes a destination path only when its built levels become unlocked", () => {
+  it("changes a destination path only when its built stages become unlocked", () => {
     expect(destinationPathLook(PLANS, MAP, openMap(MAP, new Set()), SECOND)).toBe("built");
     expect(destinationPathLook(PLANS, MAP, openMap(MAP, new Set(["one", "two"])), SECOND)).toBe(
       "open",

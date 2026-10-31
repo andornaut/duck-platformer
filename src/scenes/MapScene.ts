@@ -25,10 +25,10 @@ import {
 import { PHONE_EVENTS } from "../pwa";
 import { type OpenMap, openMap } from "../rules/map";
 import {
-  destinationForLevel,
-  destinationLevels,
+  destinationForStage,
   destinationOf,
   destinationSelection,
+  destinationStages,
   steppedDestination,
 } from "../rules/mapDestinations";
 import { savedMap, saveStand } from "../save";
@@ -49,8 +49,8 @@ import {
   ringFocus,
   type TextButton,
 } from "./cardParts";
-import type { LevelSelectData, LevelSelectOpener, LevelSelectScene } from "./LevelSelectScene";
 import { fitPlayCamera, playPoint } from "./playCamera";
+import type { StageSelectData, StageSelectOpener, StageSelectScene } from "./StageSelectScene";
 import type { ZoneData } from "./ZoneScene";
 
 const PALETTE = "palette";
@@ -62,10 +62,10 @@ const LOOK_ORDER: readonly PathLook[] = ["unbuilt", "built", "open"];
 // Footer actions, or an open zone node by its id.
 type Control = { readonly kind: MapAction } | { readonly kind: "node"; readonly id: string };
 
-// The V1 overview renders each themed destination once, with its two level nodes retained in
-// the progression graph. One unlocked level plays directly; multiple unlocked levels use the
+// The V1 overview renders each themed destination once, with its two stage nodes retained in
+// the progression graph. One unlocked stage plays directly; multiple unlocked stages use the
 // closeable picker. The footer and saved stand keep Continue safe as the default action.
-export class MapScene extends Scene implements LevelSelectOpener {
+export class MapScene extends Scene implements StageSelectOpener {
   private colours: Readonly<Record<string, string>> = {};
   private completed: ReadonlySet<string> = new Set();
   private buttons!: Readonly<Record<MapAction, TextButton>>;
@@ -114,7 +114,7 @@ export class MapScene extends Scene implements LevelSelectOpener {
     captureTab(this, true);
     const onBack = () => {
       if (this.selectionOpen) {
-        (this.scene.get("levelSelect") as LevelSelectScene).back();
+        (this.scene.get("stageSelect") as StageSelectScene).back();
       }
     };
     window.addEventListener(PHONE_EVENTS.backPressed, onBack);
@@ -122,7 +122,7 @@ export class MapScene extends Scene implements LevelSelectOpener {
       captureTab(this, false);
       window.removeEventListener(PHONE_EVENTS.backPressed, onBack);
       if (this.selectionOpen) {
-        this.scene.stop("levelSelect");
+        this.scene.stop("stageSelect");
       }
       this.selectionOpen = false;
     });
@@ -226,7 +226,7 @@ export class MapScene extends Scene implements LevelSelectOpener {
         .setScale(textScale)
         .setTint(this.colour("ink"));
     }
-    const current = destinationForLevel(ZONE_MAP, this.stand);
+    const current = destinationForStage(ZONE_MAP, this.stand);
     const centre = this.centre(current);
     this.add
       .sprite(centre.x + duck.zone.x, centre.y + duck.zone.y, "map-duck")
@@ -288,7 +288,7 @@ export class MapScene extends Scene implements LevelSelectOpener {
 
   private act(action: MapAction): void {
     if (action === "continue") {
-      this.selectDestination(destinationForLevel(ZONE_MAP, this.stand).id);
+      this.selectDestination(destinationForStage(ZONE_MAP, this.stand).id);
     } else {
       // Returning to the title changes no completed zones or saved map position.
       this.scene.start("start");
@@ -296,10 +296,10 @@ export class MapScene extends Scene implements LevelSelectOpener {
   }
 
   private walkToDestination(id: string): void {
-    const levels = destinationLevels(PLANS, ZONE_MAP, this.open, destinationOf(ZONE_MAP, id));
-    const level = levels.at(-1);
-    if (level !== undefined && !destinationOf(ZONE_MAP, id).levels.includes(this.stand)) {
-      saveStand(level);
+    const stages = destinationStages(PLANS, ZONE_MAP, this.open, destinationOf(ZONE_MAP, id));
+    const stage = stages.at(-1);
+    if (stage !== undefined && !destinationOf(ZONE_MAP, id).stages.includes(this.stand)) {
+      saveStand(stage);
       this.scene.restart();
     }
   }
@@ -310,38 +310,38 @@ export class MapScene extends Scene implements LevelSelectOpener {
       return;
     }
     if (selection.kind === "play") {
-      this.play(selection.level);
+      this.play(selection.stage);
       return;
     }
     this.stand = selection.latest;
     saveStand(this.stand);
     this.selectionOpen = true;
     this.showPressed(undefined);
-    this.scene.launch("levelSelect", { destination: id } satisfies LevelSelectData);
+    this.scene.launch("stageSelect", { destination: id } satisfies StageSelectData);
   }
 
-  levelSelectionClosed(): void {
+  stageSelectionClosed(): void {
     if (this.selectionOpen) {
       this.selectionOpen = false;
       this.scene.restart();
     }
   }
 
-  levelSelected(level: string): void {
+  stageSelected(stage: string): void {
     if (!this.selectionOpen) {
       return;
     }
-    const destination = destinationForLevel(ZONE_MAP, this.stand);
-    if (!destinationLevels(PLANS, ZONE_MAP, this.open, destination).includes(level)) {
+    const destination = destinationForStage(ZONE_MAP, this.stand);
+    if (!destinationStages(PLANS, ZONE_MAP, this.open, destination).includes(stage)) {
       return;
     }
     this.selectionOpen = false;
-    this.play(level);
+    this.play(stage);
   }
 
-  private play(level: string): void {
-    saveStand(level);
-    this.scene.start("zone", { node: level } satisfies ZoneData);
+  private play(stage: string): void {
+    saveStand(stage);
+    this.scene.start("zone", { node: stage } satisfies ZoneData);
   }
 
   private slice(key: string, rect: Rect): GameObjects.NineSlice {

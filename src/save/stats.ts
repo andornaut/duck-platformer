@@ -2,40 +2,40 @@ import { saveStore } from "@andornaut/game-kit/save/saveStore";
 import type { SaveStorage } from "@andornaut/game-kit/save/storage";
 import type { Checked, SaveFormat, StoredObject } from "@andornaut/game-kit/save/versionedSave";
 
-export interface LevelStats {
+export interface StageStats {
   readonly activeSeconds: number;
 }
 
 export interface Stats {
-  readonly levels: Readonly<Record<string, LevelStats>>;
+  readonly stages: Readonly<Record<string, StageStats>>;
 }
 
-export const STATS_VERSION = 2;
+export const STATS_VERSION = 3;
 const KEYS = { backup: "duck-platformer.stats-backup", save: "duck-platformer.stats" } as const;
 // A dirty clock is checkpointed at most once per second between lifecycle flushes.
 const CHECKPOINT_MS = 1000;
-const fresh = (): Stats => ({ levels: {} });
+const fresh = (): Stats => ({ stages: {} });
 
-export function statsFormat(levels: ReadonlySet<string>): SaveFormat<Stats> {
+export function statsFormat(stages: ReadonlySet<string>): SaveFormat<Stats> {
   const checked = (value: unknown): Checked<Stats> => {
     if (value === null || typeof value !== "object" || Array.isArray(value)) {
       return { ok: false, reason: "stats are not an object" };
     }
     const entries = value as Record<string, unknown>;
-    const stored = entries.levels;
+    const stored = entries.stages;
     if (stored === null || typeof stored !== "object" || Array.isArray(stored)) {
-      return { ok: false, reason: "stats levels are not an object" };
+      return { ok: false, reason: "stats stages are not an object" };
     }
-    for (const [key, level] of Object.entries(stored)) {
-      if (!levels.has(key) || level === null || typeof level !== "object" || Array.isArray(level)) {
-        return { ok: false, reason: "stats name an unknown level or invalid clock" };
+    for (const [key, stage] of Object.entries(stored)) {
+      if (!stages.has(key) || stage === null || typeof stage !== "object" || Array.isArray(stage)) {
+        return { ok: false, reason: "stats name an unknown stage or invalid clock" };
       }
-      const seconds = (level as Record<string, unknown>).activeSeconds;
+      const seconds = (stage as Record<string, unknown>).activeSeconds;
       if (typeof seconds !== "number" || !Number.isFinite(seconds) || seconds < 0) {
         return { ok: false, reason: "stats contain an invalid active time" };
       }
     }
-    return { ok: true, value: { levels: stored as Record<string, LevelStats> } };
+    return { ok: true, value: { stages: stored as Record<string, StageStats> } };
   };
   return {
     decode: checked,
@@ -49,21 +49,21 @@ export function statsFormat(levels: ReadonlySet<string>): SaveFormat<Stats> {
   };
 }
 
-export interface LevelStatsStore {
-  addActiveTime(level: string, seconds: number): void;
-  clearLevel(level: string): void;
+export interface StageStatsStore {
+  addActiveTime(stage: string, seconds: number): void;
+  clearStage(stage: string): void;
   flush(): Promise<void>;
   load(): Promise<void>;
-  seconds(level: string): number;
+  seconds(stage: string): number;
 }
 
-// A separate store keeps unfinished level clocks independent of progress restarts. Mutations
+// A separate store keeps unfinished stage clocks independent of progress restarts. Mutations
 // update memory immediately, coalescing persistence until a checkpoint or lifecycle flush.
-export function levelStatsStore(
+export function stageStatsStore(
   storage: SaveStorage,
-  levels: ReadonlySet<string>,
-): LevelStatsStore {
-  const store = saveStore(storage, KEYS, statsFormat(levels));
+  stages: ReadonlySet<string>,
+): StageStatsStore {
+  const store = saveStore(storage, KEYS, statsFormat(stages));
   let stats = fresh();
   let pending: Promise<unknown> = Promise.resolve();
   let checkpoint: ReturnType<typeof setTimeout> | undefined;
@@ -79,11 +79,11 @@ export function levelStatsStore(
     }
     await pending;
   };
-  const update = (level: string, seconds: number) => {
-    if (!levels.has(level) || !Number.isFinite(seconds) || seconds < 0) {
-      throw new Error("Invalid level clock update");
+  const update = (stage: string, seconds: number) => {
+    if (!stages.has(stage) || !Number.isFinite(seconds) || seconds < 0) {
+      throw new Error("Invalid stage clock update");
     }
-    stats = { levels: { ...stats.levels, [level]: { activeSeconds: seconds } } };
+    stats = { stages: { ...stats.stages, [stage]: { activeSeconds: seconds } } };
     dirty = true;
     if (checkpoint === undefined) {
       checkpoint = setTimeout(() => {
@@ -93,22 +93,22 @@ export function levelStatsStore(
     }
   };
   return {
-    addActiveTime(level, seconds) {
+    addActiveTime(stage, seconds) {
       if (!Number.isFinite(seconds) || seconds < 0) {
         throw new Error("Invalid active play duration");
       }
       if (seconds > 0) {
-        update(level, (stats.levels[level]?.activeSeconds ?? 0) + seconds);
+        update(stage, (stats.stages[stage]?.activeSeconds ?? 0) + seconds);
       }
     },
-    clearLevel(level) {
-      update(level, 0);
+    clearStage(stage) {
+      update(stage, 0);
       void flush();
     },
     flush,
     async load() {
       stats = (await store.load()).save;
     },
-    seconds: (level) => stats.levels[level]?.activeSeconds ?? 0,
+    seconds: (stage) => stats.stages[stage]?.activeSeconds ?? 0,
   };
 }

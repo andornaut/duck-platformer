@@ -284,7 +284,7 @@ describe("the map", () => {
     }
   });
 
-  it("keeps unbuilt continuation closed while the catalogue still leads to its actual final level", () => {
+  it("keeps unbuilt continuation closed while the catalogue still leads to its actual final stage", () => {
     const allBuilt = ZONE_MAP.nodes.every(
       (node) => node.kind !== "zone" || node.zone !== undefined,
     );

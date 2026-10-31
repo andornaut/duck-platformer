@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 
 import { ZONE_MAP } from "../data/map";
 import type { MapNode, ZoneMap } from "../data/types";
-import { ZONES } from "../data/zones";
+import { RECIPES, ZONES } from "../data/zones";
+import { openMap } from "../rules/map";
+import { destinationForStage, destinationSelection } from "../rules/mapDestinations";
 import { BEGINNING, type Progress, PROGRESS_VERSION, progressFormat } from "./progress";
 
 const node = (id: string, kind: MapNode["kind"], zone?: string): MapNode => ({
@@ -102,5 +104,38 @@ describe("progressFormat", () => {
 
   it("takes the game's map start, nothing completed, as a place to stand", () => {
     expect(encodeSave(progressFormat(ZONE_MAP, ZONES), at(ZONE_MAP.start)).ok).toBe(true);
+  });
+});
+
+describe("built cityscape progress", () => {
+  const plans = { ...ZONES, ...RECIPES };
+  const format = progressFormat(ZONE_MAP, plans);
+
+  it.each([
+    { completed: ["street"], stand: "street" },
+    { completed: ["street"], stand: "city-boundary" },
+    { completed: ["street", "city-boundary"], stand: "street" },
+  ])("keeps version-four progress at $stand with $completed completed", ({ completed, stand }) => {
+    const progress = { at: "map" as const, completed, stand };
+    const loaded = loadSave(format, JSON.stringify({ ...progress, version: 4 }));
+    expect(loaded).toEqual({ save: progress, status: "loaded" });
+    const encoded = encodeSave(format, loaded.save);
+    expect(encoded.ok).toBe(true);
+    if (!encoded.ok) {
+      throw new Error("Expected valid cityscape progress");
+    }
+    const reopened = loadSave(format, encoded.value);
+    expect(reopened).toEqual(loaded);
+    if (reopened.save.at !== "map") {
+      throw new Error("Expected saved map progress");
+    }
+    expect(
+      destinationSelection(
+        new Set(Object.keys(plans)),
+        ZONE_MAP,
+        openMap(ZONE_MAP, new Set(reopened.save.completed)),
+        destinationForStage(ZONE_MAP, reopened.save.stand),
+      ),
+    ).toEqual({ kind: "choose", latest: "city-boundary", stages: ["street", "city-boundary"] });
   });
 });

@@ -9,11 +9,11 @@ import { type GameObjects, type Input, Scene } from "phaser";
 import { ZONE_MAP } from "../data/map";
 import { TEXT } from "../data/text";
 import { RECIPES, ZONES } from "../data/zones";
-import { levelSelectKey } from "../input/levelSelectInput";
+import { stageSelectKey } from "../input/stageSelectInput";
 import { TEXT_BUTTON } from "../layout/buttonLabel";
 import { type PressArea, pressedArea } from "../layout/hitAreas";
-import { LEVEL_SELECT_CARD } from "../layout/levelSelectCard";
 import { CARD_TEXT_SCALE } from "../layout/pauseCard";
+import { STAGE_SELECT_CARD } from "../layout/stageSelectCard";
 import { openMap } from "../rules/map";
 import { destinationOf, destinationSelection } from "../rules/mapDestinations";
 import { savedMap } from "../save";
@@ -31,21 +31,21 @@ import {
 import { catchModalTaps } from "./modalTaps";
 import { fitPlayCamera, playPoint } from "./playCamera";
 
-export interface LevelSelectData {
+export interface StageSelectData {
   readonly destination: string;
 }
-export interface LevelSelectOpener {
-  levelSelected(level: string): void;
-  levelSelectionClosed(): void;
+export interface StageSelectOpener {
+  stageSelected(stage: string): void;
+  stageSelectionClosed(): void;
 }
 
-type Target = { readonly kind: "level"; readonly id: string } | { readonly kind: "close" };
+type Target = { readonly kind: "stage"; readonly id: string } | { readonly kind: "close" };
 const PLANS = new Set([...Object.keys(ZONES), ...Object.keys(RECIPES)]);
 
-// Only reached levels appear here. The latest reached level is primary; selecting or cancelling
-// never changes completed levels. Outside taps, back and Escape return to the map.
-export class LevelSelectScene extends Scene {
-  private levels: readonly string[] = [];
+// Only reached stages appear here. The latest reached stage is primary; selecting or cancelling
+// never changes completed stages. Outside taps, back and Escape return to the map.
+export class StageSelectScene extends Scene {
+  private stages: readonly string[] = [];
   private latest = "";
   private destination = "";
   private focus: string | undefined;
@@ -55,9 +55,9 @@ export class LevelSelectScene extends Scene {
   private buttons = new Map<string, TextButton>();
   private finished = false;
   constructor() {
-    super("levelSelect");
+    super("stageSelect");
   }
-  init({ destination }: LevelSelectData): void {
+  init({ destination }: StageSelectData): void {
     const progress = savedMap();
     const selection = destinationSelection(
       PLANS,
@@ -66,9 +66,9 @@ export class LevelSelectScene extends Scene {
       destinationOf(ZONE_MAP, destination),
     );
     if (selection.kind !== "choose") {
-      throw new Error(`Level picker requires multiple unlocked levels: ${destination}`);
+      throw new Error(`Stage picker requires multiple unlocked stages: ${destination}`);
     }
-    this.levels = selection.levels;
+    this.stages = selection.stages;
     this.latest = selection.latest;
     this.destination = destination;
     this.focus = undefined;
@@ -79,22 +79,22 @@ export class LevelSelectScene extends Scene {
   }
   create(): void {
     fitPlayCamera(this);
-    addSlice(this, "ui-settings-card", LEVEL_SELECT_CARD.card);
+    addSlice(this, "ui-settings-card", STAGE_SELECT_CARD.card);
     const title = TEXT.map.zones[this.destination];
     if (title === undefined) {
       throw new Error(`No destination label ${this.destination}`);
     }
-    addCardTitle(this, LEVEL_SELECT_CARD.card, title);
+    addCardTitle(this, STAGE_SELECT_CARD.card, title);
     const font = phaserBitmapFont(this.cache.bitmapFont.get(BODY_FONT).data as PhaserFontData);
-    this.levels.forEach((id, index) => {
-      const layout = LEVEL_SELECT_CARD.buttons[index];
-      const label = TEXT.map.levels[id];
+    this.stages.forEach((id, index) => {
+      const layout = STAGE_SELECT_CARD.buttons[index];
+      const label = TEXT.map.stages[id];
       if (
         !layout ||
         label === undefined ||
         inkWidth(font, CARD_TEXT_SCALE, label) > layout.button.width - 2 * TEXT_BUTTON.inset
       ) {
-        throw new Error(`Level label does not fit: ${id}`);
+        throw new Error(`Stage label does not fit: ${id}`);
       }
       this.buttons.set(
         id,
@@ -102,15 +102,15 @@ export class LevelSelectScene extends Scene {
       );
     });
     this.closeX = this.add
-      .sprite(LEVEL_SELECT_CARD.close.at.x, LEVEL_SELECT_CARD.close.at.y, "ui-close")
+      .sprite(STAGE_SELECT_CARD.close.at.x, STAGE_SELECT_CARD.close.at.y, "ui-close")
       .setOrigin(0);
     this.render();
     catchModalTaps(this, this.cameras.main, {
       close: () => this.back(),
       covered: () => [
-        LEVEL_SELECT_CARD.card,
-        LEVEL_SELECT_CARD.close.hit,
-        ...this.levels.map((_, index) => LEVEL_SELECT_CARD.buttons[index]!.hit),
+        STAGE_SELECT_CARD.card,
+        STAGE_SELECT_CARD.close.hit,
+        ...this.stages.map((_, index) => STAGE_SELECT_CARD.buttons[index]!.hit),
       ],
     });
     this.watchInput();
@@ -123,18 +123,18 @@ export class LevelSelectScene extends Scene {
     }
     this.finished = true;
     this.scene.stop();
-    (this.scene.get("map") as unknown as LevelSelectOpener).levelSelectionClosed();
+    (this.scene.get("map") as unknown as StageSelectOpener).stageSelectionClosed();
   }
   private render(): void {
     for (const [id, button] of this.buttons) {
-      pressTextButton(button, this.pressed?.kind === "level" && this.pressed.id === id);
+      pressTextButton(button, this.pressed?.kind === "stage" && this.pressed.id === id);
     }
     this.closeX.play(
       animationKey("ui-close", this.pressed?.kind === "close" ? "pressed" : "normal"),
     );
     const at =
       this.focus === "close"
-        ? LEVEL_SELECT_CARD.close.art
+        ? STAGE_SELECT_CARD.close.art
         : this.focus === undefined
           ? undefined
           : this.buttons.get(this.focus)?.layout.button;
@@ -142,42 +142,42 @@ export class LevelSelectScene extends Scene {
   }
   private targetAt(pointer: Input.Pointer): Target | undefined {
     const areas: PressArea<string>[] = [
-      ...this.levels.map((key, index) => ({
-        art: LEVEL_SELECT_CARD.buttons[index]!.button,
-        hit: LEVEL_SELECT_CARD.buttons[index]!.hit,
+      ...this.stages.map((key, index) => ({
+        art: STAGE_SELECT_CARD.buttons[index]!.button,
+        hit: STAGE_SELECT_CARD.buttons[index]!.hit,
         key,
       })),
-      { art: LEVEL_SELECT_CARD.close.art, hit: LEVEL_SELECT_CARD.close.hit, key: "close" },
+      { art: STAGE_SELECT_CARD.close.art, hit: STAGE_SELECT_CARD.close.hit, key: "close" },
     ];
     const key = pressedArea(areas, playPoint(this, pointer));
     return key === undefined
       ? undefined
       : key === "close"
         ? { kind: "close" }
-        : { id: key, kind: "level" };
+        : { id: key, kind: "stage" };
   }
   private activate(target: Target): void {
     if (target.kind === "close") {
       this.back();
       return;
     }
-    if (this.finished || !this.levels.includes(target.id)) {
+    if (this.finished || !this.stages.includes(target.id)) {
       return;
     }
     this.finished = true;
     this.scene.stop();
-    (this.scene.get("map") as unknown as LevelSelectOpener).levelSelected(target.id);
+    (this.scene.get("map") as unknown as StageSelectOpener).stageSelected(target.id);
   }
   private watchInput(): void {
     this.input.keyboard?.on("keydown", (event: KeyboardEvent) => {
       event.stopPropagation();
-      const next = levelSelectKey(this.latest, this.levels, this.focus, event);
+      const next = stageSelectKey(this.latest, this.stages, this.focus, event);
       this.focus = next.focus;
       this.render();
       if (next.close) {
         this.back();
-      } else if (next.level !== undefined) {
-        this.activate({ id: next.level, kind: "level" });
+      } else if (next.stage !== undefined) {
+        this.activate({ id: next.stage, kind: "stage" });
       }
     });
     this.input.keyboard?.on("keyup", (event: KeyboardEvent) => event.stopPropagation());
@@ -197,7 +197,7 @@ export class LevelSelectScene extends Scene {
         down &&
         up &&
         down.kind === up.kind &&
-        (down.kind === "close" || (up.kind === "level" && down.id === up.id))
+        (down.kind === "close" || (up.kind === "stage" && down.id === up.id))
       ) {
         this.activate(down);
       }

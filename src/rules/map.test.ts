@@ -91,10 +91,10 @@ describe("isLastZone", () => {
     ),
   };
   it.each([
-    ["the final actual level", actualFinish, "c", true],
-    ["the level before another level", actualFinish, "a", false],
+    ["the final actual stage", actualFinish, "c", true],
+    ["the stage before another stage", actualFinish, "a", false],
     ["another completed branch", actualFinish, "b", false],
-    ["an unbuilt final level", unbuiltFinish, "c", false],
+    ["an unbuilt final stage", unbuiltFinish, "c", false],
     ["a routing fork", MAP, "z", false],
   ] as const)("recognizes %s without early celebration", (_, map, id, last) => {
     expect(isLastZone(map, id)).toBe(last);

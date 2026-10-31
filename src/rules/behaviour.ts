@@ -31,7 +31,7 @@ export interface BehaviourStep {
   readonly state: BehaviourState;
 }
 
-// Resolve a complete graph once; malformed transitions fail before a level starts.
+// Resolve a complete graph once; malformed transitions fail before a stage starts.
 export function layoutBehaviour(tile: number, plan: BehaviourPlan): BehaviourPlan {
   const valid = (value: number) => Number.isFinite(value) && value >= 0;
   if (!Number.isFinite(plan.distance) || !plan.states[plan.initial]) {

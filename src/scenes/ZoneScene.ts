@@ -75,7 +75,7 @@ import {
   startZoneIndex,
 } from "../rules/zoneChain";
 import { zonePlanFor } from "../rules/zonePlans";
-import { activeLevelTime, flushStats, recordActiveLevelStep, saveCompleted } from "../save";
+import { activeStageTime, flushStats, recordActiveStageStep, saveCompleted } from "../save";
 import { type TouchSetting, touchSettings, touchSettingShown } from "../settings/touchControls";
 import { ART_MANIFEST_KEY, artHitboxes, type ArtManifest } from "../view/aseprite";
 import { behaviourPose } from "../view/behaviour";
@@ -447,7 +447,7 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
         { jumpHeld: intent.jump, move: intent.move, useHeld: intent.use },
         this.zone,
       );
-      recordActiveLevelStep(this.levelKey(), STEP_SECONDS, beforeZone, this.zone);
+      recordActiveStageStep(this.stageKey(), STEP_SECONDS, beforeZone, this.zone);
       if (this.zone.death !== undefined) {
         this.beginDeath();
         break;
@@ -477,7 +477,7 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
     return this.dialogueOpen() || this.zone?.death !== undefined;
   }
 
-  private levelKey(): string {
+  private stageKey(): string {
     if (this.mapNode !== undefined) {
       return this.mapNode;
     }
@@ -493,7 +493,7 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
     const startArea = areaOf(this.layout, this.layout.start.area);
     const entry = startArea.entries[this.layout.start.entry];
     if (entry === undefined) {
-      throw new Error("Missing level checkpoint");
+      throw new Error("Missing stage checkpoint");
     }
     return this.zone.cleared
       ? 1
@@ -504,7 +504,7 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
     const theme = zoneTheme(
       ZONE_MAP,
       this.cache.json.get(ZONE_THEMES_KEY) as ZoneThemes,
-      this.levelKey(),
+      this.stageKey(),
     );
     const at = topShift(this.scale.gameSize);
     this.progress
@@ -560,10 +560,10 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
     this.drawDeath();
     if (this.dying.phase === "seated" && !this.deathModal) {
       this.deathModal = true;
-      const level = this.levelKey();
+      const stage = this.stageKey();
       this.scene.launch("death", {
-        activeSeconds: activeLevelTime(level),
-        ...deathLabels(ZONE_MAP, TEXT.map, String(this.zoneIndex + 1), level),
+        activeSeconds: activeStageTime(stage),
+        ...deathLabels(ZONE_MAP, TEXT.map, String(this.zoneIndex + 1), stage),
         percent: this.progressFraction(),
       } satisfies DeathData);
       stopWakeLock();

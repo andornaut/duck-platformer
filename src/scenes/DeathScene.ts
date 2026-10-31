@@ -68,12 +68,12 @@ export class DeathScene extends Scene {
     const titleFont = phaserBitmapFont(
       this.cache.bitmapFont.get(TITLE_FONT).data as PhaserFontData,
     );
-    if (inkWidth(titleFont, CARD_TEXT_SCALE, words.title) > DEATH_CARD.level.width) {
+    if (inkWidth(titleFont, CARD_TEXT_SCALE, words.title) > DEATH_CARD.stage.width) {
       throw new Error("Death title does not fit its card");
     }
     addCardTitle(this, DEATH_CARD.card, words.title);
     const font = phaserBitmapFont(this.cache.bitmapFont.get(BODY_FONT).data as PhaserFontData);
-    for (const name of ["level", "progress", "time"] as const) {
+    for (const name of ["stage", "progress", "time"] as const) {
       const rect = DEATH_CARD[name];
       const width = inkWidth(font, CARD_TEXT_SCALE, words[name]);
       if (width > rect.width) {

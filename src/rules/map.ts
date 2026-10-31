@@ -53,8 +53,8 @@ export function openMap(map: ZoneMap, completed: ReadonlySet<string>): OpenMap {
   return { edges, reached, zones };
 }
 
-// The final actual level is the only celebration trigger; reaching an earlier catalogue
-// destination never substitutes for completing the map's configured finish level.
+// The final actual stage is the only celebration trigger; reaching an earlier catalogue
+// destination never substitutes for completing the map's configured finish stage.
 export function isLastZone(map: ZoneMap, id: string): boolean {
   const node = nodeOf(map, id);
   return id === map.finish && node.kind === "zone" && node.zone !== undefined;
