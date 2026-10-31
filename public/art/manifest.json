@@ -75,6 +75,18 @@
       }
     },
     {
+      "key": "goose-antagonist",
+      "png": "sprites/goose-antagonist.png",
+      "json": "sprites/goose-antagonist.json",
+      "once": [],
+      "hitbox": {
+        "x": 2,
+        "y": 2,
+        "width": 44,
+        "height": 46
+      }
+    },
+    {
       "key": "icon-browser-menu",
       "png": "sprites/icon-browser-menu.png",
       "json": "sprites/icon-browser-menu.json",
