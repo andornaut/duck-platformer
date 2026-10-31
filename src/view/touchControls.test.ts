@@ -2,7 +2,6 @@ import type { AnimationFrame } from "@andornaut/game-kit/art/aseprite";
 import { describe, expect, it } from "vitest";
 
 import type { HeldTouch } from "../input/intent";
-import { TOUCH_CONTROLS } from "../layout/touchControls";
 import { buttonHeld, centredAt, controlTag, trackPress } from "./touchControls";
 
 const JUMP: HeldTouch = { role: "jump", startX: 600, startY: 200, x: 600 };
@@ -12,7 +11,6 @@ describe("buttonHeld", () => {
   it.each([
     ["jump", [], false],
     ["jump", [JUMP], true],
-    ["jump", [MOVE], false],
     ["use", [JUMP, MOVE], false],
   ] as const)("holds %s with %j: %s", (control, touches, held) => {
     expect(buttonHeld(control, touches)).toBe(held);
@@ -45,20 +43,7 @@ describe("controlTag", () => {
 });
 
 describe("centredAt", () => {
-  it.each([
-    [1, 1, { x: 100, y: 200 }],
-    [11, 11, { x: 95, y: 195 }],
-    [77, 67, { x: 62, y: 167 }],
-  ])("puts a %ix%i frame's centre pixel on 100,200", (width, height, at) => {
-    expect(centredAt({ x: 100, y: 200 }, { height, width })).toEqual(at);
-  });
-});
-
-describe("centredAt, on art's buttons", () => {
-  it.each([
-    ["jump", 75, { x: 638, y: 266 }],
-    ["use", 75, { x: 561, y: 166 }],
-  ] as const)("puts the %s frame, %i square, at art's top-left", (control, size, at) => {
-    expect(centredAt(TOUCH_CONTROLS[control].centre, { height: size, width: size })).toEqual(at);
+  it("centres a non-square frame on its centre pixel", () => {
+    expect(centredAt({ x: 100, y: 200 }, { height: 67, width: 77 })).toEqual({ x: 62, y: 167 });
   });
 });

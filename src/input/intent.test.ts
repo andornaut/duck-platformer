@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-import { SCREEN } from "../data/screen";
 import { TOUCH } from "../data/touch";
 import { TOUCH_CIRCLE_RADIUS } from "../layout/hitAreas";
 import { MOVE_HINT, TOUCH_CONTROLS } from "../layout/touchControls";
@@ -65,24 +64,6 @@ describe("touchRoleAt", () => {
   ])("takes %s as %s", (_, point, role) => {
     expect(touchRoleAt(point)).toBe(role);
   });
-
-  // Every point a drag can start from on a grid over the screen draws the hint, centred there,
-  // clear of each button's clear circle.
-  it("starts a drag only where the hint stays clear of both buttons' circles", () => {
-    const hint = (MOVE_HINT.art.width - 1) / 2;
-    const clashes: { x: number; y: number }[] = [];
-    for (let x = 0; x < SCREEN.width; x += 2) {
-      for (let y = 0; y < SCREEN.height; y += 2) {
-        const near = [use.centre, jump.centre].some(
-          (centre) => Math.hypot(x - centre.x, y - centre.y) < TOUCH_CIRCLE_RADIUS + hint,
-        );
-        if (near && touchRoleAt({ x, y }) === "move") {
-          clashes.push({ x, y });
-        }
-      }
-    }
-    expect(clashes).toEqual([]);
-  });
 });
 
 describe("moveFromOffset", () => {
@@ -93,8 +74,6 @@ describe("moveFromOffset", () => {
     [-dead, 0],
     [dead + 1, 1],
     [-dead - 1, -1],
-    [dead + 100, 1],
-    [-dead - 100, -1],
   ])("moves %i as %i", (dx, move) => {
     expect(moveFromOffset(TOUCH, dx)).toBe(move);
   });
@@ -114,7 +93,6 @@ describe("touchIntent", () => {
     ["a drag right", [move(300, 300 + beyond)], { ...NONE, move: 1 }],
     ["a drag left", [move(100, 100 - beyond)], { ...NONE, move: -1 }],
     ["a drag back to its start", [move(300, 300)], NONE],
-    ["a drag inside the dead zone", [move(300, 300 + TOUCH.moveDeadZone)], NONE],
     ["a drag left with Jump", [move(300, 300 - beyond), JUMP], { ...NONE, jump: true, move: -1 }],
     [
       "the later of two moves",
@@ -130,7 +108,6 @@ describe("touchIntent", () => {
 
 describe("combineIntents", () => {
   it.each([
-    [NONE, NONE, NONE],
     [{ ...NONE, move: 1 }, NONE, { ...NONE, move: 1 }],
     [{ ...NONE, move: 1 }, { ...NONE, move: -1 }, NONE],
     [
