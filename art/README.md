@@ -372,9 +372,15 @@ A hazard restarts the floor on contact. `art/tools/hazards.py` draws the hazard 
 - frog-courier rolls back and forth along the sidewalk and is mirrored for left. Its wheels roll without slipping at 51 px/s; the hit box leaves out his eye bump, the bag's top and 2px of each tyre.
 - ferret-trap-snap waits on `set` and plays `snap` once when the duck touches its hit box.
 
+## Animal placement
+
+Every non-player animal in the main stage or foreground is an enemy. Read an enemy from its silhouette, movement and stronger colour against the muted environment, without a red contact rectangle or red silhouette outline. Natural coloured sprite outlines remain part of the house style. The shared red bands still identify dangerous terrain surfaces.
+
+Friendly animals appear only as muted background flavour, never in the foreground, or inside rooms reached through doors for shops, quests and conversations. Background animals stay below play in contrast, saturation and detail; their placement never suggests a usable platform or foreground interaction. There are no friendly animal background replacements in the current scenery. The only current world animal is `dog-antagonist`; room casts are retained.
+
 ## Street cast
 
-The ambient characters of the Zone 1 street, drawn by `art/tools/cast.py`; its docstring gives every frame. They have no portraits, are never hazards or pickups and carry no hit box. Each faces right (mirrored for left) at outdoor scale beside the duck, with its feet on the frame's bottom rows and its body centre on the frame's centre line, so mirroring it does not move it. Outlines are coloured: two ramp steps darker, stepped further down until they hold 3:1 on the sidewalk.
+The character catalogue drawn by `art/tools/cast.py` is retained for room use and reference, without current world placements. Its docstring gives every frame. These assets have no portraits or hit boxes; they are not foreground friendly animals or pickups. Their existing brighter palettes must be muted before any future background flavour placement. Each faces right (mirrored for left) at outdoor scale beside the duck, with its feet on the frame's bottom rows and its body centre on the frame's centre line, so mirroring it does not move it. Outlines are coloured: two ramp steps darker, stepped further down until they hold 3:1 on the sidewalk.
 
 | Key                | Character                                                        | Frame | Tags and timing                                                                               |
 | ------------------ | ---------------------------------------------------------------- | ----- | --------------------------------------------------------------------------------------------- |
@@ -388,11 +394,11 @@ The ambient characters of the Zone 1 street, drawn by `art/tools/cast.py`; its d
 
 ## Dog antagonist
 
-The sprite and portrait integrate with the dog encounter and its frozen introduction. The runtime selects the movement-state animation and draws the contact outline; the harmless pug remains a separate ambient animal.
+The sprite and portrait integrate with the dog encounter and its frozen introduction. The runtime selects the movement-state animation without drawing a red contact outline. The pug remains a separate retained asset, with no current world placement.
 
-`dog-antagonist` is a separate floppy-eared, ochre-and-brown dog, drawn facing right in a 60x40 frame and mirrored for left. It does not replace the harmless `dog-pug`. The brighter coat separates the animal from the muted blue environment; the long floppy ears and round cream muzzle identify it independently of colour.
+`dog-antagonist` is a separate floppy-eared, ochre-and-brown dog, drawn facing right in a 60x40 frame and mirrored for left. It does not repurpose `dog-pug` as an enemy. The brighter coat separates the animal from the muted blue environment; the long floppy ears and round cream muzzle identify it independently of colour.
 
-The contact box is fixed across all poses: x 2, y 2, width 56, height 38, in frame pixels. The runtime draws a three-pixel contact rectangle inside those exact bounds in every state: two pixels of red and a one-pixel ink backing. The red line is not baked into the sprite. All drawn body parts remain inside the contact envelope, which does not shrink when the dog crouches or rests. Contact is always lethal; a crouch or rest is a movement cue, never a safe state.
+The contact box is fixed across all poses: x 2, y 2, width 56, height 38, in frame pixels. The contact box is collision data, not a visible red rectangle or silhouette outline. The sprite has no baked red danger line. All drawn body parts remain inside the contact envelope, which does not shrink when the dog crouches or rests. Contact is always lethal; a crouch or rest is a movement cue, never a safe state.
 
 | State  | Tag      | Art cycle               | Pose                                     |
 | ------ | -------- | ----------------------- | ---------------------------------------- |

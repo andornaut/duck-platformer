@@ -1,4 +1,7 @@
-"""The street cast: the ambient characters of the Floor 1 street, at outdoor scale beside the duck.
+"""The retained character catalogue for rooms and reference, at outdoor scale beside the duck.
+
+These assets have no current world placements. Friendly background flavour requires a muted palette; friendly
+animals never appear in the foreground.
 
 Usage, from the repository root:
   python3 -I art/tools/cast.py build            write art/cast/<key>.aseprite and public/art/sprites/<key>.png + .json

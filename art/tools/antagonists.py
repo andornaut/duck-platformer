@@ -5,8 +5,9 @@ Usage: antagonists.py build | preview OUT.png
 Run from the repository root. Sources: art/antagonists/. Exports: public/art/sprites/.
 
 dog-antagonist is a floppy-eared ochre dog with a rust crescent and cream muzzle, not the harmless pug.
-Frame 60x40, feet on row 39; all visible pixels stay inside hitbox x2,y2,width56,height38. The game draws
-its always-active 3px red contact rectangle from that hitbox, including during crouch and rest.
+Frame 60x40, feet on row 39; all visible pixels stay inside hitbox x2,y2,width56,height38. Contact is lethal
+in every state, including crouch and rest. The game does not draw a red contact rectangle or silhouette
+outline; the hitbox remains collision metadata.
 Tags: idle 2x400ms; walk 4x120ms; crouch 1x400ms; rush 2x80ms; rest 2x400ms. All loop; the gameplay
 state machine owns how long each state lasts. Crouch lowers the head and body; rush stretches the paws;
 rest closes the eye. Idle breath lifts the torso 1px while the feet stay planted.

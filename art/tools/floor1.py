@@ -7,7 +7,7 @@ Usage:
   floor1.py build             write public/art/tilesets/<key>.png + .json and public/art/backdrops/<key>.png, and
                               list them in the manifest under "tilesets" and "backdrops"
   floor1.py preview OUT.png   an example street column and an example lobby, each 720x720 (two screens tall),
-                              beside both tilesets at 4x, composed from the pieces with the duck, the ferret and
+                              beside both tilesets at 4x, composed from the pieces with the duck and
                               the touch buttons
 
 Run from the repository root.
@@ -1100,8 +1100,6 @@ def street_example(chars=True, hud=True):
     if chars:
         duck = Image.open(f"{SPRITES}/duck.png").convert("RGBA").crop((0, 0, 48, 42))
         im.alpha_composite(duck, (150 - 24, 28 * T - 42))
-        ferret = Image.open(f"{SPRITES}/ferret.png").convert("RGBA").crop((0, 0, 64, 80))
-        im.alpha_composite(ferret, (360 - 32, 20 * T - 80))
     if hud:
         touch_buttons(im, (0, 360))
     return im.convert("RGB")
@@ -1156,8 +1154,6 @@ def lobby_example(chars=True, hud=True):
     if chars:
         duck = Image.open(f"{SPRITES}/duck.png").convert("RGBA").crop((0, 0, 48, 42))
         im.alpha_composite(duck, (150 - 24, LOBBY_FY - 42))
-        ferret = Image.open(f"{SPRITES}/ferret.png").convert("RGBA").crop((0, 0, 64, 80))
-        im.alpha_composite(ferret, (200 - 32, 24 * T - 80))
     if hud:
         touch_buttons(im, (0, 360))
     return im.convert("RGB")
