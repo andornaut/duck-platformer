@@ -237,6 +237,19 @@ Pieces placed from stage data by their bottom-left corner at the bottom y given,
 | ---------------- | ---------------------------- | ----- | ---------------------------- |
 | goose-antagonist | character; hit box 2,2,44,46 | 48x48 | idle, walk, warn, rush, rest |
 
+## Woodland materials
+
+| Key            | Type                               | Size    | Contract                                         |
+| -------------- | ---------------------------------- | ------- | ------------------------------------------------ |
+| forest-mid     | decorative backdrop                | 720x600 | Bottom-left, y 600, repeat x                     |
+| forest-shrub   | decorative backdrop                | 48x48   | Bottom-left, y 600, repeat x                     |
+| forest-tree    | decorative backdrop                | 96x216  | Bottom-left, y 600, repeat none                  |
+| ravine-mid     | decorative backdrop                | 720x600 | Bottom-left, y 600, repeat x                     |
+| ravine-rock    | decorative backdrop                | 72x72   | Bottom-left, y 600, repeat none                  |
+| tiles-woodland | tileset, 12px cells, eight columns | 96x48   | Four material families, seven terrain tiles each |
+| woodland-far   | decorative backdrop                | 720x600 | Bottom-left, y 600, repeat x                     |
+| woodland-sky   | decorative backdrop                | 48x600  | Bottom-left, y 600, repeat x                     |
+
 ## Industrial materials
 
 | Key                   | Type                               | Size    | Contract                                         |
