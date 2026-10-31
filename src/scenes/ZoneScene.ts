@@ -558,6 +558,12 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
       const stage = this.stageKey();
       this.scene.launch("death", {
         activeSeconds: activeStageTime(stage),
+        duck: {
+          height: this.duck.height,
+          width: this.duck.width,
+          x: this.duck.x - this.cameras.main.scrollX,
+          y: this.duck.y - this.cameras.main.scrollY,
+        },
         ...deathLabels(ZONE_MAP, TEXT.map, String(this.zoneIndex + 1), stage),
         percent: this.progressFraction(),
       } satisfies DeathData);

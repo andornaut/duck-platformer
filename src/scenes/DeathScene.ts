@@ -1,24 +1,20 @@
-import { inkWidth } from "@andornaut/game-kit/text/bitmapFont";
-import {
-  phaserBitmapFont,
-  type PhaserFontData,
-} from "@andornaut/game-kit/text/phaser/phaserBitmapFont";
 import { type GameObjects, type Input, Scene } from "phaser";
 
+import { SCREEN } from "../data/screen";
 import { TEXT } from "../data/text";
 import { TOUCH } from "../data/touch";
+import type { Rect } from "../data/types";
 import { DEATH_ACTIONS, type DeathAction, deathKeyAction } from "../input/deathInput";
-import { DEATH_CARD } from "../layout/deathCard";
+import { deathCard } from "../layout/deathCard";
 import { type PressArea, pressedArea } from "../layout/hitAreas";
-import { CARD_TEXT_SCALE } from "../layout/pauseCard";
 import { type DeathSummary, deathSummary } from "../view/death";
 import {
-  addCardText,
-  addCardTitle,
+  addCardTextIn,
   addSlice,
   addTextButton,
   BODY_FONT,
   captureTab,
+  cardFonts,
   paletteColour,
   pressTextButton,
   PRIMARY_BUTTON,
@@ -29,7 +25,9 @@ import {
 import { catchModalTaps } from "./modalTaps";
 import { fitPlayCamera, playPoint } from "./playCamera";
 
-export type DeathData = DeathSummary;
+export interface DeathData extends DeathSummary {
+  readonly duck: Rect;
+}
 export interface DeathOpener {
   leaveDeath(): void;
   retryDeath(): void;
@@ -37,7 +35,8 @@ export interface DeathOpener {
 
 // Death's required card holds indefinitely. Only an explicit title/retry action can close it.
 export class DeathScene extends Scene {
-  private summary!: DeathSummary;
+  private summary!: DeathData;
+  private layout!: ReturnType<typeof deathCard>;
   private buttons!: Readonly<Record<DeathAction, TextButton>>;
   private focus: DeathAction | undefined;
   private ring: GameObjects.NineSlice | undefined;
@@ -63,37 +62,29 @@ export class DeathScene extends Scene {
   }
   create(): void {
     fitPlayCamera(this);
-    addSlice(this, "ui-settings-card", DEATH_CARD.card);
     const words = deathSummary(TEXT.death, this.summary);
-    const titleFont = phaserBitmapFont(
-      this.cache.bitmapFont.get(TITLE_FONT).data as PhaserFontData,
-    );
-    if (inkWidth(titleFont, CARD_TEXT_SCALE, words.title) > DEATH_CARD.stage.width) {
-      throw new Error("Death title does not fit its card");
-    }
-    addCardTitle(this, DEATH_CARD.card, words.title);
-    const font = phaserBitmapFont(this.cache.bitmapFont.get(BODY_FONT).data as PhaserFontData);
-    for (const name of ["stage", "progress", "time"] as const) {
-      const rect = DEATH_CARD[name];
-      const width = inkWidth(font, CARD_TEXT_SCALE, words[name]);
-      if (width > rect.width) {
-        throw new Error(`Death ${name} does not fit its card`);
-      }
-      addCardText(
+    this.layout = deathCard(cardFonts(this), { ...SCREEN, x: 0, y: 0 }, this.summary.duck, {
+      ...words,
+      home: TEXT.pause.home,
+      retry: TEXT.death.retry,
+    });
+    addSlice(this, "ui-settings-card", this.layout.card);
+    for (const name of ["title", "stage", "progress", "time"] as const) {
+      addCardTextIn(
         this,
-        BODY_FONT,
-        { x: rect.x + (rect.width - width) / 2, y: rect.y },
+        name === "title" ? TITLE_FONT : BODY_FONT,
+        this.layout[name],
         words[name],
         paletteColour(this, "ink"),
       );
     }
     this.buttons = {
-      home: addTextButton(this, DEATH_CARD.home, TEXT.pause.home),
-      retry: addTextButton(this, DEATH_CARD.retry, TEXT.death.retry, { style: PRIMARY_BUTTON }),
+      home: addTextButton(this, this.layout.home, TEXT.pause.home),
+      retry: addTextButton(this, this.layout.retry, TEXT.death.retry, { style: PRIMARY_BUTTON }),
     };
     this.render();
     catchModalTaps(this, this.cameras.main, {
-      covered: () => [DEATH_CARD.card, ...DEATH_ACTIONS.map((name) => DEATH_CARD[name].hit)],
+      covered: () => [this.layout.card, ...DEATH_ACTIONS.map((name) => this.layout[name].hit)],
     });
     this.watchInput();
     captureTab(this, true);
@@ -106,13 +97,13 @@ export class DeathScene extends Scene {
     this.ring = ringFocus(
       this,
       this.ring,
-      this.focus === undefined ? undefined : DEATH_CARD[this.focus].button,
+      this.focus === undefined ? undefined : this.layout[this.focus].button,
     );
   }
   private areas(): readonly PressArea<DeathAction>[] {
     return DEATH_ACTIONS.map((key) => ({
-      art: DEATH_CARD[key].button,
-      hit: DEATH_CARD[key].hit,
+      art: this.layout[key].button,
+      hit: this.layout[key].hit,
       key,
     }));
   }
