@@ -35,7 +35,8 @@ head and bill 10px on the right, and she stops 2px below its top. The raised win
 | land    | 1     | 80  | recover: half squash                                         | 0    | 36 x 24    | 36       |
 | death   | 0     | 100 | small recoil, closed eye, feet tucked                        | 1    | 36 x 24    | 36       |
 | death   | 1     | 120 | falling pose, closed eye, feet tucked                        | 1    | 33 x 26    | 33       |
-| death   | 2     | 400 | deflated seated squat, feet tucked underneath                | -1   | 39 x 17    | 39       |
+| death   | 2     | 80  | ground impact: extra squash, flatter face, feet hidden        | -1   | 39 x 14    | 39       |
+| death   | 3     | 400 | spring back to seated rest, flatter face, feet hidden         | -1   | 39 x 17    | 39       |
 
 Lift is how far the body's bottom edge sits above its rest row, in pixels. Body w x h is the body's
 superellipse; normal locomotion keeps its area within 2% of rest. Shadow w is for a ground shadow the game
@@ -43,7 +44,7 @@ may draw under her: the land contact frame's is the largest. flutter and jump 1 
 is the game's to place. jump, land and death play once and hold their last frame (the manifest's "once"); every
 other tag loops. After land, play idle. Death is appended after the existing tags; frame indices stay fixed.
 Death has no baked world movement: the runtime uses frame 0 for recoil, holds frame 1 during the physical fall,
-and shows frame 2 only after support is reached, holding it while the retry card is open. The camera stays
+then shows frame 2 on support and springs back to seated frame 3, held while the retry card is open. The camera stays
 fixed. Durations above are art playback defaults; gameplay owns state timing and falling behaviour. The death
 squat deliberately reduces body volume. The body-centre and frame-bottom anchor do not move.
 
@@ -128,24 +129,27 @@ def flat(g, inside, c):
                 g.p(x, y, c)
 
 
-def draw(lift=0, bw=BRX, bh=BRY, wing=("fold", 0), feet=((-5, 0), (2, 0)), eye="open"):
+def draw(lift=0, bw=BRX, bh=BRY, wing=("fold", 0), feet=((-5, 0), (2, 0)), eye="open", head_squash=1):
     """One 48x42 frame.
 
     lift: body bottom edge this many px above its rest row. bw, bh: body radii. wing: ("fold", dy) or
     ("raise", degrees), the raised wing's direction in screen degrees (180 straight back, above 180 up and
     back). feet: ((dx, up), (dx, up)) for the far foot (drawn behind the body) and the near foot, each its left
-    column relative to the body centre, or "tucked" (soles just under the belly).
+    column relative to the body centre, or "tucked" (soles just under the belly), or "hidden" (no feet drawn). head_squash compresses the head
+    vertically while retaining its bottom edge. Its default preserves the normal round head.
     """
     g = Grid(W, H)
     bottom = BODY_BOTTOM - lift
     bcy = bottom - bh
     hcx, hcy = C + HEAD_X * BRX, bcy - HEAD_UP * bh
+    hcy += HEAD_R * (1 - head_squash)
+    head_ry = HEAD_R * head_squash
 
     def foot(i):
         dx, up = feet[i]
         g.rect(int(C + dx), H - 3 - up, 4, 2, "orange")
 
-    if feet != "tucked":
+    if feet not in ("tucked", "hidden"):
         foot(0)
     # a short tail tip at the lowered rear, its root under the body
     cel(g, in_ell(C - bw + 1, bcy - 1, 4.4, 2.2, -0.45), BASE, SHADE, None, 1, 1)
@@ -153,7 +157,7 @@ def draw(lift=0, bw=BRX, bh=BRY, wing=("fold", 0), feet=((-5, 0), (2, 0)), eye="
     if feet == "tucked":
         for dx in (-5, 2):
             g.rect(int(C + dx), bottom, 4, 1, "orange")
-    else:
+    elif feet != "hidden":
         foot(1)
     kind, val = wing
     if kind == "raise":  # up and back from the top of her back, its root behind the head
@@ -162,11 +166,11 @@ def draw(lift=0, bw=BRX, bh=BRY, wing=("fold", 0), feet=((-5, 0), (2, 0)), eye="
         ln = 14 + 5 * min(1.0, max(0.0, (val - 186) / 50))
         sx, sy = C - 5, bcy - bh * 0.45
         flat(g, in_ell(sx + math.cos(a) * ln * 0.5, sy + math.sin(a) * ln * 0.5, ln * 0.5, ln * 0.27, a), WING)
-    cel(g, in_ell(hcx, hcy, HEAD_R, HEAD_R), BASE, SHADE, LIGHT, 3, 1)
+    cel(g, in_ell(hcx, hcy, HEAD_R, head_ry), BASE, SHADE, LIGHT, 3, 1)
     if kind == "fold":  # on the body's side, its tip pointing back
         flat(g, in_ell(C - 2, bcy + 2 + val, BRX * 0.5, BRY * 0.3, -0.3), WING)
-    g.rect(int(hcx + HEAD_R - 2), int(hcy), 7, 5, "orange")  # bill
-    ey = int(hcy - HEAD_R * 0.55)
+    g.rect(int(hcx + HEAD_R - 2), int(hcy), 7, round(5 * head_squash), "orange")  # bill
+    ey = int(hcy - head_ry * 0.55)
     g.rect(int(hcx), ey if eye == "open" else ey + 2, 4, 4 if eye == "open" else 1, "ink")
     return g.outlined(lambda c: K[OUTLINE])
 
@@ -205,8 +209,9 @@ def duck_tags():
         ("death", [
             draw(lift=1, bw=SQUASH_RECOVER[0], bh=SQUASH_RECOVER[1], feet="tucked", eye="closed"),
             draw(lift=1, feet="tucked", eye="closed"),
-            draw(lift=-1, bw=SQUASH_LAND[0], bh=8.4, wing=("fold", -2), feet="tucked", eye="closed"),
-        ], [100, 120, 400]),
+            draw(lift=-1, bw=SQUASH_LAND[0], bh=6.8, wing=("fold", -2), feet="hidden", eye="closed", head_squash=0.65),
+            draw(lift=-1, bw=SQUASH_LAND[0], bh=8.4, wing=("fold", -2), feet="hidden", eye="closed", head_squash=0.8),
+        ], [100, 120, 80, 400]),
     ]
 
 
