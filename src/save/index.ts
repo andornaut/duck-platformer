@@ -22,7 +22,7 @@ const store = saveStore(
   progressFormat(ZONE_MAP, { ...ZONES, ...RECIPES }),
 );
 let progress: Progress = BEGINNING;
-const LEVELS = new Set([...Object.keys(ZONES), ...Object.keys(RECIPES)]);
+const LEVELS = new Set(ZONE_MAP.destinations.flatMap(({ levels }) => levels));
 const stats = levelStatsStore(localSaveStorage(), LEVELS);
 let statsLifecycleInstalled = false;
 
@@ -93,10 +93,7 @@ export function saveStand(stand: string): void {
 
 // She has completed the zone at node: it opens the map past it, and she stands on it.
 export function saveCompleted(node: string): void {
-  const level = ZONE_MAP.nodes.find(({ id }) => id === node)?.zone;
-  if (level !== undefined) {
-    clearLevelTime(level);
-  }
+  clearLevelTime(node);
   const { completed } = savedMap();
   write({
     at: "map",

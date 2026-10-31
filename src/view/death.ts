@@ -1,6 +1,16 @@
 import { fillNames } from "@andornaut/game-kit/lines";
 
-import type { DeathText, DeathTuning, Point, Rect, Size, ZoneDeath } from "../data/types";
+import type {
+  DeathText,
+  DeathTuning,
+  GameText,
+  Point,
+  Rect,
+  Size,
+  ZoneDeath,
+  ZoneMap,
+} from "../data/types";
+import { destinationForLevel } from "../rules/mapDestinations";
 
 export type DeathPhase = "bounce" | "fall" | "impact" | "recoil" | "seated";
 export interface DeathPresentation {
@@ -108,6 +118,22 @@ export interface DeathSummary {
   readonly activeSeconds: number;
   readonly levelLabel: string;
   readonly percent: number;
+  readonly zoneLabel: string;
+}
+
+export function deathLabels(
+  map: ZoneMap,
+  words: GameText["map"],
+  fallback: string,
+  levelId: string,
+): Pick<DeathSummary, "levelLabel" | "zoneLabel"> {
+  const destination = map.nodes.some(({ id, kind }) => id === levelId && kind === "zone")
+    ? destinationForLevel(map, levelId)
+    : undefined;
+  return {
+    levelLabel: words.levels[levelId] ?? fallback,
+    zoneLabel: destination === undefined ? fallback : (words.zones[destination.id] ?? fallback),
+  };
 }
 
 // Timers retain full precision in storage; the card displays complete minutes and seconds.
@@ -115,10 +141,11 @@ export function deathSummary(words: DeathText, summary: DeathSummary) {
   const seconds = Math.max(0, Math.floor(summary.activeSeconds));
   const time = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
   return {
+    level: fillNames(words.level, { level: summary.levelLabel }),
     progress: fillNames(words.progress, {
       percent: String(Math.round(Math.max(0, Math.min(1, summary.percent)) * 100)),
     }),
     time: fillNames(words.time, { time }),
-    title: fillNames(words.title, { level: summary.levelLabel }),
+    title: fillNames(words.title, { level: summary.levelLabel, zone: summary.zoneLabel }),
   };
 }

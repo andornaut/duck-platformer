@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import { DEATH } from "../data/death";
 import { DUCK } from "../data/duck";
+import { ZONE_MAP } from "../data/map";
 import { SCREEN } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { Rect, ZoneDeath } from "../data/types";
 import { STEP_SECONDS } from "../rules/step";
 import {
+  deathLabels,
   deathSummary,
   type DeathView,
   startDeathPresentation,
@@ -87,12 +89,26 @@ describe("death summary", () => {
     ({ activeSeconds, percent, progress, time }) => {
       const result = deathSummary(TEXT.death, {
         activeSeconds,
-        levelLabel: TEXT.map.zones.street!,
+        ...deathLabels(ZONE_MAP, TEXT.map, "1", ZONE_MAP.start),
         percent,
       });
       expect(result.time).toBe(TEXT.death.time.replace("{time}", time));
       expect(result.progress).toBe(TEXT.death.progress.replace("{percent}", progress));
-      expect(result.title).toBe(TEXT.death.title.replace("{level}", TEXT.map.zones.street!));
+      const destination = ZONE_MAP.destinations.find(({ levels }) =>
+        levels.includes(ZONE_MAP.start),
+      );
+      expect(result.title).toBe(
+        TEXT.death.title.replace("{zone}", TEXT.map.zones[destination?.id ?? ""] ?? "1"),
+      );
+      expect(result.level).toBe(
+        TEXT.death.level.replace("{level}", TEXT.map.levels[ZONE_MAP.start] ?? "1"),
+      );
     },
   );
+  it("uses numeric debug labels outside the level catalogue", () => {
+    expect(deathLabels(ZONE_MAP, TEXT.map, "3", "test:3")).toEqual({
+      levelLabel: "3",
+      zoneLabel: "3",
+    });
+  });
 });

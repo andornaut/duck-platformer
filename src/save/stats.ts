@@ -10,7 +10,7 @@ export interface Stats {
   readonly levels: Readonly<Record<string, LevelStats>>;
 }
 
-export const STATS_VERSION = 1;
+export const STATS_VERSION = 2;
 const KEYS = { backup: "duck-platformer.stats-backup", save: "duck-platformer.stats" } as const;
 // A dirty clock is checkpointed at most once per second between lifecycle flushes.
 const CHECKPOINT_MS = 1000;

@@ -21,7 +21,7 @@ import { type GameObjects, Input, Scale, Scene, Scenes, type Tilemaps } from "ph
 import { ARCHETYPES } from "../data/archetypes";
 import { CAMERA } from "../data/camera";
 import { CHARACTERS } from "../data/characters";
-import { DEATH, DEATH_PROGRESS } from "../data/death";
+import { DEATH } from "../data/death";
 import { DUCK } from "../data/duck";
 import { ZONE_MAP } from "../data/map";
 import { HAZARD_OUTLINE, SCREEN, TILE } from "../data/screen";
@@ -83,6 +83,7 @@ import { cameraScroll } from "../view/camera";
 import { characterState, nextQuirkAt } from "../view/character";
 import {
   deathFrameIndex,
+  deathLabels,
   type DeathPresentation,
   type DeathView,
   startDeathPresentation,
@@ -97,6 +98,7 @@ import { type PlayHold, stepAction } from "../view/playHold";
 import { loadedTileset, objectTiles, terrainTiles, type Tileset } from "../view/tiles";
 import { buttonHeld, centredAt, controlTag, trackPress } from "../view/touchControls";
 import { proximityDialogue } from "../view/zoneDialogue";
+import { ZONE_THEMES_KEY, zoneTheme, type ZoneThemes } from "../view/zoneTheme";
 import { paletteColour } from "./cardParts";
 import type { DeathData, DeathOpener } from "./DeathScene";
 import type { DialogueData, DialogueOpener } from "./DialogueScene";
@@ -477,11 +479,13 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
 
   private levelKey(): string {
     if (this.mapNode !== undefined) {
-      return nodeOf(ZONE_MAP, this.mapNode).zone ?? "";
+      return this.mapNode;
     }
-    return (
-      this.trial ?? (this.zoneIndex === 0 ? (nodeOf(ZONE_MAP, ZONE_MAP.start).zone ?? "") : "")
-    );
+    return this.trial === undefined
+      ? this.zoneIndex === 0
+        ? ZONE_MAP.start
+        : ""
+      : (ZONE_MAP.nodes.find(({ zone }) => zone === this.trial)?.id ?? "");
   }
 
   private progressFraction(): number {
@@ -497,16 +501,17 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
   }
 
   private drawProgress(): void {
-    const colours = DEATH_PROGRESS[this.levelKey()] ?? DEATH_PROGRESS.street;
-    if (colours === undefined) {
-      throw new Error("Missing default level progress colours");
-    }
+    const theme = zoneTheme(
+      ZONE_MAP,
+      this.cache.json.get(ZONE_THEMES_KEY) as ZoneThemes,
+      this.levelKey(),
+    );
     const at = topShift(this.scale.gameSize);
     this.progress
       .clear()
-      .fillStyle(paletteColour(this, colours.track))
+      .fillStyle(paletteColour(this, "dslate"))
       .fillRect(at.x, at.y, SCREEN.width, DEATH_PROGRESS_HEIGHT)
-      .fillStyle(paletteColour(this, colours.fill))
+      .fillStyle(paletteColour(this, theme.primary))
       .fillRect(at.x, at.y, SCREEN.width * this.progressFraction(), DEATH_PROGRESS_HEIGHT);
   }
 
@@ -558,7 +563,7 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
       const level = this.levelKey();
       this.scene.launch("death", {
         activeSeconds: activeLevelTime(level),
-        levelLabel: TEXT.map.zones[this.mapNode ?? level] ?? String(this.zoneIndex + 1),
+        ...deathLabels(ZONE_MAP, TEXT.map, String(this.zoneIndex + 1), level),
         percent: this.progressFraction(),
       } satisfies DeathData);
       stopWakeLock();

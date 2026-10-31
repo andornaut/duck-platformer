@@ -133,13 +133,25 @@ afterEach(() => {
 });
 
 it("preserves stats on progress restart, then resets the level on every clear", async () => {
-  const values = new Map<string, string>();
+  const values = new Map<string, string>([
+    [
+      "duck-platformer.stats",
+      JSON.stringify({
+        levels: { park: { activeSeconds: 2 }, street: { activeSeconds: 3 } },
+        version: STATS_VERSION - 1,
+      }),
+    ],
+  ]);
   vi.stubGlobal("localStorage", {
     getItem: (key: string) => values.get(key) ?? null,
     setItem: (key: string, value: string) => values.set(key, value),
   });
   const save = await import("./index");
   await save.loadProgress();
+  expect(values.has("duck-platformer.stats-backup")).toBe(true);
+  expect(save.activeLevelTime("street")).toBe(0);
+  save.recordActiveLevelStep("park", 0.1, INITIAL, ACTIVE);
+  expect(save.activeLevelTime("park")).toBe(0);
   save.recordActiveLevelStep("street", 0.1, INITIAL, ACTIVE);
   save.clearProgress();
   await save.flushStats();

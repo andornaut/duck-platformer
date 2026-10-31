@@ -16,6 +16,12 @@ const action = (x: number) =>
 export const DEATH_CARD = {
   card: CARD,
   home: action(CARD.x + INSET),
+  level: {
+    height: 20,
+    width: CARD.width - 2 * CARD_FRAME.padding,
+    x: CARD.x + CARD_FRAME.padding,
+    y: 44,
+  } satisfies Rect,
   progress: {
     height: 24,
     width: CARD.width - 2 * CARD_FRAME.padding,
