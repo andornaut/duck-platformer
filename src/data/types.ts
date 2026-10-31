@@ -35,16 +35,17 @@ export interface DuckTuning {
   readonly width: number;
   // Seconds before landing in which a jump press is kept, to start as she lands.
   readonly jumpBuffer: number;
-  // How high she rises from where she took off when Jump is let go within the tap window: below
-  // it, she climbs on to it; already past it, she stops where she is. The shortest press hops it.
+  // Height of the low hop, including releases during the tap window.
   readonly jumpHopHeight: number;
-  // The share of her upward speed she keeps when Jump is let go while she rises, after the tap
-  // window: letting go stops her climbing promptly.
+  // Seconds to the low-hop apex. Descent uses normal gravity.
+  readonly jumpHopTime: number;
+  // Seconds after the tap window over which held input smoothly adds full-jump lift.
+  readonly jumpLiftTime: number;
+  // Share of upward speed retained on release after the tap window.
   readonly jumpReleaseCut: number;
-  // Upward speed when a jump starts: held to the top, a full jump.
+  // Defines the existing full-jump height: speed squared divided by twice gravity.
   readonly jumpSpeed: number;
-  // Seconds from the start of a jump that decide what letting go of Jump does while she rises:
-  // within them, she rises no higher than jumpHopHeight; after them, jumpReleaseCut.
+  // Seconds of forgiving low-hop input before held input starts adding lift.
   readonly jumpTapWindow: number;
   readonly walkSpeed: number;
 }
