@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { AreaPlan, ChunkPlan, ZoneRecipe } from "../data/types";
+import type { AreaPlan, ChunkPlan, OrderedZoneRecipe, ZoneRecipe } from "../data/types";
 import { ASSEMBLED_AREA, assembleZone, type ChunkLibrary } from "./assemble";
 import { recipeProblems } from "./chunk";
 
@@ -364,5 +364,76 @@ describe("assembleZone", () => {
     const area = areaOf(assembleZone(lib, 1, "z", recipe(1, { doors: [{ count: 1, room: "r" }] })));
     const door = area.objects.find(({ character }) => character === "door");
     expect(door && { col: door.col, row: door.row }).toEqual(at);
+  });
+});
+
+describe("ordered section assembly", () => {
+  const base = library({ a: chunk(50, 50), b: chunk(50, 50) });
+  const theme = base.themes.t;
+  if (!theme) {
+    throw new Error("Missing fixture theme");
+  }
+  const lib: ChunkLibrary = {
+    ...base,
+    characters: {
+      ...base.characters,
+      stairDown: { cols: 4, rows: 6 },
+      stairUp: { cols: 4, rows: 6 },
+    },
+    themes: {
+      t: {
+        ...theme,
+        bindings: {
+          ...theme.bindings,
+          down: { character: "stairDown" },
+          up: { character: "stairUp" },
+        },
+      },
+    },
+  };
+  const section = (id: string) => ({
+    chunks: ["a", "b"],
+    difficulty: { max: 1 as const, min: 1 as const },
+    doors: [],
+    events: [],
+    id,
+    spawnCol: 2,
+    theme: "t",
+  });
+  const ordered: OrderedZoneRecipe = {
+    finish: "finish",
+    sections: [section("lobby"), section("landing"), section("home")],
+    start: "start",
+    transitionRoles: { left: "down", right: "up" },
+  };
+  it("chooses one generated chunk per section, adds only global caps and places directional stairs", () => {
+    const plan = assembleZone(lib, 42, "stage", ordered);
+    expect(plan).toEqual(assembleZone(lib, 42, "stage", ordered));
+    expect(plan.areaOrder).toEqual(["lobby", "landing", "home"]);
+    expect(Object.values(plan.areas).map(({ chunks }) => chunks?.length)).toEqual([2, 1, 2]);
+    expect(plan.areas.landing?.walkLinks).toEqual({
+      left: { area: "lobby", entry: "return" },
+      right: { area: "home", entry: "start" },
+    });
+    expect(
+      plan.areas.landing?.objects.filter(({ role }) => role === "down" || role === "up"),
+    ).toMatchObject([
+      { character: "stairDown", col: 0, row: 44 },
+      { character: "stairUp", col: 56, row: 44 },
+    ]);
+    expect(plan.areas.landing?.entries.return).toEqual({ col: 58, row: 50 });
+  });
+  it("rejects invalid section ids, missing pools and impossible cap seams without searching live physics", () => {
+    expect(() =>
+      assembleZone(lib, 42, "stage", { ...ordered, sections: [section("same"), section("same")] }),
+    ).toThrow("unique");
+    expect(() =>
+      assembleZone(lib, 42, "stage", {
+        ...ordered,
+        sections: [{ ...section("one"), chunks: ["missing"] }],
+      }),
+    ).toThrow("no chunk");
+    const badCap = { ...lib, chunks: { ...lib.chunks, finish: chunk(30, 30) } };
+    expect(() => assembleZone(badCap, 42, "stage", ordered)).toThrow("No ordered assembly");
   });
 });

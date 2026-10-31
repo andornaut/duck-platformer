@@ -1,5 +1,5 @@
-import type { ChunkPlan, ChunkSeam, Instance, TileRect, ZoneRecipe } from "../data/types";
-import { type ChunkLibrary, themesOf } from "./assemble";
+import type { ChunkPlan, ChunkSeam, Instance, StageRecipe, TileRect } from "../data/types";
+import { type ChunkLibrary, orderedRecipeProblems, themesOf } from "./assemble";
 import { bindElement } from "./elementBinding";
 import { type Catalogue, objectLayout } from "./tiles";
 
@@ -217,7 +217,10 @@ export function chunkProblems(
 // exist, both chunks are drawn in its theme, its length range holds them, and its counts are
 // whole numbers, and its difficulty is an ordered band from 1 to 5. Whether any assembly fits
 // is assembleZone's to find.
-export function recipeProblems(library: ChunkLibrary, recipe: ZoneRecipe): string[] {
+export function recipeProblems(library: ChunkLibrary, recipe: StageRecipe): string[] {
+  if ("sections" in recipe) {
+    return orderedRecipeProblems(library, recipe);
+  }
   const problems: string[] = [];
   const { max: hardest, min: easiest } = recipe.difficulty;
   if (

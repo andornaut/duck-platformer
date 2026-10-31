@@ -20,6 +20,7 @@ import type {
 } from "../data/types";
 import { drawsFrom, tileHitbox, type Tileset } from "../view/tiles";
 import { layoutBehaviour } from "./behaviour";
+import { validateZoneLinks } from "./zoneLinks";
 
 export function tileRect(tile: number, rect: TileRect): Rect {
   return {
@@ -226,6 +227,7 @@ export function areaLayout(
 ): AreaLayout {
   const tileset = area.tileset === undefined ? undefined : tilesets[area.tileset];
   return {
+    ...(area.walkLinks && { walkLinks: area.walkLinks }),
     backX: tile,
     chunks: (area.chunks ?? []).map(({ col, cols }) => ({ width: cols * tile, x: col * tile })),
     entries: Object.fromEntries(
@@ -262,7 +264,8 @@ export function zoneLayout(
   flags: ReadonlySet<string>,
   plan: ZonePlan,
 ): ZoneLayout {
-  return {
+  const layout: ZoneLayout = {
+    ...(plan.areaOrder && { areaOrder: plan.areaOrder }),
     areas: Object.fromEntries(
       Object.entries(plan.areas).map(([name, area]) => [
         name,
@@ -272,4 +275,6 @@ export function zoneLayout(
     duckFrame,
     start: plan.start,
   };
+  validateZoneLinks(layout);
+  return layout;
 }

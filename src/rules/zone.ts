@@ -30,6 +30,7 @@ import {
 } from "./duck";
 import { axisOf, motionTrack, type Track } from "./motion";
 import { overlaps } from "./rect";
+import { validateWalkEntries } from "./zoneLinks";
 
 // What the player asks of the zone this step: the duck's input, and whether Use is held. Use
 // acts on the step it goes down.
@@ -184,6 +185,7 @@ export function roomOf(layout: ZoneLayout, zone: ZoneState): string | undefined 
 }
 
 export function startZone(tuning: DuckTuning, layout: ZoneLayout, seed: number): ZoneState {
+  validateWalkEntries(tuning, layout);
   return enterArea(tuning, layout, layout.start, { attempt: 0, restarts: 0, seed, steps: 0 });
 }
 
@@ -394,6 +396,21 @@ export function stepZone(
         velocity: { x: duck.vx, y: duck.vy },
       },
     };
+  }
+  const link =
+    box.x < area.backX
+      ? area.walkLinks?.left
+      : box.x + box.width > area.exitX
+        ? area.walkLinks?.right
+        : undefined;
+  if (link) {
+    const arrival = enterArea(tuning, layout, link, {
+      attempt: zone.attempt,
+      restarts: zone.restarts,
+      seed: zone.seed,
+      steps,
+    });
+    return { ...arrival, duck: { ...arrival.duck, facing: duck.facing, jumpHeld: input.jumpHeld } };
   }
   const usePressed = input.useHeld && !zone.useHeld;
   const door = usePressed

@@ -6,8 +6,10 @@ import type {
   ChunkRules,
   FilledSlot,
   Instance,
+  OrderedZoneRecipe,
   PlacedChunk,
   SlotKind,
+  StageRecipe,
   TerrainRect,
   ThemePlan,
   TilePoint,
@@ -328,11 +330,246 @@ export function zonePlanOf(
 }
 
 // The recipe's events and doors, each id or room repeated count times.
-function fillsOf(recipe: ZoneRecipe): Record<SlotKind, string[]> {
+function fillsOf(recipe: Pick<ZoneRecipe, "doors" | "events">): Record<SlotKind, string[]> {
   return {
     door: recipe.doors.flatMap(({ count, room }) => Array<string>(count).fill(room)),
     event: recipe.events.flatMap(({ count, id }) => Array<string>(count).fill(id)),
   };
+}
+
+// Ordered sections have one generated chunk each; only the outer stage ends add fixed caps.
+export function orderedRecipeProblems(library: ChunkLibrary, recipe: OrderedZoneRecipe): string[] {
+  const problems: string[] = [];
+  if (recipe.sections.length === 0) {
+    return ["ordered stage has no sections"];
+  }
+  if (
+    new Set(recipe.sections.map(({ id }) => id)).size !== recipe.sections.length ||
+    recipe.sections.some(({ id }) => id.length === 0)
+  ) {
+    problems.push("section ids must be unique and nonempty");
+  }
+  for (const id of [recipe.start, recipe.finish]) {
+    if (!library.chunks[id]) {
+      problems.push(`no chunk ${id}`);
+    }
+  }
+  const first = recipe.sections[0];
+  const last = recipe.sections.at(-1);
+  for (const [id, section] of [
+    [recipe.start, first],
+    [recipe.finish, last],
+  ] as const) {
+    const cap = library.chunks[id];
+    if (
+      cap &&
+      section &&
+      (!Number.isInteger(cap.cols) ||
+        cap.cols < library.rules.cols.min ||
+        cap.cols > library.rules.cols.max ||
+        !themesOf(cap).includes(section.theme))
+    ) {
+      problems.push(`invalid cap ${id} for section ${section.id}`);
+    }
+  }
+  for (const section of recipe.sections) {
+    if (!library.themes[section.theme]) {
+      problems.push(`no theme ${section.theme}`);
+    }
+    if (section.chunks.length === 0 || new Set(section.chunks).size !== section.chunks.length) {
+      problems.push(`invalid chunk pool for section ${section.id}`);
+    }
+    if (!Number.isInteger(section.spawnCol) || section.spawnCol <= 1) {
+      problems.push(`invalid spawn column for section ${section.id}`);
+    }
+    if (
+      !Number.isInteger(section.difficulty.min) ||
+      !Number.isInteger(section.difficulty.max) ||
+      section.difficulty.min < 1 ||
+      section.difficulty.max > 5 ||
+      section.difficulty.min > section.difficulty.max
+    ) {
+      problems.push(`invalid difficulty for section ${section.id}`);
+    }
+    for (const id of section.chunks) {
+      const chunk = library.chunks[id];
+      if (
+        chunk &&
+        (!Number.isInteger(chunk.cols) ||
+          chunk.cols < library.rules.cols.min ||
+          chunk.cols > library.rules.cols.max)
+      ) {
+        problems.push(`invalid generated width for chunk ${id}`);
+      }
+      if (!chunk) {
+        problems.push(`no chunk ${id}`);
+      } else if (
+        id === recipe.start ||
+        id === recipe.finish ||
+        !themesOf(chunk).includes(section.theme)
+      ) {
+        problems.push(`invalid chunk ${id} for section ${section.id}`);
+      }
+    }
+    for (const { count } of [...section.doors, ...section.events]) {
+      if (!Number.isInteger(count) || count < 0) {
+        problems.push(`invalid fill count for section ${section.id}`);
+      }
+    }
+  }
+  return problems;
+}
+
+function assembleOrdered(
+  library: ChunkLibrary,
+  seed: number,
+  key: string,
+  recipe: OrderedZoneRecipe,
+): ZonePlan {
+  const problems = orderedRecipeProblems(library, recipe);
+  if (problems.length > 0) {
+    throw new Error(problems.join("; "));
+  }
+  const start = chunkOf(library, recipe.start);
+  const finish = chunkOf(library, recipe.finish);
+  const first = recipe.sections[0];
+  const last = recipe.sections.at(-1);
+  if (
+    !first ||
+    !last ||
+    !themesOf(start).includes(first.theme) ||
+    !themesOf(finish).includes(last.theme)
+  ) {
+    throw new Error("Stage caps do not match their section themes");
+  }
+  const counts = new Map<string, number>();
+  for (const id of [recipe.start, recipe.finish]) {
+    counts.set(id, (counts.get(id) ?? 0) + 1);
+  }
+  if ([...counts].some(([id, count]) => count > (chunkOf(library, id).maxPerZone ?? Infinity))) {
+    throw new Error("Stage caps exceed maxPerZone");
+  }
+  const pools = recipe.sections.map((section, index) =>
+    shuffled(randomStream(seed, `section:${key}:${section.id}`), section.chunks).filter((id) => {
+      const chunk = chunkOf(library, id);
+      const caps = [
+        ...(index === 0 ? [start] : []),
+        chunk,
+        ...(index === recipe.sections.length - 1 ? [finish] : []),
+      ];
+      return (
+        chunk.difficulty >= section.difficulty.min &&
+        chunk.difficulty <= section.difficulty.max &&
+        caps.every((part, at) => at === 0 || caps[at - 1]?.exit.row === part.entry.row) &&
+        wanted(section.doors) <= caps.reduce((sum, part) => sum + slotCount(part, "door"), 0) &&
+        wanted(section.events) <= caps.reduce((sum, part) => sum + slotCount(part, "event"), 0)
+      );
+    }),
+  );
+  const selected: string[] = [];
+  const failed = new Set<string>();
+  const limited = [...new Set(recipe.sections.flatMap((section) => section.chunks))]
+    .filter((id) => chunkOf(library, id).maxPerZone !== undefined)
+    .sort();
+  const choose = (index: number): boolean => {
+    if (index === recipe.sections.length) {
+      return true;
+    }
+    const state = `${index}:${limited.map((id) => counts.get(id) ?? 0).join(",")}`;
+    if (failed.has(state)) {
+      return false;
+    }
+    for (const id of pools[index] ?? []) {
+      const count = counts.get(id) ?? 0;
+      if (count >= (chunkOf(library, id).maxPerZone ?? Infinity)) {
+        continue;
+      }
+      counts.set(id, count + 1);
+      selected.push(id);
+      if (choose(index + 1)) {
+        return true;
+      }
+      selected.pop();
+      counts.set(id, count);
+    }
+    failed.add(state);
+    return false;
+  };
+  if (!choose(0)) {
+    throw new Error(`No ordered assembly of stage ${key} fits its section pools`);
+  }
+  const order = recipe.sections.map(({ id }) => id);
+  const areas = Object.fromEntries(
+    recipe.sections.map((section, index) => {
+      const middle = selected[index];
+      if (!middle) {
+        throw new Error(`No selected chunk for ${section.id}`);
+      }
+      const ids = [
+        ...(index === 0 ? [recipe.start] : []),
+        middle,
+        ...(index === order.length - 1 ? [recipe.finish] : []),
+      ];
+      const single = zonePlanOf(
+        library,
+        randomStream(seed, `slots:${key}:${section.id}`),
+        fillsOf(section),
+        section.theme,
+        section.spawnCol,
+        ids,
+      ).areas[ASSEMBLED_AREA];
+      if (!single) {
+        throw new Error(`No assembled section ${section.id}`);
+      }
+      const previous = order[index - 1];
+      const next = order[index + 1];
+      const marker = (side: "left" | "right"): Instance => {
+        const instance = bindElement(library.themes[section.theme]?.bindings ?? {}, {
+          character: "",
+          col: 0,
+          role: recipe.transitionRoles[side],
+          row: 0,
+        });
+        const character = library.characters[instance.character];
+        if (
+          !character ||
+          character.cols > library.rules.footing ||
+          character.rows > library.rules.headroom
+        ) {
+          throw new Error(`Transition marker ${instance.character} exceeds safe seam dimensions`);
+        }
+        const row =
+          side === "left"
+            ? chunkOf(library, ids[0] ?? "").entry.row
+            : chunkOf(library, ids.at(-1) ?? "").exit.row;
+        return {
+          ...instance,
+          col: side === "left" ? 0 : single.cols - character.cols,
+          row: row - character.rows,
+        };
+      };
+      return [
+        section.id,
+        {
+          ...single,
+          entries: {
+            ...single.entries,
+            return: { col: single.cols - 2, row: chunkOf(library, ids.at(-1) ?? "").exit.row },
+          },
+          objects: [
+            ...single.objects,
+            ...(previous !== undefined ? [marker("left")] : []),
+            ...(next !== undefined ? [marker("right")] : []),
+          ],
+          walkLinks: {
+            ...(previous !== undefined ? { left: { area: previous, entry: "return" } } : {}),
+            ...(next !== undefined ? { right: { area: next, entry: START_ENTRY } } : {}),
+          },
+        },
+      ];
+    }),
+  );
+  return { areaOrder: order, areas, start: { area: order[0] ?? "", entry: START_ENTRY } };
 }
 
 // The zone key's recipe assembled for a seed: its start chunk, a seeded run of its
@@ -342,8 +579,11 @@ export function assembleZone(
   library: ChunkLibrary,
   seed: number,
   key: string,
-  recipe: ZoneRecipe,
+  recipe: StageRecipe,
 ): ZonePlan {
+  if ("sections" in recipe) {
+    return assembleOrdered(library, seed, key, recipe);
+  }
   const run = searchRun(library, randomStream(seed, `assemble:${key}`), recipe);
   if (!run) {
     throw new Error(
