@@ -88,6 +88,10 @@ export interface CameraTuning {
 
 // The words the player reads.
 export interface GameText {
+  readonly update: {
+    readonly accept: string;
+    readonly title: string;
+  };
   readonly death: DeathText;
   // Dialogue controls and speaker names; paragraph text lives in lines.
   readonly dialogue: {
