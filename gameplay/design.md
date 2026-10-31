@@ -34,7 +34,7 @@ A landscape platformer: a duck travels back to the apartment he shared with his 
 
 ## Rules
 
-A stage is the individual playable layout, currently represented by `ZonePlan` in code. A zone is the themed map destination containing two stages. The V1 map has six themed destinations with two catalogued stages each. The two stages in each of Blue cityscape, Industrial outskirts, Countryside, Woodland and Home city are built; all other V1 stages remain visibly unavailable. The map and selection rules below are the approved scope for the current implementation change.
+A stage is the individual playable layout, currently represented by `ZonePlan` in code. A zone is the themed map destination containing two stages. The V1 map has six themed destinations with two catalogued stages each. All twelve stages across the six V1 zones are built; building the route does not declare a V1 release. The map and selection rules below are the approved scope for the current implementation change.
 
 ### Screen and controls
 
@@ -69,14 +69,14 @@ A stage is the individual playable layout, currently represented by `ZonePlan` i
 
 ### Map
 
-- **Availability:** all six V1 zones appear in route order. Each has two catalogued stages. The first ten stages are built: Parcel depot and streets (`street`), City boundary (`city-boundary`), Warehouse district (`warehouse-district`), Freight terminal (`freight-terminal`), Farmland (`farmland`), River crossing (`river-crossing`), Forest paths (`forest-paths`), Ravine (`ravine`), City outskirts (`city-outskirts`) and Familiar neighbourhood (`familiar-neighbourhood`). Unbuilt zones and stages are visibly unavailable and cannot be entered. The park is a debug prototype outside the V1 map
+- **Availability:** all six V1 zones appear in route order. Each has two catalogued stages. All twelve V1 stages are built: Parcel depot and streets (`street`), City boundary (`city-boundary`), Warehouse district (`warehouse-district`), Freight terminal (`freight-terminal`), Farmland (`farmland`), River crossing (`river-crossing`), Forest paths (`forest-paths`), Ravine (`ravine`), City outskirts (`city-outskirts`), Familiar neighbourhood (`familiar-neighbourhood`), Entrance and lobby (`entrance-and-lobby`) and Climb to the apartment (`climb-to-apartment`). Unbuilt zones and stages are visibly unavailable and cannot be entered. The park is a debug prototype outside the V1 map
 - **Backtracking:** unlocked built stages remain available for replay. Replaying an earlier stage never removes later unlocks
 - **Between stages:** clearing a stage returns to the map on its zone. Completed stages and opened paths are marked
 - **Buttons:** Back to title is on the left; Continue is on the right and is the default keyboard action
 - **Celebration:** only clearing Apartment building's second stage, Climb to the apartment, shows the finish celebration, including on replay. Clearing the depot does not finish V1. Continue returns to the map; Restart asks first, as on the start screen
 - **Checkpoints:** each stage begins at its own checkpoint, with unlimited retries. Walking left from either stage checkpoint returns to the map
 - **Forks:** branching routes are deferred to Next. V1 is linear and has no laps
-- **Progression:** the first stage is unlocked from the start. Completing Parcel depot and streets unlocks City boundary; completing City boundary unlocks Warehouse district, which unlocks Freight terminal on completion. Completing Freight terminal unlocks Farmland; completing Farmland unlocks River crossing. Completing River crossing unlocks Forest paths; completing Forest paths unlocks Ravine. Completing Ravine unlocks City outskirts; completing City outskirts unlocks Familiar neighbourhood. Apartment building remains unavailable until built. Completing a zone's first stage unlocks its second stage when built; completing its second stage opens the next zone. Unbuilt content remains unavailable
+- **Progression:** the first stage is unlocked from the start. Completing Parcel depot and streets unlocks City boundary; completing City boundary unlocks Warehouse district, which unlocks Freight terminal on completion. Completing Freight terminal unlocks Farmland; completing Farmland unlocks River crossing. Completing River crossing unlocks Forest paths; completing Forest paths unlocks Ravine. Completing Ravine unlocks City outskirts; completing City outskirts unlocks Familiar neighbourhood. Completing Familiar neighbourhood unlocks Entrance and lobby; completing Entrance and lobby unlocks Climb to the apartment, which ends at the apartment. Completing a zone's first stage unlocks its second stage when built; completing its second stage opens the next zone. Unbuilt content remains unavailable
 - **Selection:** selecting a zone with one unlocked playable stage enters that stage directly. A zone with more than one unlocked playable stage opens a stage-choice modal. The latest available stage is highlighted and is the default; the earlier stage is secondary. Unbuilt or locked stages are visibly unavailable. Persisted unlocks survive replays
 - **Walk:** the duck stands on a zone. Left and Right move through available zones, and Continue selects the zone he stands on
 
@@ -87,24 +87,24 @@ A stage is the individual playable layout, currently represented by `ZonePlan` i
 - **Checkpoint:** the start of a stage is its only checkpoint. Falling or touching a hazard enters the death flow; Try again restarts the stage from its start, with unlimited retries and no permadeath. Progress is saved: the stages he has completed and where he stands on the map. Clearing a stage marks it completed and returns him to the map on its zone; a stage left before its end is played again from its start
 - **Crush:** a moving platform that pushes him sideways carries him to its leading edge. If it squeezes him into terrain or another solid, he is crushed and enters the death flow, as a hazard does. Layouts leave room beside every moving platform's path so he is never pinned on a required route
 - **Difficulty:** stages use the same configurable difficulty target and variation band in `src/data/`: target 3 with variation ±1, admitting middle chunks graded 2 to 4. Variation does not guarantee escalation between stages or from start to finish
-- **Doors:** doors lead only into rooms. Use enters a door when any part of his drawn frame overlaps the door's drawn art; where he overlaps more than one, the door whose centre is nearest his wins
+- **Doors:** optional room doors lead only into rooms; marked main-route stairs automatically link stage areas and are distinct from room doors. Use enters a door when any part of his drawn frame overlaps the door's drawn art; where he overlaps more than one, the door whose centre is nearest his wins
 - **Edge hazards:** a common red strip, 2 to 3 px thick, can cover the top, bottom, left or right edge of terrain. Inanimate hazards use red contact edges; animals have no red contact outlines. There are no spikes. Touching any edge hazard enters the death flow
-- **Exit:** reaching the end of the stage clears it, and the game moves straight on to the map
+- **Exit:** reaching the end of a stage's final area clears the stage, and the game moves straight on to the map or the final-stage celebration. An internal floor transition does not clear the stage
 - **Going back:** walking all the way back to the stage's left edge leaves it without completing it: the screen fades and the map shows with him on that stage's zone. Completion progress is unchanged, and cumulative active time is retained. Every stage starts him clear of that edge and has no wall in front of it
 - **Kinds:** indoor, outdoor, or a hybrid with both
-- **Layout:** every built and future stage, including the first tutorial and final stage, has a randomized layout assembled from hand-designed chunks: a fixed start chunk, a seeded run of chunks whose entry and exit heights match, then a fixed finish chunk. The rules for chunks are under Chunks
+- **Layout:** every built and future stage, including the first tutorial and final stage, has a randomized layout assembled from hand-designed chunks: a fixed start chunk, a seeded run of chunks whose entry and exit heights match, then a fixed finish chunk. A multi-area apartment stage applies this structure across its linked sections, with fixed first and last caps and one seeded 60 to 120-column template in each intermediate area. The rules for chunks are under Chunks
 - **Reroll:** an assembled stage's layout changes each time he enters it from the map. Restarts within the stage keep it
 - **Scale:** outdoors, the scenery is drawn at a quarter of indoor scale; the duck, the tiles and the reaches stay the same everywhere
-- **Shape:** a stage is at most 2 screens (60 tiles, 720 px) tall and as wide as it needs, and scrolls sideways and up. Indoors, to a small duck the ceilings are high: a door is 15 tiles tall, half the screen
+- **Shape:** each playable stage area is at most 2 screens (60 tiles, 720 px) tall and as wide as it needs, and scrolls sideways and up. Indoors, to a small duck the ceilings are high: a door is 15 tiles tall, half the screen
 
 ### Death and retry
 
 This is the approved implementation scope for the current change, including the death sequence, required card and persistent stage metrics.
 
-- **Active time:** count only time actually spent playing the current stage, excluding pause, dialogue, menus, the death sequence and the death card. Retries add to the same cumulative time. It persists through the map, title screen and app restarts until the stage is cleared; every clear resets it, including a replay clear
+- **Active time:** count only time actually spent playing the current stage, excluding pause, dialogue, menus, the death sequence, the death card and floor-transition presentation. Floor transitions preserve the same stage clock. Retries add to the same cumulative time. It persists through the map, title screen and app restarts until the stage is cleared; every clear resets it, including a replay clear
 - **Card:** after the animation, hold the final pose beneath a required modal with four rows in this order: the zone name; `Stage {number}: {stage name}`; `Progress: X%` for the current attempt; and `Time: 0:00` for cumulative active stage time. Back to title is the secondary button on the left; Try again is the primary button on the right. Keep the card compact and position it so the duck remains visible. The card stays until a button is pressed; outside taps, back and Escape do not dismiss it
-- **Progress:** a subtle, visible line 2 px high at the top uses the stage's theme. It tracks the duck's current position during play and his death point on death, not the furthest point reached. Retrying starts the percentage at zero
-- **Retry:** Try again starts the current stage from its checkpoint. Back to title opens the title screen. There is no permadeath
+- **Progress:** a subtle, visible line 2 px high at the top uses the stage's theme. It tracks the duck's current position during play and his death point on death, not the furthest point reached. In a multi-area stage it uses shared weighted current-position progress across the floor sections, including the death point; returning to an earlier section can lower it. Retrying starts the percentage at zero
+- **Retry:** Try again starts the current stage from its checkpoint. In a multi-area stage this is the first floor, not the current floor. Back to title opens the title screen. There is no permadeath
 - **Sequence:** lethal contact starts a small recoil, then the duck falls to support, squashes more deeply on landing and makes a small upward bounce into a deflated sitting pose with his feet hidden. The stage and camera freeze at the death context while the duck plays a dedicated death animation, then holds its final pose for the card
 - **Storage:** active stage time uses a separate stats save. Restart clears progress only and does not wipe stats
 
@@ -124,7 +124,7 @@ This is the approved implementation scope for the current change, including the 
 
 Everything in a stage except its terrain is placed in data through archetypes, characters and instances.
 
-- **Animals:** every animal in the main stage foreground, apart from the duck, is an enemy and lethal on contact. Animals have no red contact outlines. The dog, raccoon, goose, owl and rabbit antagonists are the only world-stage animals currently placed; there are no friendly background animals in the current stages
+- **Animals:** every animal in the main stage foreground, apart from the duck, is an enemy and lethal on contact. Animals have no red contact outlines. The dog, raccoon, goose, owl, rabbit and ferret antagonists are the only world-stage animals currently placed; there are no friendly background animals in the current stages
 - **Archetypes:** a behaviour: collision (none, solid, one-way ledge, hazard or Use), movement, reaction, interaction (such as talking on Use or a quip on approach) and default tuning
 - **Behaviour patterns:** reusable patterns in the data choose behaviour primitives, their sequence or states, transition conditions, timing, animations and tuning. Animals and moving inanimate objects use the same composition approach. Code implements the primitives, condition evaluation and shared executor; character-specific cycles are composed in data rather than hardcoded in code
 - **Characters:** who something is: one archetype plus tuning overrides, its art and animations, hit box, size, its dialogue and quip lines, and quirks. No character inherits from another. Props (platforms, hazards, doors and backdrops) are characters with art but no voice
@@ -137,7 +137,7 @@ Everything in a stage except its terrain is placed in data through archetypes, c
 
 ### V1 route
 
-The target play time is about 30 minutes across six themed zones of two stages, in this order. Both stages in Blue cityscape, Industrial outskirts, Countryside, Woodland and Home city are built; the later zones remain unavailable. The six-zone map and conditional stage-selection flow preserve unlocked stages for replay. Every stage, including the depot tutorial and final climb, has a fixed opening and ending with a randomized middle.
+The target play time is about 30 minutes across six themed zones of two stages, in this order. All twelve stages across the six V1 zones are built; this does not declare the first release complete. The six-zone map and conditional stage-selection flow preserve unlocked stages for replay. Every stage, including the depot tutorial and final climb, has a fixed opening and ending with a randomized middle.
 
 | Zone                 | First stage              | Second stage           |
 | -------------------- | ------------------------ | ---------------------- |
@@ -209,13 +209,24 @@ The park is a prototype for randomized stages, not V1's second stage. The identi
 - **Appearance:** City outskirts and Familiar neighbourhood use the canonical peach theme through shared terrain, structure, prop and background skins
 - **Encounters:** both stages use the rabbit antagonist through the existing hop primitive. The dog, raccoon, goose and owl retain their existing behaviours and tuning in their zones
 - **Layout:** each stage uses fixed 60-column openings and endings around shared randomized middle layouts, for a total of 360 to 480 columns in the shared difficulty band. Mandatory climbs, moving ledges and red hazards use the common stage object and layout system
-- **Progression:** clearing Ravine opens City outskirts; clearing City outskirts opens Familiar neighbourhood. Both preserve replay unlocks. Apartment building remains unavailable. Catalogue IDs and save shape are unchanged
+- **Progression:** clearing Ravine opens City outskirts; clearing City outskirts opens Familiar neighbourhood. Both preserve replay unlocks. Catalogue IDs and save shape are unchanged
 - **Rooms:** doors use the existing prototype test room; there are no new rooms, plot, dialogue, bosses or combat. Water does not add hidden hazards
 
 ### Rabbit encounter
 
 - **Contact:** the rabbit is always lethal on contact, including during its pauses, without a red contact outline
 - **Cycle:** repeated hops stay inside bounded territory, separated by predictable pauses. The shared hop primitive and behaviour data define the movement and timing
+
+### Apartment building
+
+- **Areas:** Entrance and lobby has two short linked sections. Climb to the apartment has seven short floor sections, in order: restaurant, exterior, pool, exterior, spa, exterior, residential. Varied indoor and outdoor skins accompany stronger vertical traversal
+- **Checkpoint:** each stage has one checkpoint at its first section. Death anywhere restarts that whole stage on Try again. No floor transition creates a checkpoint
+- **Encounters:** the ferret is a normal lethal-contact antagonist using the familiar dog behaviour pattern. He has no red contact outline; this is not a boss encounter and adds no combat
+- **Goal:** reaching the apartment at the end of the final residential section clears the final stage and shows the celebration every time, including replays. The cause of the fight and the outcome of the friendship remain undecided
+- **Layout:** fixed openings and endings surround randomized shared middle templates. Intermediate areas use one 60 to 120-column template each; the first and last caps remain fixed. These short linked sections do not use the other zones' total stage-length range
+- **Progression:** clearing Familiar neighbourhood opens Entrance and lobby; clearing Entrance and lobby opens Climb to the apartment. The final map path ends at the apartment. Stage IDs, save format and replay unlocks are unchanged
+- **Rooms:** optional doors still require Use and lead to the existing prototype test room. These stages add no new room, quest or dialogue. Walls and pool water are decorative unless an explicit red hazard marks a contact surface
+- **Stairs:** walking into marked main-route stairs changes floor automatically, without Use. Stairs are reversible; the duck can return through earlier sections and leave for the map at the first section's left edge
 
 ### First dog encounter
 
