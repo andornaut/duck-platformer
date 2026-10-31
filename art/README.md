@@ -14,7 +14,7 @@ The art plan and pipeline for Duck Platformer. Art owns `art/` and the served ar
 - Accents: reserve amber for doors and small points of interest. Other hues add restrained foliage, signs and character details. Red contact edges always mean danger in every theme.
 - Colour: each V1 destination uses its canonical muted primary from [Zone primary colours](#zone-primary-colours), carried through atmosphere, materials, map identity and progress. Keep distant colours close to the sky and spend saturation on a few useful accents. The park remains a separate prototype outside the V1 route.
 - Detail: distant scenery uses broad silhouettes without window grids. Near architecture uses sparse window groups and quiet surfaces. Avoid repeated stripes and single-pixel texture that compete with the duck.
-- Layouts: the first stage has a fixed layout. Every subsequent stage is randomized, including the final stage. Reusable tiles, scenery and gameplay chunks assemble independently; a background image never encodes a required route. Stages are at most two screens tall (720px, 60 rows).
+- Layouts: every stage, including the first and final stages, assembles seeded middle chunks between fixed start and finish sections. Reusable tiles, scenery and gameplay chunks assemble independently; a background image never encodes a required route. Stages are at most two screens tall (720px, 60 rows).
 - Obstacles: use ledges, cliffs, walls and ceilings. Short-clearance jumps and full-height jumps share the same visual vocabulary. Ladders are not part of the obstacle set. Difficulty and jump requirements belong to gameplay data, with variation around a common configurable difficulty.
 - Readability: safe walkable tops use a dark edge and a bright two-pixel lip. On darker scenery the lip holds at least 2:1 against its backdrop; against a pale sky the dark edge supplies the separation, so retain both parts of the edge. Dangerous faces instead use the shared red band, without spikes or a safe light lip. Text keeps 4.5:1 and meaningful UI marks 3:1 contrast.
 
@@ -452,7 +452,7 @@ Red strips never carry the bright safe lip. Red is a consistent danger cue acros
 
 ## Zone 1: parcel depot and New York street
 
-The first zone has a fixed layout, beginning at an opened parcel in an industrial depot and continuing into a downtown New York street on a pale steel morning. It is two screens tall: the sidewalk runs along the bottom and the buildings support climbs into the upper screen. `art/tools/depot.py` draws the depot modules and `art/tools/floor1.py` the street pieces. Their docstrings specify each reusable asset; gameplay data defines their arrangement.
+The first Blue cityscape stage has fixed start and finish sections with a seeded street middle. Its opening preserves the opened parcel, depot movement lessons and first dog introduction; the middle assembles reusable street chunks in randomized order. It is two screens tall: the sidewalk runs along the bottom and the buildings support climbs into the upper screen. `art/tools/depot.py` draws the depot modules and `art/tools/floor1.py` the street pieces. Their docstrings specify each reusable asset; gameplay data defines their arrangement.
 
 - Depot: blue-grey ribbed wall modules, roller loading bays and cream parcel icons, with warm cardboard reserved for the opened parcel. No labels are baked into the art. The three modules are static backdrops with no collision, animation or interaction; gameplay places solid surfaces separately. All stay on the play plane, with parallax factors 1,1.
 - Outdoor scale: the street is drawn as if zoomed out 4x while the duck and the 12px tiles keep their size. A storey is 180px and a door is about 45px, so the duck (42px) stands almost as tall as a street door.
@@ -550,7 +550,7 @@ The lobby set is no longer in Zone 1. It is kept, unchanged, for a later indoor 
 
 ## Park theme
 
-The first chunk theme: an autumn park. Later zones are built from hand-built chunks, each a screen or two wide, in a seeded order that rerolls each time she enters the zone; a theme carries one tileset, its terrain and its repeated backdrops, drawn across the whole zone so seams never show, and chunks add their own props. `art/tools/park.py` draws it; its docstring lists every tile and piece.
+The autumn park is a prototype chunk theme outside the V1 route. Its hand-built chunks are each a screen or two wide and assemble in a seeded order; a theme carries one tileset, its terrain and its repeated backdrops, drawn across the whole stage so seams never show, and chunks add their own props. `art/tools/park.py` draws it; its docstring lists every tile and piece.
 
 - Frame and scale as the street: outdoor scale, 12px tiles, zones 60 rows (720px) tall.
 - Chunk seams sit at ground rows 50, 40 and 30 (y 600, 480 and 360): a chunk's left and right edges meet the next chunk's at one of those heights. A step of 1 or 2 rows is a tap's walk-up; a taller terrace face is turf over soil (`soil-left` or `soil-right` running down the face), any height. There are no slopes.
