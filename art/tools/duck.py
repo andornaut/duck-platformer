@@ -34,8 +34,8 @@ head and bill 10px on the right, and she stops 2px below its top. The raised win
 | land    | 0     | 100 | contact: squash, feet planted wide                           | 0    | 39 x 22    | 40       |
 | land    | 1     | 80  | recover: half squash                                         | 0    | 36 x 24    | 36       |
 | death   | 0     | 100 | small recoil, closed eye, feet visible                       | 1    | 34 x 24    | 36       |
-| death   | 1     | 120 | slight fall tilt, closed eye, visible tucked soles           | 1    | 34 x 24    | 33       |
-| death   | 2     | 80  | brief landing compression, rounded belly, feet hidden        | -2   | 36 x 19    | 39       |
+| death   | 1     | 120 | pronounced fall tilt, closed eye, visible tucked soles           | 1    | 34 x 24    | 33       |
+| death   | 2     | 80  | brief impact squash, rounded belly, feet hidden               | -2   | 38 x 16    | 39       |
 | death   | 3     | 400 | spring to round sitting rest, soft contact ends, feet hidden | -2   | 34 x 21    | 39       |
 
 Lift is how far the body's bottom edge sits above its rest row, in pixels. Body w x h is the body's
@@ -196,13 +196,13 @@ SQUASH_RECOVER = (17.8, 11.9)
 
 
 def falling_pose():
-    """A small clockwise tilt, with visible tucked soles and no baked world translation."""
+    """A pronounced clockwise tilt, with visible tucked soles and no baked world translation."""
     from PIL import Image
 
     px = draw(lift=1, bw=17, bh=12, wing=("fold", 2), feet="tucked", eye="closed")
     im = Image.new("RGBA", (W, H))
     im.putdata([pixel.rgb(c) + (255,) if c else (0, 0, 0, 0) for row in px for c in row])
-    im = im.rotate(-10, Image.Resampling.NEAREST, expand=False, center=(C, 29))
+    im = im.rotate(-20, Image.Resampling.NEAREST, expand=False, center=(C, 29))
     return [["%02x%02x%02x" % im.getpixel((x, y))[:3] if im.getpixel((x, y))[3] else None
              for x in range(W)] for y in range(H)]
 
@@ -234,8 +234,8 @@ def duck_tags():
         ("death", [
             draw(lift=1, bw=17, bh=12, wing=("fold", 2), eye="closed"),
             falling_pose(),
-            draw(lift=-2, bw=18, bh=9.5, wing=("fold", 2), feet="hidden", eye="closed",
-                 head_squash=0.9, seated=True),
+            draw(lift=-2, bw=19, bh=8, wing=("fold", 2), feet="hidden", eye="closed",
+                 head_squash=0.82, seated=True),
             draw(lift=-2, bw=17, bh=10.5, wing=("fold", 2), feet="hidden", eye="closed",
                  head_squash=0.95, seated=True),
         ], [100, 120, 80, 400]),
