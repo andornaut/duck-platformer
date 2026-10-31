@@ -35,18 +35,21 @@ describe("ZONE_MAP", () => {
   it.each([
     {
       completed: ["street"],
+      countryside: { kind: "unavailable" },
       industrial: { kind: "unavailable" },
       open: ["street", "city-boundary"],
       stage: "after the depot clear",
     },
     {
       completed: ["street", "city-boundary"],
+      countryside: { kind: "unavailable" },
       industrial: { kind: "play", stage: "warehouse-district" },
       open: ["street", "city-boundary", "warehouse-district"],
       stage: "after both cityscape stages clear",
     },
     {
       completed: ["street", "city-boundary", "warehouse-district"],
+      countryside: { kind: "unavailable" },
       industrial: {
         kind: "choose",
         latest: "freight-terminal",
@@ -57,17 +60,69 @@ describe("ZONE_MAP", () => {
     },
     {
       completed: ["street", "city-boundary", "warehouse-district", "freight-terminal"],
+      countryside: { kind: "play", stage: "farmland" },
       industrial: {
         kind: "choose",
         latest: "freight-terminal",
         stages: ["warehouse-district", "freight-terminal"],
       },
-      open: ["street", "city-boundary", "warehouse-district", "freight-terminal"],
+      open: ["street", "city-boundary", "warehouse-district", "freight-terminal", "farmland"],
       stage: "after both industrial stages clear",
+    },
+    {
+      completed: ["street", "city-boundary", "warehouse-district", "freight-terminal", "farmland"],
+      countryside: {
+        kind: "choose",
+        latest: "river-crossing",
+        stages: ["farmland", "river-crossing"],
+      },
+      industrial: {
+        kind: "choose",
+        latest: "freight-terminal",
+        stages: ["warehouse-district", "freight-terminal"],
+      },
+      open: [
+        "street",
+        "city-boundary",
+        "warehouse-district",
+        "freight-terminal",
+        "farmland",
+        "river-crossing",
+      ],
+      stage: "after the farmland clear",
+    },
+    {
+      completed: [
+        "street",
+        "city-boundary",
+        "warehouse-district",
+        "freight-terminal",
+        "farmland",
+        "river-crossing",
+      ],
+      countryside: {
+        kind: "choose",
+        latest: "river-crossing",
+        stages: ["farmland", "river-crossing"],
+      },
+      industrial: {
+        kind: "choose",
+        latest: "freight-terminal",
+        stages: ["warehouse-district", "freight-terminal"],
+      },
+      open: [
+        "street",
+        "city-boundary",
+        "warehouse-district",
+        "freight-terminal",
+        "farmland",
+        "river-crossing",
+      ],
+      stage: "after both countryside stages clear",
     },
   ])(
     "preserves replays and unlocks only built stages $stage",
-    ({ completed, industrial, open: expectedOpen }) => {
+    ({ completed, countryside, industrial, open: expectedOpen }) => {
       const plans = new Set([...Object.keys(ZONES), ...Object.keys(RECIPES)]);
       const open = openMap(ZONE_MAP, new Set(completed));
       expect(open.zones).toEqual(expectedOpen);
@@ -91,7 +146,10 @@ describe("ZONE_MAP", () => {
           destinationForStage(ZONE_MAP, "warehouse-district"),
         ),
       ).toEqual(industrial);
-      for (const destination of ZONE_MAP.destinations.slice(2)) {
+      expect(
+        destinationSelection(plans, ZONE_MAP, open, destinationForStage(ZONE_MAP, "farmland")),
+      ).toEqual(countryside);
+      for (const destination of ZONE_MAP.destinations.slice(3)) {
         expect(destinationSelection(plans, ZONE_MAP, open, destination)).toEqual({
           kind: "unavailable",
         });
