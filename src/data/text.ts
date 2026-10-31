@@ -18,9 +18,9 @@ export const TEXT: GameText = {
     title: "Something went wrong",
   },
   death: {
-    level: "{level}",
-    progress: "{percent}%",
+    progress: "Progress: {percent}%",
     retry: "Try again",
+    stage: "Stage {number}: {name}",
     time: "Time: {time}",
     title: "{zone}",
   },
@@ -36,7 +36,7 @@ export const TEXT: GameText = {
   },
   map: {
     continue: "Continue",
-    levels: {
+    stages: {
       "city-boundary": "City boundary",
       "city-outskirts": "City outskirts",
       "climb-to-apartment": "Climb to the apartment",
