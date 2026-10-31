@@ -262,7 +262,7 @@ export interface BehaviourTransition {
 }
 
 export interface BehaviourNode {
-  readonly animation: string;
+  readonly animation: string | null;
   readonly enter?: "face-target";
   readonly motion: BehaviourMotion;
   readonly transitions: readonly BehaviourTransition[];
