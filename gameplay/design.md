@@ -92,7 +92,7 @@ A stage is the individual playable layout, currently represented by `ZonePlan` i
 - **Exit:** reaching the end of the stage clears it, and the game moves straight on to the map
 - **Going back:** walking all the way back to the stage's left edge leaves it without completing it: the screen fades and the map shows with him on that stage's zone. Completion progress is unchanged, and cumulative active time is retained. Every stage starts him clear of that edge and has no wall in front of it
 - **Kinds:** indoor, outdoor, or a hybrid with both
-- **Layout:** stage 1 is hand-built as the tutorial. Every later stage, including the final stage, has a randomized layout assembled from hand-built chunks: a fixed start chunk, a seeded run of chunks whose entry and exit heights match, then a fixed finish chunk. The rules for chunks are under Chunks
+- **Layout:** every built and future stage, including the first tutorial and final stage, has a randomized layout assembled from hand-designed chunks: a fixed start chunk, a seeded run of chunks whose entry and exit heights match, then a fixed finish chunk. The rules for chunks are under Chunks
 - **Reroll:** an assembled stage's layout changes each time he enters it from the map. Restarts within the stage keep it
 - **Scale:** outdoors, the scenery is drawn at a quarter of indoor scale; the duck, the tiles and the reaches stay the same everywhere
 - **Shape:** a stage is at most 2 screens (60 tiles, 720 px) tall and as wide as it needs, and scrolls sideways and up. Indoors, to a small duck the ceilings are high: a door is 15 tiles tall, half the screen
@@ -134,7 +134,7 @@ Everything in a stage except its terrain is placed in data through archetypes, c
 
 ### V1 route
 
-The target play time is about 30 minutes across six themed zones of two stages, in this order. Both Blue cityscape stages are built; the later zones remain unavailable. The six-zone map and conditional stage-selection flow preserve unlocked stages for replay. Its depot and streets form one fixed tutorial; every later stage, including the final climb, is randomized.
+The target play time is about 30 minutes across six themed zones of two stages, in this order. Both Blue cityscape stages are built; the later zones remain unavailable. The six-zone map and conditional stage-selection flow preserve unlocked stages for replay. Every stage, including the depot tutorial and final climb, has a fixed opening and ending with a randomized middle.
 
 | Zone                 | First stage              | Second stage           |
 | -------------------- | ------------------------ | ---------------------- |
@@ -147,9 +147,11 @@ The target play time is about 30 minutes across six themed zones of two stages, 
 
 ### First stage
 
-- **Layout:** the fixed tutorial combines the parcel depot and streets of the blue cityscape in one area. The duck starts beside his opened parcel on safe ground, then crosses a three-tile step, a full-jump block and a short red-edged gap before entering the streets. A later low ceiling over a one-tile step requires a short press
+- **Ending:** the fixed finish retains the final short-jump ceiling, red-edged gap and canopy
+- **Layout:** the tutorial combines the parcel depot and streets of the blue cityscape with a fixed opening and ending around seeded hand-designed street chunks. The middle uses matching city scenery and the shared difficulty band
+- **Opening:** the fixed start retains the opened parcel on safe ground, depot jump lessons and first dog introduction
 - **Rooms:** the street door leads to the prototype test room
-- **Route:** the main path continues right toward the city boundary; the upper street ledges are an optional detour. City boundary is the zone's second stage and unlocks when this tutorial is completed
+- **Route:** the main path continues right toward the city boundary; middle chunks can include upper street ledges. City boundary is the zone's second stage and unlocks when this tutorial is completed
 
 The park is a prototype for randomized stages, not V1's second stage. The identities of the ferret's friends beyond the first dog and the later encounters along the route are undecided.
 
