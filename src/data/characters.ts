@@ -16,6 +16,24 @@ import type { Character } from "./types";
 // yet. Tiled pieces (awnings, the canopy, planters and pit openings) take their width from each
 // placement.
 export const CHARACTERS: Readonly<Record<string, Character>> = {
+  "apartment-room-door": {
+    archetype: "door",
+    art: "apartment-room-door",
+    cols: 4,
+    rows: 6,
+  },
+  "apartment-stairwell": {
+    archetype: "scenery",
+    art: "apartment-stairwell",
+    cols: 4,
+    rows: 6,
+  },
+  "apartment-wall-panel": {
+    archetype: "scenery",
+    art: "apartment-wall-lobby",
+    cols: 4,
+    rows: 12,
+  },
   // A shop awning: one-way, laid 6 above the sidewalk across a storefront.
   awning: {
     archetype: "ledge",
@@ -122,6 +140,13 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     art: "facade-walkup-upper",
     cols: 4,
     rows: 15,
+  },
+  "ferret-antagonist": {
+    archetype: "hazard",
+    art: "ferret-antagonist",
+    behaviour: DOG_BEHAVIOUR,
+    cols: 4,
+    rows: 4,
   },
   // The ferret's first trap, set near zone 1's end.
   "ferret-trap-snap": {
