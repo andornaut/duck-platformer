@@ -86,7 +86,7 @@ A stage is the individual playable layout, currently represented by `ZonePlan` i
 - **Challenge:** platforming, hazards and choices. Routes use ledges and cliffs, not ladders, with both short-press jumps beneath low ceilings and full jumps. There is no combat
 - **Checkpoint:** the start of a stage is its only checkpoint. Falling or touching a hazard enters the death flow; Try again restarts the stage from its start, with unlimited retries and no permadeath. Progress is saved: the stages he has completed and where he stands on the map. Clearing a stage marks it completed and returns him to the map on its zone; a stage left before its end is played again from its start
 - **Crush:** a moving platform that pushes him sideways carries him to its leading edge. If it squeezes him into terrain or another solid, he is crushed and enters the death flow, as a hazard does. Layouts leave room beside every moving platform's path so he is never pinned on a required route
-- **Difficulty:** stages use the same configurable difficulty target and variation band in `src/data/`, with variation inside it rather than guaranteed escalation between stages or from start to finish
+- **Difficulty:** stages use the same configurable difficulty target and variation band in `src/data/`: target 3 with variation ±1, admitting middle chunks graded 2 to 4. Variation does not guarantee escalation between stages or from start to finish
 - **Doors:** doors lead only into rooms. Use enters a door when any part of his drawn frame overlaps the door's drawn art; where he overlaps more than one, the door whose centre is nearest his wins
 - **Edge hazards:** a common red strip, 2 to 3 px thick, can cover the top, bottom, left or right edge of terrain. Inanimate hazards use red contact edges; animals have no red contact outlines. There are no spikes. Touching any edge hazard enters the death flow
 - **Exit:** reaching the end of the stage clears it, and the game moves straight on to the map
@@ -112,6 +112,7 @@ This is the approved implementation scope for the current change, including the 
 
 - **Assembly:** a stage's recipe names its theme, start and finish chunks, a length range (start and finish included), a configurable difficulty band, and the events and doors to place. The seed varies the middle chunks within that band, without requiring difficulty to rise; the start and finish chunks are exempt. It never picks the same chunk twice in a row, and it fills the slots
 - **Difficulty:** 1 to 5. 1: walking and taps. 2: full jumps and still hazards. 3: gaps near the reach, single moving platforms and single low-ceiling tap spots. 4: timed platforms or moving hazards on the required path. 5: compounded tap-only, timed or platform-to-platform challenges
+- **Challenge variety:** the city and street middle pools include required climbing routes, moving ledges, red ground strips and dog yards. A climbing chunk requires ascent on its route rather than offering an optional upper detour. The seed varies the mix; a stage is not guaranteed to contain every challenge type
 - **Fairness:** every chunk is walked on its own from entry to exit, with its slots empty and filled, and a sample of seeds per recipe is walked end to end
 - **Seams:** a chunk's entry and exit are the ground rows at its left and right edges: 50, 40 or 30. The seam surface is terrain and runs at least 4 tiles in from the edge, with no gap there, and nothing (no solid, ledge, hazard or moving platform) in the 6 rows above it
 - **Shape:** one or two screens wide (60 to 120 tiles) and at most 60 rows (720 px) tall
@@ -131,6 +132,7 @@ Everything in a stage except its terrain is placed in data through archetypes, c
 - **Movement:** an algorithm (static, linear, ease, hop or wander), a direction, a distance, a speed, a pause at each end, and a random variance that rolls fresh on every attempt
 - **Overrides:** flow one way: an instance overrides its character, which overrides its archetype. Everything resolves and is checked when the game loads
 - **Reaction:** none, avoiding the duck, or approaching him, within a range
+- **Static art:** a behaviour state can use `animation: null` for static art, including a moving inanimate object. Motion and transitions still come from its reusable behaviour graph
 
 ### V1 route
 
@@ -148,7 +150,7 @@ The target play time is about 30 minutes across six themed zones of two stages, 
 ### First stage
 
 - **Ending:** the fixed finish retains the final short-jump ceiling, red-edged gap and canopy
-- **Layout:** the tutorial combines the parcel depot and streets of the blue cityscape with a fixed opening and ending around seeded hand-designed street chunks. The middle uses matching city scenery and the shared difficulty band
+- **Layout:** the tutorial combines the parcel depot and streets of the blue cityscape with a fixed opening and ending around seeded hand-designed street chunks. The middle uses matching city scenery and the shared difficulty band, with varied climbing, moving-platform and dog-yard chunks
 - **Opening:** the fixed start retains the opened parcel on safe ground, depot jump lessons and first dog introduction
 - **Rooms:** the street door leads to the prototype test room
 - **Route:** the main path continues right toward the city boundary; middle chunks can include upper street ledges. City boundary is the zone's second stage and unlocks when this tutorial is completed
@@ -158,7 +160,7 @@ The park is a prototype for randomized stages, not V1's second stage. The identi
 ### City boundary
 
 - **Encounter:** the finish uses the same dog behaviour and timing as the first stage, with refuge ledges on either side of its patrol. The dog is active without a dialogue scene; there is no new introduction
-- **Layout:** the second Blue cityscape stage is randomized from a fixed start, seeded middle chunks and a fixed finish. It uses the existing street backgrounds and sidewalk terrain, with steps, full-jump rises, red-edged gaps and low-ceiling short-jump challenges inside the shared difficulty band. The finish has sparse facades and an open outward view
+- **Layout:** the second Blue cityscape stage is randomized from a fixed start, seeded middle chunks and a fixed finish. It uses the existing street backgrounds and sidewalk terrain, with steps, required climbing routes, moving ledges, dog yards, red ground strips, red-edged gaps and low-ceiling short-jump challenges inside the shared difficulty band. The finish has sparse facades and an open outward view
 - **Replay:** entering from the map draws a fresh assembly seed; retries keep that layout. Completing Parcel depot and streets unlocks this stage, and the existing stage-choice modal keeps both available for replay
 - **Rooms:** one door in the fixed start leads to the existing prototype test room
 

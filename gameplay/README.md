@@ -19,7 +19,7 @@ Gameplay owns the rulebook and the values and content in the data value files (e
 
 - **Decisions:** the user's. Gameplay asks with a prompt, recommendation first and the trade-off in a line; routine work needs no asking.
 - **Design sessions:** start with "design session" and a topic. Claude keeps floated ideas apart from agreed ones, asks the question that unblocks a decision, and on "wrap up" proposes doc changes, writing them once confirmed.
-- **Difficulty:** keep zones around the same configurable difficulty target and variation band, whose defaults live in `src/data/`, rather than guaranteed escalation. Every built and future stage, including the first tutorial and final stage, randomizes its middle on entry while keeping its opening and ending fixed. Retries retain the assembled layout.
+- **Difficulty:** keep zones around the shared configurable difficulty target and variation band defined in the rulebook and `src/data/`, rather than guaranteed escalation. Vary required climbing chunks, moving obstacles, ground hazards and dog yards; a seed need not include every challenge type. Every built and future stage, including the first tutorial and final stage, randomizes its middle on entry while keeping its opening and ending fixed. Retries retain the assembled layout.
 - **Jump tuning:** use one uninterrupted ballistic ascent, with a minimum hop for short presses and the full jump on a hold. Place overhead short-jump challenges to match the measured hop. Keep the reaches in the rulebook aligned with the simulator, including coyote time in the running gap reach
 - **Phone playtesting:** judge jump feel, touch input and readability on a landscape phone. The user performs device playtesting.
 - **Tune to the targets:** a result inside its band needs no tuning. The user declares when the goal is met.
@@ -42,7 +42,7 @@ Each target is a band, not a point, assessed per stage and player skill. PLACEHO
 
 ## Remaining for the first build
 
-**Current implementation scope:** convert Parcel depot and streets to the same seeded chunk assembly approach as City boundary. Its fixed opening retains the parcel, depot lessons and dog introduction; its fixed ending retains the final short-jump ceiling, red-edged gap and canopy. Hand-designed middle chunks vary inside the shared difficulty band. Both stages use the existing map, stage-choice modal and unlock flow. Completing Parcel depot and streets unlocks City boundary; both remain replayable. Existing catalogue and progress IDs and the save format are unchanged. World-stage animals are limited to the dog antagonist; room animals remain. Foreground animals are enemies without red contact outlines. Friendly animals are allowed only as muted background flavour or inside rooms, and no friendly background animals are currently placed. Inanimate hazards retain red contact edges. The remaining zones are planned content; the finish celebration belongs only to Apartment building's final stage.
+**Current implementation scope:** strengthen the shared middle-chunk pool for Parcel depot and streets and City boundary with required climbs, moving ledges, ground red strips and dog yards, using the shared difficulty band. Fixed openings and endings, stage lengths, jump tuning, dog timing, story and progression remain as specified in the rulebook. The two stages retain their catalogue IDs and existing unlock/replay flow. The remaining zones are planned content; the finish celebration belongs only to Apartment building's final stage.
 
 Open questions:
 
