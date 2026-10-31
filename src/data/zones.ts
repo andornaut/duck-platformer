@@ -1,4 +1,4 @@
-import type { ZonePlan, ZoneRecipe } from "./types";
+import type { StageRecipe, ZonePlan } from "./types";
 
 // PLACEHOLDER: parkour test zones, until gameplay designs the real zones.
 //
@@ -277,8 +277,29 @@ export const ZONES: Readonly<Record<string, ZonePlan>> = {};
 // The shared difficulty band for every randomized real zone, centred on 3 with variation of 1.
 export const ZONE_DIFFICULTY = { max: 4, min: 2 } as const;
 
-// The zones assembled from chunks, by key. A key here is never also a key in ZONES.
-export const RECIPES: Readonly<Record<string, ZoneRecipe>> = {
+const APARTMENT_ASCENT_CHUNKS = [
+  "city-boundary-climb-yard",
+  "city-boundary-edge-yard",
+  "city-boundary-jumps",
+  "city-boundary-low-ceiling",
+  "city-boundary-steps",
+] as const;
+const APARTMENT_CAPS = {
+  finish: "apartment-finish",
+  start: "apartment-start",
+  transitionRoles: { left: "transition-down", right: "transition-up" },
+} as const;
+const APARTMENT_ROOM_DOORS = [{ count: 1, room: "test" }] as const;
+const APARTMENT_SECTION_DEFAULTS = {
+  difficulty: ZONE_DIFFICULTY,
+  doors: [],
+  events: [],
+  spawnCol: 2,
+} as const;
+const APARTMENT_UPPER_CHUNKS = ["city-boundary-lift", "city-boundary-upper-climb"] as const;
+
+// Generated stages use one continuous area or ordered floor sections.
+export const RECIPES: Readonly<Record<string, StageRecipe>> = {
   "city-boundary": {
     difficulty: ZONE_DIFFICULTY,
     doors: [{ count: 1, room: "test" }],
@@ -298,6 +319,76 @@ export const RECIPES: Readonly<Record<string, ZoneRecipe>> = {
     spawnCol: 2,
     start: "city-outskirts-start",
     theme: "city-outskirts",
+  },
+  "climb-to-apartment": {
+    ...APARTMENT_CAPS,
+    sections: [
+      {
+        ...APARTMENT_SECTION_DEFAULTS,
+        chunks: APARTMENT_ASCENT_CHUNKS,
+        doors: APARTMENT_ROOM_DOORS,
+        id: "restaurant",
+        theme: "apartment-restaurant",
+      },
+      {
+        ...APARTMENT_SECTION_DEFAULTS,
+        chunks: APARTMENT_UPPER_CHUNKS,
+        id: "fire-escape-1",
+        theme: "apartment-exterior",
+      },
+      {
+        ...APARTMENT_SECTION_DEFAULTS,
+        chunks: [
+          "city-boundary-dog-terrace",
+          "city-boundary-ground-hazard",
+          "city-boundary-shuttle",
+        ],
+        id: "pool",
+        theme: "apartment-pool",
+      },
+      {
+        ...APARTMENT_SECTION_DEFAULTS,
+        chunks: APARTMENT_UPPER_CHUNKS,
+        id: "fire-escape-2",
+        theme: "apartment-exterior",
+      },
+      {
+        ...APARTMENT_SECTION_DEFAULTS,
+        chunks: ["city-boundary-jumps", "city-boundary-low-ceiling", "city-boundary-steps"],
+        id: "spa",
+        theme: "apartment-spa",
+      },
+      {
+        ...APARTMENT_SECTION_DEFAULTS,
+        chunks: APARTMENT_UPPER_CHUNKS,
+        id: "fire-escape-3",
+        theme: "apartment-exterior",
+      },
+      {
+        ...APARTMENT_SECTION_DEFAULTS,
+        chunks: APARTMENT_UPPER_CHUNKS,
+        id: "residential",
+        theme: "apartment-residential",
+      },
+    ],
+  },
+  "entrance-and-lobby": {
+    ...APARTMENT_CAPS,
+    sections: [
+      {
+        ...APARTMENT_SECTION_DEFAULTS,
+        chunks: APARTMENT_ASCENT_CHUNKS,
+        doors: APARTMENT_ROOM_DOORS,
+        id: "entrance",
+        theme: "apartment-entrance",
+      },
+      {
+        ...APARTMENT_SECTION_DEFAULTS,
+        chunks: APARTMENT_UPPER_CHUNKS,
+        id: "lobby",
+        theme: "apartment-lobby",
+      },
+    ],
   },
   "familiar-neighbourhood": {
     difficulty: ZONE_DIFFICULTY,

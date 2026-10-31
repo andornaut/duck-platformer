@@ -45,6 +45,8 @@ const DESTINATIONS: readonly MapDestination[] = [
 const BUILT_STAGES: Readonly<Record<string, string>> = {
   "city-boundary": "city-boundary",
   "city-outskirts": "city-outskirts",
+  "climb-to-apartment": "climb-to-apartment",
+  "entrance-and-lobby": "entrance-and-lobby",
   "familiar-neighbourhood": "familiar-neighbourhood",
   farmland: "farmland",
   "forest-paths": "forest-paths",

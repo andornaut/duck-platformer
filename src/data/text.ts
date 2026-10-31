@@ -5,12 +5,11 @@ export const TEXT: GameText = {
     jump: "Jump",
     use: "Use",
   },
-  // PLACEHOLDER: until gameplay writes the celebration.
   celebration: {
     continue: "Continue",
-    message: "You reached the end of the map.",
+    message: "Replay unlocked stages from the map.",
     restart: "Restart",
-    title: "Well done!",
+    title: "Home at last",
   },
   crash: {
     body: "The game stopped. Reload to play again.",
