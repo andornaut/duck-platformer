@@ -339,7 +339,7 @@ The sprite and portrait integrate with the dog encounter and its frozen introduc
 
 `dog-antagonist` is a separate floppy-eared, ochre-and-brown dog, drawn facing right in a 60x40 frame and mirrored for left. It does not replace the harmless `dog-pug`. The brighter coat separates the animal from the muted blue environment; the long floppy ears and round cream muzzle identify it independently of colour.
 
-The contact box is fixed across all poses: x 2, y 2, width 56, height 38, in frame pixels. The runtime draws a three-pixel red rectangle marking those exact bounds in every state. The red line is not baked into the sprite. All drawn body parts remain inside the contact envelope, which does not shrink when the dog crouches or rests. Contact is always lethal; a crouch or rest is a movement cue, never a safe state.
+The contact box is fixed across all poses: x 2, y 2, width 56, height 38, in frame pixels. The runtime draws a three-pixel contact rectangle inside those exact bounds in every state: two pixels of red and a one-pixel ink backing. The red line is not baked into the sprite. All drawn body parts remain inside the contact envelope, which does not shrink when the dog crouches or rests. Contact is always lethal; a crouch or rest is a movement cue, never a safe state.
 
 | State  | Tag      | Art cycle               | Pose                                     |
 | ------ | -------- | ----------------------- | ---------------------------------------- |
