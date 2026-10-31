@@ -319,6 +319,18 @@
       "once": []
     },
     {
+      "key": "raccoon-antagonist",
+      "png": "sprites/raccoon-antagonist.png",
+      "json": "sprites/raccoon-antagonist.json",
+      "once": [],
+      "hitbox": {
+        "x": 2,
+        "y": 2,
+        "width": 44,
+        "height": 46
+      }
+    },
+    {
       "key": "ui-answer",
       "png": "sprites/ui-answer.png",
       "json": "sprites/ui-answer.json",
@@ -523,6 +535,11 @@
   ],
   "tilesets": [
     {
+      "key": "tiles-industrial",
+      "png": "tilesets/tiles-industrial.png",
+      "json": "tilesets/tiles-industrial.json"
+    },
+    {
       "key": "tiles-lobby",
       "png": "tilesets/tiles-lobby.png",
       "json": "tilesets/tiles-lobby.json"
@@ -725,6 +742,24 @@
       "repeat": "x"
     },
     {
+      "key": "freight-gantry",
+      "png": "backdrops/freight-gantry.png",
+      "width": 144,
+      "height": 192,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "none"
+    },
+    {
+      "key": "freight-mid",
+      "png": "backdrops/freight-mid.png",
+      "width": 720,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
       "key": "hot-dog-cart",
       "png": "backdrops/hot-dog-cart.png",
       "width": 40,
@@ -750,6 +785,24 @@
       "anchor": "bottom-left",
       "y": 592,
       "repeat": "none"
+    },
+    {
+      "key": "industrial-far",
+      "png": "backdrops/industrial-far.png",
+      "width": 720,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
+      "key": "industrial-sky",
+      "png": "backdrops/industrial-sky.png",
+      "width": 48,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
     },
     {
       "key": "lobby-balustrade",
@@ -1128,6 +1181,33 @@
       "anchor": "bottom-left",
       "y": 600,
       "repeat": "none"
+    },
+    {
+      "key": "warehouse-loading-bay",
+      "png": "backdrops/warehouse-loading-bay.png",
+      "width": 120,
+      "height": 144,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "none"
+    },
+    {
+      "key": "warehouse-mid",
+      "png": "backdrops/warehouse-mid.png",
+      "width": 720,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
+      "key": "warehouse-wall",
+      "png": "backdrops/warehouse-wall.png",
+      "width": 48,
+      "height": 240,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
     },
     {
       "key": "water-tower",

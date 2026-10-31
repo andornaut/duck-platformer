@@ -213,7 +213,26 @@ Pieces placed from stage data by their bottom-left corner at the bottom y given,
 
 ## Dog antagonist
 
-| Key            | Type                                                        | Size  | Tags                           |
-| -------------- | ----------------------------------------------------------- | ----- | ------------------------------ |
-| dog-antagonist | character, runtime red contact rectangle; hit box 2,2,56,38 | 60x40 | idle, walk, crouch, rush, rest |
-| portrait-dog   | dialogue portrait, transparent                              | 64x64 | neutral                        |
+| Key            | Type                           | Size  | Tags                           |
+| -------------- | ------------------------------ | ----- | ------------------------------ |
+| dog-antagonist | character; hit box 2,2,56,38   | 60x40 | idle, walk, crouch, rush, rest |
+| portrait-dog   | dialogue portrait, transparent | 64x64 | neutral                        |
+
+## Industrial materials
+
+| Key                   | Type                               | Size    | Contract                                         |
+| --------------------- | ---------------------------------- | ------- | ------------------------------------------------ |
+| freight-gantry        | decorative backdrop                | 144x192 | Bottom-left, y 600, no repeat                    |
+| freight-mid           | repeating backdrop                 | 720x600 | Bottom-left, y 600, repeat x                     |
+| industrial-far        | repeating backdrop                 | 720x600 | Bottom-left, y 600, repeat x                     |
+| industrial-sky        | repeating backdrop                 | 48x600  | Bottom-left, y 600, repeat x                     |
+| tiles-industrial      | tileset, 12px cells, eight columns | 96x48   | Four material families, seven terrain tiles each |
+| warehouse-loading-bay | decorative closed loading bay      | 120x144 | Bottom-left, y 600, no repeat                    |
+| warehouse-mid         | repeating backdrop                 | 720x600 | Bottom-left, y 600, repeat x                     |
+| warehouse-wall        | repeating backdrop                 | 48x240  | Bottom-left, y 600, repeat x                     |
+
+## Raccoon antagonist
+
+| Key                | Type                         | Size  | Tags                             |
+| ------------------ | ---------------------------- | ----- | -------------------------------- |
+| raccoon-antagonist | character; hit box 2,2,44,46 | 48x48 | idle, climb, prepare, drop, rest |

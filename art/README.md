@@ -393,7 +393,7 @@ A hazard restarts the floor on contact. `art/tools/hazards.py` draws the hazard 
 
 Every non-player animal in the main stage or foreground is an enemy. Read an enemy from its silhouette, movement and stronger colour against the muted environment, without a red contact rectangle or red silhouette outline. Natural coloured sprite outlines remain part of the house style. The shared red bands still identify dangerous terrain surfaces.
 
-Friendly animals appear only as muted background flavour, never in the foreground, or inside rooms reached through doors for shops, quests and conversations. Background animals stay below play in contrast, saturation and detail; their placement never suggests a usable platform or foreground interaction. There are no friendly animal background replacements in the current scenery. The only current world animal is `dog-antagonist`; room casts are retained.
+Friendly animals appear only as muted background flavour, never in the foreground, or inside rooms reached through doors for shops, quests and conversations. Background animals stay below play in contrast, saturation and detail; their placement never suggests a usable platform or foreground interaction. There are no friendly animal background replacements in the current scenery. Stage enemies include `dog-antagonist` and `raccoon-antagonist`; room casts are retained.
 
 ## Street cast
 
@@ -544,7 +544,44 @@ City boundary is Blue cityscape, Zone 1 Stage 2. It reuses the street's existing
 - Play surfaces: `tiles-street` supplies the sidewalk ground, raised steps and safe ledges. Existing red contact-edge art remains distinct from safe white lips. Gameplay data owns the randomized layout, hazards and encounter placement.
 - Room: the existing street-door piece supplies the start room's entrance. There are no new story props, characters, palette colours or asset keys.
 
-### Kept for a later indoor zone: the boutique lobby
+## Industrial material pack
+
+Warehouse district and Freight terminal use the industrial destination's canonical smoky lavender, `zone-purple`. `art/tools/industrial.py` draws reusable material skins and scenery. The pack adds no obstacle types, collision rules or stage-specific physics; data may combine these skins with shared structures in any zone.
+
+| Stage appearance | Logical ground look | Logical raised look |
+| ---------------- | ------------------- | ------------------- |
+| Warehouse        | industrial-floor    | crate-stack         |
+| Freight          | terminal-floor      | container-stack     |
+
+`tiles-industrial` contains 28 cells of 12x12 in eight columns, exported as a 96x48 sheet. Each of the four families supplies the common `top`, `top-left`, `top-right`, `top-joint`, `face`, `face-left` and `face-right` tiles. Safe tops retain the dark edge and white lip. Existing `tiles-platforming` ledges and directional red contact strips remain shared across skins; moving elements retain their generic behaviour and geometry.
+
+| Backdrop              | Size    | Repeat | Plane                |
+| --------------------- | ------- | ------ | -------------------- |
+| freight-gantry        | 144x192 | none   | Gameplay, decorative |
+| freight-mid           | 720x600 | x      | Middle distance      |
+| industrial-far        | 720x600 | x      | Far distance         |
+| industrial-sky        | 48x600  | x      | Fixed sky            |
+| warehouse-loading-bay | 120x144 | none   | Gameplay, decorative |
+| warehouse-mid         | 720x600 | x      | Middle distance      |
+| warehouse-wall        | 48x240  | x      | Gameplay, decorative |
+
+The repeated atmosphere layers have a default bottom of y 600. Use sky factors 0,0; far factors 0.15,0.05; middle factors 0.4,0.15. Select the middle layer for the chosen appearance, rather than stacking both. Near pieces use factors 1,1 and align to the local floor: their top row is the floor row minus their height in tiles. Placement data supplies the character size and row; the manifest's default bottom is not a placement instruction. Decorative beams and the closed loading bay have no collision, white safe lip or red contact band. Keep them clear of routes where their shapes would imply a usable surface. Room doors may reuse the existing street-door art.
+
+## Raccoon antagonist
+
+`art/tools/raccoon.py` draws `raccoon-antagonist`, a separate enemy asset for the industrial stages. It retains a cute grey coat, cream face and belly, dark mask, rounded ears and banded tail. The existing room raccoon is unchanged. The frame is 48x48 with a bottom-centre anchor at 24,48, within a four-column by four-row placement. Its fixed contact box is x 2, y 2, width 44, height 46 in every pose, including mirrored poses. Contact remains lethal during preparation and rest; neither the sprite nor the runtime adds a red outline.
+
+| Tag     | Art cycle               | Pose                                  |
+| ------- | ----------------------- | ------------------------------------- |
+| climb   | Four frames, 120ms each | Alternate grips and feet on the climb |
+| drop    | Two frames, 100ms each  | Splayed and tucked falling poses      |
+| idle    | Two frames, 400ms each  | Standing breathing fallback           |
+| prepare | One frame, 400ms        | Compressed body before the drop       |
+| rest    | Two frames, 400ms each  | Settled pause after landing           |
+
+All tags loop; gameplay data owns state durations, motion and transitions through the shared behaviour graph. A skin supplies compatible artwork without changing the canonical footprint or contact box. No portrait or new conversation is supplied by this asset.
+
+## Kept for a later indoor zone: the boutique lobby
 
 The lobby set is no longer in Zone 1. It is kept, unchanged, for a later indoor zone.
 
