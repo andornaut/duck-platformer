@@ -15,6 +15,35 @@ export interface Point {
   readonly y: number;
 }
 
+export type DeathReason = "crush" | "fall" | "hazard";
+
+// A frozen contact snapshot. Position is the duck body's top-left; support is the nearest
+// frozen solid or ledge below the body, or undefined over a void.
+export interface ZoneDeath {
+  readonly position: Point;
+  readonly reason: DeathReason;
+  readonly support: Rect | undefined;
+  readonly velocity: Point;
+}
+
+// Death presentation values use pixels and seconds. Recoil x is relative to facing.
+export interface DeathTuning {
+  readonly bounceSpeed: number;
+  readonly fallGravity: number;
+  readonly impactSeconds: number;
+  readonly maxFallSpeed: number;
+  readonly recoilSeconds: number;
+  readonly recoilVelocity: Point;
+  readonly voidFallDistance: number;
+}
+
+export interface DeathText {
+  readonly progress: string;
+  readonly retry: string;
+  readonly time: string;
+  readonly title: string;
+}
+
 export interface Size {
   readonly height: number;
   readonly width: number;
@@ -58,6 +87,7 @@ export interface CameraTuning {
 
 // The words the player reads.
 export interface GameText {
+  readonly death: DeathText;
   // Dialogue controls and speaker names; paragraph text lives in lines.
   readonly dialogue: {
     readonly continue: string;
