@@ -7,6 +7,6 @@ export const DEATH: DeathTuning = {
   impactSeconds: 0.08,
   maxFallSpeed: 400,
   recoilSeconds: 0.1,
-  recoilVelocity: { x: -48, y: -72 },
+  recoilVelocity: { x: -48, y: -180 },
   voidFallDistance: 96,
 };
