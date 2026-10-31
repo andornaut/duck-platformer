@@ -197,3 +197,10 @@ Pieces placed from level data by their bottom-left corner at the bottom y given,
 | depot-loading-bay | static backdrop, roller bay and parcel icon | 120x120 | bottom-left, y 600, no repeat              |
 | depot-wall        | static ribbed blue-grey wall                | 48x180  | bottom-left, y 600, repeat x               |
 | parcel-open       | static opened cardboard parcel              | 72x36   | bottom-left, y 600, no repeat; behind duck |
+
+## Dog antagonist
+
+| Key            | Type                                                        | Size  | Tags                           |
+| -------------- | ----------------------------------------------------------- | ----- | ------------------------------ |
+| dog-antagonist | character, runtime red contact rectangle; hit box 2,2,56,38 | 60x40 | idle, walk, crouch, rush, rest |
+| portrait-dog   | dialogue portrait, transparent                              | 64x64 | neutral                        |

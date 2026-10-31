@@ -328,6 +328,24 @@ The ambient characters of the Zone 1 street, drawn by `art/tools/cast.py`; its d
 - The pigeon flees in two steps: `flee` plays once (crouch, leap) and the game then loops `fly` while it moves the pigeon up and away. It reads at 1x by its grey body, lgrey rim light, bold green-and-mauve neck sheen and pink feet.
 - The cat has the coat body: a big round head over an A-line coat and two stub legs. The raccoon has its own front-on body after a knitted raccoon: a cream face band over ink masks, a wide round muzzle and belly, its head low on a round body, and a banded tail. Both walk the two-leg cycle: a foot lifted 2px, passing (body 1px up), the other foot lifted, passing.
 
+## Dog antagonist
+
+`dog-antagonist` is a separate floppy-eared, ochre-and-brown dog, drawn facing right in a 60x40 frame and mirrored for left. It does not replace the harmless `dog-pug`. The brighter coat separates the animal from the muted blue environment; the long floppy ears and round cream muzzle identify it independently of colour.
+
+Every pose uses the same contact box: x 2, y 2, width 56, height 38, in frame pixels. A three-pixel red rectangle drawn by the runtime marks those exact bounds in every state. The red line is not baked into the sprite. All drawn body parts remain inside the contact envelope, which does not shrink when the dog crouches or rests. Contact is always lethal; a crouch or rest is a movement cue, never a safe state.
+
+| State  | Tag      | Art cycle               | Pose                                     |
+| ------ | -------- | ----------------------- | ---------------------------------------- |
+| Crouch | `crouch` | one frame, 400ms        | body low and legs tucked before the rush |
+| Idle   | `idle`   | two frames, 400ms each  | breathing with feet planted              |
+| Patrol | `walk`   | four frames, 120ms each | alternating legs and a small passing bob |
+| Rest   | `rest`   | two frames, 400ms each  | settled body after the rush              |
+| Rush   | `rush`   | two frames, 80ms each   | stretched body and reaching legs         |
+
+These tags loop while their gameplay state is active. Gameplay owns the duration and transition of patrol, crouch, committed rush and rest; art cycle durations do not set encounter timing. A five-column by four-row placement (60x48) bottom-anchors the 60x40 frame, putting the contact box ten pixels below the placement's top and ending at its bottom.
+
+`portrait-dog` is 64x64, facing right towards the text, with the matching floppy ears and coat, an ink outline and a transparent ground, cut off at the bottom. Its `neutral` tag is one frame at 1000ms. It uses the existing dialogue portrait frame; no proper name or specific breed is encoded in the art.
+
 ## Environment aesthetic
 
 Every environment theme (a zone's street, a chunk theme's park) follows these rules. The park theme (`art/tools/park.py`) is the reference; its values are given after each rule.
