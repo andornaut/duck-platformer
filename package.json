@@ -18,6 +18,7 @@
     "lint": "prettier --check . && eslint --max-warnings 0 . && markdownlint-cli2",
     "format": "prettier --write . && eslint --fix .",
     "test": "vitest run",
+    "simulate": "tsx src/sim/cli.ts",
     "reaches": "tsx src/sim/reachCli.ts",
     "deploy": "npm run build && wrangler deploy",
     "clean": "rm -rf dist .wrangler"

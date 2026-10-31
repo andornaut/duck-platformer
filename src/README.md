@@ -40,6 +40,18 @@
 - **Test helpers:** `src/testing/` is importable only from tests.
 - **View:** `src/view/` picks each sprite's tag and whole-pixel position from the game state, Phaser-free, so the scenes only draw what it picks.
 
+## Bounded simulations
+
+`npm run simulate -- --help` describes the headless stage runner. Run it only inside the project container. For a small diagnostic run, use `npm run simulate -- --stage street --seed 1 --runs 1 --max-steps 600 --max-retries 0`. Larger batches require coordination with gameplay; this command is not a routine gate.
+
+`src/sim/simulate.ts` exposes `prepareStage(layout)` and `simulateStage(tuning, prepared, config)`. `src/sim/report.ts` batches explicit seeds through a caller-supplied preparation function. Layouts and static sensor indices can be reused between policies. The CLI loads art metadata once, assembles each seeded stage once and performs no rendering or reachability search. Its Node-only asset loader is separate from the pure engine and frontend.
+
+Rollouts call the real `stepZone` at `STEP_SECONDS`, including collision, moving platforms, behaviour patterns and explicit retries. Conversations are acknowledged at the runtime proximity and activate their actors; presentation, menu and retry-card waits consume no active time. The bot does not use doors or make narrative choices. Retry retains the assembled layout and uses the real attempt reseeding. Tick and retry limits bound each run and report exhaustion explicitly.
+
+JSON output includes current-attempt and peak progress, completion, death reasons, retries, active seconds, steps and runtime. Per-run timing measures rollout only; aggregate timing includes stage preparation, and total CLI timing also includes asset loading. Timings vary by machine; deterministic gameplay metrics exclude timing. Active seconds count physics ticks across all attempts. Progress is horizontal area progress, matching the current single-area stages, and is not a multi-area completion model.
+
+Bot inputs expose reaction ticks, look-ahead pixels, jump-hold ticks, error probability, movement direction and jump policy. The reactive policy probes local support, walls and hazards using indexed terrain and current moving-object positions. It does not plan a route, time enemy patterns or search for takeoffs. The supplied diagnostic settings are not calibrated human skill presets; gameplay owns calibration. Failure by this bot is not evidence that a stage is impossible.
+
 ## Remaining for the first build
 
 - The game data files, and the export to `shared/export/` that art's tools read.
