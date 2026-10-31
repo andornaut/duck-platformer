@@ -24,7 +24,7 @@ import { CHARACTERS } from "../data/characters";
 import { DEATH } from "../data/death";
 import { DUCK } from "../data/duck";
 import { ZONE_MAP } from "../data/map";
-import { HAZARD_OUTLINE, SCREEN, TILE } from "../data/screen";
+import { SCREEN, TILE } from "../data/screen";
 import { TEXT } from "../data/text";
 import { TOUCH } from "../data/touch";
 import type {
@@ -52,7 +52,6 @@ import { PAUSE_BUTTON } from "../layout/pauseCard";
 import { bottomShift, shifted, topShift } from "../layout/playView";
 import { MOVE_HINT, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
 import { coverZone, startWakeLock, stopWakeLock } from "../pwa";
-import { contactBox } from "../rules/behaviour";
 import { attemptProgress, deathSupport } from "../rules/death";
 import { isLastZone, nodeOf } from "../rules/map";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
@@ -91,7 +90,6 @@ import {
 } from "../view/death";
 import { doorPhase } from "../view/doorOpen";
 import { DUCK_FRAME, duckFrameAt, type DuckPose, startPose, stepPose } from "../view/duck";
-import { hazardOutline } from "../view/hazardOutline";
 import { moveHintView } from "../view/moveHint";
 import { type ArtKind, artKind, artOffset, artScrollFactor } from "../view/objectArt";
 import { type PlayHold, stepAction } from "../view/playHold";
@@ -207,7 +205,6 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
   // ?assembly=<n> fixes the seed.
   private trial: string | undefined;
   private areaArt!: GameObjects.Graphics;
-  private hazardArt!: GameObjects.Graphics;
   // Drawn as the start screen's backdrop rather than played.
   private backdrop = false;
   // The hit boxes art's sprites declare, by art key.
@@ -277,7 +274,6 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
     this.cameras.main.setBackgroundColor(BACKGROUND);
     this.cameras.main.setRoundPixels(true);
     this.areaArt = this.add.graphics();
-    this.hazardArt = this.add.graphics().setDepth(DUCK_DEPTH);
     this.progress = this.add.graphics().setDepth(OVERLAY_DEPTH);
     this.cameras.main.ignore(this.progress);
     this.progress.cameraFilter &= ~controlsCamera.id;
@@ -924,7 +920,6 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
     const area = areaOf(this.layout, this.zone.area);
     const { duck } = this.zone;
     const hers = { x: duck.x + DUCK.width / 2, y: duck.y + DUCK.height / 2 };
-    this.hazardArt.clear();
     this.zone.objects.forEach((at, index) => {
       const art = this.objectArt[index];
       const object = area.objects[index];
@@ -941,15 +936,6 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
           art.sprite.setFlipX(pose.flipX);
           if (pose.animation !== undefined) {
             show(art.sprite, pose.animation);
-          }
-        }
-        if (object.collision === "hazard") {
-          for (const { band, rect } of hazardOutline(
-            HAZARD_OUTLINE,
-            contactBox(object, at, behaviour.facing),
-          )) {
-            this.hazardArt.fillStyle(paletteColour(this, HAZARD_OUTLINE[band]));
-            this.hazardArt.fillRect(rect.x, rect.y, rect.width, rect.height);
           }
         }
       } else if (art.sprite && index !== this.opening?.index) {
