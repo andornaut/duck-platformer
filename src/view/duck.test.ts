@@ -13,6 +13,7 @@ const STILL: DuckState = {
   coyoteLeft: 0,
   facing: 1,
   grounded: true,
+  jumpFromY: 0,
   jumpHeld: false,
   jumpHeldFor: 0,
   jumpRise: "free",
