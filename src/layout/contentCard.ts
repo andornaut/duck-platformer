@@ -164,7 +164,7 @@ export function contentCardLayout(
     if (close) {
       const art = {
         ...closeArt,
-        x: card.x + closeArt.x,
+        x: card.x + card.width - closeArt.x - closeArt.width,
         y: card.y + closeArt.y,
       };
       closeLayout = { art, at: { x: art.x, y: art.y }, hit: hitAround(art) };

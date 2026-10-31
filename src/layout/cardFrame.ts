@@ -22,12 +22,12 @@ export const CARD_WIDTH = 368;
 const CLOSE_ART: Rect = {
   height: CARD_CONTENT.closeSize,
   width: CARD_CONTENT.closeSize,
-  x: CARD_AT.x + CARD_CONTENT.closeInset,
+  x: CARD_AT.x + CARD_WIDTH - CARD_CONTENT.closeInset - CARD_CONTENT.closeSize,
   y: CARD_AT.y + CARD_CONTENT.closeInset,
 };
 
 export const CARD_FRAME = {
-  // The close X, drawn at the card's top left, and its press area.
+  // The close X, drawn at the card's top right, and its press area.
   close: {
     art: CLOSE_ART,
     at: { x: CLOSE_ART.x, y: CLOSE_ART.y } satisfies Point,

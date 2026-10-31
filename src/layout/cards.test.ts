@@ -62,11 +62,11 @@ it.each([
   ({ first, layout: { card, close, title } }) => {
     expect(inside({ ...SCREEN, x: 0, y: 0 }, card)).toBe(true);
     expect(inside(card, close.art)).toBe(true);
-    expect(close.art.x - card.x).toBe(CARD_CONTENT.closeInset);
+    expect(card.x + card.width - close.art.x - close.art.width).toBe(CARD_CONTENT.closeInset);
     expect(close.art.y - card.y).toBe(CARD_CONTENT.closeInset);
     expect(title.x + title.width / 2).toBe(card.x + card.width / 2);
     expect(title.width).toBeGreaterThan(0);
-    expect(title.x).toBeGreaterThanOrEqual(close.hit.x + close.hit.width + CARD_CONTENT.gap);
+    expect(title.x + title.width + CARD_CONTENT.gap).toBeLessThanOrEqual(close.hit.x);
     expect(first.y).toBeGreaterThanOrEqual(close.hit.y + close.hit.height + CARD_CONTENT.gap);
   },
 );
