@@ -53,6 +53,7 @@ export interface DuckTuning {
 export interface GameText {
   // Dialogue controls and speaker names; paragraph text lives in lines.
   readonly dialogue: {
+    readonly continue: string;
     readonly skip: string;
     readonly speakers: Readonly<Record<string, string>>;
   };
@@ -301,6 +302,7 @@ export interface DialoguePlan {
 // A dialogue speaker's portrait asset and name-tab palette colour. TEXT.dialogue.speakers owns
 // the displayed name under the same speaker key.
 export interface DialogueSpeaker {
+  readonly side: "left" | "right";
   readonly colour: "amber" | "green" | "pink" | "tan";
   readonly portrait: string;
 }

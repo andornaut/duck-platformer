@@ -13,6 +13,6 @@ export const DIALOGUES: Readonly<Record<string, DialoguePlan>> = {
 
 // Portraits and name-tab colours shared by every line from a speaker.
 export const SPEAKERS: Readonly<Record<string, DialogueSpeaker>> = {
-  dog: { colour: "green", portrait: "portrait-dog" },
-  duck: { colour: "amber", portrait: "portrait-duck" },
+  dog: { colour: "green", portrait: "portrait-dog", side: "right" },
+  duck: { colour: "amber", portrait: "portrait-duck", side: "left" },
 };
