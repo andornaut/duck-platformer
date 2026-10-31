@@ -28,6 +28,7 @@ const {
     atlasPlugin,
     gitHead,
     hashedIconsPlugin,
+    homePagePlugin,
     phaserBuildPlugin,
     precachePlugin,
     securityHeadersPlugin,
@@ -92,6 +93,7 @@ export default defineConfig({
   // precachePlugin writes /sw.js, the service worker that precaches the game for offline play.
   // securityHeadersPlugin writes /_headers, the response headers with each page's CSP.
   plugins: [
+    homePagePlugin(),
     atlas,
     phaserBuildPlugin(PHASER_BUILD),
     hashedIconsPlugin({ icons: ICONS }),

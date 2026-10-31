@@ -101,3 +101,32 @@
   display: block;
   image-rendering: pixelated;
 }
+
+/* The homepage's pale canvas uses quiet navigation without changing the game page. */
+.home .site-nav {
+  background: transparent;
+  border-bottom-color: #8b9bb4;
+}
+.home .site-nav a {
+  color: #181425;
+}
+.home .site-nav a:hover {
+  color: #3a4466;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+.home .site-nav a[aria-current="page"] {
+  top: 0;
+  padding: 0;
+  color: #181425;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+}
+.home .site-nav a:focus-visible {
+  outline-color: #3a4466;
+  outline-offset: 4px;
+}

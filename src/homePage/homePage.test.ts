@@ -9,22 +9,36 @@ import { RECIPES } from "../data/zones";
 import { keyIntent } from "../input/intent";
 import { cardKeyAction } from "../pause/cardInput";
 import { themesOf } from "../rules/assemble";
+import { homePageHtml } from "./html";
 
 // The home page and the nav bar are static files, so what they state is checked against the
 // game here.
 const HOME_PAGE = new URL("../../pages/index.html", import.meta.url);
 const NAV_SCRIPT = new URL("../../public/nav.js", import.meta.url);
 
-const pageText = async () => (await readFile(HOME_PAGE, "utf8")).replaceAll(/\s+/gu, " ");
+const pageText = async () =>
+  homePageHtml(TEXT, await readFile(HOME_PAGE, "utf8")).replaceAll(/\s+/gu, " ");
 
 function artImage(key: string) {
   const image = manifest.images.find((entry) => entry.key === key);
   return { height: image?.height, src: `/art/${image?.png}`, width: image?.width };
 }
 
+it("renders one escaped description in the pitch and metadata", async () => {
+  const text = {
+    ...TEXT,
+    homePage: { ...TEXT.homePage, description: 'A "duck" & <ferret>' },
+  };
+  const rendered = homePageHtml(text, await readFile(HOME_PAGE, "utf8")).replaceAll(/\s+/gu, " ");
+  const description = "A &quot;duck&quot; &amp; &lt;ferret&gt;";
+  expect(rendered).toContain(`name="description" content="${description}"`);
+  expect(rendered).toContain(`<p class="pitch">${description}</p>`);
+  expect(rendered).not.toMatch(/%HOME_[A-Z_]+%/u);
+});
+
 describe("the logos", () => {
   it("shows the home page's logo at art's size", async () => {
-    const pattern = /<img class="logo" src="([^"]+)" width="(\d+)" height="(\d+)"/u;
+    const pattern = /<img\s+class="logo"\s+src="([^"]+)"\s+width="(\d+)"\s+height="(\d+)"/u;
     const [, src, width, height] = pattern.exec(await readFile(HOME_PAGE, "utf8")) ?? [];
     expect({ height: Number(height), src, width: Number(width) }).toEqual(artImage("logo"));
   });
@@ -66,7 +80,7 @@ const streetCharacters = new Set(
 );
 
 describe("the home page's zone 1", () => {
-  it.each([["red contact edges", "red-edge-top"]])(
+  it.each([[TEXT.homePage.subline, "red-edge-top"]])(
     "states %s, which zone 1 can include",
     async (phrase, character) => {
       expect({

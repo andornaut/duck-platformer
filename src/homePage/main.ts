@@ -1,7 +1,7 @@
 // The home page's Install button beside Play, on the kit's install button: the browser's install
 // prompt where it gives one, the steps for the browser's own menu where it installs only from
-// there (iOS, Firefox for Android), and hidden once installed or where neither works. Its words
-// are in pages/index.html.
+// there (iOS, Firefox for Android), and hidden once installed or where neither works. Homepage
+// copy from data/text.ts is rendered into pages/index.html by Vite.
 import { wireInstallButton } from "@andornaut/game-kit/pwa/installButton";
 import { watchInstall } from "@andornaut/game-kit/pwa/installFlow";
 

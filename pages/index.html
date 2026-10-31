@@ -4,15 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Duck Platformer</title>
-    <meta
-      name="description"
-      content="A pixel-art platformer: a lost duck is trying to get home, and a ferret in a stovepipe hat schemes against her."
-    />
+    <meta name="description" content="%HOME_DESCRIPTION%" />
     <link rel="icon" type="image/png" sizes="32x32" href="/art/favicon.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/art/favicon-16.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
-    <meta name="theme-color" content="#181425" />
+    <meta name="theme-color" content="#c0cbdc" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Duck Platformer" />
@@ -22,281 +19,248 @@
     <script src="/nav.js" defer></script>
     <script type="module" src="/src/homePage/main.ts"></script>
     <style>
-      /* Project home, in one screen below the nav bar: the logo with Play under it, and the pitch
-         and the controls beside them in landscape or under them in portrait. Colours from art's
-         palette (public/art/palette.json). Art's fonts are BMFont files for the game, so the page
-         uses the system font stack. */
+      /* Homepage colours and layout stay local to this document. */
       :root {
-        --cream: #ead4aa;
-        --forest: #265c42;
-        --green: #63c74d;
-        --grey: #8b9bb4;
-        --ink: #181425;
-        --lgrey: #c0cbdc;
-        --navy: #262b44;
-        --plum: #3e2731;
-        --tan: #e4a672;
-        --yellow: #fee761;
-        --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-        color-scheme: dark;
+        --home-blue: #a8bfd4;
+        --home-dslate: #3a4466;
+        --home-grey: #8b9bb4;
+        --home-ink: #181425;
+        --home-lgrey: #c0cbdc;
+        --home-white: #ffffff;
+        --home-font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        color-scheme: light;
       }
-      img {
-        display: block;
-        image-rendering: pixelated;
-        image-rendering: crisp-edges;
+      body.home {
+        background: var(--home-lgrey);
+        color: var(--home-ink);
+        font: 16px/1.5 var(--home-font);
       }
-      /* Portrait: one centred column, the logo first. Landscape: the logo and Play in the left
-         column, the pitch and the controls in the right, each beside its row. */
-      main {
+      .home main {
+        box-sizing: border-box;
         flex: 1;
         min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: 24px max(16px, env(safe-area-inset-right, 0px))
+          max(24px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+      }
+      .home-content {
         display: grid;
-        grid-template-areas: "hero" "about" "actions" "keys";
-        grid-template-columns: minmax(0, 40ch);
-        justify-items: center;
-        align-content: center;
+        grid-template-areas: "brand" "about" "actions" "keys";
+        grid-template-columns: minmax(0, 440px);
         justify-content: center;
+        justify-items: center;
         gap: 16px;
-        padding: 16px max(16px, env(safe-area-inset-right, 0px)) 16px
-          max(16px, env(safe-area-inset-left, 0px));
-        color: var(--cream);
-        font-family: var(--font);
-        font-size: 16px;
-        line-height: 1.5;
+        width: 100%;
+        max-width: 1040px;
+        margin: auto;
         text-align: center;
       }
-      @media (orientation: landscape) {
-        main {
-          grid-template-areas: "hero about" "actions keys";
-          grid-template-columns: var(--logo-w) minmax(0, 40ch);
-          align-items: center;
-          gap: 16px 32px;
-          text-align: start;
-        }
-        .about,
-        .keys {
-          justify-self: start;
-        }
+      .brand {
+        grid-area: brand;
+        position: relative;
+        isolation: isolate;
+        width: min(360px, 100%);
+        aspect-ratio: 360 / 300;
       }
-      /* The logo at 1x, 360x193. On a 360px phone it is the viewport's width, so its margins
-         pull it over the gutters. */
-      main {
-        --logo-w: 360px;
-        --logo-h: 193px;
+      .scenery,
+      .scenery::before,
+      .scenery::after {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      .scenery {
+        overflow: hidden;
+        background: var(--home-blue);
+      }
+      .scenery::before,
+      .scenery::after {
+        content: "";
+        background-repeat: repeat-x;
+        background-position: center bottom;
+        background-size: 360px 300px;
+        image-rendering: pixelated;
+      }
+      .scenery::before {
+        background-image: url("/art/backdrops/street-city-far.png");
+        opacity: 0.4;
+      }
+      .scenery::after {
+        background-image: url("/art/backdrops/street-city-mid.png");
+        clip-path: inset(60% 0 0);
+        opacity: 0.3;
       }
       .hero {
-        grid-area: hero;
-        width: var(--logo-w);
-        margin: 0 calc((100% - var(--logo-w)) / 2);
+        position: relative;
+        margin: 0;
       }
       .logo {
-        width: var(--logo-w);
-        height: var(--logo-h);
+        display: block;
+        width: 100%;
+        height: auto;
+        image-rendering: pixelated;
       }
       .about {
         grid-area: about;
         display: grid;
         gap: 12px;
+        max-width: 440px;
+      }
+      .pitch,
+      .sub {
+        margin: 0;
+        text-wrap: pretty;
       }
       .pitch {
-        margin: 0;
-        font-size: 19px;
+        font-size: 20px;
         line-height: 1.4;
         text-wrap: balance;
       }
-      .sub {
-        margin: 0;
-        color: var(--grey);
-        text-wrap: balance;
+      .sub,
+      .keys {
+        color: var(--home-dslate);
+      }
+      .actions {
+        grid-area: actions;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        width: 100%;
+      }
+      .play,
+      .install,
+      .steps-close {
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        min-width: 112px;
+        padding: 12px 16px;
+        border: 2px solid var(--home-dslate);
+        color: var(--home-ink);
+        background: var(--home-grey);
+        font: 600 16px/1.25 var(--home-font);
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .play {
+        min-width: 168px;
+        color: var(--home-white);
+        background: var(--home-dslate);
+      }
+      .install[hidden] {
+        display: none;
+      }
+      .play:hover,
+      .play:active {
+        background: var(--home-ink);
+      }
+      .install:hover,
+      .steps-close:hover {
+        background: var(--home-lgrey);
+      }
+      .play:focus-visible,
+      .install:focus-visible,
+      .steps-close:focus-visible {
+        outline: 3px solid var(--home-ink);
+        outline-offset: 3px;
       }
       .keys {
         grid-area: keys;
+        display: grid;
+        gap: 8px;
+        max-width: 440px;
         margin: 0;
         padding: 0;
         list-style: none;
-        color: var(--grey);
         font-size: 14px;
       }
-      /* A control line breaks only between its clauses. */
-      .keys span {
-        white-space: nowrap;
+      .steps {
+        box-sizing: border-box;
+        width: min(368px, calc(100vw - 32px));
+        padding: 24px;
+        border: 2px solid var(--home-dslate);
+        color: var(--home-ink);
+        background: var(--home-lgrey);
+        font: 16px/1.5 var(--home-font);
       }
-      /* Landscape: the pitch and the sub fill the column's width and sit at the foot of the logo's
-         row, and the controls at the top of Play's, so the column reads as one block. */
-      @media (orientation: landscape) {
-        .pitch,
-        .sub {
-          text-wrap: pretty;
+      .steps::backdrop {
+        background: rgb(24 20 37 / 0.5);
+      }
+      .steps-body {
+        display: grid;
+        gap: 16px;
+      }
+      .steps h2 {
+        margin: 0 0 12px;
+        font-size: 20px;
+        line-height: 1.4;
+        text-align: center;
+      }
+      .steps p {
+        margin: 0;
+      }
+      .steps-close {
+        justify-self: end;
+      }
+      @media (min-width: 700px) and (orientation: landscape) {
+        .home-content {
+          grid-template-areas: "brand about" "brand actions" "brand keys";
+          grid-template-columns: minmax(0, 360px) minmax(0, 440px);
+          gap: 16px 32px;
+          align-items: center;
+          text-align: start;
+        }
+        .about,
+        .actions,
+        .keys {
+          width: 100%;
+          justify-self: start;
         }
         .about {
           align-self: end;
+        }
+        .actions {
+          justify-content: flex-start;
         }
         .keys {
           align-self: start;
         }
       }
-      /* Play, and Install beside it while the game can be installed. */
-      .actions {
-        grid-area: actions;
-        display: flex;
-        justify-content: center;
-        gap: 16px;
-        width: 100%;
-        max-width: 336px;
-      }
-      /* The primary button: a raised green face on a forest lip, ink label. */
-      .play {
-        display: block;
-        flex: 1 1 0;
-        min-width: 0;
-        max-width: 240px;
-        padding: 12px 24px;
-        font-size: 28px;
-        font-weight: 700;
-        line-height: 1;
-        text-align: center;
-        text-decoration: none;
-        color: var(--ink);
-        background: var(--green);
-        border: 2px solid var(--ink);
-        box-shadow:
-          0 0 0 2px var(--cream),
-          0 6px 0 2px var(--forest);
-        position: relative;
-        top: 0;
-      }
-      .play:hover {
-        background: #74d55e;
-      }
-      .play:active {
-        top: 4px;
-        box-shadow:
-          0 0 0 2px var(--cream),
-          0 2px 0 2px var(--forest);
-      }
-      .play:focus-visible,
-      .install:focus-visible,
-      .steps-close:focus-visible {
-        outline: 3px solid var(--yellow);
-        outline-offset: 6px;
-      }
-      /* The secondary button: Play's shape and height with a cream face on a tan lip. */
-      .install,
-      .steps-close {
-        flex: 0 0 auto;
-        padding: 16px 14px;
-        font-family: var(--font);
-        font-size: 20px;
-        font-weight: 700;
-        line-height: 1;
-        color: var(--ink);
-        background: var(--cream);
-        border: 2px solid var(--ink);
-        box-shadow:
-          0 0 0 2px var(--cream),
-          0 6px 0 2px var(--tan);
-        position: relative;
-        top: 0;
-        cursor: pointer;
-      }
-      .install[hidden] {
-        display: none;
-      }
-      .install:hover,
-      .steps-close:hover {
-        background: #f4e3c1;
-      }
-      .install:active,
-      .steps-close:active {
-        top: 4px;
-        box-shadow:
-          0 0 0 2px var(--cream),
-          0 2px 0 2px var(--tan);
-      }
-      /* The install steps for the browser's own menu (iOS, Firefox for Android), one browser's
-         shown over the dimmed page: a cream card with a navy band heading. */
-      .steps {
-        box-sizing: border-box;
-        width: min(320px, calc(100vw - 32px));
-        padding: 0;
-        background: var(--cream);
-        color: var(--plum);
-        border: 1px solid var(--ink);
-        box-shadow:
-          inset 0 0 0 1px var(--plum),
-          inset -3px -3px 0 0 var(--tan);
-        font-family: var(--font);
-        font-size: 16px;
-        line-height: 1.5;
-      }
-      .steps::backdrop {
-        background: rgb(24 20 37 / 0.75);
-      }
-      .steps-body {
-        display: grid;
-        padding: 1px 3px 3px 1px;
-      }
-      .steps h2 {
-        margin: 0;
-        padding: 10px 12px 12px;
-        background: var(--navy);
-        color: var(--yellow);
-        font-size: 18px;
-        line-height: 1.2;
-      }
-      .steps p {
-        margin: 0;
-        padding: 12px 14px 0;
-      }
-      .steps-close {
-        justify-self: end;
-        margin: 16px 16px 20px;
-        padding: 12px 16px;
-        font-size: 16px;
-      }
-      /* The logo at 2x, 720x386, where the screen has room for it. */
-      @media (orientation: landscape) and (min-width: 1200px) and (min-height: 640px),
-        (orientation: portrait) and (min-width: 760px) and (min-height: 960px) {
-        main {
-          --logo-w: 720px;
-          --logo-h: 386px;
-          gap: 24px 40px;
-        }
-        .pitch {
-          font-size: 22px;
-        }
-        .sub {
-          font-size: 18px;
-        }
-        .keys {
-          font-size: 16px;
+      @media (min-height: 600px) and (min-width: 700px) {
+        .home main {
+          display: grid;
+          align-items: center;
         }
       }
     </style>
   </head>
-  <body>
+  <body class="home">
     <main>
-      <h1 class="hero">
-        <img class="logo" src="/art/logo.png" width="360" height="193" alt="Duck Platformer" />
-      </h1>
-      <div class="about">
-        <p class="pitch">
-          A lost duck is trying to get home, and a ferret in a stovepipe hat schemes against her.
-        </p>
-        <p class="sub">
-          A pixel-art platformer. Zone 1 is a New York street with red contact edges.
-        </p>
+      <div class="home-content">
+        <div class="brand">
+          <div class="scenery" aria-hidden="true"></div>
+          <h1 class="hero">
+            <img class="logo" src="/art/logo.png" width="360" height="193" alt="Duck Platformer" />
+          </h1>
+        </div>
+        <div class="about">
+          <p class="pitch">%HOME_DESCRIPTION%</p>
+          <p class="sub">%HOME_SUBLINE%</p>
+        </div>
+        <div class="actions">
+          <a class="play" href="/play/">%HOME_PLAY%</a>
+          <button class="install" id="install" type="button" hidden>%HOME_INSTALL%</button>
+        </div>
+        <ul class="keys">
+          <li>%HOME_TOUCH%</li>
+          <li>%HOME_KEYBOARD%</li>
+        </ul>
       </div>
-      <div class="actions">
-        <a class="play" href="/play/">Play</a>
-        <button class="install" id="install" type="button" hidden>Install</button>
-      </div>
-      <ul class="keys">
-        <li><span>Touch: drag left or right to walk,</span> <span>and press Jump or Use.</span></li>
-        <li>
-          <span>Keyboard: arrow keys to walk and jump,</span> <span>E to use, P to pause.</span>
-        </li>
-      </ul>
     </main>
 
     <dialog class="steps" id="install-steps" aria-labelledby="install-steps-ios">
