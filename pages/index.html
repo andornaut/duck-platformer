@@ -61,7 +61,7 @@
         position: relative;
         isolation: isolate;
         width: min(360px, 100%);
-        aspect-ratio: 360 / 300;
+        aspect-ratio: 360 / 225;
       }
       .scenery,
       .scenery::before,
@@ -79,7 +79,7 @@
         content: "";
         background-repeat: repeat-x;
         background-position: center bottom;
-        background-size: 360px 300px;
+        background-size: 100% auto;
         image-rendering: pixelated;
       }
       .scenery::before {
@@ -88,7 +88,6 @@
       }
       .scenery::after {
         background-image: url("/art/backdrops/street-city-mid.png");
-        clip-path: inset(60% 0 0);
         opacity: 0.3;
       }
       .hero {
@@ -147,8 +146,11 @@
         text-decoration: none;
         cursor: pointer;
       }
+      .play,
+      .install {
+        width: 144px;
+      }
       .play {
-        min-width: 168px;
         color: var(--home-white);
         background: var(--home-dslate);
       }
@@ -209,7 +211,7 @@
       }
       @media (min-width: 700px) and (orientation: landscape) {
         .home-content {
-          grid-template-areas: "brand about" "brand actions" "brand keys";
+          grid-template-areas: "brand about" "brand keys" "actions .";
           grid-template-columns: minmax(0, 360px) minmax(0, 440px);
           gap: 16px 32px;
           align-items: center;
@@ -223,9 +225,6 @@
         }
         .about {
           align-self: end;
-        }
-        .actions {
-          justify-content: flex-start;
         }
         .keys {
           align-self: start;
