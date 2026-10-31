@@ -10,9 +10,10 @@ export const DUCK: DuckTuning = {
   height: 36,
   jumpBuffer: 0.1,
   jumpHopHeight: 19,
-  jumpReleaseCut: 0.5,
+  jumpHopTime: 0.2,
+  jumpLiftTime: 0.09,
   jumpSpeed: 535,
-  jumpTapWindow: 0.12,
+  jumpTapWindow: 0.14,
   walkSpeed: 288,
   width: 24,
 };
