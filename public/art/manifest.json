@@ -13,6 +13,18 @@
   ],
   "sprites": [
     {
+      "key": "dog-antagonist",
+      "png": "sprites/dog-antagonist.png",
+      "json": "sprites/dog-antagonist.json",
+      "once": [],
+      "hitbox": {
+        "x": 2,
+        "y": 2,
+        "width": 56,
+        "height": 38
+      }
+    },
+    {
       "key": "dog-pug",
       "png": "sprites/dog-pug.png",
       "json": "sprites/dog-pug.json",
@@ -214,6 +226,12 @@
       "once": [
         "flee"
       ]
+    },
+    {
+      "key": "portrait-dog",
+      "png": "sprites/portrait-dog.png",
+      "json": "sprites/portrait-dog.json",
+      "once": []
     },
     {
       "key": "portrait-duck",
