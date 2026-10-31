@@ -100,9 +100,9 @@ describe.each(EDGES)("shared $art", ({ art, box, cols, rows }) => {
             : { x: x + hitbox.width - overlap, y: y + hitbox.height - 1 };
     const state = { ...start, duck: { ...start.duck, ...at } };
     const next = stepZone(DUCK, layout, 0, { jumpHeld: false, move: 0, useHeld: false }, state);
-    expect(next.restarts).toBe(touches ? 1 : 0);
+    expect(next.death !== undefined).toBe(touches);
     if (touches) {
-      expect(next.duck).toEqual(start.duck);
+      expect(next.duck).toEqual(state.duck);
     }
   });
 });

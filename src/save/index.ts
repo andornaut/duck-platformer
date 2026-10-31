@@ -7,7 +7,10 @@ import { localSaveStorage } from "@andornaut/game-kit/save/storage";
 
 import { ZONE_MAP } from "../data/map";
 import { RECIPES, ZONES } from "../data/zones";
+import { activeStepSeconds } from "../rules/death";
+import type { ZoneState } from "../rules/zone";
 import { BEGINNING, mapProgress, type Progress, progressFormat } from "./progress";
+import { levelStatsStore } from "./stats";
 
 export { type Progress } from "./progress";
 
@@ -19,10 +22,39 @@ const store = saveStore(
   progressFormat(ZONE_MAP, { ...ZONES, ...RECIPES }),
 );
 let progress: Progress = BEGINNING;
+const LEVELS = new Set([...Object.keys(ZONES), ...Object.keys(RECIPES)]);
+const stats = levelStatsStore(localSaveStorage(), LEVELS);
 
 // Reads the stored progress into savedProgress.
 export async function loadProgress(): Promise<void> {
-  progress = (await store.load()).save;
+  const [loaded] = await Promise.all([store.load(), stats.load()]);
+  progress = loaded.save;
+}
+
+export function activeLevelTime(level: string): number {
+  return stats.seconds(level);
+}
+
+// Developer test chains have no persistent level identity and do not write real-level stats.
+export function recordActiveLevelStep(
+  level: string,
+  seconds: number,
+  before: ZoneState,
+  after: ZoneState,
+): void {
+  if (LEVELS.has(level)) {
+    stats.addActiveTime(level, activeStepSeconds(seconds, before, after));
+  }
+}
+
+export function clearLevelTime(level: string): void {
+  if (LEVELS.has(level)) {
+    stats.clearLevel(level);
+  }
+}
+
+export function flushStats(): Promise<void> {
+  return stats.flush();
 }
 
 // The saved progress, or the beginning.
@@ -43,6 +75,10 @@ export function saveStand(stand: string): void {
 
 // She has completed the zone at node: it opens the map past it, and she stands on it.
 export function saveCompleted(node: string): void {
+  const level = ZONE_MAP.nodes.find(({ id }) => id === node)?.zone;
+  if (level !== undefined) {
+    clearLevelTime(level);
+  }
   const { completed } = savedMap();
   write({
     at: "map",

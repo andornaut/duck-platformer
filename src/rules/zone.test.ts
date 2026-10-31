@@ -13,6 +13,7 @@ import {
   enterArea,
   leaveRoom,
   objectStep,
+  retryZone,
   roomOf,
   standsOn,
   startZone,
@@ -132,10 +133,12 @@ describe("behaviour encounters", () => {
     expect(initial.behaviours[0]?.active).toBe(false);
     const active = activateBehaviour(0, initial);
     expect(active.behaviours[0]?.active).toBe(true);
-    const reset = stepZone(DUCK, layout, STEP, STILL, {
+    const dead = stepZone(DUCK, layout, STEP, STILL, {
       ...active,
       duck: { ...active.duck, x: patrol.origin.x, y: patrol.origin.y },
     });
+    expect(dead.death?.reason).toBe("hazard");
+    const reset = retryZone(DUCK, layout, dead);
     expect(reset.attempt).toBe(initial.attempt + 1);
     expect(reset.behaviours[0]).toEqual(initial.behaviours[0]);
   });
@@ -151,7 +154,7 @@ describe("behaviour encounters", () => {
       behaviours: [{ ...charge, stateKey }],
       duck: { ...initial.duck, x: patrol.origin.x, y: patrol.origin.y },
     });
-    expect(result.restarts).toBe(1);
+    expect(result.death?.reason).toBe("hazard");
   });
 
   it("detects a rush that crosses the duck entirely between fixed frames", () => {
@@ -164,7 +167,7 @@ describe("behaviour encounters", () => {
       ...initial,
       behaviours: [{ ...charge, stateKey: "burst" }],
     });
-    expect(result.restarts).toBe(1);
+    expect(result.death?.reason).toBe("hazard");
   });
 
   it("carries the duck on an inanimate platform using the same state executor", () => {
@@ -196,11 +199,26 @@ describe("restarts", () => {
   it.each([
     ["falling out of the area", zone(narrow)],
     ["touching a hazard", zone(area([hazard]))],
-  ])("after %s, puts her back at the start for the next attempt", (_, layout) => {
+  ])("after %s, freezes the failed attempt until an explicit retry", (_, layout) => {
     const states = run(layout, 3, RIGHT);
-    const restart = states.find((state) => state.restarts === 1);
-    expect(restart?.duck).toEqual(startDuck(DUCK, { x: 100, y: GROUND.y }));
-    expect([restart?.attempt, restart?.seconds]).toEqual([1, 0]);
+    const dead = states.find((state) => state.death !== undefined);
+    expect(dead).toBeDefined();
+    if (!dead) {
+      throw new Error("Fixture did not reach death");
+    }
+    expect(stepZone(DUCK, layout, STEP, RIGHT, dead)).toBe(dead);
+    expect(dead.attempt).toBe(0);
+    expect(dead.seconds).toBeGreaterThan(0);
+    expect(dead.death?.position).toEqual({ x: dead.duck.x, y: dead.duck.y });
+    const restart = retryZone(DUCK, layout, dead);
+    expect(restart.duck).toEqual(startDuck(DUCK, { x: 100, y: GROUND.y }));
+    expect([restart.attempt, restart.seconds, restart.restarts, restart.death]).toEqual([
+      1,
+      0,
+      1,
+      undefined,
+    ]);
+    expect(retryZone(DUCK, layout, restart)).toBe(restart);
   });
 
   // A hazard drawn 48 wide whose art touches only its middle 8, from x 150 to 158.
@@ -213,9 +231,9 @@ describe("restarts", () => {
   it.each([
     ["its rectangle but not its hit box", 128, false],
     ["its hit box", 154, true],
-  ])("standing in %s restarts the zone: %s", (_, x, restarts) => {
+  ])("standing in %s ends the attempt: %s", (_, x, restarts) => {
     const layout = zone(area([boxed], { entries: { start: { x, y: GROUND.y } } }));
-    expect(run(layout, 0.1, STILL).some((state) => state.restarts > 0)).toBe(restarts);
+    expect(run(layout, 0.1, STILL).some((state) => state.death !== undefined)).toBe(restarts);
   });
 });
 
@@ -309,13 +327,13 @@ describe("pushes", () => {
     ],
   ])("ends %s", (_, mover, input, gap) => {
     const states = run(zone(area([mover])), 1.5, input);
-    expect(states.every((state) => state.restarts === 0)).toBe(true);
+    expect(states.every((state) => state.death === undefined)).toBe(true);
     expect(gap(states.at(-1) as ZoneState)).toBeCloseTo(0, 9);
   });
 
-  it("restarts the zone when a block pushes her into a wall", () => {
+  it("ends the attempt when a block pushes her into a wall", () => {
     const layout = zone(area([block(140, "left")], { solids: [GROUND, wall] }));
-    expect(run(layout, 3, STILL).some((state) => state.restarts > 0)).toBe(true);
+    expect(run(layout, 3, STILL).some((state) => state.death !== undefined)).toBe(true);
   });
 });
 

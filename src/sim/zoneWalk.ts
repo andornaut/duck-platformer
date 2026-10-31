@@ -319,7 +319,7 @@ function runner(tuning: DuckTuning, layout: ZoneLayout, start: ZoneState) {
       const before = run.zone.restarts;
       run.zone = stepZone(tuning, layout, STEP_SECONDS, input, run.zone);
       run.steps++;
-      return run.zone.restarts === before && !run.zone.turnedBack;
+      return run.zone.death === undefined && run.zone.restarts === before && !run.zone.turnedBack;
     },
     steps: 0,
     zone: start,
@@ -507,7 +507,7 @@ function walkOff(
 // Steps her still until she stands somewhere, or gives up.
 function settle(tuning: DuckTuning, layout: ZoneLayout, zone: ZoneState): ZoneState {
   let settled = zone;
-  for (let i = 0; i < AIR_STEPS && !settled.duck.grounded; i++) {
+  for (let i = 0; i < AIR_STEPS && !settled.duck.grounded && settled.death === undefined; i++) {
     settled = stepZone(tuning, layout, STEP_SECONDS, STILL, settled);
   }
   return settled;
@@ -735,6 +735,9 @@ export function walkZone(tuning: DuckTuning, layout: ZoneLayout): ZoneWalk {
   };
   const arrive = (zone: ZoneState) => {
     const settled = settle(tuning, layout, zone);
+    if (settled.death !== undefined) {
+      return;
+    }
     const under = surfaceUnder(tuning, layout, surfaces, settled);
     if (under) {
       reach(spotOf(under, settled, layout, tuning));

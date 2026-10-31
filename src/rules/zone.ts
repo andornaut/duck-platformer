@@ -8,6 +8,7 @@ import type {
   Point,
   Rect,
   Size,
+  ZoneDeath,
   ZoneLayout,
 } from "../data/types";
 import {
@@ -17,6 +18,7 @@ import {
   stepBehaviour,
   sweptContact,
 } from "./behaviour";
+import { deathSupport } from "./death";
 import {
   duckBox,
   duckFrameRect,
@@ -47,6 +49,7 @@ export interface ZoneState {
   readonly attempt: number;
   readonly behaviours: readonly (BehaviourState | undefined)[];
   readonly cleared: boolean;
+  readonly death: ZoneDeath | undefined;
   readonly door: number | undefined;
   readonly duck: DuckState;
   readonly objects: readonly Point[];
@@ -104,6 +107,7 @@ export function enterArea(
       ? area.objects.map((object) => object.behaviour && startBehaviour(tuning, object, duck))
       : [],
     cleared: false,
+    death: undefined,
     door: undefined,
     duck,
     objects: area.objects.map((object, index) =>
@@ -183,6 +187,19 @@ export function startZone(tuning: DuckTuning, layout: ZoneLayout, seed: number):
   return enterArea(tuning, layout, layout.start, { attempt: 0, restarts: 0, seed, steps: 0 });
 }
 
+// A failed attempt remains frozen until Retry is chosen. Reusing its layout keeps assembled
+// terrain while the new attempt reseeds object motion and resets conversations.
+export function retryZone(tuning: DuckTuning, layout: ZoneLayout, zone: ZoneState): ZoneState {
+  return zone.death === undefined
+    ? zone
+    : enterArea(tuning, layout, layout.start, {
+        attempt: zone.attempt + 1,
+        restarts: zone.restarts + 1,
+        seed: zone.seed,
+        steps: zone.steps,
+      });
+}
+
 // Whether her feet are on top of rect.
 export function standsOn(tuning: DuckTuning, duck: DuckState, rect: Rect): boolean {
   return (
@@ -258,8 +275,8 @@ export function pushedAside(
 // Solid objects block like terrain and ledge objects only from above; standing on a moving one,
 // she moves with it, and leaving it by a jump or a walk off its edge she keeps its speed along x
 // until she lands. A solid one running into her side pushes her ahead of it. Touching a hazard,
-// being pushed into a solid or falling out of the area restarts the zone at its start, the next
-// attempt. Her collision box reaching the area's last column, at any height, clears the zone, and
+// being pushed into a solid or falling out of the area freezes a death snapshot until an
+// explicit retry starts the next attempt. Her box reaching the last column clears the zone, and
 // reaching back into its first column ends it uncleared (turnedBack).
 // Use with her drawn frame over a door sets `door` (doorAt), and the zone holds still until
 // leaveRoom.
@@ -270,7 +287,7 @@ export function stepZone(
   input: ZoneInput,
   zone: ZoneState,
 ): ZoneState {
-  if (zone.cleared || zone.turnedBack || zone.door !== undefined) {
+  if (zone.death !== undefined || zone.cleared || zone.turnedBack || zone.door !== undefined) {
     return zone;
   }
   const area = areaOf(layout, zone.area);
@@ -356,12 +373,27 @@ export function stepZone(
     );
   const steps = zone.steps + 1;
   if (crushed || swept || duck.y > area.height || hazards.some((hazard) => overlaps(box, hazard))) {
-    return enterArea(tuning, layout, layout.start, {
-      attempt: zone.attempt + 1,
-      restarts: zone.restarts + 1,
-      seed: zone.seed,
+    const frozen: ZoneState = {
+      ...zone,
+      behaviours:
+        zone.behaviours.length > 0
+          ? objects.map(({ behaviour }) => behaviour?.state)
+          : zone.behaviours,
+      duck,
+      objects: objects.map(({ after }) => ({ x: after.x, y: after.y })),
+      seconds: time,
       steps,
-    });
+      useHeld: input.useHeld,
+    };
+    return {
+      ...frozen,
+      death: {
+        position: { x: duck.x, y: duck.y },
+        reason: crushed ? "crush" : duck.y > area.height ? "fall" : "hazard",
+        support: deathSupport(tuning, layout, frozen, duck),
+        velocity: { x: duck.vx, y: duck.vy },
+      },
+    };
   }
   const usePressed = input.useHeld && !zone.useHeld;
   const door = usePressed

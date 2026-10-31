@@ -103,8 +103,8 @@ function gapCourse(tuning: DuckTuning, tile: number, tiles: number, press: numbe
   const runOn = (zone: ZoneState) => (zone.steps < SETTLE_STEPS ? STILL : run);
   let last = startZone(tuning, layout, 1);
   while (
-    last.steps < SETTLE_STEPS ||
-    stepZone(tuning, layout, STEP_SECONDS, run, last).duck.grounded
+    last.death === undefined &&
+    (last.steps < SETTLE_STEPS || stepZone(tuning, layout, STEP_SECONDS, run, last).duck.grounded)
   ) {
     last = stepZone(tuning, layout, STEP_SECONDS, runOn(last), last);
   }
@@ -159,7 +159,7 @@ function makesWith(
 ): boolean {
   const { input, layout, target: solid } = course(tuning, tile, reach, tiles, press);
   let zone = startZone(tuning, layout, 1);
-  while (zone.steps < MAX_STEPS && zone.restarts === 0) {
+  while (zone.steps < MAX_STEPS && zone.restarts === 0 && zone.death === undefined) {
     zone = stepZone(tuning, layout, STEP_SECONDS, input(zone), zone);
     const { duck } = zone;
     const onTop = Math.abs(duck.y + tuning.height - solid.y) < 1e-6;
