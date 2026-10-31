@@ -44,6 +44,32 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 4,
     rows: 15,
   },
+  "dog-antagonist": {
+    animations: { idle: "idle", move: "walk" },
+    archetype: "hazard",
+    art: "dog-antagonist",
+    charge: {
+      crouchSeconds: 0.7,
+      groundTolerance: 1,
+      restSeconds: 1.1,
+      rushSeconds: 0.6,
+      rushSpeed: 12,
+      triggerRange: 8,
+    },
+    cols: 5,
+    rows: 4,
+    tuning: {
+      interaction: { kind: "talk", range: 18 },
+      motion: {
+        algorithm: "linear",
+        direction: "left",
+        distance: 7,
+        pause: 0.4,
+        speed: 2,
+        variance: 0,
+      },
+    },
+  },
   // A harmless pug that trots up to her.
   "dog-pug": {
     animations: { idle: "idle", move: "walk", react: "perk", talk: "talk" },

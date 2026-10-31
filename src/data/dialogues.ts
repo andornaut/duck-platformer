@@ -1,11 +1,17 @@
 import type { DialoguePlan, DialogueSpeaker } from "./types";
 
-// CLEANUP (added 2026-10-30): fill the paragraphs before the depot introduction ships.
+// Linear conversations, with paragraph text in TEXT.lines.
 export const DIALOGUES: Readonly<Record<string, DialoguePlan>> = {
-  "depot-dog-intro": { lines: [] },
+  "depot-dog-intro": {
+    lines: [
+      { line: "depot-dog-intro-1", speaker: "dog" },
+      { line: "depot-dog-intro-2", speaker: "duck" },
+      { line: "depot-dog-intro-3", speaker: "dog" },
+    ],
+  },
 };
 
-// CLEANUP (added 2026-10-30): confirm name-tab colours and provide portrait-dog before shipping.
+// Portraits and name-tab colours shared by every line from a speaker.
 export const SPEAKERS: Readonly<Record<string, DialogueSpeaker>> = {
   dog: { colour: "green", portrait: "portrait-dog" },
   duck: { colour: "amber", portrait: "portrait-duck" },

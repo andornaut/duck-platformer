@@ -17,12 +17,15 @@ export const TEXT: GameText = {
     reload: "Reload",
     title: "Something went wrong",
   },
-  // CLEANUP (added 2026-10-30): fill dialogue labels before the depot introduction ships.
   dialogue: {
-    skip: "",
-    speakers: { dog: "", duck: "" },
+    skip: "Skip",
+    speakers: { dog: "Dog", duck: "Duck" },
   },
-  lines: {},
+  lines: {
+    "depot-dog-intro-1": "The ferret asked me to stop you.",
+    "depot-dog-intro-2": "I am going home.",
+    "depot-dog-intro-3": "Then you will have to get past me.",
+  },
   map: {
     continue: "Continue",
     title: "Map",
