@@ -14,12 +14,12 @@ A landscape platformer: a duck travels back to the apartment he shared with his 
 - **Ferret:** the duck's male former best friend and apartment-mate: a champagne (cream-coloured) ferret, about twice the duck's height, standing upright, with a tall plum stovepipe hat and a red bow tie. His full design is in the [art plan](../art/README.md)
 - **Story:** the duck and ferret share an apartment in a big city. After a big fight, the ferret packages the sleeping duck and mails him far away. The duck knows the ferret is responsible and wants to get home. The cause of the fight and the outcome of their friendship are undecided
 - **World:** the modern day, mixing fantasy and reality
-- **Zones:** a zone is one themed map destination containing two playable levels, indoors, outdoors or a hybrid of both. V1 has six zones and twelve levels. The V1 route is listed below; this implementation covers only the first level and its first dog encounter
+- **Zones:** a zone is one themed map destination containing two playable levels, indoors, outdoors or a hybrid of both. V1 has six zones and twelve levels. The V1 route and current level availability are listed below
 
 ## Core loop
 
 1. **A level:** travel through one place, mostly left to right and bottom to top: platforming and talking with animals. Each zone contains two levels; V1 follows a linear route.
-2. **The map:** each zone is a themed destination. Its two-level selection and checkpoints are planned below. V1 continues along its linear route; Next adds branching routes.
+2. **The map:** each zone is a themed destination. Its level selection and checkpoints are described below. V1 continues along its linear route; Next adds branching routes.
 3. **Home:** the duck returns to the shared apartment. The outcome of his friendship with the ferret is undecided.
 
 ## Voice
@@ -34,7 +34,7 @@ A landscape platformer: a duck travels back to the apartment he shared with his 
 
 ## Rules
 
-A level is the individual playable layout, currently represented by `ZonePlan` in code. A zone is the themed map destination containing two levels. The current prototype maps individual levels; the six-destination map and two-level checkpoint flow below are an implementation plan, not completed behaviour.
+A level is the individual playable layout, currently represented by `ZonePlan` in code. A zone is the themed map destination containing two levels. The V1 map has six themed destinations with two catalogued levels each. Only Parcel depot and streets is built; the other levels remain visibly unavailable. The map and selection rules below are the approved scope for the current implementation change.
 
 ### Screen and controls
 
@@ -69,34 +69,28 @@ A level is the individual playable layout, currently represented by `ZonePlan` i
 
 ### Map
 
-The current prototype uses individual levels as map nodes, named zones in its data. Its current behaviour:
-
-- **Backtracking:** he can walk back to any open level and replay any level he has completed
-- **Between levels:** the map shows after the start screen's Start or Continue, and after he clears a level, with him on that level. The levels he has completed and the paths he has opened are marked
-- **Open levels:** the first level is open from the start and must be completed before anything else opens. Completing a level opens the paths past it, through forks, to the next levels; a level not completed closes everything past it. Unbuilt paths and levels stay closed
-- **Celebration:** clearing the last level, the one whose path leads on to home, shows a celebration screen every time, replays included (PLACEHOLDER: until it is designed). Continue returns to the map with him on that level, where he can walk back and replay; Restart asks first, as on the start screen
+- **Availability:** all six V1 zones appear in route order. Each has two catalogued levels. Only the first zone's Parcel depot and streets is currently built, using level key `street`. Unbuilt zones and levels are visibly unavailable and cannot be entered. The park is a debug prototype outside the V1 map
+- **Backtracking:** unlocked built levels remain available for replay. Replaying an earlier level never removes later unlocks
+- **Between levels:** clearing a level returns to the map on its zone. Completed levels and opened paths are marked
 - **Buttons:** Back to title is on the left; Continue is on the right and is the default keyboard action
-- **Walk:** he stands on a level. Tapping any open level's marker, or ←/→, walks him there, and Continue plays the level he stands on
-- **Forks:** planned for Next. At a fork the path splits two or three ways, and completing the zone before it opens each of them
-- **V1:** the target is one linear route through six themed zone destinations with two levels each, ending at the shared apartment, with no laps. This is the target plan, not a claim that the route is built. The map's look is in the [art plan](../art/README.md)
-
-Planned two-level flow:
-
-- **Checkpoints:** each level starts at its own checkpoint, with unlimited retries. Falls, hazards and crushes enter the death flow; Try again restarts the current level, not the whole zone
-- **Going back:** walking left from either level checkpoint returns to the map
-- **Selection:** selecting a zone opens a modal with Level one and Level two. Reaching a level unlocks it, persists it for replay and highlights the latest reached level. Replaying an earlier level preserves later unlocks
+- **Celebration:** only clearing Apartment building's second level, Climb to the apartment, shows the finish celebration, including on replay. Clearing the depot does not finish V1. Continue returns to the map; Restart asks first, as on the start screen
+- **Checkpoints:** each level begins at its own checkpoint, with unlimited retries. Walking left from either level checkpoint returns to the map
+- **Forks:** branching routes are deferred to Next. V1 is linear and has no laps
+- **Progression:** the first level is unlocked from the start. Completing a zone's first level unlocks its second level when built; completing its second level opens the next zone. Unbuilt content remains unavailable
+- **Selection:** selecting a zone with one unlocked playable level enters that level directly. A zone with more than one unlocked playable level opens a level-choice modal. The latest available level is highlighted and is the default; the earlier level is secondary. Unbuilt or locked levels are visibly unavailable. Persisted unlocks survive replays
+- **Walk:** the duck stands on a zone. Left and Right move through available zones, and Continue selects the zone he stands on
 
 ### Levels
 
 - **Camera:** on the ground he sits about two thirds down the screen. In an assembled level, the ground line follows the chunk he is in, blending across half a screen at each seam. The camera rises only when he climbs above the middle, and never shows below the lowest ground. Decorative background layers use tunable parallax, with farther layers scrolling more slowly; ground props stay attached to the terrain
 - **Challenge:** platforming, hazards and choices. Routes use ledges and cliffs, not ladders, with both short-press jumps beneath low ceilings and full jumps. There is no combat
-- **Checkpoint:** the start of a level is its only checkpoint. Falling or touching a hazard enters the death flow; Try again restarts the level from its start, with unlimited retries and no permadeath. Progress is saved: the levels he has completed and where he stands on the map. Clearing a level marks it completed and returns him to the map on it; a level left before its end is played again from its start
+- **Checkpoint:** the start of a level is its only checkpoint. Falling or touching a hazard enters the death flow; Try again restarts the level from its start, with unlimited retries and no permadeath. Progress is saved: the levels he has completed and where he stands on the map. Clearing a level marks it completed and returns him to the map on its zone; a level left before its end is played again from its start
 - **Crush:** a moving platform that pushes him sideways carries him to its leading edge. If it squeezes him into terrain or another solid, he is crushed and enters the death flow, as a hazard does. Layouts leave room beside every moving platform's path so he is never pinned on a required route
 - **Difficulty:** levels use the same configurable difficulty target and variation band in `src/data/`, with variation inside it rather than guaranteed escalation between levels or from start to finish
 - **Doors:** doors lead only into rooms. Use enters a door when any part of his drawn frame overlaps the door's drawn art; where he overlaps more than one, the door whose centre is nearest his wins
 - **Edge hazards:** a common red strip, 2 to 3 px thick, can cover the top, bottom, left or right edge of terrain. Terrain edges and interactive antagonists share the lethal red contact treatment. There are no spikes. Touching any edge hazard enters the death flow
 - **Exit:** reaching the end of the level clears it, and the game moves straight on to the map
-- **Going back:** walking all the way back to the level's left edge leaves it without completing it: the screen fades and the map shows with him on that level. Completion progress is unchanged, and cumulative active time is retained. Every level starts him clear of that edge and has no wall in front of it
+- **Going back:** walking all the way back to the level's left edge leaves it without completing it: the screen fades and the map shows with him on that level's zone. Completion progress is unchanged, and cumulative active time is retained. Every level starts him clear of that edge and has no wall in front of it
 - **Kinds:** indoor, outdoor, or a hybrid with both
 - **Layout:** level 1 is hand-built as the tutorial. Every later level, including the final level, has a randomized layout assembled from hand-built chunks: a fixed start chunk, a seeded run of chunks whose entry and exit heights match, then a fixed finish chunk. The rules for chunks are under Chunks
 - **Reroll:** an assembled level's layout changes each time he enters it from the map. Restarts within the level keep it
@@ -139,16 +133,16 @@ Everything in a level except its terrain is placed in data through archetypes, c
 
 ### V1 route
 
-The target play time is about 30 minutes across six themed zones of two levels, in this order. Only the first level and its first dog encounter are being implemented now. Its depot and streets form one fixed tutorial; every later level, including the final climb, is randomized.
+The target play time is about 30 minutes across six themed zones of two levels, in this order. Only Parcel depot and streets and its first dog encounter are built; the six-zone map and conditional level-selection flow are the current implementation scope, not additional built levels. Its depot and streets form one fixed tutorial; every later level, including the final climb, is randomized.
 
-| Zone           | First level                          | Second level           |
-| -------------- | ------------------------------------ | ---------------------- |
-| Blue cityscape | Depot and streets, combined tutorial | City boundary          |
-| Industrial     | Warehouse                            | Freight terminal       |
-| Countryside    | Farmland                             | River crossing         |
-| Woodland       | Forest paths                         | Ravine                 |
-| Home city      | Outskirts                            | Familiar neighbourhood |
-| Apartment      | Entrance and lobby                   | Climb to the apartment |
+| Zone                 | First level              | Second level           |
+| -------------------- | ------------------------ | ---------------------- |
+| Blue cityscape       | Parcel depot and streets | City boundary          |
+| Industrial outskirts | Warehouse district       | Freight terminal       |
+| Countryside          | Farmland                 | River crossing         |
+| Woodland             | Forest paths             | Ravine                 |
+| Home city            | City outskirts           | Familiar neighbourhood |
+| Apartment building   | Entrance and lobby       | Climb to the apartment |
 
 ### First level
 

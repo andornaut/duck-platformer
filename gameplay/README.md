@@ -29,7 +29,7 @@ Gameplay owns the rulebook and the values and content in the data value files (e
 
 The target is about 30 minutes across six themed map destinations (zones), each with two playable levels, on a linear route back to the shared apartment. The ordered zones and agreed story are in [`design.md`](design.md). The first level combines the depot and streets of the blue cityscape in a fixed tutorial; every later level is randomized. The park remains a prototype, not the final second level. Branching routes and boss encounters are deferred to Next.
 
-The current change implements the first dog encounter and its proximity introduction in the first level. The introduction freezes play, offers Skip and activates the dog on completion. The six-destination map, zone modal, persisted level unlocks and one checkpoint per level remain an implementation plan. Current code still calls an individual level `ZonePlan`.
+The current change implements the six-destination V1 map and conditional level selection. Only Parcel depot and streets, level key `street`, is built; the other catalogued levels and zones are visibly unavailable. A zone with one unlocked playable level enters directly; more than one opens a choice modal with the latest available level as the highlighted default and the earlier level secondary. Clearing a level returns to the map; completing a first level unlocks its second when built, and completing the second opens the next zone. Replays preserve unlocks. The park is a debug prototype outside the V1 map. Current code still calls an individual level `ZonePlan`.
 
 ## Targets
 
@@ -43,7 +43,7 @@ Each target is a band, not a point, that the simulator reports per level and ski
 
 ## Remaining for the first build
 
-**Current implementation scope:** the approved death and retry flow for the first-level build: a dedicated death sequence, required choice card, current-position progress line and cumulative active level time. These are implementation targets for this change, not a claim that the runtime is already complete. The full V1 route, two-level zone modal and checkpoint flow remain plans.
+**Current implementation scope:** the death and retry flow, persistent active level time, six-zone map and conditional level-choice modal, paired with their runtime changes. Only the first level and its dog encounter are built. The remaining V1 levels are planned content; the finish celebration belongs only to Apartment building's final level.
 
 Open questions:
 
@@ -53,7 +53,7 @@ Open questions:
 - **Confirm, restarts reset choices:** assumed, a zone restart also resets the choices made in that zone
 - **Ending:** the outcome of their friendship when the duck returns to the shared apartment
 - **Friends:** the identities of the friends the ferret enlists beyond the first dog, and their encounters
-- **Map:** the presentation of the linear V1 route and Next's branching routes
+- **Map:** Next's branching routes
 - **Rooms:** the currency and what items do; what quests and rewards give and how they are tracked; what a threat leads to; whether a room can be revisited, and whether its dialogue changes
 - **Use:** what it acts on besides doors (assumed: talking to animals, and objects at route forks)
 - **Zones:** detailed layouts and encounters for the remaining planned levels
