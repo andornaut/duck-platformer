@@ -10,7 +10,7 @@ import type {
 import { startDuck, stepDuck } from "../rules/duck";
 import { STEP_SECONDS } from "../rules/step";
 import {
-  activateCharge,
+  activateBehaviour,
   areaOf,
   enterArea,
   standsOn,
@@ -29,7 +29,7 @@ function stepZone(
   input: ZoneInput,
   zone: ZoneState,
 ): ZoneState {
-  const active = zone.charges.reduce((state, _, index) => activateCharge(index, state), zone);
+  const active = zone.behaviours.reduce((state, _, index) => activateBehaviour(index, state), zone);
   return stepActualZone(tuning, layout, seconds, input, active);
 }
 
@@ -87,7 +87,18 @@ const MAX_CYCLE = 16;
 const MARGIN = 24;
 
 const isStill = (object: ObjectLayout) =>
-  object.motion.algorithm === "static" && object.reaction.kind === "none";
+  object.behaviour
+    ? !Object.values(object.behaviour.states).some((node) => node.motion.kind === "move")
+    : object.motion.algorithm === "static" && object.reaction.kind === "none";
+const movementSpeed = (object: ObjectLayout): number =>
+  object.behaviour
+    ? Math.max(
+        0,
+        ...Object.values(object.behaviour.states).map((node) =>
+          node.motion.kind === "move" ? node.motion.speed : 0,
+        ),
+      )
+    : object.motion.speed;
 
 const objectRect = (object: ObjectLayout, at: Point): Rect => ({
   height: object.height,
@@ -98,6 +109,21 @@ const objectRect = (object: ObjectLayout, at: Point): Rect => ({
 
 // The area an object can be in over its track: its rectangle swept along its motion's axis.
 function sweptRect(object: ObjectLayout): Rect {
+  const pattern = object.behaviour;
+  if (pattern) {
+    const rect = objectRect(object, object.origin);
+    return pattern.axis === "x"
+      ? {
+          ...rect,
+          width: rect.width + Math.abs(pattern.distance),
+          x: rect.x + Math.min(0, pattern.distance),
+        }
+      : {
+          ...rect,
+          height: rect.height + Math.abs(pattern.distance),
+          y: rect.y + Math.min(0, pattern.distance),
+        };
+  }
   const { direction, distance } = object.motion;
   const reach = object.reaction.kind === "none" ? distance : distance + object.reaction.range;
   const rect = objectRect(object, object.origin);
@@ -498,9 +524,19 @@ function moveBounds(tuning: DuckTuning, carry: number) {
 function cycleSteps(object: ObjectLayout): number {
   const { distance, pause, speed } = object.motion;
   const patrol = speed > 0 ? 2 * (distance / speed + pause) : 0;
-  const charge = object.charge;
-  const seconds =
-    patrol + (charge ? charge.crouchSeconds + charge.rushSeconds + charge.restSeconds : 0);
+  const pattern = object.behaviour;
+  const seconds = pattern
+    ? Object.values(pattern.states).reduce((sum, node) => {
+        const travel =
+          node.motion.kind === "move" ? Math.abs(pattern.distance) / node.motion.speed : 0;
+        const waits = node.transitions.flatMap(({ when }) =>
+          when
+            .filter((condition) => condition.kind === "elapsed")
+            .map((condition) => condition.seconds),
+        );
+        return sum + travel + Math.max(0, ...waits);
+      }, 0)
+    : patrol;
   return Math.ceil(Math.min(seconds, MAX_CYCLE) / STEP_SECONDS);
 }
 
@@ -669,7 +705,7 @@ export function walkZone(tuning: DuckTuning, layout: ZoneLayout): ZoneWalk {
     const area = areaOf(layout, from.surface.area);
     const here = placed(from.surface, from.state, layout);
     const { count, moving } = movingThings(area);
-    const carry = Math.max(0, ...moving.map((object) => object.motion.speed));
+    const carry = Math.max(0, ...moving.map(movementSpeed));
     let waited: ZoneState[] | undefined;
     const startsFor = (lo: number, hi: number, target?: Surface) => {
       const near =

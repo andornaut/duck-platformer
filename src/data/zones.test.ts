@@ -66,6 +66,10 @@ describe("the characters", () => {
       ).toBe(true);
       const tags = [
         ...Object.values(character.animations ?? {}),
+        ...Object.values(character.behaviour?.states ?? {}).map((node) => node.animation),
+        ...(character.behaviour?.inactiveAnimation === undefined
+          ? []
+          : [character.behaviour.inactiveAnimation]),
         ...(character.quirks ?? []).map(({ tag }) => tag),
       ];
       const known = tagsOf(character.art);

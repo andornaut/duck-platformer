@@ -191,17 +191,6 @@ export interface Reaction {
   readonly speed: number;
 }
 
-// A horizontal patrol that crouches, rushes in one locked direction, then rests. Distances and
-// speed use tiles and seconds in character data, pixels and seconds in a resolved layout.
-export interface Charge {
-  readonly crouchSeconds: number;
-  readonly groundTolerance: number;
-  readonly restSeconds: number;
-  readonly rushSeconds: number;
-  readonly rushSpeed: number;
-  readonly triggerRange: number;
-}
-
 export type BehaviourCondition =
   | { readonly kind: "boundary" }
   | { readonly kind: "elapsed"; readonly seconds: number }
@@ -267,8 +256,7 @@ export interface Archetype {
 }
 
 // The states an animation tag can play for. open: a door as she uses it, before its room shows.
-export type CharacterState =
-  "crouch" | "idle" | "move" | "open" | "react" | "rest" | "rush" | "talk";
+export type CharacterState = "idle" | "move" | "open" | "react" | "talk";
 
 // An idle tic: tag plays once every `every` seconds, give or take variance (0 to 1) of that,
 // rolled fresh each attempt like random motion.
@@ -286,7 +274,6 @@ export interface Quirk {
 // has none.
 export interface Character {
   readonly behaviour?: BehaviourPlan;
-  readonly charge?: Charge;
   // A shared tileset for this character's art, otherwise its area's tileset.
   readonly tileset?: string;
   readonly animations?: Readonly<Partial<Record<CharacterState, string>>>;
@@ -543,7 +530,6 @@ export interface Reaches {
 // its art declares one; else its whole rectangle.
 export interface ObjectLayout {
   readonly behaviour?: BehaviourPlan;
-  readonly charge?: Charge;
   // The character's shared tileset, otherwise the area's tileset.
   readonly tileset?: string;
   readonly animations: Readonly<Record<CharacterState, string | undefined>>;

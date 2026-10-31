@@ -11,12 +11,12 @@ import type {
   ZoneLayout,
 } from "../data/types";
 import {
-  chargeContactBox,
-  type ChargeState,
-  startCharge,
-  stepCharge,
+  type BehaviourState,
+  contactBox,
+  startBehaviour,
+  stepBehaviour,
   sweptContact,
-} from "./charge";
+} from "./behaviour";
 import {
   duckBox,
   duckFrameRect,
@@ -45,7 +45,7 @@ export interface ZoneInput extends DuckInput {
 export interface ZoneState {
   readonly area: string;
   readonly attempt: number;
-  readonly charges: readonly (ChargeState | undefined)[];
+  readonly behaviours: readonly (BehaviourState | undefined)[];
   readonly cleared: boolean;
   readonly door: number | undefined;
   readonly duck: DuckState;
@@ -89,6 +89,7 @@ export function enterArea(
   if (!entry) {
     throw new Error(`No entry ${link.entry} in area ${link.area}`);
   }
+  const duck = startDuck(tuning, entry);
   const tracks = area.objects.map((object, index) =>
     motionTrack(
       object.motion,
@@ -99,13 +100,15 @@ export function enterArea(
   return {
     ...zone,
     area: link.area,
-    charges: area.objects.some((object) => object.charge)
-      ? area.objects.map((object) => object.charge && startCharge(object))
+    behaviours: area.objects.some((object) => object.behaviour)
+      ? area.objects.map((object) => object.behaviour && startBehaviour(tuning, object, duck))
       : [],
     cleared: false,
     door: undefined,
-    duck: startDuck(tuning, entry),
-    objects: area.objects.map((object, index) => pathAt(object, tracks[index] as Track, 0)),
+    duck,
+    objects: area.objects.map((object, index) =>
+      object.behaviour ? object.origin : pathAt(object, tracks[index] as Track, 0),
+    ),
     seconds: 0,
     tracks,
     turnedBack: false,
@@ -122,14 +125,14 @@ export function leaveRoom(zone: ZoneState): ZoneState {
 
 // A conversation can activate its patrol only after closing. Re-entering the area creates a
 // fresh inactive state again for every patrol with a scene.
-export function activateCharge(index: number, zone: ZoneState): ZoneState {
-  const charge = zone.charges[index];
-  return charge === undefined || charge.active
+export function activateBehaviour(index: number, zone: ZoneState): ZoneState {
+  const behaviour = zone.behaviours[index];
+  return behaviour === undefined || behaviour.active
     ? zone
     : {
         ...zone,
-        charges: zone.charges.map((state, at) =>
-          at === index ? { ...charge, active: true } : state,
+        behaviours: zone.behaviours.map((state, at) =>
+          at === index ? { ...behaviour, active: true } : state,
         ),
       };
 }
@@ -274,20 +277,20 @@ export function stepZone(
   const time = zone.seconds + seconds;
   const objects = area.objects.map((object, index) => {
     const before = zone.objects[index] ?? object.origin;
-    const charge = object.charge
-      ? stepCharge(
+    const behaviour = object.behaviour
+      ? stepBehaviour(
           tuning,
           object,
           area.solids,
           seconds,
           zone.duck,
           before,
-          zone.charges[index] ?? startCharge(object),
+          zone.behaviours[index] ?? startBehaviour(tuning, object, zone.duck),
         )
       : undefined;
     const path = pathAt(object, zone.tracks[index] as Track, time);
-    const after = charge?.at ?? objectStep(tuning, object, seconds, path, zone.duck, before);
-    return { after: rectAt(object, after), before: rectAt(object, before), charge, object };
+    const after = behaviour?.at ?? objectStep(tuning, object, seconds, path, zone.duck, before);
+    return { after: rectAt(object, after), before: rectAt(object, before), behaviour, object };
   });
   const platforms = objects.filter(
     ({ object }) => object.collision === "solid" || object.collision === "ledge",
@@ -321,9 +324,9 @@ export function stepZone(
   }
   const hazards = objects
     .filter(({ object }) => object.collision === "hazard")
-    .map(({ after, charge, object }) =>
-      charge
-        ? chargeContactBox(object, after, charge.state.facing)
+    .map(({ after, behaviour, object }) =>
+      behaviour
+        ? contactBox(object, after, behaviour.state.facing)
         : object.hitbox
           ? { ...object.hitbox, x: after.x + object.hitbox.x, y: after.y + object.hitbox.y }
           : after,
@@ -340,14 +343,16 @@ export function stepZone(
     y: beforeBox.y + ((box.y - beforeBox.y) * time) / seconds,
   });
   const swept =
-    zone.charges.length > 0 &&
+    zone.behaviours.length > 0 &&
     seconds > 0 &&
-    objects.some(({ charge, object }) =>
-      charge?.segments.some((segment) => {
-        const before = chargeContactBox(object, segment.from, segment.facing);
-        const after = chargeContactBox(object, segment.to, segment.facing);
-        return sweptContact(before, after, duckAt(segment.start), duckAt(segment.end));
-      }),
+    objects.some(
+      ({ behaviour, object }) =>
+        object.collision === "hazard" &&
+        behaviour?.segments.some((segment) => {
+          const before = contactBox(object, segment.from, segment.facing);
+          const after = contactBox(object, segment.to, segment.facing);
+          return sweptContact(before, after, duckAt(segment.start), duckAt(segment.end));
+        }),
     );
   const steps = zone.steps + 1;
   if (crushed || swept || duck.y > area.height || hazards.some((hazard) => overlaps(box, hazard))) {
@@ -370,7 +375,10 @@ export function stepZone(
     : undefined;
   return {
     ...zone,
-    charges: zone.charges.length > 0 ? objects.map(({ charge }) => charge?.state) : zone.charges,
+    behaviours:
+      zone.behaviours.length > 0
+        ? objects.map(({ behaviour }) => behaviour?.state)
+        : zone.behaviours,
     cleared: box.x + box.width > area.exitX,
     door,
     duck,

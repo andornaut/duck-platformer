@@ -121,13 +121,10 @@ describe("zoneLayout", () => {
       "animations, a missing state playing idle's, and open the tag named open",
       lift?.animations,
       {
-        crouch: "rest",
         idle: "rest",
         move: "rise",
         open: "open",
         react: "rest",
-        rest: "rest",
-        rush: "rest",
         talk: "rest",
       },
     ],

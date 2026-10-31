@@ -5,7 +5,6 @@ import type {
   ArtHitbox,
   Character,
   CharacterState,
-  Charge,
   Instance,
   Interaction,
   Motion,
@@ -20,6 +19,7 @@ import type {
   ZonePlan,
 } from "../data/types";
 import { tileHitbox, type Tileset } from "../view/tiles";
+import { layoutBehaviour } from "./behaviour";
 
 export function tileRect(tile: number, rect: TileRect): Rect {
   return {
@@ -40,15 +40,7 @@ export interface Catalogue {
   readonly characters: Readonly<Record<string, Character>>;
 }
 
-const STATES: readonly CharacterState[] = [
-  "crouch",
-  "idle",
-  "move",
-  "react",
-  "rest",
-  "rush",
-  "talk",
-];
+const STATES: readonly CharacterState[] = ["idle", "move", "react", "talk"];
 // The tag a door's open state plays when its character names none.
 const OPEN_TAG = "open";
 
@@ -103,30 +95,10 @@ export function objectLayout(
     ...character.tuning?.interaction,
     ...instance.overrides?.interaction,
   };
-  const charge = character.charge;
-  if (charge) {
-    const positive: readonly (keyof Charge)[] = [
-      "crouchSeconds",
-      "restSeconds",
-      "rushSeconds",
-      "rushSpeed",
-    ];
-    if (
-      Object.values(charge).some((value) => !Number.isFinite(value) || value < 0) ||
-      positive.some((key) => charge[key] <= 0) ||
-      archetype.collision !== "hazard" ||
-      motion.algorithm !== "linear" ||
-      (motion.direction !== "left" && motion.direction !== "right") ||
-      !Number.isFinite(motion.distance) ||
-      motion.distance <= 0 ||
-      !Number.isFinite(motion.speed) ||
-      motion.speed <= 0 ||
-      motion.pause !== 0 ||
-      motion.variance !== 0 ||
-      reaction.kind !== "none"
-    ) {
-      throw new Error(`Invalid charge patrol for ${instance.character}`);
-    }
+  const pattern = instance.behaviour ?? character.behaviour;
+  const behaviour = pattern && layoutBehaviour(tile, pattern);
+  if (behaviour && (instance.phase ?? 0) !== 0) {
+    throw new Error(`Behaviour ${instance.character} uses its initial state, not a motion phase`);
   }
   const parallax = instance.parallax;
   if (parallax) {
@@ -142,7 +114,8 @@ export function objectLayout(
       (archetype.collision !== "none" ||
         interaction.kind !== "none" ||
         motion.algorithm !== "static" ||
-        reaction.kind !== "none")
+        reaction.kind !== "none" ||
+        (behaviour && Object.values(behaviour.states).some((node) => node.motion.kind === "move")))
     ) {
       throw new Error(
         `Parallax on ${instance.character} requires static scenery without interaction`,
@@ -163,14 +136,7 @@ export function objectLayout(
     art: character.art,
     ...(character.tileset !== undefined && { tileset: character.tileset }),
     character: instance.character,
-    ...(charge && {
-      charge: {
-        ...charge,
-        groundTolerance: charge.groundTolerance * tile,
-        rushSpeed: charge.rushSpeed * tile,
-        triggerRange: charge.triggerRange * tile,
-      },
-    }),
+    ...(behaviour && { behaviour }),
     collision: archetype.collision,
     height,
     hitbox: art

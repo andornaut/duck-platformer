@@ -2,12 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import { DUCK } from "../data/duck";
 import type { AreaLayout, Motion, ObjectLayout, Point, ZoneLayout } from "../data/types";
+import { zoneSurfaces } from "../sim/zoneWalk";
+import { TEST_PURSUER, TEST_SHUTTLE } from "../testing/behaviours";
 import { DUCK_FRAME } from "../view/duck";
-import type { ChargePhase } from "./charge";
 import { duckBox, duckFrameRect, startDuck } from "./duck";
 import { STEP_SECONDS } from "./step";
 import {
-  activateCharge,
+  activateBehaviour,
   doorAt,
   enterArea,
   leaveRoom,
@@ -39,13 +40,10 @@ const STATIC: Motion = {
 function object(fields: Partial<ObjectLayout> & { origin: Point }): ObjectLayout {
   return {
     animations: {
-      crouch: undefined,
       idle: undefined,
       move: undefined,
       open: undefined,
       react: undefined,
-      rest: undefined,
-      rush: undefined,
       talk: undefined,
     },
     art: "block",
@@ -105,15 +103,20 @@ function run(
 
 const bottomOf = (state: ZoneState | undefined) => (state?.duck.y ?? 0) + DUCK.height;
 
-describe("charge encounters", () => {
+describe("behaviour encounters", () => {
   const patrol = object({
-    charge: {
-      crouchSeconds: 0.25,
-      groundTolerance: 1,
-      restSeconds: 0.25,
-      rushSeconds: 0.5,
-      rushSpeed: 10000,
-      triggerRange: 80,
+    behaviour: {
+      ...TEST_PURSUER,
+      distance: -100,
+      initial: "watchLeft",
+      states: {
+        ...TEST_PURSUER.states,
+        burst: {
+          animation: "rush",
+          motion: { direction: "facing", kind: "move", speed: 10000 },
+          transitions: [{ to: "recover", when: [{ kind: "elapsed", seconds: 0.5 }] }],
+        },
+      },
     },
     collision: "hazard",
     height: 20,
@@ -126,42 +129,59 @@ describe("charge encounters", () => {
 
   it("activates after its conversation and resets inactive on the next attempt", () => {
     const initial = startZone(DUCK, layout, SEED);
-    expect(initial.charges[0]?.active).toBe(false);
-    const active = activateCharge(0, initial);
-    expect(active.charges[0]?.active).toBe(true);
+    expect(initial.behaviours[0]?.active).toBe(false);
+    const active = activateBehaviour(0, initial);
+    expect(active.behaviours[0]?.active).toBe(true);
     const reset = stepZone(DUCK, layout, STEP, STILL, {
       ...active,
       duck: { ...active.duck, x: patrol.origin.x, y: patrol.origin.y },
     });
     expect(reset.attempt).toBe(initial.attempt + 1);
-    expect(reset.charges[0]).toEqual(initial.charges[0]);
+    expect(reset.behaviours[0]).toEqual(initial.behaviours[0]);
   });
 
-  it.each<ChargePhase>(["crouch", "patrol", "rest", "rush"])("is lethal during %s", (phase) => {
-    const initial = activateCharge(0, startZone(DUCK, layout, SEED));
-    const charge = initial.charges[0];
+  it.each(["brace", "watchLeft", "recover", "burst"])("is lethal during %s", (stateKey) => {
+    const initial = activateBehaviour(0, startZone(DUCK, layout, SEED));
+    const charge = initial.behaviours[0];
     if (!charge) {
-      throw new Error("Missing fixture charge");
+      throw new Error("Missing fixture behaviour");
     }
     const result = stepZone(DUCK, layout, STEP, STILL, {
       ...initial,
-      charges: [{ ...charge, phase }],
+      behaviours: [{ ...charge, stateKey }],
       duck: { ...initial.duck, x: patrol.origin.x, y: patrol.origin.y },
     });
     expect(result.restarts).toBe(1);
   });
 
   it("detects a rush that crosses the duck entirely between fixed frames", () => {
-    const initial = activateCharge(0, startZone(DUCK, layout, SEED));
-    const charge = initial.charges[0];
+    const initial = activateBehaviour(0, startZone(DUCK, layout, SEED));
+    const charge = initial.behaviours[0];
     if (!charge) {
-      throw new Error("Missing fixture charge");
+      throw new Error("Missing fixture behaviour");
     }
     const result = stepZone(DUCK, layout, STEP, STILL, {
       ...initial,
-      charges: [{ ...charge, phase: "rush" }],
+      behaviours: [{ ...charge, stateKey: "burst" }],
     });
     expect(result.restarts).toBe(1);
+  });
+
+  it("carries the duck on an inanimate platform using the same state executor", () => {
+    const lift = object({
+      behaviour: TEST_SHUTTLE,
+      collision: "solid",
+      origin: { x: 80, y: 260 },
+      width: 72,
+    });
+    const layout = zone(area([lift], { entries: { start: { x: 100, y: 260 } } }));
+    const initial = startZone(DUCK, layout, SEED);
+    expect(zoneSurfaces(DUCK, layout).some((surface) => surface.mover === 0)).toBe(true);
+    const next = stepZone(DUCK, layout, 0.1, STILL, initial);
+    expect(next.objects[0]?.y).toBe(257);
+    expect(next.duck.y + DUCK.height).toBe(257);
+    expect(next.restarts).toBe(0);
+    expect(next.behaviours[0]?.stateKey).toBe(TEST_SHUTTLE.initial);
   });
 });
 
