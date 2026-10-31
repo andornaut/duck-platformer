@@ -57,13 +57,13 @@ A level is the individual playable layout, currently represented by `ZonePlan` i
 ### Grid
 
 - **Duck:** 2 tiles wide and 3 tall
-- **Reaches:** levels are built to the duck's reaches, measured in tiles from the top of the ground he leaves to the top of the ledge he lands on. A quick tap rises 1 tile (clearing a 1-tile ledge with a little room); a full jump rises 6; a full running jump with flutter crosses a 19-tile gap at the same height, with the jump pressed at its best moment, coyote time included. A ledge at a reach is always makeable, and one tile beyond it never is
+- **Reaches:** levels are built to the duck's reaches, measured in tiles from the top of the ground he leaves to the top of the ledge he lands on. A quick tap rises 1 tile (clearing a 1-tile ledge with a little room); a full jump rises 6; a full running jump with flutter crosses a 22-tile gap at the same height, with the jump pressed at its best moment, coyote time included. A ledge at a reach is always makeable, and one tile beyond it never is
 - **Tiles:** levels are built on a grid of 12 px tiles, so the screen is 60 columns by 30 rows. Every solid, ledge and door sits on whole tiles and spans whole tiles. Hazards follow the grid, except for the 2 to 3 px thickness of edge hazards
 
 ### The duck
 
 - **Flutter:** every fall flutters, after a jump or off a ledge: his fall is slow enough to use, and the player steers him in the air
-- **Jump height:** every press launches him at full speed, and he keeps rising while Jump is held, up to about 6.5 tiles with the top at about 0.3 s. Letting go within the first 0.12 s stops the rise where he is, so the quickest tap rises about 1.5 tiles and a 0.1 s press about 3.7; letting go later halves his upward speed. A buffered jump whose button was already released is the quickest tap. This lets a level set obstacles only a tap clears, such as a low ledge beneath a ceiling with a red edge hazard
+- **Jump height:** short presses produce the same forgiving low hop, about 1.5 tiles, rather than requiring the quickest possible tap. Holding beyond the tap window progressively earns a higher apex, up to about 6.5 tiles with a full hold; releasing fixes the earned apex without a late speed cut. The duck completes that jump arc and flutters on the fall. A buffered jump whose button was already released is the low hop. Low hops clear one-tile steps beneath red-edged low ceilings; full holds clear the full-jump reach. The hop timing, tap window and progressive lift timing live in `src/data/duck.ts`
 - **Jump timing:** a jump pressed just after he leaves a ledge still jumps (coyote time), and a jump pressed just before he lands jumps as he lands (jump buffering)
 - **Movement:** he walks left and right and jumps. He is quick and responsive: about 0.1 s to reach full speed or stop, on the ground and in the air. His speeds, jump, flutter and timing values are in `src/data/duck.ts`, tuned to the reaches under Grid
 
@@ -75,6 +75,7 @@ The current prototype uses individual levels as map nodes, named zones in its da
 - **Between levels:** the map shows after the start screen's Start or Continue, and after he clears a level, with him on that level. The levels he has completed and the paths he has opened are marked
 - **Open levels:** the first level is open from the start and must be completed before anything else opens. Completing a level opens the paths past it, through forks, to the next levels; a level not completed closes everything past it. Unbuilt paths and levels stay closed
 - **Celebration:** clearing the last level, the one whose path leads on to home, shows a celebration screen every time, replays included (PLACEHOLDER: until it is designed). Continue returns to the map with him on that level, where he can walk back and replay; Restart asks first, as on the start screen
+- **Buttons:** Back to title is on the left; Continue is on the right and is the default keyboard action
 - **Walk:** he stands on a level. Tapping any open level's marker, or ←/→, walks him there, and Continue plays the level he stands on
 - **Forks:** planned for Next. At a fork the path splits two or three ways, and completing the zone before it opens each of them
 - **V1:** the target is one linear route through six themed zone destinations with two levels each, ending at the shared apartment, with no laps. This is the target plan, not a claim that the route is built. The map's look is in the [art plan](../art/README.md)
