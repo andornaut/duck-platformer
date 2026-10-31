@@ -33,15 +33,22 @@ head and bill 10px on the right, and she stops 2px below its top. The raised win
 | flutter | 3     | 100 | wing back                                                    | 2    | 33 x 26    | 26       |
 | land    | 0     | 100 | contact: squash, feet planted wide                           | 0    | 39 x 22    | 40       |
 | land    | 1     | 80  | recover: half squash                                         | 0    | 36 x 24    | 36       |
+| death   | 0     | 100 | small recoil, closed eye, feet tucked                        | 1    | 36 x 24    | 36       |
+| death   | 1     | 120 | falling pose, closed eye, feet tucked                        | 1    | 33 x 26    | 33       |
+| death   | 2     | 400 | deflated seated squat, feet tucked underneath                | -1   | 39 x 17    | 39       |
 
 Lift is how far the body's bottom edge sits above its rest row, in pixels. Body w x h is the body's
-superellipse; its area (the volume) stays within 2% of the rest pose. Shadow w is for a ground shadow the game
+superellipse; normal locomotion keeps its area within 2% of rest. Shadow w is for a ground shadow the game
 may draw under her: the land contact frame's is the largest. flutter and jump 1 are airborne, so their shadow
-is the game's to place. jump and land play once and hold their last frame (the manifest's "once"); every
-other tag loops. After land, play idle.
+is the game's to place. jump, land and death play once and hold their last frame (the manifest's "once"); every
+other tag loops. After land, play idle. Death is appended after the existing tags; frame indices stay fixed.
+Death has no baked world movement: the runtime uses frame 0 for recoil, holds frame 1 during the physical fall,
+and shows frame 2 only after support is reached, holding it while the retry card is open. The camera stays
+fixed. Durations above are art playback defaults; gameplay owns state timing and falling behaviour. The death
+squat deliberately reduces body volume. The body-centre and frame-bottom anchor do not move.
 
 States: idle idle; move walk, and in the air jump, flutter and land; react none, falls back to land (its squash
-reads as a flinch); talk none, falls back to idle (the portrait carries the speech); quirk none.
+reads as a flinch); death death; talk none, falls back to idle (the portrait carries the speech); quirk none.
 
 portrait-duck, 64x64: her head and the top of her body, facing right towards the text, cut off by the frame's
 bottom edge, on a transparent ground (the dialogue box's 68x68 frame supplies the backing), with one ink outer
@@ -121,7 +128,7 @@ def flat(g, inside, c):
                 g.p(x, y, c)
 
 
-def draw(lift=0, bw=BRX, bh=BRY, wing=("fold", 0), feet=((-5, 0), (2, 0))):
+def draw(lift=0, bw=BRX, bh=BRY, wing=("fold", 0), feet=((-5, 0), (2, 0)), eye="open"):
     """One 48x42 frame.
 
     lift: body bottom edge this many px above its rest row. bw, bh: body radii. wing: ("fold", dy) or
@@ -159,7 +166,8 @@ def draw(lift=0, bw=BRX, bh=BRY, wing=("fold", 0), feet=((-5, 0), (2, 0))):
     if kind == "fold":  # on the body's side, its tip pointing back
         flat(g, in_ell(C - 2, bcy + 2 + val, BRX * 0.5, BRY * 0.3, -0.3), WING)
     g.rect(int(hcx + HEAD_R - 2), int(hcy), 7, 5, "orange")  # bill
-    g.rect(int(hcx), int(hcy - HEAD_R * 0.55), 4, 4, "ink")  # dot eye
+    ey = int(hcy - HEAD_R * 0.55)
+    g.rect(int(hcx), ey if eye == "open" else ey + 2, 4, 4 if eye == "open" else 1, "ink")
     return g.outlined(lambda c: K[OUTLINE])
 
 
@@ -194,6 +202,11 @@ def duck_tags():
         ("jump", jump, [80, 100]),
         ("flutter", flutter, 100),
         ("land", land, [100, 80]),
+        ("death", [
+            draw(lift=1, bw=SQUASH_RECOVER[0], bh=SQUASH_RECOVER[1], feet="tucked", eye="closed"),
+            draw(lift=1, feet="tucked", eye="closed"),
+            draw(lift=-1, bw=SQUASH_LAND[0], bh=8.4, wing=("fold", -2), feet="tucked", eye="closed"),
+        ], [100, 120, 400]),
     ]
 
 
@@ -228,7 +241,7 @@ def sprites():
 
 
 # Tags that play once and hold their last frame; every other tag loops.
-ONCE = {"duck": ("jump", "land")}
+ONCE = {"duck": ("jump", "land", "death")}
 
 
 if __name__ == "__main__":

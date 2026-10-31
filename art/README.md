@@ -183,6 +183,16 @@ All positions are in base pixels (x, y, w, h) of the 720x360 layout as drawn. Th
 
 Both paragraph regions use `font-body` at 2x with a 20px line pitch. Labels, portraits and text move as layout elements; their textures keep their authored orientation and scale.
 
+### Level progress and retry
+
+Approved target for paired runtime integration. The rulebook owns failure behaviour, timing, progress calculation and time accumulation; the game supplies every label and value.
+
+- Progress is a restrained 2px line at the top of the game view. Its filled length shows percentage through the level, using `sky` over a `dslate` track in the city and `green` over a `forest` track in the park. Keep it separate from UI buttons, with no glow or pulse.
+- On failure, show a small recoil, a physical fall to support and a visibly deflated seated squat with feet tucked underneath. Keep the camera at the failure view; the sprite has no baked world movement. Show the retry card as soon as the seated pose is reached, holding that pose beneath it without an extra timed pause or automatic retry.
+- Dim the frozen environment two palette ramp steps. Keep the duck and the small hazard contact area readable at their world positions, without an added ring or flash. The compact card stays above the ground-level contact area rather than covering it.
+- Reuse `ui-settings-card` at 176,16,368,176, with no close X or title bar. Show the zone and level, cumulative play time on this level across attempts since its last clear (or first entry), and percentage at the current position through the level. The time is not the current attempt's duration and resets on clear.
+- Place the secondary Back to title action on the left and primary Try again on the right, using the standard faces, equal sizes, label font and focus treatment in [the form control guide](controls.md#retry-actions). Neither an outside tap nor an elapsed timer retries the level.
+
 ### Quip
 
 A one-line strip at the top centre (x 360), y 8, height 24, sized to its text and at most 452 wide (x 138 to 590), led by the speaker's name in their name-tab colour. It never pauses play and never reaches the lower corners.
@@ -247,8 +257,12 @@ The map screen shows the zones and the forks between them as a paper map, after 
 ## Animation
 
 - Motion is in whole pixels. Tag names are the animation names. New tags go after existing ones so frame indices hold.
-- Squash and stretch are per-frame tables of height, squash, stretch and shadow size. Volume stays roughly constant, and the contact frame's shadow is the largest. Effects have a clear peak frame.
+- Squash and stretch are per-frame tables of height, squash, stretch and shadow size. Volume stays roughly constant during normal locomotion; the death squat deliberately deflates it. The contact frame's shadow is the largest. Effects have a clear peak frame.
 - Short reactions run 60 to 80ms per frame (shake 60ms, tap burst 4 x 60ms). Anything that opens a modal waits for the tap burst to finish.
+
+### Failure poses
+
+The duck's 48x42 `death` tag is appended after `land`, leaving all earlier frames and tags unchanged. Relative frame 0 is the small recoil, frame 1 the tucked-feet falling pose, and frame 2 the deflated seated squat. `death` plays once and holds its last frame. Its authored durations are 100, 120 and 400ms; these are art playback defaults, not gameplay state durations. Runtime holds the falling frame until support is reached and the seated frame while the retry card is open. Keep the body-centre and frame-bottom anchor fixed across the poses; world movement belongs to the runtime. Existing `jump` and `land` do not supply the seated terminal pose.
 
 ### Cycles
 

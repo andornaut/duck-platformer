@@ -38,7 +38,8 @@
       "json": "sprites/duck.json",
       "once": [
         "jump",
-        "land"
+        "land",
+        "death"
       ]
     },
     {

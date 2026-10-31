@@ -59,6 +59,17 @@ Vertical content is centred within the usable face, with the existing two-pixel 
 
 Start-screen Start and Continue use `ui-button-primary`, dslate with white labels, at 192x48. Restart uses `ui-button`, grey with an ink label, also 192x48. With saved progress, Restart is on the left at 164,268 and Continue on the right at 364,268; the row has an 8px gap and is centred under the logo. Continue remains the default action for keyboard activation. Their labels start 13px below the button top and sink 2px while pressed. They use the shared press and focus handling, without a play mark. The map pairs Back to title on the left, secondary grey with an ink label, with Continue on the right, primary dslate with a white label. Back to title is at 164,300,192,48 and Continue at 364,300,192,48, with an 8px gap. Neither uses a play mark. Continue is the first Tab stop and the default Enter or Space action before focus moves; arrows and A/D retain zone selection. The unused `ui-start` remains 192x52 in the asset catalogue. Card actions are 352x48; Install is 72x28 within a 352x48 row.
 
+### Retry actions
+
+Approved target for paired runtime integration. The retry card reuses the standard pale steel frame at 176,16,368,176 and ordinary secondary and primary action styles. It has no close control. It remains modal until the player chooses an action; outside taps do not dismiss it or activate anything underneath.
+
+| Action        | Role      | Drawn rect     | Label           |
+| ------------- | --------- | -------------- | --------------- |
+| Back to title | Secondary | 184,136,172,48 | Ink on grey     |
+| Try again     | Primary   | 364,136,172,48 | White on dslate |
+
+The left-to-right order carries meaning: leaving is secondary, retrying is primary. The row has an 8px gap, equal 172px widths and the shared minimum 16px horizontal content inset. Labels use `font-body` at 2x, centred by visible ink, with the standard pressed displacement and focus ring. Apply the shared expanded press targets and nearest-centre overlap rule. The game supplies the exact labels and activation behaviour; the art does not bake text into either button. See [the retry layout](README.md#level-progress-and-retry) for the card's metrics and frozen scene.
+
 ## Button roles and states
 
 Primary and secondary buttons share one silhouette, cut corners and nine-slice geometry. Role controls colour; interaction state controls geometry and feedback.
