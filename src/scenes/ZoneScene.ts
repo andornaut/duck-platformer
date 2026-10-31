@@ -343,6 +343,7 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
     );
     this.watchKeys();
     this.watchTouches();
+    this.events.on("pause", () => void flushStats());
     // Paused under the pause card or a room: keys and time while it was open count for nothing.
     // Back from a room, she stands at its door with nothing held, and the door shows closed.
     this.events.on("resume", () => {
