@@ -100,4 +100,8 @@ export const TEXT: GameText = {
     settings: "Settings",
     start: "Start",
   },
+  update: {
+    accept: "Update now",
+    title: "Update available",
+  },
 };
