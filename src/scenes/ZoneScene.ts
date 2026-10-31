@@ -37,7 +37,6 @@ import type {
   ZoneLayout,
   ZonePlan,
 } from "../data/types";
-import { ZONE_1 } from "../data/zone1";
 import { RECIPES, TEST_ZONES } from "../data/zones";
 import { FRAME_TURN } from "../input/frameTurn";
 import {
@@ -115,8 +114,8 @@ function zoneAt(seed: number, node: string): ZonePlan {
 // What every zone's instances are resolved against.
 const CATALOGUE = { archetypes: ARCHETYPES, characters: CHARACTERS };
 
-// The zones in play order, looping: zone 1, then the test zones.
-const CHAIN = [ZONE_1, ...TEST_ZONES];
+// The debug chain starts with the opening stage, followed by the test zones.
+const CHAIN_LENGTH = 1 + TEST_ZONES.length;
 
 // After a stall, run at most this much time at once rather than lurching ahead.
 const MAX_FRAME_MS = 250;
@@ -198,7 +197,7 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
   private readonly heldTouches = new Map<number, HeldTouch>();
   private landMs = 0;
   private layout!: ZoneLayout;
-  private zoneIndex = startZoneIndex(window.location.search, CHAIN.length);
+  private zoneIndex = startZoneIndex(window.location.search, CHAIN_LENGTH);
   // The map node she plays, or undefined when ?zone=<n> chains the zones without the map.
   private mapNode: string | undefined;
   // The recipe ?zone=<key> plays on its own, assembled afresh each time she clears it unless
@@ -297,14 +296,14 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
     this.manifest = this.cache.json.get(ART_MANIFEST_KEY) as ArtManifest;
     this.hitboxes = artHitboxes((key) => this.textures.getFrame(key), this.manifest);
     const node = this.mapNode;
+    const seed = askedAssemblySeed(window.location.search) ?? newAssemblySeed();
     if (this.backdrop) {
-      this.loadPlan(ZONE_1);
+      this.loadPlan(zoneAt(seed, ZONE_MAP.start));
       this.holdStill();
       return;
     }
     // An assembled zone is assembled afresh each time she enters it, unless ?assembly=<n> fixes
     // the seed.
-    const seed = askedAssemblySeed(window.location.search) ?? newAssemblySeed();
     if (node !== undefined) {
       this.loadPlan(zoneAt(seed, node));
     } else if (this.trial !== undefined) {
@@ -748,7 +747,7 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
       const seed = askedAssemblySeed(window.location.search) ?? newAssemblySeed();
       this.loadPlan(zonePlanFor(seed, this.trial));
     } else {
-      this.loadZone(turnedBack ? this.zoneIndex : nextZoneIndex(this.zoneIndex, CHAIN.length));
+      this.loadZone(turnedBack ? this.zoneIndex : nextZoneIndex(this.zoneIndex, CHAIN_LENGTH));
     }
     this.drawObjects();
     this.drawDuck();
@@ -762,7 +761,10 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
   // Starts the zone at index from its start. Each load draws a fresh seed, so the random
   // motion differs from one play to the next; ?seed=<n> fixes it.
   private loadZone(index: number): void {
-    const plan = CHAIN[index];
+    const plan =
+      index === 0
+        ? zoneAt(askedAssemblySeed(window.location.search) ?? newAssemblySeed(), ZONE_MAP.start)
+        : TEST_ZONES[index - 1];
     if (!plan) {
       throw new Error(`No zone ${index + 1}`);
     }
