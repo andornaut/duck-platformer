@@ -343,6 +343,18 @@
       "once": []
     },
     {
+      "key": "rabbit-antagonist",
+      "png": "sprites/rabbit-antagonist.png",
+      "json": "sprites/rabbit-antagonist.json",
+      "once": [],
+      "hitbox": {
+        "x": 2,
+        "y": 2,
+        "width": 44,
+        "height": 46
+      }
+    },
+    {
       "key": "raccoon-antagonist",
       "png": "sprites/raccoon-antagonist.png",
       "json": "sprites/raccoon-antagonist.json",
@@ -562,6 +574,11 @@
       "key": "tiles-countryside",
       "png": "tilesets/tiles-countryside.png",
       "json": "tilesets/tiles-countryside.json"
+    },
+    {
+      "key": "tiles-homecity",
+      "png": "tilesets/tiles-homecity.png",
+      "json": "tilesets/tiles-homecity.json"
     },
     {
       "key": "tiles-industrial",
@@ -866,6 +883,33 @@
       "repeat": "x"
     },
     {
+      "key": "homecity-awning",
+      "png": "backdrops/homecity-awning.png",
+      "width": 96,
+      "height": 36,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "none"
+    },
+    {
+      "key": "homecity-far",
+      "png": "backdrops/homecity-far.png",
+      "width": 720,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
+      "key": "homecity-sky",
+      "png": "backdrops/homecity-sky.png",
+      "width": 48,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
       "key": "hot-dog-cart",
       "png": "backdrops/hot-dog-cart.png",
       "width": 40,
@@ -990,6 +1034,42 @@
       "anchor": "bottom-left",
       "y": 552,
       "repeat": "none"
+    },
+    {
+      "key": "neighbourhood-mid",
+      "png": "backdrops/neighbourhood-mid.png",
+      "width": 720,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
+      "key": "neighbourhood-wall",
+      "png": "backdrops/neighbourhood-wall.png",
+      "width": 48,
+      "height": 180,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
+      "key": "outskirts-mid",
+      "png": "backdrops/outskirts-mid.png",
+      "width": 720,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
+      "key": "outskirts-wall",
+      "png": "backdrops/outskirts-wall.png",
+      "width": 48,
+      "height": 144,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
     },
     {
       "key": "parcel-open",

@@ -622,6 +622,20 @@ Every tag loops. These frame timings are art cycle defaults, not the runtime mot
 
 All backdrops use bottom-left anchors and default bottom y 600. Sky factors are 0,0; far factors 0.15,0.05; middle factors 0.4,0.15. Select the appropriate stage middle layer. Near props use factors 1,1 and placement data aligns them to the local floor. Decorative silhouettes carry no white safe lips or red contact bands and must not imply usable platforms. Scenery adds no collision, hidden hazard or movement rules. Room entrances may reuse the existing street-door artwork.
 
+## Rabbit antagonist
+
+`art/tools/rabbit.py` draws `rabbit-antagonist`. Upright ears and a small tail distinguish the rabbit. Its hop cycle and settled pauses accompany the shared bounded movement pattern. There is no red outline or dialogue portrait.
+
+The frame is 48x48 with bottom-centre anchor 24,48. Its fixed contact box is x 2, y 2, width 44, height 46, containing all visible poses and mirrored versions. All states remain lethal. The appearance uses the generic enemy state graph; gameplay owns physical movement and state durations.
+
+| Tag  | Art cycle               | Pose                       |
+| ---- | ----------------------- | -------------------------- |
+| hop  | Four frames, 100ms each | Hop cycle                  |
+| idle | Two frames, 400ms each  | Quiet standing             |
+| rest | Two frames, 400ms each  | Predictable recovery pause |
+
+Every tag loops. These frame timings are art cycle defaults, not the runtime motion or warning durations.
+
 ## Home city material pack
 
 `art/tools/homecity.py` draws reusable skins for City outskirts and Familiar neighbourhood, using the destination's canonical `zone-peach` primary. Appearance bindings retain the common terrain geometry, obstacle behaviours and collision profiles.

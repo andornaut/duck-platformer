@@ -256,6 +256,12 @@ Pieces placed from stage data by their bottom-left corner at the bottom y given,
 | woodland-far   | decorative backdrop                | 720x600 | Bottom-left, y 600, repeat x                     |
 | woodland-sky   | decorative backdrop                | 48x600  | Bottom-left, y 600, repeat x                     |
 
+## Rabbit antagonist
+
+| Key               | Type                         | Size  | Tags            |
+| ----------------- | ---------------------------- | ----- | --------------- |
+| rabbit-antagonist | character; hit box 2,2,44,46 | 48x48 | hop, idle, rest |
+
 ## Home city materials
 
 | Key                | Type                               | Size    | Contract                                         |
