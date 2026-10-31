@@ -33,14 +33,44 @@ describe("ZONE_MAP", () => {
     );
   });
   it.each([
-    { completed: ["street"], stage: "after the depot clear" },
-    { completed: ["street", "city-boundary"], stage: "after both cityscape stages clear" },
+    {
+      completed: ["street"],
+      industrial: { kind: "unavailable" },
+      open: ["street", "city-boundary"],
+      stage: "after the depot clear",
+    },
+    {
+      completed: ["street", "city-boundary"],
+      industrial: { kind: "play", stage: "warehouse-district" },
+      open: ["street", "city-boundary", "warehouse-district"],
+      stage: "after both cityscape stages clear",
+    },
+    {
+      completed: ["street", "city-boundary", "warehouse-district"],
+      industrial: {
+        kind: "choose",
+        latest: "freight-terminal",
+        stages: ["warehouse-district", "freight-terminal"],
+      },
+      open: ["street", "city-boundary", "warehouse-district", "freight-terminal"],
+      stage: "after the warehouse clear",
+    },
+    {
+      completed: ["street", "city-boundary", "warehouse-district", "freight-terminal"],
+      industrial: {
+        kind: "choose",
+        latest: "freight-terminal",
+        stages: ["warehouse-district", "freight-terminal"],
+      },
+      open: ["street", "city-boundary", "warehouse-district", "freight-terminal"],
+      stage: "after both industrial stages clear",
+    },
   ])(
-    "offers both real cityscape stages $stage without opening unbuilt Industrial",
-    ({ completed }) => {
+    "preserves replays and unlocks only built stages $stage",
+    ({ completed, industrial, open: expectedOpen }) => {
       const plans = new Set([...Object.keys(ZONES), ...Object.keys(RECIPES)]);
       const open = openMap(ZONE_MAP, new Set(completed));
-      expect(open.zones).toEqual(["street", "city-boundary"]);
+      expect(open.zones).toEqual(expectedOpen);
       expect(
         destinationSelection(plans, ZONE_MAP, open, destinationForStage(ZONE_MAP, "street")),
       ).toEqual({
@@ -53,7 +83,15 @@ describe("ZONE_MAP", () => {
         expect(node.zone !== undefined && plans.has(node.zone)).toBe(true);
         expect(isLastZone(ZONE_MAP, id)).toBe(false);
       }
-      for (const destination of ZONE_MAP.destinations.slice(1)) {
+      expect(
+        destinationSelection(
+          plans,
+          ZONE_MAP,
+          open,
+          destinationForStage(ZONE_MAP, "warehouse-district"),
+        ),
+      ).toEqual(industrial);
+      for (const destination of ZONE_MAP.destinations.slice(2)) {
         expect(destinationSelection(plans, ZONE_MAP, open, destination)).toEqual({
           kind: "unavailable",
         });
