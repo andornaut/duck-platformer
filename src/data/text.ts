@@ -18,7 +18,7 @@ export const TEXT: GameText = {
     title: "Something went wrong",
   },
   dialogue: {
-    continue: "",
+    continue: "Continue",
     skip: "Skip",
     speakers: { dog: "Dog", duck: "Duck" },
   },
