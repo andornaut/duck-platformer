@@ -51,8 +51,9 @@ import { PAUSE_BUTTON } from "../layout/pauseCard";
 import { bottomShift, shifted, topShift } from "../layout/playView";
 import { MOVE_HINT, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
 import { coverZone, startWakeLock, stopWakeLock } from "../pwa";
-import { attemptProgress, deathSupport } from "../rules/death";
+import { deathSupport } from "../rules/death";
 import { isLastZone, nodeOf } from "../rules/map";
+import { stageProgress } from "../rules/stageProgress";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
 import { zoneLayout } from "../rules/tiles";
 import {
@@ -224,7 +225,7 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
   private dialogueObject: number | undefined;
   private dialogueAttempt = -1;
   private dialogueArea = "";
-  private readonly heardDialogues = new Set<number>();
+  private readonly heardDialogues = new Map<string, Set<number>>();
   private objectArt: ObjectArt[] = [];
   private terrainMap: Tilemaps.Tilemap | undefined;
   // When each held button's press began.
@@ -416,7 +417,7 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
     }
     const frame = frameSteps({ maxFrameMs: MAX_FRAME_MS, stepMs: STEP_MS }, time, this.clock);
     this.clock = frame.clock;
-    const touches = [...this.heldTouches.values()];
+    let touches = [...this.heldTouches.values()];
     const intent = combineIntents(keyIntent(this.heldKeys), touchIntent(TOUCH, touches));
     if (this.opening && doorPhase(this.opening.ms, time - this.opening.at) === "room") {
       this.openRoom();
@@ -443,6 +444,18 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
         this.zone,
       );
       recordActiveStageStep(this.stageKey(), STEP_SECONDS, beforeZone, this.zone);
+      if (this.zone.area !== beforeZone.area) {
+        this.clearControls();
+        touches = [];
+        this.duckPose = startPose;
+        this.drawArea();
+        this.drawObjects();
+        this.drawDuck();
+        if (this.zone.death !== undefined) {
+          this.beginDeath();
+        }
+        break;
+      }
       if (this.zone.death !== undefined) {
         this.beginDeath();
         break;
@@ -484,15 +497,7 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
   }
 
   private progressFraction(): number {
-    const area = areaOf(this.layout, this.zone.area);
-    const startArea = areaOf(this.layout, this.layout.start.area);
-    const entry = startArea.entries[this.layout.start.entry];
-    if (entry === undefined) {
-      throw new Error("Missing stage checkpoint");
-    }
-    return this.zone.cleared
-      ? 1
-      : attemptProgress(entry.x, area.exitX, this.zone.duck.x + DUCK.width / 2);
+    return stageProgress(DUCK, this.layout, this.zone);
   }
 
   private drawProgress(): void {
@@ -639,13 +644,23 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
     if (this.dialogueOpen()) {
       return true;
     }
-    if (this.zone.attempt !== this.dialogueAttempt || this.zone.area !== this.dialogueArea) {
+    if (this.zone.attempt !== this.dialogueAttempt) {
       this.heardDialogues.clear();
       this.dialogueAttempt = this.zone.attempt;
+    }
+    let heard = this.heardDialogues.get(this.zone.area);
+    if (!heard) {
+      heard = new Set();
+      this.heardDialogues.set(this.zone.area, heard);
+    }
+    if (this.zone.area !== this.dialogueArea) {
+      for (const index of heard) {
+        this.zone = activateBehaviour(index, this.zone);
+      }
       this.dialogueArea = this.zone.area;
     }
     const area = areaOf(this.layout, this.zone.area);
-    const index = proximityDialogue(area.objects, this.zone.objects, this.heardDialogues, {
+    const index = proximityDialogue(area.objects, this.zone.objects, heard, {
       height: DUCK.height,
       width: DUCK.width,
       x: this.zone.duck.x,
@@ -671,7 +686,7 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
     if (index === undefined) {
       return;
     }
-    this.heardDialogues.add(index);
+    this.heardDialogues.get(this.zone.area)?.add(index);
     this.zone = activateBehaviour(index, this.zone);
     this.dialogueObject = undefined;
     this.clearControls();

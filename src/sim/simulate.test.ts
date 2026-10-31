@@ -2,12 +2,18 @@ import { describe, expect, it } from "vitest";
 
 import { DUCK } from "../data/duck";
 import type { AreaLayout, ZoneLayout } from "../data/types";
+import { stageProgress } from "../rules/stageProgress";
 import { STEP_SECONDS } from "../rules/step";
 import { startZone, stepZone } from "../rules/zone";
 import { DUCK_FRAME } from "../view/duck";
 import { DIAGNOSTIC_SKILL, FORWARD_POLICY } from "./bot";
 import { simulateBatch } from "./report";
-import { prepareStage, simulateStage, type SimulationConfig } from "./simulate";
+import {
+  prepareStage,
+  simulateStage,
+  type SimulationConfig,
+  simulationGoalReached,
+} from "./simulate";
 
 function fixture(solids: AreaLayout["solids"], exitX = 1000): ZoneLayout {
   return {
@@ -142,7 +148,12 @@ describe("simulation sections and diagnostics", () => {
     const start = { area: "main", x: 400, y: 84 };
     const run = simulateStage(DUCK, stage, { ...config, maxSteps: 1, start });
     expect(run.start).toEqual(start);
-    expect(run.progress).toBeGreaterThan(0.4);
+    const checkpoint = startZone(DUCK, stage.layout, config.seed);
+    const absolute = stageProgress(DUCK, stage.layout, {
+      ...checkpoint,
+      duck: { ...checkpoint.duck, x: start.x, y: start.y },
+    });
+    expect(run.progress).toBeCloseTo(absolute, 2);
     for (const invalid of [
       { ...start, y: 110 },
       { ...start, x: -1 },
@@ -168,6 +179,31 @@ describe("simulation sections and diagnostics", () => {
 });
 
 describe("bounded section goals and reproducibility", () => {
+  it("recognizes an area-local goal crossed before a forward stair transition", () => {
+    const original = fixture(ground);
+    const main = original.areas.main;
+    if (!main) {
+      throw new Error("Missing fixture area");
+    }
+    const layout = {
+      ...original,
+      areaOrder: ["main", "upper"],
+      areas: {
+        main: { ...main, walkLinks: { right: { area: "upper", entry: "start" } } },
+        upper: { ...main, walkLinks: { left: { area: "main", entry: "start" } } },
+      },
+    };
+    const initial = startZone(DUCK, layout, config.seed);
+    const before = {
+      ...initial,
+      duck: { ...initial.duck, grounded: true, vx: DUCK.walkSpeed, x: main.exitX - DUCK.width - 1 },
+    };
+    const after = { ...initial, area: "upper" };
+    const goal = { area: "main", x: main.exitX };
+    expect(simulationGoalReached(DUCK, layout, 1, goal, before, after)).toBe(true);
+    expect(simulationGoalReached(DUCK, layout, 1, goal, before, before)).toBe(false);
+    expect(simulationGoalReached(DUCK, layout, -1, goal, before, after)).toBe(false);
+  });
   it("reports section success independently of stage completion and joins chunk IDs", () => {
     const layout = fixture(ground);
     const main = layout.areas.main;

@@ -327,7 +327,12 @@ function runner(tuning: DuckTuning, layout: ZoneLayout, start: ZoneState) {
       const before = run.zone.restarts;
       run.zone = stepZone(tuning, layout, STEP_SECONDS, input, run.zone);
       run.steps++;
-      return run.zone.death === undefined && run.zone.restarts === before && !run.zone.turnedBack;
+      return (
+        run.zone.death === undefined &&
+        run.zone.restarts === before &&
+        !run.zone.turnedBack &&
+        run.zone.area === start.area
+      );
     },
     steps: 0,
     zone: start,
@@ -399,6 +404,12 @@ function prepare(
   return { ready: true, steps: run.steps, zone: run.zone };
 }
 
+interface TrialResult {
+  readonly entered: ZoneState | undefined;
+  readonly landed: Spot | undefined;
+  readonly steps: number;
+}
+
 // Plays every distinct takeoff prefix once, including failed run-ups. Each continuation still
 // uses the real zone rules with its own hold, rise and landing target. The cache lives for one
 // source spot and starting wait state, so moving hazards and platforms retain their timing.
@@ -408,7 +419,7 @@ function trialsFrom(
   surfaces: readonly Surface[],
   from: Spot,
   start: ZoneState,
-): (attempt: Try) => { landed: Spot | undefined; steps: number } {
+): (attempt: Try) => TrialResult {
   const prepared = new Map<string, ReturnType<typeof prepare>>();
   return (attempt) => {
     const key = `${attempt.dir}:${attempt.pre}:${attempt.takeoff}:${attempt.late}`;
@@ -420,7 +431,11 @@ function trialsFrom(
       steps = prefix.steps;
     }
     if (!prefix.ready) {
-      return { landed: undefined, steps };
+      return {
+        entered: prefix.zone.area === start.area ? undefined : prefix.zone,
+        landed: undefined,
+        steps,
+      };
     }
     const result = play(tuning, layout, surfaces, from, prefix.zone, attempt);
     return { ...result, steps: steps + result.steps };
@@ -435,9 +450,13 @@ function play(
   from: Spot,
   start: ZoneState,
   attempt: Try,
-): { landed: Spot | undefined; steps: number } {
+): TrialResult {
   const run = runner(tuning, layout, start);
-  const missed = () => ({ landed: undefined, steps: run.steps });
+  const missed = (): TrialResult => ({
+    entered: run.zone.area === start.area ? undefined : run.zone,
+    landed: undefined,
+    steps: run.steps,
+  });
   let left = !run.zone.duck.grounded;
   for (let i = 0; i < AIR_STEPS; i++) {
     const move = i < attempt.rise ? 0 : steer(tuning, layout, attempt.target, run.zone);
@@ -448,6 +467,7 @@ function play(
     if (left && run.zone.duck.grounded) {
       const landed = comeToRest(tuning, layout, surfaces, run);
       return {
+        entered: run.zone.area === start.area ? undefined : run.zone,
         landed: landed && spotKey(landed) !== spotKey(from) ? landed : undefined,
         steps: run.steps,
       };
@@ -481,20 +501,28 @@ function walkInto(
   surfaces: readonly Surface[],
   start: ZoneState,
   target: Target,
-): { landed: Spot | undefined; steps: number } {
+): TrialResult {
   const run = runner(tuning, layout, start);
   for (let i = 0; i < WALK_STEPS; i++) {
     const move = steer(tuning, layout, target, run.zone);
     if (move === 0) {
       const under = surfaceUnder(tuning, layout, surfaces, run.zone);
       const spot = under ? spotOf(under, run.zone, layout, tuning) : undefined;
-      return { landed: spot && spotKey(spot) === target.key ? spot : undefined, steps: run.steps };
+      return {
+        entered: undefined,
+        landed: spot && spotKey(spot) === target.key ? spot : undefined,
+        steps: run.steps,
+      };
     }
     if (!run.step({ ...STILL, move }) || !run.zone.duck.grounded) {
       break;
     }
   }
-  return { landed: undefined, steps: run.steps };
+  return {
+    entered: run.zone.area === start.area ? undefined : run.zone,
+    landed: undefined,
+    steps: run.steps,
+  };
 }
 
 // Walks right from start until she clears the zone at its area's last column: whether she does.
@@ -502,14 +530,18 @@ function walkOff(
   tuning: DuckTuning,
   layout: ZoneLayout,
   start: ZoneState,
-): { cleared: boolean; steps: number } {
+): { cleared: boolean; entered: ZoneState | undefined; steps: number } {
   const run = runner(tuning, layout, start);
   for (let i = 0; i < WALK_STEPS && !run.zone.cleared; i++) {
     if (!run.step({ ...STILL, move: 1 })) {
       break;
     }
   }
-  return { cleared: run.zone.cleared, steps: run.steps };
+  return {
+    cleared: run.zone.cleared,
+    entered: run.zone.area === start.area ? undefined : run.zone,
+    steps: run.steps,
+  };
 }
 
 // Steps her still until she stands somewhere, or gives up.
@@ -528,18 +560,22 @@ function waitStates(
   layout: ZoneLayout,
   start: ZoneState,
   count: number,
-): { states: ZoneState[]; steps: number } {
+): { entered: ZoneState | undefined; states: ZoneState[]; steps: number } {
   const run = runner(tuning, layout, start);
   const states = [start];
   while (states.length < count) {
     for (let i = 0; i < WAIT_STEP; i++) {
       if (!run.step(STILL)) {
-        return { states, steps: run.steps };
+        return {
+          entered: run.zone.area === start.area ? undefined : run.zone,
+          states,
+          steps: run.steps,
+        };
       }
     }
     states.push(run.zone);
   }
-  return { states, steps: run.steps };
+  return { entered: undefined, states, steps: run.steps };
 }
 
 // How far she might go in one move, in px: up to rise, and along x when the landing is drop
@@ -757,6 +793,7 @@ export function walkZone(tuning: DuckTuning, layout: ZoneLayout): ZoneWalk {
   const reached = new Set<string>();
   const queue: Spot[] = [];
   const areaBounds = new Map<AreaLayout, ReturnType<typeof moveBounds>>();
+  const arrivals = new WeakSet<ZoneState>();
   let steps = 0;
   let cleared = false;
   const reach = (spot: Spot) => {
@@ -767,6 +804,10 @@ export function walkZone(tuning: DuckTuning, layout: ZoneLayout): ZoneWalk {
     }
   };
   const arrive = (zone: ZoneState) => {
+    if (arrivals.has(zone)) {
+      return;
+    }
+    arrivals.add(zone);
     const settled = settle(tuning, layout, zone);
     if (settled.death !== undefined) {
       return;
@@ -799,6 +840,9 @@ export function walkZone(tuning: DuckTuning, layout: ZoneLayout): ZoneWalk {
       if (!waited) {
         const result = waitStates(tuning, layout, from.state, count);
         steps += result.steps;
+        if (result.entered) {
+          arrive(result.entered);
+        }
         waited = result.states;
       }
       return waited;
@@ -829,6 +873,9 @@ export function walkZone(tuning: DuckTuning, layout: ZoneLayout): ZoneWalk {
         if (target.surface === from.surface) {
           const walked = walkInto(tuning, layout, surfaces, start, target);
           steps += walked.steps;
+          if (walked.entered) {
+            arrive(walked.entered);
+          }
           if (walked.landed) {
             reach(walked.landed);
             break;
@@ -843,8 +890,11 @@ export function walkZone(tuning: DuckTuning, layout: ZoneLayout): ZoneWalk {
           if (done()) {
             break;
           }
-          const { landed, steps: ran } = trial(attempt);
+          const { entered, landed, steps: ran } = trial(attempt);
           steps += ran;
+          if (entered) {
+            arrive(entered);
+          }
           if (landed) {
             reach(landed);
           }
@@ -856,6 +906,10 @@ export function walkZone(tuning: DuckTuning, layout: ZoneLayout): ZoneWalk {
       for (const start of startsFor(area.exitX, area.exitX)) {
         const off = walkOff(tuning, layout, start);
         steps += off.steps;
+        if (off.entered) {
+          arrive(off.entered);
+          break;
+        }
         if (off.cleared) {
           cleared = true;
           break;

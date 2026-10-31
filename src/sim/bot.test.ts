@@ -62,6 +62,34 @@ const platform: ObjectLayout = {
 };
 
 describe("local bot decisions", () => {
+  it("walks through a linked exit instead of treating the next floor as a gap", () => {
+    const original = fixture([{ ...ground, width: 200 }]);
+    const main = original.areas.main;
+    if (!main) {
+      throw new Error("Missing fixture area");
+    }
+    const layout = {
+      ...original,
+      areaOrder: ["main", "upper"],
+      areas: {
+        main: { ...main, exitX: 188, walkLinks: { right: { area: "upper", entry: "start" } } },
+        upper: { ...main, walkLinks: { left: { area: "main", entry: "start" } } },
+      },
+    };
+    const initial = startZone(DUCK, layout, 1);
+    const zone = { ...initial, duck: { ...initial.duck, grounded: true, x: 188 - DUCK.width - 1 } };
+    expect(
+      botInput(
+        DUCK,
+        prepareSensors(layout),
+        layout,
+        DIAGNOSTIC_SKILL,
+        FORWARD_POLICY,
+        zone,
+        newBot(1),
+      ),
+    ).toEqual({ jumpHeld: false, move: 1, useHeld: false });
+  });
   it("uses a shorter hold for a low obstacle than for a tall one", () => {
     const holds = [12, 60].map((height) => {
       const layout = fixture([ground, { height, width: 12, x: 100, y: 120 - height }]);

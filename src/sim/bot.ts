@@ -200,6 +200,14 @@ function obstacleAhead(
       }
     }
   }
+  // A linked edge enters its next section automatically. Missing terrain entirely beyond
+  // that edge is not a gap to jump, while hazards and missing support before it still count.
+  const link = direction === 1 ? area.walkLinks?.right : area.walkLinks?.left;
+  const beyondLink = (rect: Rect) =>
+    link !== undefined &&
+    (direction === 1 ? rect.x >= area.exitX : rect.x + rect.width <= area.backX);
+  supported ||= beyondLink(foot);
+  nearSupported ||= beyondLink(nearFoot);
   return {
     danger,
     gap: !supported || !nearSupported,

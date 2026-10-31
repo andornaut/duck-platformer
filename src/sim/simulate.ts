@@ -1,7 +1,15 @@
 import type { DuckTuning, ZoneDeath, ZoneLayout } from "../data/types";
 import { duckBox } from "../rules/duck";
+import { stageProgress } from "../rules/stageProgress";
 import { STEP_SECONDS } from "../rules/step";
-import { activateBehaviour, areaOf, retryZone, startZone, stepZone } from "../rules/zone";
+import {
+  activateBehaviour,
+  areaOf,
+  retryZone,
+  startZone,
+  stepZone,
+  type ZoneState,
+} from "../rules/zone";
 import { proximityDialogue } from "../view/zoneDialogue";
 import {
   botInput,
@@ -146,6 +154,38 @@ export function validateSimulation(config: SimulationConfig): void {
   }
 }
 
+// A scoped goal at a linked edge is crossed before the duck is placed in the next area.
+export function simulationGoalReached(
+  tuning: Pick<DuckTuning, "width">,
+  layout: ZoneLayout,
+  direction: BotPolicy["move"],
+  goal: NonNullable<SimulationConfig["goal"]>,
+  before: ZoneState,
+  after: ZoneState,
+): boolean {
+  if (after.death !== undefined || direction === 0) {
+    return false;
+  }
+  if (goal.area === after.area) {
+    return direction * (after.duck.x + (direction === 1 ? tuning.width : 0) - goal.x) >= 0;
+  }
+  if (goal.area !== before.area || before.area === after.area) {
+    return false;
+  }
+  const link = areaOf(layout, before.area).walkLinks?.[direction === 1 ? "right" : "left"];
+  if (link?.area !== after.area) {
+    return false;
+  }
+  const order = layout.areaOrder;
+  if (!order) {
+    const opposite = areaOf(layout, before.area).walkLinks?.[direction === 1 ? "left" : "right"];
+    return opposite?.area !== after.area;
+  }
+  const from = order.indexOf(before.area);
+  const to = order.indexOf(after.area);
+  return from >= 0 && to >= 0 && direction * (to - from) > 0;
+}
+
 // Runs the actual fixed-step rules. UI-only conversations are acknowledged at their real
 // proximity; presentation and retry-card waits consume no active time or physics steps.
 export function simulateStage(
@@ -185,7 +225,7 @@ export function simulateStage(
   let attemptTick = 0;
   let lastAdvance = 0;
   let furthest = config.policy.move * zone.duck.x;
-  const heard = new Set<number>();
+  const heardByArea = new Map<string, Set<number>>();
   let previousArea = zone.area;
   let steps = 0;
   let retries = 0;
@@ -196,8 +236,21 @@ export function simulateStage(
   let status: RunStatus = "step-budget";
   while (steps < config.maxSteps) {
     if (zone.area !== previousArea) {
-      heard.clear();
+      for (const index of heardByArea.get(zone.area) ?? []) {
+        zone = activateBehaviour(index, zone);
+      }
       previousArea = zone.area;
+      bot.holding = 0;
+      bot.targetY = undefined;
+      bot.waited = 0;
+      bot.noticed = 0;
+      furthest = config.policy.move * zone.duck.x;
+      lastAdvance = attemptTick;
+    }
+    let heard = heardByArea.get(zone.area);
+    if (!heard) {
+      heard = new Set();
+      heardByArea.set(zone.area, heard);
     }
     const area = areaOf(layout, zone.area);
     const introduction = stage.introductions[zone.area]
@@ -214,9 +267,15 @@ export function simulateStage(
       introduction === undefined
         ? botInput(tuning, sensors, layout, config.skill, config.policy, zone, bot)
         : { jumpHeld: false, move: 0 as const, useHeld: false };
+    const before = zone;
     zone = stepZone(tuning, layout, STEP_SECONDS, input, zone);
     steps++;
     attemptTick++;
+    if (zone.area !== before.area) {
+      // A new local coordinate origin is advancement, not a stalled previous floor.
+      furthest = config.policy.move * zone.duck.x;
+      lastAdvance = attemptTick;
+    }
     if (config.trace) {
       if (config.policy.move * zone.duck.x > furthest + 1e-6) {
         furthest = config.policy.move * zone.duck.x;
@@ -266,17 +325,11 @@ export function simulateStage(
         }
       }
     }
-    progress = Math.max(
-      0,
-      Math.min(1, (zone.duck.x + tuning.width - area.backX) / (area.exitX - area.backX)),
-    );
+    progress = stageProgress(tuning, stage.layout, zone);
     peakProgress = Math.max(peakProgress, progress);
     if (
-      !zone.death &&
-      config.goal?.area === zone.area &&
-      config.policy.move *
-        (zone.duck.x + (config.policy.move === 1 ? tuning.width : 0) - config.goal.x) >=
-        0
+      config.goal !== undefined &&
+      simulationGoalReached(tuning, layout, config.policy.move, config.goal, before, zone)
     ) {
       status = "goal-reached";
       break;
@@ -301,7 +354,7 @@ export function simulateStage(
       }
       zone = retryZone(tuning, layout, zone);
       retries++;
-      heard.clear();
+      heardByArea.clear();
       bot = newBot((seeds.bot + retries) >>> 0);
       attemptTick = 0;
       lastAdvance = 0;
