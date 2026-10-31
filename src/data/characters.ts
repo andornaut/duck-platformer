@@ -6,6 +6,7 @@ import {
   DOG_BEHAVIOUR,
   GOOSE_BEHAVIOUR,
   OWL_BEHAVIOUR,
+  RABBIT_MOTION,
   RACCOON_BEHAVIOUR,
 } from "./behaviours";
 import type { Character } from "./types";
@@ -378,6 +379,14 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     art: "hazard-pond",
     cols: 3,
     rows: 2,
+  },
+  "rabbit-antagonist": {
+    animations: { idle: "rest", move: "hop" },
+    archetype: "hazard",
+    art: "rabbit-antagonist",
+    cols: 4,
+    rows: 4,
+    tuning: { motion: RABBIT_MOTION },
   },
   "raccoon-antagonist": {
     archetype: "hazard",

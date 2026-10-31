@@ -1,4 +1,4 @@
-import type { BehaviourCondition, BehaviourNode, BehaviourPlan } from "./types";
+import type { BehaviourCondition, BehaviourNode, BehaviourPlan, Motion } from "./types";
 
 const CROSSING_PAUSE = 1;
 const CROSSING_SPEED = 6;
@@ -173,6 +173,16 @@ export const CITY_SHUTTLE_BEHAVIOUR: BehaviourPlan = {
   distance: 30,
   initial: "forward",
   states: shuttleStates(CROSSING_SPEED, CROSSING_PAUSE, null),
+};
+
+export const RABBIT_MOTION: Motion = {
+  algorithm: "hop",
+  direction: "left",
+  distance: 8,
+  hopHeight: 3,
+  pause: 0.6,
+  speed: 8,
+  variance: 0,
 };
 
 export const DOG_BEHAVIOUR: BehaviourPlan = {
