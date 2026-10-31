@@ -57,13 +57,13 @@ A level is the individual playable layout, currently represented by `ZonePlan` i
 ### Grid
 
 - **Duck:** 2 tiles wide and 3 tall
-- **Reaches:** levels are built to the duck's reaches, measured in tiles from the top of the ground he leaves to the top of the ledge he lands on. A quick tap rises 1 tile (clearing a 1-tile ledge with a little room); a full jump rises 6; a full running jump with flutter crosses a 22-tile gap at the same height, with the jump pressed at its best moment, coyote time included. A ledge at a reach is always makeable, and one tile beyond it never is
+- **Reaches:** levels are built to the duck's reaches, measured in tiles from the top of the ground he leaves to the top of the ledge he lands on. A short press rises 3 tiles (clearing a 3-tile ledge with a little room); a full jump rises 6; a full running jump with flutter crosses a 21-tile gap at the same height, with the jump pressed at its best moment, coyote time included. A ledge at a reach is always makeable, and one tile beyond it never is
 - **Tiles:** levels are built on a grid of 12 px tiles, so the screen is 60 columns by 30 rows. Every solid, ledge and door sits on whole tiles and spans whole tiles. Hazards follow the grid, except for the 2 to 3 px thickness of edge hazards
 
 ### The duck
 
 - **Flutter:** every fall flutters, after a jump or off a ledge: his fall is slow enough to use, and the player steers him in the air
-- **Jump height:** short presses produce the same forgiving low hop, about 1.5 tiles, rather than requiring the quickest possible tap. Holding beyond the tap window progressively earns a higher apex, up to about 6.5 tiles with a full hold; releasing fixes the earned apex without a late speed cut. The duck completes that jump arc and flutters on the fall. A buffered jump whose button was already released is the low hop. Low hops clear one-tile steps beneath red-edged low ceilings; full holds clear the full-jump reach. The hop timing, tap window and progressive lift timing live in `src/data/duck.ts`
+- **Jump height:** every jump has one uninterrupted ballistic ascent, with no timed lift or upward reboost while Jump is held. Releases within the first 100 ms produce the minimum hop of 38 px, about 3 tiles; releasing later retains more upward speed, increasing the jump toward the full height of about 6.5 tiles. The duck flutters on the fall. A buffered jump whose button was already released is the low hop. Low ceilings are placed so a short jump clears the obstacle without touching the overhead red edge; a full hold hits that edge. Jump tuning lives in `src/data/duck.ts`
 - **Jump timing:** a jump pressed just after he leaves a ledge still jumps (coyote time), and a jump pressed just before he lands jumps as he lands (jump buffering)
 - **Movement:** he walks left and right and jumps. He is quick and responsive: about 0.1 s to reach full speed or stop, on the ground and in the air. His speeds, jump, flutter and timing values are in `src/data/duck.ts`, tuned to the reaches under Grid
 
@@ -146,7 +146,7 @@ The target play time is about 30 minutes across six themed zones of two levels, 
 
 ### First level
 
-- **Layout:** the fixed tutorial combines the parcel depot and streets of the blue cityscape in one area. The duck starts beside his opened parcel on safe ground, then crosses a one-tile step, a full-jump block and a short red-edged gap before entering the streets. A later low ceiling over a one-tile step requires a short press
+- **Layout:** the fixed tutorial combines the parcel depot and streets of the blue cityscape in one area. The duck starts beside his opened parcel on safe ground, then crosses a three-tile step, a full-jump block and a short red-edged gap before entering the streets. A later low ceiling over a one-tile step requires a short press
 - **Rooms:** the street door leads to the prototype test room
 - **Route:** the main path continues right toward the city boundary; the upper street ledges are an optional detour. The city boundary is planned as the zone's second level and is not built by this change
 
