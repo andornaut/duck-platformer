@@ -4,9 +4,10 @@ Every served art asset. Sizes are in base pixels at 720x360. Tags are in frame o
 
 ## Data
 
-| Key     | Type                        | Size       | Tags |
-| ------- | --------------------------- | ---------- | ---- |
-| palette | JSON: colours, darker, dim2 | 32 colours |      |
+| Key         | Type                             | Size                 | Tags |
+| ----------- | -------------------------------- | -------------------- | ---- |
+| palette     | JSON: colours, darker, dim2      | house and zone ramps |      |
+| zone-themes | JSON: destination primary tokens | six destinations     |      |
 
 ## Fonts
 

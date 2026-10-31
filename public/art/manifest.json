@@ -515,6 +515,10 @@
     {
       "key": "palette",
       "json": "palette.json"
+    },
+    {
+      "key": "zone-themes",
+      "json": "zone-themes.json"
     }
   ],
   "tilesets": [

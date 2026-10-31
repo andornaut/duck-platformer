@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write the house palette and its ramps as data for the game: public/art/palette.json.
+"""Write the house and zone palettes and their ramps as data for the game: public/art/palette.json.
 
 Shape (every key sorted, colours as lower-case "#rrggbb", the file ending with a newline):
 

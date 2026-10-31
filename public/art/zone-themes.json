@@ -1,0 +1,20 @@
+{
+  "apartment": {
+    "primary": "zone-peach"
+  },
+  "blue-cityscape": {
+    "primary": "zone-blue"
+  },
+  "countryside": {
+    "primary": "zone-yellow"
+  },
+  "home-city": {
+    "primary": "zone-red"
+  },
+  "industrial": {
+    "primary": "zone-purple"
+  },
+  "woodland": {
+    "primary": "zone-green"
+  }
+}

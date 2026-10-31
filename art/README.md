@@ -12,7 +12,7 @@ The art plan and pipeline for Duck Platformer. Art owns `art/` and the served ar
 ## Zone design guide
 
 - Accents: reserve amber for doors and small points of interest. Other hues add restrained foliage, signs and character details. Red contact edges always mean danger in every theme.
-- Colour: each zone has one dominant family, carried through its atmosphere and architecture. The street uses pale blue and slate; the park uses peach and tan. Keep distant colours close to the sky and spend saturation on a few useful accents.
+- Colour: each V1 destination uses its canonical muted primary from [Zone primary colours](#zone-primary-colours), carried through atmosphere, materials, map identity and progress. Keep distant colours close to the sky and spend saturation on a few useful accents. The park remains a separate prototype outside the V1 route.
 - Detail: distant scenery uses broad silhouettes without window grids. Near architecture uses sparse window groups and quiet surfaces. Avoid repeated stripes and single-pixel texture that compete with the duck.
 - Layouts: the first level has a fixed layout. Every subsequent level is randomized, including the final level. Reusable tiles, scenery and gameplay chunks assemble independently; a background image never encodes a required route. Levels are at most two screens tall (720px, 60 rows).
 - Obstacles: use ledges, cliffs, walls and ceilings. Short-clearance jumps and full-height jumps share the same visual vocabulary. Ladders are not part of the obstacle set. Difficulty and jump requirements belong to gameplay data, with variation around a common configurable difficulty.
@@ -90,6 +90,24 @@ In order:
 - Every pixel is fully opaque or fully transparent.
 - Each colour has a one-step-darker mapping (its ramp). Shadows and dimming step each colour down its ramp, never blend with black.
 - Greys (lgrey, grey) may be used for environment scenery and characters. Disabled UI keeps its own treatment: greyed with the grey ramp and changed in shape, so it stays recognisable.
+
+### Zone primary colours
+
+Each V1 destination has one muted primary, chosen for its materials and atmosphere. `art/tools/zone_themes.py` is the canonical assignment and ramp source. It generates `public/art/zone-themes.json`, registered as manifest data key `zone-themes`: each destination maps to `{ "primary": "palette-token" }`. Runtime code resolves the token through `palette.json`; it does not duplicate the hex values.
+
+| Destination          | Primary token | Base    | Material and atmosphere                  |
+| -------------------- | ------------- | ------- | ---------------------------------------- |
+| Blue cityscape       | zone-blue     | #a8bfd4 | Powder blue haze and distant buildings   |
+| Industrial outskirts | zone-purple   | #b6aecb | Smoky lavender steel and factory shadows |
+| Countryside          | zone-yellow   | #d8c994 | Butter-yellow wheat fields               |
+| Woodland             | zone-green    | #a9bea0 | Sage foliage                             |
+| Home city            | zone-red      | #d0a7aa | Dusty brick-rose neighbourhood masonry   |
+| Apartment            | zone-peach    | #d6b39d | Warm peach interior plaster              |
+
+- Application: the primary dominates each map region's silhouette and backs its icon. Essential outlines and symbols remain ink or dslate, so the pastel fill is not responsible for contrast. Locked and unbuilt markers retain the coloured illustration around them.
+- Progress: fill uses the same primary on a dslate track, with no brighter substitute. Standard primary buttons remain dslate with white text. Hazard red remains the existing saturated `red`; muted `zone-red` is the home city's masonry colour and never signals lethal contact.
+- Ramps: every zone primary has one muted `-shade` colour, then joins a house ramp. The six bases and six shades extend the house palette without changing any existing colour. `palette.py` exports their darker and two-step dim mappings with every other palette colour.
+- Planned level use: backgrounds follow the destination's primary family, with far silhouettes low in contrast and nearer layers using its shade. Quiet secondary colours provide restrained highlights. Far scenery scrolls more slowly than the gameplay plane; attached ledges, doors and props stay with terrain. This is an art plan for later themes, not a claim that those levels exist.
 
 ### Outlines
 
@@ -244,22 +262,22 @@ A pause button at the top left opens the pause card over the game, which is dimm
 
 The map presents the six V1 zone destinations on a cool pastel overview. `art/tools/map.py` draws the frame, zone markers, theme icons and small regional illustrations. Names, availability, level choices and route positions belong to game data; the illustrations describe themes, not playable layouts.
 
-| Destination    | Grid centre (col,row) | Pixel centre | Icon and region suffix |
-| -------------- | --------------------- | ------------ | ---------------------- |
-| Blue cityscape | 10,7                  | 126,90       | blue-cityscape         |
-| Industrial     | 29,7                  | 354,90       | industrial             |
-| Countryside    | 48,7                  | 582,90       | countryside            |
-| Woodland       | 48,18                 | 582,222      | woodland               |
-| Home city      | 29,18                 | 354,222      | home-city              |
-| Apartment      | 10,18                 | 126,222      | apartment              |
+| Destination          | Grid centre (col,row) | Pixel centre | Icon and region suffix |
+| -------------------- | --------------------- | ------------ | ---------------------- |
+| Blue cityscape       | 10,7                  | 126,90       | blue-cityscape         |
+| Industrial outskirts | 29,7                  | 354,90       | industrial             |
+| Countryside          | 48,7                  | 582,90       | countryside            |
+| Woodland             | 48,18                 | 582,222      | woodland               |
+| Home city            | 29,18                 | 354,222      | home-city              |
+| Apartment            | 10,18                 | 126,222      | apartment              |
 
 - Frame: `map-paper`, a 32x32 nine-slice with margins 13 on each side, drawn at 0,0,720,360. Its face is lgrey with grey and slate inset rules. Text and meaningful marks are ink, dslate, navy or slate. Selection uses dslate, never lethal red.
-- Regions: `map-region-<suffix>`, 120x60, tag `rest`, at cx-60,cy-36 behind paths and markers. Blue-grey buildings flank city destinations, tan fields identify the countryside and green trees identify woodland. The central opening leaves each marker clear. These illustrations remain visible for locked and unbuilt destinations.
+- Regions: `map-region-<suffix>`, 120x60, tag `rest`, at cx-60,cy-36 behind paths and markers. The destination's muted primary dominates its building, field or tree silhouettes. The central opening leaves each marker clear. These illustrations remain visible for locked and unbuilt destinations.
 - Route: one linear path follows the table's order, left to right across the top row, then right to left across the bottom row. There are no fork markers on the V1 route. Runtime paths use 4px solid dslate for open paths, 2px slate dashes (6 on, 4 off) for built paths still locked, and 2x2 slate dots every 6px for unbuilt paths. State is carried by the pattern as well as colour.
 - Zone marker: `map-zone`, 35x35 centred on the node. `normal` is a cream disc with a dslate ring; `current` adds a second dslate ring; `visited` is navy with a cream tick badge. `locked` replaces the zone icon with a dslate padlock. `unbuilt` uses a broken slate ring and a question mark. Tags retain their existing order and frame indices.
-- Zone icons: `map-icon-<suffix>`, 14x14, centred on normal, current and visited markers. The `normal` tag uses the theme's dark blue, brown or forest ink, and `visited` is cream. Locked and unbuilt markers show no icon. `map-icon-street` and `map-icon-zone` remain available for other maps and unspecified icons.
+- Zone icons: `map-icon-<suffix>`, 14x14, centred on normal, current and visited markers. Both tags use a muted primary backing with an ink landmark and a dslate outer edge. The visited marker's navy disc and tick carry completion. Locked and unbuilt markers show no icon. `map-icon-street` and `map-icon-zone` remain available for other maps and unspecified icons.
 - Duck: `map-duck`, 26x22, tag `idle`, two frames at 400ms. He stands above the current node's ring, top-left cx-13,cy-39. The current marker's double ring also carries selection when the duck is not visible.
-- Labels: names in `font-title` at 2x, ink, centred below the markers. With advance width A, origin is cx-floor((A-4)/2)-2,cy+12, so visible capitals occupy cy+20 through cy+29. An lgrey knock-out behind the name keeps paths and regional art clear of the letters. Optional availability text uses `font-body` at 2x, dslate, origin cy+32, with strings supplied by gameplay.
+- Labels: names in `font-title` at 2x, ink, centred below the markers. Names fit within 212px of visible ink, leaving at least 16px between adjacent 228px-spaced centres. With advance width A, origin is cx-floor((A-4)/2)-2,cy+12, so visible capitals occupy cy+20 through cy+29. An lgrey knock-out behind the name keeps paths and regional art clear of the letters. Optional availability text uses `font-body` at 2x, dslate, origin cy+32, with strings supplied by gameplay.
 - Footer: Back to title uses secondary `ui-button` at 164,300,192,48, with an ink label; Continue uses `ui-button-primary` at 364,300,192,48, with a white label. Neither uses a play mark. Continue is the default keyboard action; a tap on an open zone marker selects that destination.
 - Legacy assets: `map-fork`, `map-hill`, `map-wave` and `map-compass` remain available. The six-destination layout does not require fork or pen-mark decorations.
 

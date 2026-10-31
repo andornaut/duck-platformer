@@ -6,7 +6,7 @@ Usage, from the repository root:
   python3 -I art/tools/map.py preview OUT.png  contact sheet on pale steel, cream and slate
 
 The map uses a 720x360 view and six 35x35 zone markers, centred on the 12px grid:
-Blue cityscape (126,90), Industrial (354,90), Countryside (582,90), Woodland (582,222),
+Blue cityscape (126,90), Industrial outskirts (354,90), Countryside (582,90), Woodland (582,222),
 Home city (354,222), Apartment (126,222). The route follows that order without forks.
 
 map-paper is a 32x32 nine-slice, margins 13,13,13,13, with a pale steel lgrey face and grey/slate rules.
@@ -15,15 +15,16 @@ map-zone keeps its existing tags and frame positions: normal cream disc with a d
 an outer dslate ring; visited is navy with a cream tick badge; locked replaces the icon with a dslate
 padlock; unbuilt is a broken slate ring and question mark. Shape carries each state as well as colour.
 
-map-icon-<destination> is 14x14, centred over normal/current/visited nodes. Normal uses the theme's dark
-blue, brown or forest ink; visited uses cream. Locked/unbuilt nodes show no icon. The street and generic
-zone icons remain available. map-region-<destination> is a 120x60 static illustration placed at cx-60,
+map-icon-<destination> is 14x14, centred over normal/current/visited nodes. Both tags use a muted primary backing, an
+ink landmark and a dslate edge; the visited marker supplies its completion tick. Locked/unbuilt nodes show no
+icon. The street and generic zone icons remain available. map-region-<destination> is a 120x60 static illustration placed at cx-60,
 cy-36, behind paths and markers. These decorative buildings, fields and trees keep destination identity
 visible while its marker is locked or unbuilt. No region depicts a playable layout.
 
 Paths and labels are runtime drawings. Open paths are 4px solid dslate; built, locked paths are 2px slate
 dashes (6 on, 4 off); unbuilt paths are 2x2 slate dots every 6px. Zone names use font-title at 2x, ink,
-centred under their markers, with their visible capitals on cy+20..29 and an lgrey knock-out behind.
+with at most 212px of visible ink, centred under their markers. Visible capitals occupy cy+20..29, with an
+lgrey knock-out behind.
 Back to title is ui-button at164,300,192,48; Continue is ui-button-primary at364,300,192,48.
 
 map-duck remains 26x22 with idle2x400ms, centred on the current node and standing on its top ring.
@@ -41,6 +42,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pixel  # noqa: E402
+import zone_themes  # noqa: E402
 from pixel import Grid  # noqa: E402
 
 SRC = "art/map"
@@ -168,46 +170,61 @@ ICONS.update({
                  "...##....##...", "...##....##...", "...##....##...", "...##....##...",
                  "..####..####..", "..####..####.."),
 })
-THEME_INK = {"apartment": "dslate", "blue-cityscape": "dslate", "countryside": "dbrown",
-             "home-city": "dslate", "industrial": "dslate", "woodland": "forest"}
+def outlined_block(g, colour, box):
+    x, y, w, h = box
+    g.rect(x, y, w, h, "dslate")
+    g.rect(x + 1, y + 1, w - 2, h - 2, colour)
 
 
 def region(kind):
-    """120x60 decorative theme fragments; the central marker keeps a clear 40px opening."""
+    """120x60 theme fragments, predominantly the destination's muted primary, with a clear marker opening."""
     g = Grid(120, 60)
+    primary = zone_themes.THEMES[kind]["primary"]
+    shade = primary + "-shade"
     if kind in ("blue-cityscape", "home-city", "apartment", "industrial"):
-        for x, w, top in ((2, 24, 18), (24, 14, 6), (86, 18, 14), (104, 14, 26)):
-            g.rect(x, top, w, 58 - top, "grey")
         if kind == "industrial":
-            g.rect(4, 30, 32, 28, "slate")
-            g.rect(8, 12, 6, 22, "slate")
-            g.tri((86, 36), (103, 24), (103, 36), "slate")
-            g.rect(86, 36, 30, 22, "slate")
+            for x in (2, 86):
+                outlined_block(g, primary, (x + 4, 10, 7, 26))
+                g.tri((x, 34), (x + 18, 22), (x + 34, 34), "dslate")
+                g.tri((x + 2, 34), (x + 18, 24), (x + 32, 34), primary)
+                outlined_block(g, primary, (x, 34, 32, 24))
+                g.rect(x + 2, 50, 28, 6, shade)
+                g.rect(x + 8, 40, 4, 4, "dslate")
+                g.rect(x + 20, 40, 4, 4, "dslate")
         elif kind == "home-city":
-            for x in (3, 88):
-                g.tri((x, 32), (x + 14, 20), (x + 28, 32), "slate")
-                g.rect(x + 3, 32, 22, 26, "grey")
+            for x in (2, 86):
+                g.tri((x, 30), (x + 16, 18), (x + 32, 30), "dslate")
+                g.tri((x + 3, 29), (x + 16, 20), (x + 29, 29), shade)
+                outlined_block(g, primary, (x + 3, 30, 26, 28))
+                g.rect(x + 6, 48, 20, 2, shade)
+                g.rect(x + 8, 36, 4, 6, "dslate")
+                g.rect(x + 20, 36, 4, 6, "dslate")
         elif kind == "apartment":
-            for x in (5, 94):
-                g.rect(x, 8, 20, 50, "grey")
+            for x in (6, 94):
+                outlined_block(g, primary, (x, 8, 20, 50))
                 for y in (16, 28, 40):
-                    g.rect(x + 4, y, 4, 4, "slate")
-                    g.rect(x + 12, y, 4, 4, "slate")
-                g.rect(x + 8, 50, 6, 8, "tan")
+                    g.rect(x + 4, y, 4, 4, "dslate")
+                    g.rect(x + 12, y, 4, 4, "dslate")
+                g.rect(x + 8, 50, 6, 7, shade)
         else:
-            for x in (8, 92):
-                g.rect(x, 32, 20, 26, "slate")
+            for x, w, top in ((2, 20, 20), (22, 14, 6), (86, 16, 14), (102, 16, 28)):
+                outlined_block(g, primary, (x, top, w, 58 - top))
+                g.rect(x + 2, 50, w - 4, 6, shade)
     elif kind == "countryside":
         for x in (0, 82):
-            g.tri((x, 44), (x + 18, 34), (x + 38, 44), "tan")
-            g.rect(x, 45, 38, 12, "tan")
-            g.rect(x + 4, 49, 28, 2, "brown")
-            g.rect(x + 10, 55, 26, 2, "brown")
+            g.tri((x, 44), (x + 18, 34), (x + 37, 44), "dslate")
+            g.tri((x + 2, 44), (x + 18, 36), (x + 35, 44), primary)
+            outlined_block(g, primary, (x, 44, 38, 14))
+            g.rect(x + 4, 48, 29, 2, shade)
+            g.rect(x + 10, 54, 26, 2, shade)
     elif kind == "woodland":
         for x, y in ((12, 34), (28, 42), (92, 38), (108, 30)):
-            g.rect(x - 2, y + 2, 4, 20, "brown")
-            g.tri((x, y - 22), (x - 12, y + 6), (x + 12, y + 6), "forest")
-            g.tri((x, y - 14), (x - 12, y + 14), (x + 12, y + 14), "dgreen")
+            g.rect(x - 2, y + 2, 4, 20, "dslate")
+            g.tri((x, y - 22), (x - 12, y + 6), (x + 12, y + 6), "dslate")
+            g.tri((x, y - 19), (x - 10, y + 5), (x + 10, y + 5), primary)
+            g.tri((x, y - 14), (x - 12, y + 14), (x + 12, y + 14), "dslate")
+            g.tri((x, y - 11), (x - 10, y + 13), (x + 10, y + 13), primary)
+            g.rect(x - 6, y + 10, 12, 2, shade)
     return g.px
 
 
@@ -218,9 +235,15 @@ LOCK = bm("...####...", "..######..", ".##....##.", ".##....##.", ".##....##.", 
           "####..####", "####..####", "#####.####", "##########", "##########")
 
 
-def icon(rows, c):
+def icon(c, primary, rows):
     g = Grid(14, 14)
-    stamp(g, bm(*rows), 0, 0, c)
+    if primary:
+        # A muted primary backing keeps its colour visible between the dark landmark's bold strokes.
+        g.rect(0, 0, 14, 14, "dslate")
+        g.rect(1, 1, 12, 12, primary)
+        stamp(g, bm(*rows), 0, 0, "ink")
+    else:
+        stamp(g, bm(*rows), 0, 0, c)
     return g.px
 
 
@@ -292,10 +315,11 @@ def sprites():
     yield "map-fork", [(s, [fork(s)], 100) for s in ("normal", "current", "visited", "unbuilt")]
     yield "map-hill", one(hill())
     for key in sorted(ICONS):
-        yield f"map-icon-{key}", [("normal", [icon(ICONS[key], THEME_INK.get(key, "dslate"))], 100),
-                                  ("visited", [icon(ICONS[key], "cream")], 100)]
+        primary = zone_themes.THEMES[key]["primary"] if key in zone_themes.THEMES else None
+        yield f"map-icon-{key}", [("normal", [icon("dslate", primary, ICONS[key])], 100),
+                                  ("visited", [icon("cream", primary, ICONS[key])], 100)]
     yield "map-paper", one(paper())
-    for key in sorted(THEME_INK):
+    for key in sorted(zone_themes.THEMES):
         yield f"map-region-{key}", one(region(key))
     yield "map-wave", one(wave())
     yield "map-zone", [(s, [zone(s)], 100) for s in ("normal", "current", "visited", "locked", "unbuilt")]

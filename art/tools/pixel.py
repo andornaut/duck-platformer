@@ -8,6 +8,8 @@ import subprocess
 import sys
 import tempfile
 
+import zone_themes
+
 # Endesga 32, by role.
 K = dict(
     rust="be4a2f", ochre="d77643", cream="ead4aa", tan="e4a672", brown="b86f50", dbrown="733e39", plum="3e2731",
@@ -16,6 +18,7 @@ K = dict(
     grey="8b9bb4", slate="5a6988", dslate="3a4466", navy="262b44", ink="181425", hot="ff0044", purple="68386c",
     mauve="b55088", pink="f6757a", skin1="e8b796", skin2="c28569",
 )
+K.update(zone_themes.colours())
 PALETTE = list(K.values())
 # One ramp step darker for each colour. Shadows and dimming step down this, never blend with black.
 DARKER = dict(p.split(":") for p in (
@@ -25,6 +28,7 @@ DARKER = dict(p.split(":") for p in (
     "8b9bb4:5a6988 5a6988:3a4466 3a4466:262b44 262b44:181425 181425:181425 ff0044:a22633 68386c:3e2731 "
     "b55088:68386c f6757a:b55088 e8b796:c28569 c28569:b86f50"
 ).split())
+DARKER.update(zone_themes.ramps(K))
 
 MANIFEST = "public/art/manifest.json"
 SPRITES = "public/art/sprites"
