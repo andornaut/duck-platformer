@@ -2,6 +2,7 @@ import type { BehaviourPlan } from "./types";
 
 const BOAT_PAUSE = 1;
 const BOAT_SPEED = 6;
+const DOG_PATROL_PAUSE = 0.4;
 const DOG_PATROL_SPEED = 2;
 
 const DOG_ALERT = [
@@ -54,7 +55,7 @@ export const DOG_BEHAVIOUR: BehaviourPlan = {
       motion: { direction: -1, kind: "move", speed: DOG_PATROL_SPEED },
       transitions: [
         { to: "crouch", when: DOG_ALERT },
-        { to: "patrol-right", when: [{ kind: "boundary" }] },
+        { to: "wait-left", when: [{ kind: "boundary" }] },
       ],
     },
     "patrol-right": {
@@ -62,7 +63,7 @@ export const DOG_BEHAVIOUR: BehaviourPlan = {
       motion: { direction: 1, kind: "move", speed: DOG_PATROL_SPEED },
       transitions: [
         { to: "crouch", when: DOG_ALERT },
-        { to: "patrol-left", when: [{ kind: "boundary" }] },
+        { to: "wait-right", when: [{ kind: "boundary" }] },
       ],
     },
     rest: {
@@ -76,6 +77,22 @@ export const DOG_BEHAVIOUR: BehaviourPlan = {
       transitions: [
         { to: "rest", when: [{ kind: "boundary" }] },
         { to: "rest", when: [{ kind: "elapsed", seconds: 0.6 }] },
+      ],
+    },
+    "wait-left": {
+      animation: "idle",
+      motion: { kind: "wait" },
+      transitions: [
+        { to: "crouch", when: DOG_ALERT },
+        { to: "patrol-right", when: [{ kind: "elapsed", seconds: DOG_PATROL_PAUSE }] },
+      ],
+    },
+    "wait-right": {
+      animation: "idle",
+      motion: { kind: "wait" },
+      transitions: [
+        { to: "crouch", when: DOG_ALERT },
+        { to: "patrol-left", when: [{ kind: "elapsed", seconds: DOG_PATROL_PAUSE }] },
       ],
     },
   },
