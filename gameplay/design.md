@@ -88,7 +88,7 @@ A stage is the individual playable layout, currently represented by `ZonePlan` i
 - **Crush:** a moving platform that pushes him sideways carries him to its leading edge. If it squeezes him into terrain or another solid, he is crushed and enters the death flow, as a hazard does. Layouts leave room beside every moving platform's path so he is never pinned on a required route
 - **Difficulty:** stages use the same configurable difficulty target and variation band in `src/data/`, with variation inside it rather than guaranteed escalation between stages or from start to finish
 - **Doors:** doors lead only into rooms. Use enters a door when any part of his drawn frame overlaps the door's drawn art; where he overlaps more than one, the door whose centre is nearest his wins
-- **Edge hazards:** a common red strip, 2 to 3 px thick, can cover the top, bottom, left or right edge of terrain. Terrain edges and interactive antagonists share the lethal red contact treatment. There are no spikes. Touching any edge hazard enters the death flow
+- **Edge hazards:** a common red strip, 2 to 3 px thick, can cover the top, bottom, left or right edge of terrain. Inanimate hazards use red contact edges; animals have no red contact outlines. There are no spikes. Touching any edge hazard enters the death flow
 - **Exit:** reaching the end of the stage clears it, and the game moves straight on to the map
 - **Going back:** walking all the way back to the stage's left edge leaves it without completing it: the screen fades and the map shows with him on that stage's zone. Completion progress is unchanged, and cumulative active time is retained. Every stage starts him clear of that edge and has no wall in front of it
 - **Kinds:** indoor, outdoor, or a hybrid with both
@@ -122,10 +122,11 @@ This is the approved implementation scope for the current change, including the 
 
 Everything in a stage except its terrain is placed in data through archetypes, characters and instances.
 
+- **Animals:** every animal in the main stage foreground, apart from the duck, is an enemy and lethal on contact. Animals have no red contact outlines. The dog antagonist is the only world-stage animal currently placed; there are no friendly background animals in the current stages
 - **Archetypes:** a behaviour: collision (none, solid, one-way ledge, hazard or Use), movement, reaction, interaction (such as talking on Use or a quip on approach) and default tuning
 - **Behaviour patterns:** reusable patterns in the data choose behaviour primitives, their sequence or states, transition conditions, timing, animations and tuning. Animals and moving inanimate objects use the same composition approach. Code implements the primitives, condition evaluation and shared executor; character-specific cycles are composed in data rather than hardcoded in code
 - **Characters:** who something is: one archetype plus tuning overrides, its art and animations, hit box, size, its dialogue and quip lines, and quirks. No character inherits from another. Props (platforms, hazards, doors and backdrops) are characters with art but no voice
-- **Decoration:** background animals, animals in windows and animals in parallax layers are nonlethal decoration. Interactive antagonists are always lethal on contact and have a thin red contact outline
+- **Decoration:** friendly animals are allowed only as muted background flavour, never in the main stage foreground, or inside rooms reached through doors for shops and quests. Room animals remain in place
 - **Instances:** one placement in a stage: a character, a position, size and phase, last-word overrides, its own lines or dialogue scene, a door's room, and flags for carried choices
 - **Movement:** an algorithm (static, linear, ease, hop or wander), a direction, a distance, a speed, a pause at each end, and a random variance that rolls fresh on every attempt
 - **Overrides:** flow one way: an instance overrides its character, which overrides its archetype. Everything resolves and is checked when the game loads
@@ -163,7 +164,7 @@ The park is a prototype for randomized stages, not V1's second stage. The identi
 
 - **Activation:** proximity starts the introduction once per attempt, freezing play. Completing or skipping it activates the dog and resumes play
 - **Approach:** the loading yard follows the basic hop and full-jump lessons and precedes the streets. A refuge ledge before the ground patrol and another beyond it give safe observation and landing points. Neither requires a maximum-height jump. The first encounter has no other hazards
-- **Contact:** the dog is always lethal on contact, including during crouch and rest, with a thin red contact outline
+- **Contact:** the dog is always lethal on contact, including during crouch and rest. It has no red contact outline
 - **Cycle:** patrol, crouch, rush, rest, then patrol again. A nearby duck on the same ground triggers the crouch; the rush direction locks when crouching starts, and the rush stays inside the patrol area
 - **Dialogue:** the first introduction has three lines: the dog says the ferret asked him to stop the duck; the duck says he is going home; the dog tells him to get past. The player-facing wording lives in the text data files, with Skip available
 - **Timing:** the dog uses the same timing across both stages of the first zone; their layouts vary. The first encounter is in the first stage

@@ -43,7 +43,7 @@ Each target is a band, not a point, that the simulator reports per stage and ski
 
 ## Remaining for the first build
 
-**Current implementation scope:** playable City boundary as Blue cityscape's second stage, using the existing map, stage-choice modal and unlock flow. Completing Parcel depot and streets unlocks City boundary; both remain replayable. Existing catalogue and progress IDs and the save format are unchanged. The remaining zones are planned content; the finish celebration belongs only to Apartment building's final stage.
+**Current implementation scope:** playable City boundary as Blue cityscape's second stage, using the existing map, stage-choice modal and unlock flow. Completing Parcel depot and streets unlocks City boundary; both remain replayable. Existing catalogue and progress IDs and the save format are unchanged. World-stage animals are limited to the dog antagonist; room animals remain. Foreground animals are enemies without red contact outlines. Friendly animals are allowed only as muted background flavour or inside rooms, and no friendly background animals are currently placed. Inanimate hazards retain red contact edges. The remaining zones are planned content; the finish celebration belongs only to Apartment building's final stage.
 
 Open questions:
 
