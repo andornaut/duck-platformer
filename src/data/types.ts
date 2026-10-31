@@ -378,6 +378,22 @@ export interface AreaLink {
 // no excluded one is. room: a door's room, a key of ROOMS (src/data/rooms.ts). A door is an
 // instance whose archetype is "door" (its collision "use"); every door has a room, and nothing
 // else has one.
+export interface ElementSkin {
+  readonly art: string;
+  readonly tileset: string | null;
+}
+
+export interface ElementBinding {
+  readonly behaviour?: BehaviourPlan;
+  readonly character: string;
+  readonly lines?: readonly string[];
+  readonly overrides?: Tuning;
+  readonly parallax?: Point;
+  readonly phase?: number;
+  readonly scene?: string | null;
+  readonly skin?: ElementSkin;
+}
+
 export interface Instance {
   readonly behaviour?: BehaviourPlan;
   readonly character: string;
@@ -391,9 +407,11 @@ export interface Instance {
   readonly phase?: number;
   readonly requires?: readonly string[];
   readonly room?: string;
+  readonly role?: string;
   readonly row: number;
   readonly rows?: number;
   readonly scene?: string;
+  readonly skin?: ElementSkin;
 }
 
 // A run of terrain. In an area with a tileset, look names the family of the tileset's tiles it is
@@ -498,7 +516,9 @@ export interface ChunkPlan {
 export interface ThemeBackdrop {
   readonly character: string;
   readonly parallax?: Point;
+  readonly role?: string;
   readonly row: number;
+  readonly skin?: ElementSkin;
 }
 
 // What every chunk of a theme is drawn with, so seams never show (THEMES by key, in
@@ -508,6 +528,7 @@ export interface ThemeBackdrop {
 // and standing on its floor.
 export interface ThemePlan {
   readonly backdrops: readonly ThemeBackdrop[];
+  readonly bindings: Readonly<Record<string, ElementBinding>>;
   readonly door: string;
   readonly looks: Readonly<Record<string, string>>;
   readonly tileset: string;
