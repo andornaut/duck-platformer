@@ -121,17 +121,23 @@ describe("the zones", () => {
       if (area.tileset !== undefined) {
         expect(tileset, area.tileset).toBeDefined();
       }
-      for (const key of new Set(area.objects.map(({ character }) => character))) {
+      for (const instance of area.objects) {
+        const key = instance.character;
         const character = CHARACTERS[key];
         if (!character) {
           throw new Error(`No character ${key}`);
         }
-        const source = character.tileset === undefined ? tileset : TILESETS[character.tileset];
+        const art = instance.skin?.art ?? character.art;
+        const sourceKey = instance.skin
+          ? instance.skin.tileset
+          : (character.tileset ?? area.tileset);
+        const source =
+          sourceKey === null || sourceKey === undefined ? undefined : TILESETS[sourceKey];
         expect(
-          character.art.startsWith("placeholder-") ||
-            character.art.startsWith("test-") ||
-            artKind(MANIFEST, source, character.art) !== "placeholder",
-          `${key}: ${character.art} in ${character.tileset ?? area.tileset}`,
+          art.startsWith("placeholder-") ||
+            art.startsWith("test-") ||
+            artKind(MANIFEST, source, art) !== "placeholder",
+          `${key}: ${art} in ${sourceKey ?? "sprite/image"}`,
         ).toBe(true);
       }
       for (const solid of area.solids) {
