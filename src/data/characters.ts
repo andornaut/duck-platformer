@@ -1,3 +1,4 @@
+import { BOAT_BEHAVIOUR, DOG_BEHAVIOUR } from "./behaviours";
 import type { Character } from "./types";
 
 // Who or what each placed thing is, by name: its archetype, art, size and tuning. art is a piece
@@ -45,29 +46,13 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     rows: 15,
   },
   "dog-antagonist": {
-    animations: { crouch: "crouch", idle: "idle", move: "walk", rest: "rest", rush: "rush" },
     archetype: "hazard",
     art: "dog-antagonist",
-    charge: {
-      crouchSeconds: 0.7,
-      groundTolerance: 1,
-      restSeconds: 1.1,
-      rushSeconds: 0.6,
-      rushSpeed: 12,
-      triggerRange: 8,
-    },
+    behaviour: DOG_BEHAVIOUR,
     cols: 5,
     rows: 4,
     tuning: {
       interaction: { kind: "talk", range: 26 },
-      motion: {
-        algorithm: "linear",
-        direction: "left",
-        distance: 12,
-        pause: 0.4,
-        speed: 2,
-        variance: 0,
-      },
     },
   },
   // A harmless pug that trots up to her.
@@ -219,12 +204,12 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 3,
     rows: 2,
   },
-  // A boat on the pond, a moving platform whose motion each placement sets. Its deck is the top of
-  // the sprite; the hull below dips into the water.
+  // A boat follows the shared crossing behaviour. Its deck is the sprite's top; the hull dips
+  // below it.
   "park-boat": {
-    animations: { idle: "idle", move: "idle", react: "idle", talk: "idle" },
     archetype: "platform",
     art: "park-boat",
+    behaviour: BOAT_BEHAVIOUR,
     cols: 6,
     rows: 1,
   },

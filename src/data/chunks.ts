@@ -160,7 +160,6 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       {
         character: "park-boat",
         col: 22,
-        overrides: { motion: { direction: "right", distance: 30, pause: 1, speed: 6 } },
         phase: 0,
         row: 40,
       },
