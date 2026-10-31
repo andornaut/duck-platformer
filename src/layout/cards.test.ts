@@ -2,14 +2,22 @@ import { BUILD_LABEL } from "@andornaut/game-kit/build/buildLabel";
 import { rectsOverlap } from "@andornaut/game-kit/rect";
 import { expect, it } from "vitest";
 
+import { ZONE_MAP } from "../data/map";
 import { SCREEN } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { Rect } from "../data/types";
 import { CARD_FONTS } from "../testing/cardFonts";
-import { CARD_CONTENT, cardTextSize } from "./contentCard";
+import {
+  CARD_CONTENT,
+  cardActions,
+  cardActionsSize,
+  cardTextSize,
+  contentCardLayout,
+} from "./contentCard";
 import { pressedArea } from "./hitAreas";
 import { pauseCard } from "./pauseCard";
 import { settingsCard, stepsCard } from "./settingsCard";
+import { stageSelectCard } from "./stageSelectCard";
 
 const pause = pauseCard(CARD_FONTS, TEXT.pause);
 const variants = [false, true].map((install) =>
@@ -27,19 +35,39 @@ const inside = (outer: Rect, inner: Rect) =>
   inner.x + inner.width <= outer.x + outer.width &&
   inner.y + inner.height <= outer.y + outer.height;
 
-it.each([pause, ...variants, ...installs])(
-  "keeps measured headers and close controls inside padded cards",
-  ({ card, close, title }) => {
-    const interior = {
-      height: card.height - 2 * CARD_CONTENT.padding,
-      width: card.width - 2 * CARD_CONTENT.padding,
-      x: card.x + CARD_CONTENT.padding,
-      y: card.y + CARD_CONTENT.padding,
-    };
+const destination = ZONE_MAP.destinations[0]!;
+const stageSelect = stageSelectCard(
+  CARD_FONTS,
+  TEXT.map.zones[destination.id]!,
+  destination.stages.map((id) => TEXT.map.stages[id]!),
+);
+const updateActions = cardActionsSize(CARD_FONTS.body, "row", [TEXT.update.accept]);
+const update = contentCardLayout(
+  { ...SCREEN, x: 0, y: 0 },
+  [{ key: "actions", ...updateActions }],
+  { close: true, titleWidth: cardTextSize(CARD_FONTS.title, TEXT.update.title).width },
+);
+const updateButton = cardActions(CARD_FONTS.body, "row", update.groups.actions!, [
+  TEXT.update.accept,
+])[0]!;
+
+it.each([
+  { first: pause.resume.hit, layout: pause },
+  ...variants.map((layout) => ({ first: layout.moveControls.hit, layout })),
+  ...installs.map((layout) => ({ first: layout.steps[0]!.text, layout })),
+  { first: stageSelect.buttons[0]!.hit, layout: stageSelect },
+  { first: updateButton.hit, layout: { ...update, close: update.close!, title: update.title! } },
+])(
+  "keeps close targets clear of centred titles and body controls within the viewport",
+  ({ first, layout: { card, close, title } }) => {
     expect(inside({ ...SCREEN, x: 0, y: 0 }, card)).toBe(true);
-    expect(inside(interior, close.art)).toBe(true);
-    expect(inside(interior, title)).toBe(true);
-    expect(title.x + title.width + CARD_CONTENT.gap).toBeLessThanOrEqual(close.art.x);
+    expect(inside(card, close.art)).toBe(true);
+    expect(close.art.x - card.x).toBe(CARD_CONTENT.closeInset);
+    expect(close.art.y - card.y).toBe(CARD_CONTENT.closeInset);
+    expect(title.x + title.width / 2).toBe(card.x + card.width / 2);
+    expect(title.width).toBeGreaterThan(0);
+    expect(title.x).toBeGreaterThanOrEqual(close.hit.x + close.hit.width + CARD_CONTENT.gap);
+    expect(first.y).toBeGreaterThanOrEqual(close.hit.y + close.hit.height + CARD_CONTENT.gap);
   },
 );
 

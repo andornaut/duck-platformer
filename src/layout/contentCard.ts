@@ -3,8 +3,8 @@ import { type BitmapFont, inkWidth, laidGlyphs } from "@andornaut/game-kit/text/
 
 import type { Point, Rect, Size } from "../data/types";
 import { TEXT_BUTTON } from "./buttonLabel";
-import { CARD_TEXT_SCALE } from "./cardFrame";
-import { hitAround } from "./hitAreas";
+import { CARD_CONTENT, CARD_TEXT_SCALE } from "./cardFrame";
+import { hitAround, hitMargin } from "./hitAreas";
 import { type LabelledButton, labelledButton } from "./labelledButton";
 
 export interface CardFonts {
@@ -12,16 +12,11 @@ export interface CardFonts {
   readonly title: BitmapFont;
 }
 
-export const CARD_CONTENT = {
-  closeSize: 24,
-  gap: 8,
-  lineHeight: 16,
-  padding: 16,
-  rowGap: 4,
-} as const;
+export { CARD_CONTENT } from "./cardFrame";
 export type CardAxis = "row" | "stack";
 
 export interface CardGroup extends Size {
+  readonly hitOutset?: number;
   readonly key: string;
 }
 
@@ -55,19 +50,26 @@ export function cardTextRowsSize(font: BitmapFont, texts: readonly string[]): Si
   };
 }
 
-export function cardActionsSize(font: BitmapFont, axis: CardAxis, labels: readonly string[]): Size {
+export function cardActionsSize(
+  font: BitmapFont,
+  axis: CardAxis,
+  labels: readonly string[],
+): Size & { readonly hitOutset?: number } {
   if (labels.length === 0) {
     return { height: 0, width: 0 };
   }
   const width =
     Math.max(...labels.map((label) => cardTextSize(font, label).width)) + 2 * TEXT_BUTTON.inset;
+  const hitOutset = hitMargin({ height: TEXT_BUTTON.height, width, x: 0, y: 0 });
   return axis === "row"
     ? {
         height: TEXT_BUTTON.height,
+        hitOutset,
         width: labels.length * width + (labels.length - 1) * CARD_CONTENT.gap,
       }
     : {
         height: labels.length * TEXT_BUTTON.height + (labels.length - 1) * CARD_CONTENT.rowGap,
+        hitOutset,
         width,
       };
 }
@@ -92,15 +94,31 @@ export function contentCardLayout(
   const close = header?.close === true;
   const hasTitle = header !== undefined && header.titleWidth > 0;
   const hasHeader = hasTitle || close;
+  const closeArt = {
+    height: CARD_CONTENT.closeSize,
+    width: CARD_CONTENT.closeSize,
+    x: CARD_CONTENT.closeInset,
+    y: CARD_CONTENT.closeInset,
+  };
+  const closeHit = hitAround(closeArt);
+  const closeRight = closeHit.x + closeHit.width;
+  const closeBottom = closeHit.y + closeHit.height;
+  const titleReserve = close
+    ? Math.max(CARD_CONTENT.padding, closeRight + CARD_CONTENT.gap)
+    : CARD_CONTENT.padding;
   const headerHeight = hasHeader
-    ? Math.max(hasTitle ? CARD_CONTENT.lineHeight : 0, close ? CARD_CONTENT.closeSize : 0)
+    ? Math.max(
+        hasTitle ? CARD_CONTENT.lineHeight : 0,
+        close ? closeBottom - CARD_CONTENT.padding + (present[0]?.hitOutset ?? 0) : 0,
+      )
     : 0;
-  const headerWidth =
-    (hasTitle ? (header?.titleWidth ?? 0) : 0) +
-    (close ? CARD_CONTENT.closeSize + (hasTitle ? CARD_CONTENT.gap : 0) : 0);
-  const innerWidth = Math.max(headerWidth, 0, ...present.map(({ width }) => width));
+  const headerWidth = hasTitle
+    ? (header?.titleWidth ?? 0) + 2 * (titleReserve - CARD_CONTENT.padding)
+    : 0;
+  const contentWidth = Math.max(headerWidth, 0, ...present.map(({ width }) => width));
   const count = present.length + (hasHeader ? 1 : 0);
-  const width = innerWidth + 2 * CARD_CONTENT.padding;
+  const width = contentWidth + 2 * CARD_CONTENT.padding;
+  const innerWidth = width - 2 * CARD_CONTENT.padding;
   const height =
     headerHeight +
     present.reduce((sum, group) => sum + group.height, 0) +
@@ -137,17 +155,16 @@ export function contentCardLayout(
     if (hasTitle) {
       title = {
         height: CARD_CONTENT.lineHeight,
-        width: innerWidth - (close ? CARD_CONTENT.closeSize + CARD_CONTENT.gap : 0),
-        x: innerX,
-        y: y + (headerHeight - CARD_CONTENT.lineHeight) / 2,
+        width: width - 2 * titleReserve,
+        x: card.x + titleReserve,
+        y,
       };
     }
     if (close) {
       const art = {
-        height: CARD_CONTENT.closeSize,
-        width: CARD_CONTENT.closeSize,
-        x: innerX + innerWidth - CARD_CONTENT.closeSize,
-        y,
+        ...closeArt,
+        x: card.x + closeArt.x,
+        y: card.y + closeArt.y,
       };
       closeLayout = { art, at: { x: art.x, y: art.y }, hit: hitAround(art) };
     }

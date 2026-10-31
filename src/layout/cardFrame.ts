@@ -3,18 +3,29 @@ import { hitAround } from "./hitAreas";
 
 export const CARD_TEXT_SCALE = 2;
 
-// Every card's frame (art/README.md, Pause, settings and install cards), in base pixels: art's
-// `ui-settings-card` with no header band, CARD_WIDTH wide at CARD_AT, each card as tall as its
-// contents. Its title sits centred across it near the top, its close X at its top-right corner,
-// and its first row or button starts firstRowY down, the same on every card, so a new card takes
-// these too. Text on the face is inset at least padding from its sides.
+export const CARD_CONTENT = {
+  closeInset: 6,
+  closeSize: 24,
+  gap: 8,
+  lineHeight: 16,
+  padding: 16,
+  rowGap: 4,
+} as const;
+
+// Fixed frame geometry for the placeholder celebration. Ordinary modal cards measure their
+// contents through contentCardLayout.
 export const CARD_AT: Point = { x: 176, y: 88 };
 export const CARD_WIDTH = 368;
 
-const CLOSE_ART: Rect = { height: 24, width: 24, x: CARD_AT.x + CARD_WIDTH - 34, y: CARD_AT.y + 6 };
+const CLOSE_ART: Rect = {
+  height: CARD_CONTENT.closeSize,
+  width: CARD_CONTENT.closeSize,
+  x: CARD_AT.x + CARD_CONTENT.closeInset,
+  y: CARD_AT.y + CARD_CONTENT.closeInset,
+};
 
 export const CARD_FRAME = {
-  // The close X, drawn at the card's top right, and its press area.
+  // The close X, drawn at the card's top left, and its press area.
   close: {
     art: CLOSE_ART,
     at: { x: CLOSE_ART.x, y: CLOSE_ART.y } satisfies Point,

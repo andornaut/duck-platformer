@@ -51,11 +51,6 @@ describe("measured content cards", () => {
     (close) => {
       const titleWidth = 180;
       const result = contentCardLayout(VIEW, [], { close, titleWidth });
-      expect(result.card.width).toBe(
-        titleWidth +
-          2 * CARD_CONTENT.padding +
-          (close ? CARD_CONTENT.closeSize + CARD_CONTENT.gap : 0),
-      );
       expect(result.title?.width).toBeGreaterThanOrEqual(titleWidth);
       expect(result.close === undefined).toBe(!close);
     },

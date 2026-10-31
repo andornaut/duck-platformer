@@ -7,7 +7,7 @@ import {
   cardTextSize,
   contentCardLayout,
 } from "./contentCard";
-import { hitAround } from "./hitAreas";
+import { hitAround, hitMargin } from "./hitAreas";
 import { labelledButton } from "./labelledButton";
 
 const ICON = 16;
@@ -37,6 +37,7 @@ export function settingsCard(
     [
       {
         height: rows * ROW_HEIGHT + (rows - 1) * CARD_CONTENT.rowGap,
+        hitOutset: hitMargin({ height: ROW_HEIGHT, width: rowWidth, x: 0, y: 0 }),
         key: "rows",
         width: rowWidth,
       },
