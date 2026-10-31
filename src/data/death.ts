@@ -10,10 +10,3 @@ export const DEATH: DeathTuning = {
   recoilVelocity: { x: -48, y: -72 },
   voidFallDistance: 96,
 };
-
-export const DEATH_PROGRESS: Readonly<
-  Record<string, { readonly fill: string; readonly track: string }>
-> = {
-  park: { fill: "green", track: "forest" },
-  street: { fill: "sky", track: "dslate" },
-};

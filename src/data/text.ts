@@ -18,10 +18,11 @@ export const TEXT: GameText = {
     title: "Something went wrong",
   },
   death: {
+    level: "{level}",
     progress: "{percent}%",
     retry: "Try again",
     time: "Time: {time}",
-    title: "{level}",
+    title: "{zone}",
   },
   dialogue: {
     continue: "Continue",
