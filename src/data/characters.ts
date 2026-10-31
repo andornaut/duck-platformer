@@ -1,4 +1,10 @@
-import { BOAT_BEHAVIOUR, DOG_BEHAVIOUR } from "./behaviours";
+import {
+  BOAT_BEHAVIOUR,
+  CITY_GROUND_HAZARD_BEHAVIOUR,
+  CITY_LIFT_BEHAVIOUR,
+  CITY_SHUTTLE_BEHAVIOUR,
+  DOG_BEHAVIOUR,
+} from "./behaviours";
 import type { Character } from "./types";
 
 // Who or what each placed thing is, by name: its archetype, art, size and tuning. art is a piece
@@ -19,6 +25,30 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     art: "one-way-canopy",
     cols: 3,
     rows: 1,
+  },
+  "city-ground-hazard": {
+    archetype: "hazard",
+    art: "hazard-top",
+    behaviour: CITY_GROUND_HAZARD_BEHAVIOUR,
+    cols: 4,
+    rows: 1,
+    tileset: "tiles-platforming",
+  },
+  "city-lift": {
+    archetype: "ledge",
+    art: "one-way-ledge",
+    behaviour: CITY_LIFT_BEHAVIOUR,
+    cols: 6,
+    rows: 1,
+    tileset: "tiles-platforming",
+  },
+  "city-shuttle": {
+    archetype: "ledge",
+    art: "one-way-ledge",
+    behaviour: CITY_SHUTTLE_BEHAVIOUR,
+    cols: 6,
+    rows: 1,
+    tileset: "tiles-platforming",
   },
   // A roof's cornice: one-way, along the top of its roofline.
   cornice: {

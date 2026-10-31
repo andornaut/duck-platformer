@@ -1,7 +1,7 @@
-import type { BehaviourPlan } from "./types";
+import type { BehaviourNode, BehaviourPlan } from "./types";
 
-const BOAT_PAUSE = 1;
-const BOAT_SPEED = 6;
+const CROSSING_PAUSE = 1;
+const CROSSING_SPEED = 6;
 const DOG_PATROL_PAUSE = 0.2;
 const DOG_PATROL_SPEED = 3;
 
@@ -10,32 +10,61 @@ const DOG_ALERT = [
   { kind: "same-ground", tolerance: 1 },
 ] as const;
 
+function shuttleStates(
+  speed: number,
+  pause: number,
+  animation: BehaviourNode["animation"],
+): BehaviourPlan["states"] {
+  return {
+    back: {
+      animation,
+      motion: { direction: -1, kind: "move", speed },
+      transitions: [{ to: "wait-near", when: [{ kind: "boundary" }] }],
+    },
+    forward: {
+      animation,
+      motion: { direction: 1, kind: "move", speed },
+      transitions: [{ to: "wait-far", when: [{ kind: "boundary" }] }],
+    },
+    "wait-far": {
+      animation,
+      motion: { kind: "wait" },
+      transitions: [{ to: "back", when: [{ kind: "elapsed", seconds: pause }] }],
+    },
+    "wait-near": {
+      animation,
+      motion: { kind: "wait" },
+      transitions: [{ to: "forward", when: [{ kind: "elapsed", seconds: pause }] }],
+    },
+  };
+}
+
 export const BOAT_BEHAVIOUR: BehaviourPlan = {
   axis: "x",
   distance: 30,
   initial: "forward",
-  states: {
-    back: {
-      animation: "idle",
-      motion: { direction: -1, kind: "move", speed: BOAT_SPEED },
-      transitions: [{ to: "wait-near", when: [{ kind: "boundary" }] }],
-    },
-    forward: {
-      animation: "idle",
-      motion: { direction: 1, kind: "move", speed: BOAT_SPEED },
-      transitions: [{ to: "wait-far", when: [{ kind: "boundary" }] }],
-    },
-    "wait-far": {
-      animation: "idle",
-      motion: { kind: "wait" },
-      transitions: [{ to: "back", when: [{ kind: "elapsed", seconds: BOAT_PAUSE }] }],
-    },
-    "wait-near": {
-      animation: "idle",
-      motion: { kind: "wait" },
-      transitions: [{ to: "forward", when: [{ kind: "elapsed", seconds: BOAT_PAUSE }] }],
-    },
-  },
+  states: shuttleStates(CROSSING_SPEED, CROSSING_PAUSE, "idle"),
+};
+
+export const CITY_GROUND_HAZARD_BEHAVIOUR: BehaviourPlan = {
+  axis: "x",
+  distance: 10,
+  initial: "forward",
+  states: shuttleStates(5, 0.4, null),
+};
+
+export const CITY_LIFT_BEHAVIOUR: BehaviourPlan = {
+  axis: "y",
+  distance: -12,
+  initial: "back",
+  states: shuttleStates(4, 0.6, null),
+};
+
+export const CITY_SHUTTLE_BEHAVIOUR: BehaviourPlan = {
+  axis: "x",
+  distance: 30,
+  initial: "forward",
+  states: shuttleStates(CROSSING_SPEED, CROSSING_PAUSE, null),
 };
 
 export const DOG_BEHAVIOUR: BehaviourPlan = {
