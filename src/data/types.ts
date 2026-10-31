@@ -202,6 +202,43 @@ export interface Charge {
   readonly triggerRange: number;
 }
 
+export type BehaviourCondition =
+  | { readonly kind: "boundary" }
+  | { readonly kind: "elapsed"; readonly seconds: number }
+  | { readonly kind: "nearby"; readonly range: number }
+  | { readonly kind: "same-ground"; readonly tolerance: number };
+
+export type BehaviourMotion =
+  | { readonly kind: "wait" }
+  | {
+      readonly direction: -1 | 1 | "facing";
+      readonly kind: "move";
+      readonly speed: number;
+    };
+
+export interface BehaviourTransition {
+  readonly to: string;
+  // Conditions in one transition must all hold; the first matching transition wins.
+  readonly when: readonly BehaviourCondition[];
+}
+
+export interface BehaviourNode {
+  readonly animation: string;
+  readonly enter?: "face-target";
+  readonly motion: BehaviourMotion;
+  readonly transitions: readonly BehaviourTransition[];
+}
+
+// A reusable bounded movement graph. Distance is signed from its placed origin, in tiles in
+// data and pixels in a layout. Spatial conditions and speeds use the same units.
+export interface BehaviourPlan {
+  readonly axis: "x" | "y";
+  readonly distance: number;
+  readonly inactiveAnimation?: string;
+  readonly initial: string;
+  readonly states: Readonly<Record<string, BehaviourNode>>;
+}
+
 export type InteractionKind = "none" | "quip" | "talk";
 
 // How a character interacts with her, within range tiles of her (centre to centre). quip: says
@@ -248,6 +285,7 @@ export interface Quirk {
 // box comes from art's manifest. lines and quips are keys into TEXT.lines and TEXT.quips; a prop
 // has none.
 export interface Character {
+  readonly behaviour?: BehaviourPlan;
   readonly charge?: Charge;
   // A shared tileset for this character's art, otherwise its area's tileset.
   readonly tileset?: string;
@@ -295,6 +333,7 @@ export interface AreaLink {
 // instance whose archetype is "door" (its collision "use"); every door has a room, and nothing
 // else has one.
 export interface Instance {
+  readonly behaviour?: BehaviourPlan;
   readonly character: string;
   readonly col: number;
   readonly cols?: number;
@@ -503,6 +542,7 @@ export interface Reaches {
 // the view and dialogue need. hitbox: where a hazard touches her, from its top-left corner, when
 // its art declares one; else its whole rectangle.
 export interface ObjectLayout {
+  readonly behaviour?: BehaviourPlan;
   readonly charge?: Charge;
   // The character's shared tileset, otherwise the area's tileset.
   readonly tileset?: string;
