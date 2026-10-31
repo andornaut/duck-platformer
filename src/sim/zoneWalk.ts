@@ -341,18 +341,17 @@ function steer(
   return centre < Math.min(lo, hi) ? 1 : centre > Math.max(lo, hi) ? -1 : 0;
 }
 
-// Plays a try from a spot, starting at start. Returns where she first comes to stand after
-// leaving the ground, if that is another spot, and the steps it ran.
-function play(
+// The run-up and coyote delay depend on the starting state and takeoff, independently of
+// the landing target and how Jump is held after takeoff.
+function prepare(
   tuning: DuckTuning,
   layout: ZoneLayout,
-  surfaces: readonly Surface[],
   from: Spot,
   start: ZoneState,
   attempt: Try,
-): { landed: Spot | undefined; steps: number } {
+): { ready: boolean; steps: number; zone: ZoneState } {
   const run = runner(tuning, layout, start);
-  const missed = () => ({ landed: undefined, steps: run.steps });
+  const missed = () => ({ ready: false, steps: run.steps, zone: run.zone });
   const base = () => placed(from.surface, run.zone, layout).left;
   const { dir } = attempt;
   // Into place, braking in time to stop there, then still.
@@ -389,7 +388,48 @@ function play(
       return missed();
     }
   }
-  // The press, then steering onto the target until she lands.
+  return { ready: true, steps: run.steps, zone: run.zone };
+}
+
+// Plays every distinct takeoff prefix once, including failed run-ups. Each continuation still
+// uses the real zone rules with its own hold, rise and landing target. The cache lives for one
+// source spot and starting wait state, so moving hazards and platforms retain their timing.
+function trialsFrom(
+  tuning: DuckTuning,
+  layout: ZoneLayout,
+  surfaces: readonly Surface[],
+  from: Spot,
+  start: ZoneState,
+): (attempt: Try) => { landed: Spot | undefined; steps: number } {
+  const prepared = new Map<string, ReturnType<typeof prepare>>();
+  return (attempt) => {
+    const key = `${attempt.dir}:${attempt.pre}:${attempt.takeoff}:${attempt.late}`;
+    let prefix = prepared.get(key);
+    let steps = 0;
+    if (!prefix) {
+      prefix = prepare(tuning, layout, from, start, attempt);
+      prepared.set(key, prefix);
+      steps = prefix.steps;
+    }
+    if (!prefix.ready) {
+      return { landed: undefined, steps };
+    }
+    const result = play(tuning, layout, surfaces, from, prefix.zone, attempt);
+    return { ...result, steps: steps + result.steps };
+  };
+}
+
+// From a prepared takeoff, press Jump and steer until the first landing.
+function play(
+  tuning: DuckTuning,
+  layout: ZoneLayout,
+  surfaces: readonly Surface[],
+  from: Spot,
+  start: ZoneState,
+  attempt: Try,
+): { landed: Spot | undefined; steps: number } {
+  const run = runner(tuning, layout, start);
+  const missed = () => ({ landed: undefined, steps: run.steps });
   let left = !run.zone.duck.grounded;
   for (let i = 0; i < AIR_STEPS; i++) {
     const move = i < attempt.rise ? 0 : steer(tuning, layout, attempt.target, run.zone);
@@ -707,6 +747,7 @@ export function walkZone(tuning: DuckTuning, layout: ZoneLayout): ZoneWalk {
     const { count, moving } = movingThings(area);
     const carry = Math.max(0, ...moving.map(movementSpeed));
     let waited: ZoneState[] | undefined;
+    const trials = new Map<ZoneState, ReturnType<typeof trialsFrom>>();
     const startsFor = (lo: number, hi: number, target?: Surface) => {
       const near =
         from.surface.mover !== undefined ||
@@ -729,6 +770,9 @@ export function walkZone(tuning: DuckTuning, layout: ZoneLayout): ZoneWalk {
     for (const target of [...own, ...others]) {
       const done = () =>
         target.surface === from.surface ? seen.has(target.key) : reached.has(target.key);
+      if (done()) {
+        continue;
+      }
       const starts = startsFor(
         Math.min(here.left, target.left),
         Math.max(here.right, target.right),
@@ -747,11 +791,16 @@ export function walkZone(tuning: DuckTuning, layout: ZoneLayout): ZoneWalk {
             break;
           }
         }
+        let trial = trials.get(start);
+        if (!trial) {
+          trial = trialsFrom(tuning, layout, surfaces, from, start);
+          trials.set(start, trial);
+        }
         for (const attempt of tries) {
           if (done()) {
             break;
           }
-          const { landed, steps: ran } = play(tuning, layout, surfaces, from, start, attempt);
+          const { landed, steps: ran } = trial(attempt);
           steps += ran;
           if (landed) {
             reach(landed);
@@ -797,11 +846,9 @@ export function crosses(
     });
     const spot = { bucket, state, surface: from };
     const tries = triesToward(tuning, spot, from, target);
-    return waitStates(tuning, layout, state, count).states.some((start) =>
-      tries.some(
-        (attempt) =>
-          play(tuning, layout, surfaces, spot, start, attempt).landed?.surface.key === to.key,
-      ),
-    );
+    return waitStates(tuning, layout, state, count).states.some((start) => {
+      const trial = trialsFrom(tuning, layout, surfaces, spot, start);
+      return tries.some((attempt) => trial(attempt).landed?.surface.key === to.key);
+    });
   });
 }
