@@ -299,6 +299,16 @@ export const RECIPES: Readonly<Record<string, ZoneRecipe>> = {
     start: "farmland-start",
     theme: "farmland",
   },
+  "forest-paths": {
+    difficulty: ZONE_DIFFICULTY,
+    doors: [{ count: 1, room: "test" }],
+    events: [],
+    finish: "forest-paths-finish",
+    length: { max: 480, min: 360 },
+    spawnCol: 2,
+    start: "forest-paths-start",
+    theme: "forest-paths",
+  },
   "freight-terminal": {
     difficulty: ZONE_DIFFICULTY,
     doors: [{ count: 1, room: "test" }],
@@ -320,6 +330,16 @@ export const RECIPES: Readonly<Record<string, ZoneRecipe>> = {
     spawnCol: 2,
     start: "park-start",
     theme: "park",
+  },
+  ravine: {
+    difficulty: ZONE_DIFFICULTY,
+    doors: [{ count: 1, room: "test" }],
+    events: [],
+    finish: "ravine-finish",
+    length: { max: 480, min: 360 },
+    spawnCol: 2,
+    start: "ravine-start",
+    theme: "ravine",
   },
   "river-crossing": {
     difficulty: ZONE_DIFFICULTY,
