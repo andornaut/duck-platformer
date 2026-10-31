@@ -21,8 +21,7 @@ Gameplay owns the rulebook and the values and content in the data value files (e
 - **Design sessions:** start with "design session" and a topic. Claude keeps floated ideas apart from agreed ones, asks the question that unblocks a decision, and on "wrap up" proposes doc changes, writing them once confirmed.
 - **Difficulty:** keep zones around the same configurable difficulty target and variation band, whose defaults live in `src/data/`, rather than guaranteed escalation. Every built and future stage, including the first tutorial and final stage, randomizes its middle on entry while keeping its opening and ending fixed. Retries retain the assembled layout.
 - **Jump tuning:** use one uninterrupted ballistic ascent, with a minimum hop for short presses and the full jump on a hold. Place overhead short-jump challenges to match the measured hop. Keep the reaches in the rulebook aligned with the simulator, including coyote time in the running gap reach
-- **Playtest what needs eyes:** play the build headless on a landscape phone viewport, and report what broke to tech or art. The user playtests. PLACEHOLDER: the build URL and its dev parameters.
-- **Simulate before tuning:** every difficulty change is compared before and after against a baseline, with a headless simulator that plays the real rules with bots at three skills (novice, typical, expert) and reports the targets per zone. Simulate only what a decision needs, with the same seed before and after, and re-baseline after a change that reorders random draws. Results go to the user as tables with a recommendation. Only gameplay runs simulations at scale. PLACEHOLDER: the simulator and its command; tech builds it.
+- **Phone playtesting:** judge jump feel, touch input and readability on a landscape phone. The user performs device playtesting.
 - **Tune to the targets:** a result inside its band needs no tuning. The user declares when the goal is met.
 
 ## V1 plan
@@ -33,7 +32,7 @@ The six-destination V1 map has two built stages in Blue cityscape: Parcel depot 
 
 ## Targets
 
-Each target is a band, not a point, that the simulator reports per stage and skill. PLACEHOLDER: every band, agreed with the user. The kinds of target:
+Each target is a band, not a point, assessed per stage and player skill. PLACEHOLDER: every band, agreed with the user. The kinds of target:
 
 - **Stage length:** cumulative active time to clear a stage, by skill, including retries and excluding pause, dialogue, menus and the death flow. A retry starts at the stage checkpoint and touch jumps are imprecise, so a stage is short enough that a restart doesn't sting
 - **Reaches:** the duck makes every jump at a reach in the rulebook's Grid, and never one tile beyond it. A pass or fail check, not a band
