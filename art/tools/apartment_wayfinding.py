@@ -2,10 +2,11 @@
 """Apartment wayfinding props, each 48x72, transparent and bottom-left anchored on the local floor.
 
 Usage: apartment_wayfinding.py build | preview OUT.png
-Run from the repository root. Build writes only the two backdrop PNGs; the parent owns manifest registration.
+Run from the repository root. Build writes only the three backdrop PNGs; the parent owns manifest registration.
 
 - apartment-stairwell: an open recess containing an ascending stepped silhouette, with a white up-arrow on a
   dslate sign. It identifies an automatic upstairs walking trigger, not a Use action or physical stair mechanic.
+- apartment-stairwell-down: the same recess with a descending silhouette and a white down-arrow.
 - apartment-room-door: a closed warm-panelled optional room door with amber framing and a small handle. No arrow.
 
 Registry contract: each key uses backdrops/<key>.png, width 48, height 72, anchor bottom-left, y 720, repeat none.
@@ -21,7 +22,7 @@ import pixel  # noqa: E402
 from PIL import Image, ImageOps  # noqa: E402
 
 SIZE = (48, 72)
-KEYS = ("apartment-room-door", "apartment-stairwell")
+KEYS = ("apartment-room-door", "apartment-stairwell", "apartment-stairwell-down")
 BACKDROPS = "public/art/backdrops"
 REGISTRY = [{"key": key, "png": f"backdrops/{key}.png", "width": 48, "height": 72,
              "anchor": "bottom-left", "y": 720, "repeat": "none"} for key in KEYS]
@@ -35,7 +36,7 @@ def canvas():
     return Image.new("RGBA", SIZE)
 
 
-def stairwell():
+def stairwell(down=False):
     im = canvas()
     # Rose plaster jambs surround an open, cool recess rather than a closed door leaf.
     for box, colour in (((3, 4, 45, 72), "dbrown"), ((4, 5, 44, 72), "zone-red-shade"),
@@ -43,15 +44,25 @@ def stairwell():
                         ((8, 10, 11, 72), "slate"), ((39, 10, 41, 72), "ink")):
         rect(im, box, colour)
     # Quiet broad steps rise into the recess; they have no bright standable lip.
-    for x, y in ((9, 64), (16, 56), (23, 48), (30, 40)):
-        rect(im, (x, y, 40, 72), "grey")
-        rect(im, (x, y, 40, y + 2), "slate")
+    if down:
+        for x, y in ((9, 40), (16, 48), (23, 56), (30, 64)):
+            rect(im, (x, y, min(x + 7, 40), 72), "grey")
+            rect(im, (x, y, min(x + 7, 40), y + 2), "slate")
+    else:
+        for x, y in ((9, 64), (16, 56), (23, 48), (30, 40)):
+            rect(im, (x, y, 40, 72), "grey")
+            rect(im, (x, y, 40, y + 2), "slate")
     rect(im, (14, 4, 39, 29), "navy")
     rect(im, (15, 5, 38, 28), "dslate")
-    # A compact symmetrical upward arrow, separated from the architecture by a dark sign.
-    for y, half in ((10, 1), (11, 2), (12, 3), (13, 4), (14, 5), (15, 6)):
-        rect(im, (26 - half, y, 27 + half, y + 1), "white")
-    rect(im, (24, 15, 29, 24), "white")
+    # A compact directional arrow, separated from the architecture by a dark sign.
+    if down:
+        rect(im, (24, 10, 29, 19), "white")
+        for y, half in ((18, 6), (19, 5), (20, 4), (21, 3), (22, 2), (23, 1)):
+            rect(im, (26 - half, y, 27 + half, y + 1), "white")
+    else:
+        for y, half in ((10, 1), (11, 2), (12, 3), (13, 4), (14, 5), (15, 6)):
+            rect(im, (26 - half, y, 27 + half, y + 1), "white")
+        rect(im, (24, 15, 29, 24), "white")
     return im
 
 
@@ -69,7 +80,8 @@ def room_door():
 
 
 def images():
-    return {"apartment-room-door": room_door(), "apartment-stairwell": stairwell()}
+    return {"apartment-room-door": room_door(), "apartment-stairwell": stairwell(),
+            "apartment-stairwell-down": stairwell(down=True)}
 
 
 def build():
@@ -87,10 +99,11 @@ def preview(out):
     # The bright edge below belongs to actual floor terrain, never either backdrop.
     rect(im, (0, 252, 720, 253), "plum")
     rect(im, (0, 253, 720, 255), "cream")
-    for key, x in (("apartment-stairwell", 216), ("apartment-room-door", 456)):
+    for key, x in (("apartment-stairwell", 180), ("apartment-stairwell-down", 336),
+                   ("apartment-room-door", 492)):
         im.alpha_composite(images()[key], (x, 180))
     duck = Image.open("public/art/sprites/duck.png").convert("RGBA").crop((0, 0, 48, 42))
-    im.alpha_composite(duck, (332, 210))
+    im.alpha_composite(duck, (260, 210))
     im.save(out)
     stem, _ = os.path.splitext(out)
     ImageOps.grayscale(im).save(stem + "-grey.png")
