@@ -12,8 +12,6 @@ import { loadProgress, savedProgress } from "../save";
 import { ART_MANIFEST_FILE, ART_MANIFEST_KEY, ART_PATH, type ArtManifest } from "../view/aseprite";
 import { addAtlasArt, ATLAS, queueAtlasFonts, queueAtlasPages } from "./atlasArt";
 
-const LOGO = "logo";
-
 // First scene to run. Loads everything art's manifest lists, makes an animation of every sprite
 // tag, looping unless the manifest lists it as played once, then, once launchReady resolves,
 // starts the test zone and the pause scene beside it.
@@ -23,8 +21,8 @@ export class BootScene extends Scene {
   }
 
   // A build loads its atlas pages, in parallel with the manifest, and each font's .fnt: every
-  // PNG art's manifest lists is on the pages. The dev server has no atlas, so each art file loads
-  // on its own there and every edit shows on reload.
+  // game PNG listed outside standalone images is on the pages. The dev server has no atlas, so
+  // each art file loads on its own there and every edit shows on reload.
   preload(): void {
     if (ATLAS !== null) {
       queueAtlasPages(this, ATLAS);
@@ -39,9 +37,8 @@ export class BootScene extends Scene {
       for (const { json, key } of manifest.tilesets) {
         this.load.json(key, json);
       }
-      // The start screen draws the logo, one of art's images, which the atlas leaves to the
-      // site's pages.
-      for (const { key, png } of manifest.images.filter((image) => image.key === LOGO)) {
+      // Standalone images are excluded from the atlas and loaded in both rendering modes.
+      for (const { key, png } of manifest.images) {
         this.load.image(key, png);
       }
       if (ATLAS !== null) {

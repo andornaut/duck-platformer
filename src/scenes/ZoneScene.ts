@@ -52,7 +52,8 @@ import { bottomShift, shifted, topShift } from "../layout/playView";
 import { MOVE_HINT, TOUCH_CONTROLS, type TouchControl } from "../layout/touchControls";
 import { coverZone, startWakeLock, stopWakeLock } from "../pwa";
 import { deathSupport } from "../rules/death";
-import { isLastZone, nodeOf } from "../rules/map";
+import { nodeOf } from "../rules/map";
+import { stageCompletion } from "../rules/stageCompletion";
 import { stageProgress } from "../rules/stageProgress";
 import { STEP_MS, STEP_SECONDS } from "../rules/step";
 import { zoneLayout } from "../rules/tiles";
@@ -74,7 +75,13 @@ import {
   startZoneIndex,
 } from "../rules/zoneChain";
 import { zonePlanFor } from "../rules/zonePlans";
-import { activeStageTime, flushStats, recordActiveStageStep, saveCompleted } from "../save";
+import {
+  activeStageTime,
+  flushStats,
+  recordActiveStageStep,
+  saveCompleted,
+  savedMap,
+} from "../save";
 import { type TouchSetting, touchSettings, touchSettingShown } from "../settings/touchControls";
 import { ART_MANIFEST_KEY, artHitboxes, type ArtManifest } from "../view/aseprite";
 import { behaviourPose } from "../view/behaviour";
@@ -748,11 +755,8 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
     this.scene.pause();
   }
 
-  // Leaves the ended zone, play held until the next screen takes over, with her standing on it on
-  // the map. Cleared, it is completed, and after a last zone (isLastZone) the celebration shows
-  // first; turned back, it is left as it was and the save is unchanged. Without a map node, plays
-  // the recipe ?zone=<key> names assembled again, or the next zone in the chain (the same one,
-  // turned back), fading back in.
+  // Save a cleared stage before routing to its continuation. Turning back preserves progress;
+  // debug and trial runs keep their existing replay route.
   private leave(): void {
     const { turnedBack } = this.zone;
     if (this.mapNode !== undefined) {
@@ -760,8 +764,17 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
         this.scene.start("map");
         return;
       }
+      const completedBefore = new Set(savedMap().completed);
+      const completion = stageCompletion(ZONE_MAP, completedBefore, this.mapNode);
       saveCompleted(this.mapNode);
-      this.scene.start(isLastZone(ZONE_MAP, this.mapNode) ? "celebration" : "map");
+      this.clearControls();
+      if (completion.kind === "next-stage") {
+        this.scene.start("cutscene", { stage: completion.stage });
+      } else if (completion.kind === "map") {
+        this.scene.start("map", { travelTo: completion.travelTo });
+      } else {
+        this.scene.start("celebration");
+      }
       return;
     }
     if (this.trial !== undefined) {

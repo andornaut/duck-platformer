@@ -17,6 +17,7 @@ import { setupPhoneApp } from "./pwa";
 import { installOffer } from "./pwa/installOffer";
 import { BootScene } from "./scenes/BootScene";
 import { CelebrationScene } from "./scenes/CelebrationScene";
+import { CutsceneScene } from "./scenes/CutsceneScene";
 import { DeathScene } from "./scenes/DeathScene";
 import { DialogueChoiceScene } from "./scenes/DialogueChoiceScene";
 import { DialogueScene } from "./scenes/DialogueScene";
@@ -60,6 +61,7 @@ function startGame(): void {
       MapScene,
       ZoneScene,
       CelebrationScene,
+      CutsceneScene,
       PauseScene,
       RoomScene,
       SettingsScene,
