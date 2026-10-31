@@ -82,7 +82,7 @@ The current prototype uses individual levels as map nodes, named zones in its da
 
 Planned two-level flow:
 
-- **Checkpoints:** each level starts at its own checkpoint, with unlimited retries. Falls, hazards and crushes restart the current level, not the whole zone
+- **Checkpoints:** each level starts at its own checkpoint, with unlimited retries. Falls, hazards and crushes enter the death flow; Try again restarts the current level, not the whole zone
 - **Going back:** walking left from either level checkpoint returns to the map
 - **Selection:** selecting a zone opens a modal with Level one and Level two. Reaching a level unlocks it, persists it for replay and highlights the latest reached level. Replaying an earlier level preserves later unlocks
 
@@ -90,11 +90,11 @@ Planned two-level flow:
 
 - **Camera:** on the ground he sits about two thirds down the screen. In an assembled level, the ground line follows the chunk he is in, blending across half a screen at each seam. The camera rises only when he climbs above the middle, and never shows below the lowest ground. Decorative background layers use tunable parallax, with farther layers scrolling more slowly; ground props stay attached to the terrain
 - **Challenge:** platforming, hazards and choices. Routes use ledges and cliffs, not ladders, with both short-press jumps beneath low ceilings and full jumps. There is no combat
-- **Checkpoint:** the start of a level is its only checkpoint. Falling or touching a hazard restarts the level from its start. Progress is saved: the levels he has completed and where he stands on the map. Clearing a level marks it completed and returns him to the map on it; a level left before its end is played again from its start
-- **Crush:** a moving platform that pushes him sideways carries him to its leading edge. If it squeezes him into terrain or another solid, he is crushed and the level restarts from its start, as a hazard does. Layouts leave room beside every moving platform's path so he is never pinned on a required route
+- **Checkpoint:** the start of a level is its only checkpoint. Falling or touching a hazard enters the death flow; Try again restarts the level from its start, with unlimited retries and no permadeath. Progress is saved: the levels he has completed and where he stands on the map. Clearing a level marks it completed and returns him to the map on it; a level left before its end is played again from its start
+- **Crush:** a moving platform that pushes him sideways carries him to its leading edge. If it squeezes him into terrain or another solid, he is crushed and enters the death flow, as a hazard does. Layouts leave room beside every moving platform's path so he is never pinned on a required route
 - **Difficulty:** levels use the same configurable difficulty target and variation band in `src/data/`, with variation inside it rather than guaranteed escalation between levels or from start to finish
 - **Doors:** doors lead only into rooms. Use enters a door when any part of his drawn frame overlaps the door's drawn art; where he overlaps more than one, the door whose centre is nearest his wins
-- **Edge hazards:** a common red strip, 2 to 3 px thick, can cover the top, bottom, left or right edge of terrain. Terrain edges and interactive antagonists share the lethal red contact treatment. There are no spikes. Touching any edge hazard restarts the level from its start
+- **Edge hazards:** a common red strip, 2 to 3 px thick, can cover the top, bottom, left or right edge of terrain. Terrain edges and interactive antagonists share the lethal red contact treatment. There are no spikes. Touching any edge hazard enters the death flow
 - **Exit:** reaching the end of the level clears it, and the game moves straight on to the map
 - **Going back:** walking all the way back to the level's left edge leaves it without completing it: the screen fades and the map shows with him on that level, and nothing is saved. Every level starts him clear of that edge and has no wall in front of it
 - **Kinds:** indoor, outdoor, or a hybrid with both
@@ -102,6 +102,17 @@ Planned two-level flow:
 - **Reroll:** an assembled level's layout changes each time he enters it from the map. Restarts within the level keep it
 - **Scale:** outdoors, the scenery is drawn at a quarter of indoor scale; the duck, the tiles and the reaches stay the same everywhere
 - **Shape:** a level is at most 2 screens (60 tiles, 720 px) tall and as wide as it needs, and scrolls sideways and up. Indoors, to a small duck the ceilings are high: a door is 15 tiles tall, half the screen
+
+### Death and retry
+
+This is the approved implementation scope for the current change, including the death sequence, required card and persistent level metrics.
+
+- **Active time:** count only time actually spent playing the current level, excluding pause, dialogue, menus, the death sequence and the death card. Retries add to the same cumulative time. It persists through the map, title screen and app restarts until the level is cleared; every clear resets it, including a replay clear
+- **Card:** after the animation, hold the final pose beneath a required modal showing the zone, level, cumulative active level time and current-attempt percentage. Back to title is the secondary button on the left; Try again is the primary button on the right. The card stays until a button is pressed; outside taps, back and Escape do not dismiss it
+- **Progress:** a subtle, visible line 2 px high at the top uses the level's theme. It tracks the duck's current position during play and his death point on death, not the furthest point reached. Retrying starts the percentage at zero
+- **Retry:** Try again starts the current level from its checkpoint. Back to title opens the title screen. There is no permadeath
+- **Sequence:** lethal contact starts a small recoil, then the duck falls to support and ends deflated in a sitting pose with his feet underneath him. The level and camera freeze at the death context while the duck plays a dedicated death animation, then holds its final pose for the card
+- **Storage:** active level time uses a separate stats save. Restart clears progress only and does not wipe stats
 
 ### Chunks
 
@@ -201,7 +212,7 @@ The park is a prototype for randomized levels, not V1's second level. The identi
 
 - **Back:** back during play opens the pause card, and back with the card open closes it. Where the browser can't hand back to the game (Firefox for Android's installed app, and before the first tap or key in browsers without CloseWatcher), back is the browser's own
 - **Back to title:** always goes to the start screen
-- **Modals:** every card over the game (the pause card, the settings card and its install steps, the restart question) has no title bar: its title is centred near the top and its close X sits at its top-right corner. While one is open, only the card responds: nothing under it does, not the start screen's nav bar, the pause button, the touch controls, the map or doors. A tap anywhere outside a card that can close only closes it, as its close X or back would, the margins beside the game included; on a card with no close, a required choice, it does nothing at all. A press that drags does nothing
+- **Modals:** every card over the game (the death card, the pause card, the settings card and its install steps, the restart question) has no title bar: its title is centred near the top and its close X sits at its top-right corner. While one is open, only the card responds: nothing under it does, not the start screen's nav bar, the pause button, the touch controls, the map or doors. A tap anywhere outside a card that can close only closes it, as its close X or back would, the margins beside the game included; on a card with no close, a required choice, it does nothing at all. A press that drags does nothing
 - **Open:** the pause button at the top left, shown only while a zone plays, P or Esc, or back. It also opens by itself when the frame turns, or stops turning, while a zone plays, and only then; Resume continues
 - **Pause card:** a card titled Paused, over the dimmed game, which pauses play, with a close X. Its buttons, all one shape, stacked: Resume first, the primary in green, then Settings and Back to title
 - **Settings card:** opened from Settings on the pause card or the start screen. Its rows: Move controls (the move hint) and Action buttons (Use and Jump), each a switch, on by default, then Install while the game can be installed, which opens the install steps. The build label sits at its foot. Its close X, P, Esc and back each return to whichever opened it

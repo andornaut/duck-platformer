@@ -35,15 +35,15 @@ The current change implements the first dog encounter and its proximity introduc
 
 Each target is a band, not a point, that the simulator reports per level and skill. PLACEHOLDER: every band, agreed with the user. The kinds of target:
 
-- **Level length:** the time to clear a level, by skill. A mistake restarts the level and touch jumps are imprecise, so a level is short enough that a restart doesn't sting
+- **Level length:** cumulative active time to clear a level, by skill, including retries and excluding pause, dialogue, menus and the death flow. A retry starts at the level checkpoint and touch jumps are imprecise, so a level is short enough that a restart doesn't sting
 - **Reaches:** the duck makes every jump at a reach in the rulebook's Grid, and never one tile beyond it. A pass or fail check, not a band
-- **Restarts:** a failed attempt is one that ends in a level restart (a fall or a hazard). Restarts per level, by skill: some attempts fail, and the band says how often
+- **Restarts:** a failed attempt is one that ends in death (a fall, hazard or crush), followed by the retry choice. Restarts per level, by skill: some attempts fail, and the band says how often
 - **Route spread:** every route a choice opens lands within a narrow window of the level's median clear time and restart rate, so no route is a lot easier or harder
 - **Session length:** the time to finish the game, by skill
 
 ## Remaining for the first build
 
-**Current implementation scope:** the first level and first dog encounter. The full V1 route, two-level zone modal and checkpoint flow are plans, not completed content.
+**Current implementation scope:** the approved death and retry flow for the first-level build: a dedicated death sequence, required choice card, current-position progress line and cumulative active level time. These are implementation targets for this change, not a claim that the runtime is already complete. The full V1 route, two-level zone modal and checkpoint flow remain plans.
 
 Open questions:
 
