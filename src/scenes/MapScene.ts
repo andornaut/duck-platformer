@@ -6,7 +6,7 @@ import {
 } from "@andornaut/game-kit/text/phaser/phaserBitmapFont";
 import { type GameObjects, type Input, Scene } from "phaser";
 
-import { ZONE_MAP } from "../data/map";
+import { MAP_TRAVEL, ZONE_MAP } from "../data/map";
 import { TILE } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { MapDestination, Point, Rect } from "../data/types";
@@ -31,6 +31,7 @@ import {
   destinationStages,
   steppedDestination,
 } from "../rules/mapDestinations";
+import { stageCompletion } from "../rules/stageCompletion";
 import { savedMap, saveStand } from "../save";
 import { ART_MANIFEST_KEY, type ArtManifest } from "../view/aseprite";
 import {
@@ -40,7 +41,7 @@ import {
   destinationState,
 } from "../view/mapDestinations";
 import { advanceWidth } from "../view/mapMarks";
-import { bentCurve, pathRects } from "../view/mapPath";
+import { bentCurve, curveWalk, pathRects } from "../view/mapPath";
 import {
   addTextButton,
   captureTab,
@@ -62,6 +63,11 @@ const LOOK_ORDER: readonly PathLook[] = ["unbuilt", "built", "open"];
 // Footer actions, or an open zone node by its id.
 type Control = { readonly kind: MapAction } | { readonly kind: "node"; readonly id: string };
 
+export interface MapData {
+  // A stage-node id, consumed once. Progress stays at the completed stage until arrival.
+  readonly travelTo?: string;
+}
+
 // The V1 overview renders each themed destination once, with its two stage nodes retained in
 // the progression graph. One unlocked stage plays directly; multiple unlocked stages use the
 // closeable picker. The footer and saved stand keep Continue safe as the default action.
@@ -75,6 +81,19 @@ export class MapScene extends Scene implements StageSelectOpener {
   private pressed: Control | undefined;
   private stand = ZONE_MAP.start;
   private selectionOpen = false;
+  private mapDuck!: GameObjects.Sprite;
+  private travelRequested: string | undefined;
+  private travelling = false;
+  private journey:
+    | {
+        readonly bottomOffset: number;
+        distance: number;
+        readonly duck: GameObjects.Sprite;
+        readonly path: ReturnType<typeof curveWalk>;
+        previousX: number;
+        readonly stage: string;
+      }
+    | undefined;
 
   constructor() {
     super("map");
@@ -82,7 +101,7 @@ export class MapScene extends Scene implements StageSelectOpener {
 
   // Where she is comes from the saved progress: the map's start with nothing completed from the
   // beginning.
-  init(): void {
+  init(data: MapData = {}): void {
     const { completed, stand } = savedMap();
     this.completed = new Set(completed);
     this.open = openMap(ZONE_MAP, this.completed);
@@ -91,6 +110,18 @@ export class MapScene extends Scene implements StageSelectOpener {
     this.focus = undefined;
     this.focusRing = undefined;
     this.selectionOpen = false;
+    this.travelling = false;
+    this.journey = undefined;
+    this.travelRequested = undefined;
+    this.input.enabled = true;
+    if (data.travelTo !== undefined) {
+      const completion = stageCompletion(ZONE_MAP, this.completed, this.stand);
+      if (completion.kind === "map" && completion.travelTo === data.travelTo) {
+        this.travelRequested = data.travelTo;
+      }
+    }
+    // Phaser otherwise retains init data across restarts. Automatic travel is a one-shot request.
+    this.sys.settings.data = {};
   }
 
   create(): void {
@@ -113,7 +144,7 @@ export class MapScene extends Scene implements StageSelectOpener {
     this.input.keyboard?.on("keydown", (event: KeyboardEvent) => this.key(event));
     captureTab(this, true);
     const onBack = () => {
-      if (this.selectionOpen) {
+      if (this.selectionOpen && !this.travelling) {
         (this.scene.get("stageSelect") as StageSelectScene).back();
       }
     };
@@ -127,12 +158,12 @@ export class MapScene extends Scene implements StageSelectOpener {
       this.selectionOpen = false;
     });
     this.input.on("pointerdown", (pointer: Input.Pointer) => {
-      if (!this.selectionOpen) {
+      if (!this.selectionOpen && !this.travelling) {
         this.showPressed(this.controlAt(pointer));
       }
     });
     this.input.on("pointerup", (pointer: Input.Pointer) => {
-      if (this.selectionOpen) {
+      if (this.selectionOpen || this.travelling) {
         return;
       }
       const control = this.pressed;
@@ -147,6 +178,56 @@ export class MapScene extends Scene implements StageSelectOpener {
         this.act(control.kind);
       }
     });
+    const travelTo = this.travelRequested;
+    this.travelRequested = undefined;
+    if (travelTo !== undefined) {
+      this.beginAutomaticTravel(travelTo);
+    }
+  }
+
+  override update(_time: number, deltaMs: number): void {
+    const journey = this.journey;
+    if (!journey) {
+      return;
+    }
+    journey.distance = Math.min(
+      journey.path.length,
+      journey.distance + (Math.max(0, deltaMs) * MAP_TRAVEL.speed) / 1000,
+    );
+    const point = journey.path.at(journey.distance);
+    if (point.x !== journey.previousX) {
+      journey.duck.setFlipX(point.x < journey.previousX);
+    }
+    journey.previousX = point.x;
+    journey.duck.setPosition(Math.round(point.x), Math.round(point.y + journey.bottomOffset));
+    if (journey.distance >= journey.path.length) {
+      this.stand = journey.stage;
+      saveStand(this.stand);
+      this.journey = undefined;
+      // Keep input locked through the queued restart. Arrival never starts a stage.
+      this.scene.restart({} satisfies MapData);
+    }
+  }
+
+  private beginAutomaticTravel(stage: string): void {
+    const from = destinationForStage(ZONE_MAP, this.stand);
+    const to = destinationForStage(ZONE_MAP, stage);
+    const fromAt = this.centre(from);
+    const toAt = this.centre(to);
+    const index = ZONE_MAP.destinations.indexOf(from);
+    const path = curveWalk(bentCurve(MAP_PATH.bend, fromAt, toAt, index));
+    const bottomOffset = MAP_SCREEN.duck.zone.y + this.mapDuck.displayHeight;
+    const duck = this.add
+      .sprite(fromAt.x, fromAt.y + bottomOffset, "duck")
+      .setOrigin(0.5, 1)
+      .play(animationKey("duck", "walk"));
+    duck.setScale(this.mapDuck.displayWidth / duck.width).setFlipX(toAt.x < fromAt.x);
+    this.mapDuck.setVisible(false);
+    this.travelling = true;
+    this.input.enabled = false;
+    this.focus = undefined;
+    this.showPressed(undefined);
+    this.journey = { bottomOffset, distance: 0, duck, path, previousX: fromAt.x, stage };
   }
 
   private centre(destination: MapDestination): Point {
@@ -228,7 +309,7 @@ export class MapScene extends Scene implements StageSelectOpener {
     }
     const current = destinationForStage(ZONE_MAP, this.stand);
     const centre = this.centre(current);
-    this.add
+    this.mapDuck = this.add
       .sprite(centre.x + duck.zone.x, centre.y + duck.zone.y, "map-duck")
       .setOrigin(0)
       .play(animationKey("map-duck", "idle"));
@@ -252,7 +333,9 @@ export class MapScene extends Scene implements StageSelectOpener {
     this.focusRing = ringFocus(
       this,
       this.focusRing,
-      this.selectionOpen || this.focus === undefined ? undefined : MAP_SCREEN[this.focus].button,
+      this.selectionOpen || this.travelling || this.focus === undefined
+        ? undefined
+        : MAP_SCREEN[this.focus].button,
     );
   }
 
@@ -272,7 +355,7 @@ export class MapScene extends Scene implements StageSelectOpener {
   }
 
   private key(event: KeyboardEvent): void {
-    if (this.selectionOpen) {
+    if (this.selectionOpen || this.travelling) {
       return;
     }
     const action = mapKeyAction(this.focus, event);
@@ -287,6 +370,9 @@ export class MapScene extends Scene implements StageSelectOpener {
   }
 
   private act(action: MapAction): void {
+    if (this.travelling) {
+      return;
+    }
     if (action === "continue") {
       this.selectDestination(destinationForStage(ZONE_MAP, this.stand).id);
     } else {
@@ -296,6 +382,9 @@ export class MapScene extends Scene implements StageSelectOpener {
   }
 
   private walkToDestination(id: string): void {
+    if (this.travelling) {
+      return;
+    }
     const stages = destinationStages(PLANS, ZONE_MAP, this.open, destinationOf(ZONE_MAP, id));
     const stage = stages.at(-1);
     if (stage !== undefined && !destinationOf(ZONE_MAP, id).stages.includes(this.stand)) {
@@ -305,6 +394,9 @@ export class MapScene extends Scene implements StageSelectOpener {
   }
 
   private selectDestination(id: string): void {
+    if (this.travelling) {
+      return;
+    }
     const selection = destinationSelection(PLANS, ZONE_MAP, this.open, destinationOf(ZONE_MAP, id));
     if (selection.kind === "unavailable") {
       return;
@@ -328,7 +420,7 @@ export class MapScene extends Scene implements StageSelectOpener {
   }
 
   stageSelected(stage: string): void {
-    if (!this.selectionOpen) {
+    if (!this.selectionOpen || this.travelling) {
       return;
     }
     const destination = destinationForStage(ZONE_MAP, this.stand);

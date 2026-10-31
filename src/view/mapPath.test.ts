@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { Point, Rect } from "../data/types";
 import { MAP_PATH, MAP_PATH_LOOKS } from "../layout/mapScreen";
-import { bentCurve, dashInks, pathRects, type PathStroke, stampAt } from "./mapPath";
+import { bentCurve, curveWalk, dashInks, pathRects, type PathStroke, stampAt } from "./mapPath";
 
 const STRAIGHT = 0;
 // A level path 200 px long, trimmed 15 px from its start and 11 from its end.
@@ -107,5 +107,17 @@ describe("pathRects", () => {
     const stroke: PathStroke = MAP_PATH_LOOKS.unbuilt.stroke;
     const rects = pathRects(MAP_PATH.step, stroke, ENDS, LEVEL);
     expect(rects).toHaveLength(Math.floor(TRIMMED / stroke.every) + 1);
+  });
+});
+
+describe("map route travel", () => {
+  it("clamps to the exact endpoints and measures travel distance along the rendered curve", () => {
+    const path = curveWalk(bentCurve(MAP_PATH.bend, { x: 0, y: 0 }, { x: 200, y: 100 }, 0));
+    expect(path.at(-10)).toEqual({ x: 0, y: 0 });
+    expect(path.at(path.length + 10)).toEqual({ x: 200, y: 100 });
+    expect(path.length).toBeGreaterThan(Math.hypot(200, 100));
+    const straight = curveWalk(LEVEL);
+    expect(straight.at(50)).toEqual({ x: 50, y: 0 });
+    expect(straight.at(150)).toEqual({ x: 150, y: 0 });
   });
 });

@@ -153,3 +153,13 @@ export function pathRects(step: number, stroke: PathStroke, ends: PathEnds, curv
     return true;
   });
 }
+
+// Reuse the inked route's arc sampling for constant-distance travel, prepared once per journey.
+export function curveWalk(curve: Curve): {
+  readonly length: number;
+  readonly at: (distance: number) => Point;
+} {
+  const arc = arcOf(curve);
+  const length = arc.lengths.at(-1) ?? 0;
+  return { at: (distance) => along(arc, Math.max(0, Math.min(length, distance))).point, length };
+}
