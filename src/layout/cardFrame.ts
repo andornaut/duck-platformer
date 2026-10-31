@@ -1,6 +1,8 @@
 import type { Point, Rect } from "../data/types";
 import { hitAround } from "./hitAreas";
 
+export const CARD_TEXT_SCALE = 2;
+
 // Every card's frame (art/README.md, Pause, settings and install cards), in base pixels: art's
 // `ui-settings-card` with no header band, CARD_WIDTH wide at CARD_AT, each card as tall as its
 // contents. Its title sits centred across it near the top, its close X at its top-right corner,

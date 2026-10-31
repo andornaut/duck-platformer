@@ -9,6 +9,7 @@ import type { GameObjects, Scene } from "phaser";
 import type { Point, Rect } from "../data/types";
 import { centredLabel, MARK_DROP, PLAY_MARK } from "../layout/buttonLabel";
 import { cardTitleAt } from "../layout/cardFrame";
+import { CARD_CONTENT, type CardFonts, cardTextOrigin } from "../layout/contentCard";
 import { CARD_TEXT_SCALE } from "../layout/pauseCard";
 import type { LabelledButton } from "../layout/restartCard";
 import { focusRingAround } from "../layout/settingsCard";
@@ -22,6 +23,12 @@ import { advanceWidth } from "../view/mapMarks";
 const PALETTE = "palette";
 export const BODY_FONT = "font-body";
 export const TITLE_FONT = "font-title";
+
+export function cardFonts(scene: Scene): CardFonts {
+  const font = (key: string) =>
+    phaserBitmapFont(scene.cache.bitmapFont.get(key).data as PhaserFontData);
+  return { body: font(BODY_FONT), title: font(TITLE_FONT) };
+}
 
 export function palette(scene: Scene): Palette {
   return scene.cache.json.get(PALETTE) as Palette;
@@ -70,6 +77,19 @@ export function addCardText(
     .setScale(CARD_TEXT_SCALE)
     .setOrigin(0)
     .setTint(colour);
+}
+
+export function addCardTextIn(
+  scene: Scene,
+  fontKey: string,
+  rect: Rect,
+  text: string,
+  colour: number,
+): GameObjects.BitmapText {
+  const font = phaserBitmapFont(scene.cache.bitmapFont.get(fontKey).data as PhaserFontData);
+  return addCardText(scene, fontKey, cardTextOrigin(font, rect, text), text, colour).setLineSpacing(
+    CARD_CONTENT.lineHeight / CARD_TEXT_SCALE - font.lineHeight,
+  );
 }
 
 // A card's title in ink, centred across card near its top, as every card's frame places it
