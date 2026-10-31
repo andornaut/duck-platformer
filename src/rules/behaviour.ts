@@ -134,7 +134,7 @@ export function startBehaviour(
   });
 }
 
-// Collision and a visible contact outline use the same box. Vertical movers do not flip their
+// Collision uses the object's contact box. Vertical movers do not flip their
 // horizontal art merely because they reverse vertical travel.
 export function contactBox(object: ObjectLayout, at: Point, facing: -1 | 1): Rect {
   const box = object.hitbox ?? { height: object.height, width: object.width, x: 0, y: 0 };
