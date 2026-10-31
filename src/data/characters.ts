@@ -28,6 +28,12 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 4,
     rows: 6,
   },
+  "apartment-stairwell-down": {
+    archetype: "scenery",
+    art: "apartment-stairwell-down",
+    cols: 4,
+    rows: 6,
+  },
   "apartment-wall-panel": {
     archetype: "scenery",
     art: "apartment-wall-lobby",
