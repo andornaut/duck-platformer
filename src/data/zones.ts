@@ -6,7 +6,7 @@ import { ZONE_1 } from "./zone1";
 // Every zone is 60 rows, starts on the ground at the bottom left and clears at its right edge.
 // Each solid runs down to the bottom row, so every gap is a pit she falls out of. Rises and gaps
 // are in tiles, from the top of the ground she leaves to the top of the ledge she lands on: a tap
-// rises 3, a full jump 6, and a running jump crosses 21. Every mover's path is 2 tiles from every
+// rises 3, a full jump 6, and a running jump crosses 19. Every mover's path is 2 tiles from every
 // solid and every other mover's path, so a mover never meets her box where she stands at an edge.
 // The noCross pairs mark jumps that must remain impossible, accounting for the speed carried
 // from a mover on takeoff.
