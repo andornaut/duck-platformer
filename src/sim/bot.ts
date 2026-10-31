@@ -5,6 +5,10 @@ import { contactBox } from "../rules/behaviour";
 import type { ZoneInput, ZoneState } from "../rules/zone";
 
 export interface BotSkill {
+  readonly adaptiveJump?: boolean;
+  readonly maxWaitTicks?: number;
+  readonly minJumpHoldTicks?: number;
+  readonly waitForMovers?: boolean;
   readonly errorRate: number;
   readonly jumpHoldTicks: number;
   readonly lookAheadPx: number;
@@ -18,16 +22,21 @@ export interface BotPolicy {
 
 // Mechanical diagnostic settings, not a calibrated model of human play.
 export const DIAGNOSTIC_SKILL: BotSkill = {
+  adaptiveJump: true,
   errorRate: 0,
   jumpHoldTicks: 24,
   lookAheadPx: 48,
+  maxWaitTicks: 120,
+  minJumpHoldTicks: 1,
   reactionTicks: 0,
+  waitForMovers: true,
 };
 export const FORWARD_POLICY: BotPolicy = { jump: "reactive", move: 1 };
 const CELL = 128;
 export interface SensorIndex {
   readonly areas: Readonly<Record<string, ReadonlyMap<number, readonly Rect[]>>>;
   readonly objects: Readonly<Record<string, readonly number[]>>;
+  readonly movers: Readonly<Record<string, ReadonlySet<number>>>;
 }
 
 export function prepareSensors(layout: ZoneLayout): SensorIndex {
@@ -52,6 +61,22 @@ export function prepareSensors(layout: ZoneLayout): SensorIndex {
         return [key, cells];
       }),
     ),
+    movers: Object.fromEntries(
+      Object.entries(layout.areas).map(([key, area]) => [
+        key,
+        new Set(
+          area.objects.flatMap((object, index) =>
+            (
+              object.behaviour
+                ? Object.values(object.behaviour.states).some((node) => node.motion.kind === "move")
+                : object.motion.algorithm !== "static" || object.reaction.kind !== "none"
+            )
+              ? [index]
+              : [],
+          ),
+        ),
+      ]),
+    ),
     objects: Object.fromEntries(
       Object.entries(layout.areas).map(([key, area]) => [
         key,
@@ -64,10 +89,18 @@ export function prepareSensors(layout: ZoneLayout): SensorIndex {
 export interface Bot {
   readonly random: Random;
   holding: number;
+  targetY: number | undefined;
+  waited: number;
   noticed: number;
 }
 export function newBot(seed: number): Bot {
-  return { holding: 0, noticed: 0, random: randomStream(seed, "simulation-bot") };
+  return {
+    holding: 0,
+    noticed: 0,
+    random: randomStream(seed, "simulation-bot"),
+    targetY: undefined,
+    waited: 0,
+  };
 }
 
 function intersects(a: Rect, b: Rect): boolean {
@@ -82,7 +115,7 @@ function obstacleAhead(
   skill: BotSkill,
   direction: -1 | 1,
   zone: ZoneState,
-): boolean {
+): { danger: boolean; gap: boolean; height: number; obstacle: boolean; wait: boolean } {
   const duck = zone.duck;
   const front = direction === 1 ? duck.x + tuning.width : duck.x;
   const target = front + direction * skill.lookAheadPx;
@@ -98,16 +131,27 @@ function obstacleAhead(
     x: target - tuning.width / 2,
     y: duck.y + tuning.height,
   };
+  const nearFoot = {
+    ...foot,
+    x: front + direction * Math.min(tuning.width / 2, skill.lookAheadPx) - tuning.width / 2,
+  };
   let supported = false;
+  let nearSupported = false;
+  let obstacle = false;
+  let height = 0;
+  let danger = false;
+  let movingLanding = false;
   const cells = sensors.areas[zone.area];
   const first = Math.floor(Math.min(probe.x, foot.x) / CELL);
   const last = Math.floor(Math.max(probe.x + probe.width, foot.x + foot.width) / CELL);
   for (let cell = first; cell <= last; cell++) {
     for (const rect of cells?.get(cell) ?? []) {
       if (intersects(probe, rect)) {
-        return true;
+        obstacle = true;
+        height = Math.max(height, duck.y + tuning.height - rect.y);
       }
       supported ||= intersects(foot, rect);
+      nearSupported ||= intersects(nearFoot, rect);
     }
   }
   const area = layout.areas[zone.area];
@@ -128,13 +172,41 @@ function obstacleAhead(
       (object.collision === "hazard" || object.collision === "solid") &&
       intersects(probe, rect)
     ) {
-      return true;
+      obstacle = true;
+      danger ||= object.collision === "hazard";
+      height = Math.max(height, duck.y + tuning.height - rect.y);
     }
     if (object.collision === "solid" || object.collision === "ledge") {
       supported ||= intersects(foot, rect);
+      nearSupported ||= intersects(nearFoot, rect);
+      const distance = direction === 1 ? rect.x - front : front - rect.x - rect.width;
+      const reachableHeight =
+        rect.y >= duck.y + tuning.height - (tuning.jumpSpeed * tuning.jumpRiseTime) / 2 &&
+        rect.y <= duck.y + tuning.height + tuning.height;
+      movingLanding ||=
+        (sensors.movers[zone.area]?.has(index) ?? false) &&
+        distance >= -tuning.width &&
+        distance <= skill.lookAheadPx * 2 &&
+        reachableHeight;
+      if (
+        object.collision === "ledge" &&
+        rect.y < duck.y + tuning.height &&
+        reachableHeight &&
+        distance >= 0 &&
+        distance <= skill.lookAheadPx
+      ) {
+        obstacle = true;
+        height = Math.max(height, duck.y + tuning.height - rect.y);
+      }
     }
   }
-  return !supported;
+  return {
+    danger,
+    gap: !supported || !nearSupported,
+    height,
+    obstacle: obstacle || !supported || !nearSupported,
+    wait: !supported && !obstacle && movingLanding,
+  };
 }
 
 export function botInput(
@@ -147,14 +219,35 @@ export function botInput(
   bot: Bot,
 ): ZoneInput {
   if (bot.holding > 0) {
-    bot.holding--;
-    return { jumpHeld: true, move: policy.move, useHeld: false };
+    if (
+      skill.adaptiveJump &&
+      bot.targetY !== undefined &&
+      zone.duck.y + tuning.height <= bot.targetY
+    ) {
+      bot.holding = 0;
+    } else {
+      bot.holding--;
+      return { jumpHeld: true, move: policy.move, useHeld: false };
+    }
   }
-  const obstacle =
-    policy.move !== 0 &&
-    (policy.jump === "continuous" ||
-      (policy.jump === "reactive" &&
-        obstacleAhead(tuning, sensors, layout, skill, policy.move, zone)));
+  const plan =
+    policy.jump === "reactive" && policy.move !== 0
+      ? obstacleAhead(tuning, sensors, layout, skill, policy.move, zone)
+      : undefined;
+  if (
+    plan?.wait &&
+    skill.waitForMovers &&
+    zone.duck.grounded &&
+    bot.waited < (skill.maxWaitTicks ?? 0)
+  ) {
+    bot.waited++;
+    bot.noticed = 0;
+    return { jumpHeld: false, move: 0, useHeld: false };
+  }
+  if (!plan?.wait) {
+    bot.waited = 0;
+  }
+  const obstacle = policy.move !== 0 && (policy.jump === "continuous" || (plan?.obstacle ?? false));
   bot.noticed = obstacle ? bot.noticed + 1 : 0;
   const jump =
     policy.jump !== "never" &&
@@ -163,7 +256,21 @@ export function botInput(
     !zone.duck.jumpHeld &&
     bot.noticed > skill.reactionTicks;
   if (jump && bot.random() >= skill.errorRate) {
-    bot.holding = skill.jumpHoldTicks - 1;
+    let hold = skill.jumpHoldTicks;
+    if (skill.adaptiveJump && plan && !plan.gap && !plan.danger) {
+      const minimum = skill.minJumpHoldTicks ?? 1;
+      const fullHeight = (tuning.jumpSpeed * tuning.jumpRiseTime) / 2;
+      const share = Math.max(
+        0,
+        Math.min(
+          1,
+          (plan.height - tuning.jumpHopHeight) / Math.max(1, fullHeight - tuning.jumpHopHeight),
+        ),
+      );
+      hold = minimum + Math.ceil((hold - minimum) * share);
+    }
+    bot.holding = hold - 1;
+    bot.targetY = plan && !plan.gap ? zone.duck.y + tuning.height - plan.height : undefined;
     bot.noticed = 0;
     return { jumpHeld: true, move: policy.move, useHeld: false };
   }

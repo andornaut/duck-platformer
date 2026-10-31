@@ -1,15 +1,17 @@
 // Node-only asset loading stays outside the pure rollout and the frontend dependency graph.
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
 import { ARCHETYPES } from "../data/archetypes";
 import { CHARACTERS } from "../data/characters";
+import { DUCK } from "../data/duck";
 import { ZONE_MAP } from "../data/map";
 import { TILE } from "../data/screen";
 import { zoneLayout } from "../rules/tiles";
 import { zonePlanFor } from "../rules/zonePlans";
 import { artHitboxes, type ArtManifest, sheetFrameSize } from "../view/aseprite";
 import type { Tileset } from "../view/tiles";
-import { prepareStage } from "./simulate";
+import { type PreparedStage, prepareStage } from "./simulate";
 
 export function stageLoader(
   stage: string,
@@ -36,8 +38,31 @@ export function stageLoader(
     throw new Error(`Stage ${stage} is not implemented`);
   }
   const catalogue = { archetypes: ARCHETYPES, characters: CHARACTERS };
-  return (seed: number) =>
-    prepareStage(
-      zoneLayout(TILE, duckFrame, catalogue, hitboxes, tilesets, new Set(), zonePlanFor(seed, key)),
-    );
+  let previous: { seed: number; stage: PreparedStage } | undefined;
+  return (seed: number): PreparedStage => {
+    if (previous?.seed === seed) {
+      return previous.stage;
+    }
+    const plan = zonePlanFor(seed, key);
+    const layout = zoneLayout(TILE, duckFrame, catalogue, hitboxes, tilesets, new Set(), plan);
+    const stage = {
+      ...prepareStage(layout),
+      source: {
+        chunkIds: Object.fromEntries(
+          Object.entries(plan.areas).map(([area, value]) => [
+            area,
+            value.chunks?.map(({ chunk }) => chunk) ?? [],
+          ]),
+        ),
+        layoutSeed: seed,
+        provenance: {
+          data: `sha256:${createHash("sha256")
+            .update(JSON.stringify({ layout, plan, tuning: DUCK }))
+            .digest("hex")}`,
+        },
+      },
+    };
+    previous = { seed, stage };
+    return stage;
+  };
 }

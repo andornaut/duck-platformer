@@ -14,6 +14,7 @@ export interface TraceEvent {
   readonly attempt: number;
   readonly attemptTick: number;
   readonly chunk: number | undefined;
+  readonly chunkId: string | undefined;
   readonly deathReason: ZoneDeath["reason"] | undefined;
   readonly input: ZoneInput;
   readonly kind: "death" | "sample" | "stall";
@@ -43,6 +44,7 @@ export function traceEvent(
   attemptTick: number,
   input: ZoneInput,
   zone: ZoneState,
+  chunkIds?: Readonly<Record<string, readonly string[]>>,
 ): TraceEvent {
   const area = layout.areas[zone.area];
   if (!area) {
@@ -57,7 +59,10 @@ export function traceEvent(
     }
     const at = zone.objects[index] ?? object.origin;
     const behaviour = zone.behaviours[index];
-    const rect = contactBox(object, at, behaviour?.facing ?? 1);
+    const rect =
+      object.collision === "hazard"
+        ? contactBox(object, at, behaviour?.facing ?? 1)
+        : { ...at, height: object.height, width: object.width };
     const distance = Math.hypot(
       Math.max(0, rect.x - box.x - box.width, box.x - rect.x - rect.width),
       Math.max(0, rect.y - box.y - box.height, box.y - rect.y - rect.height),
@@ -88,6 +93,7 @@ export function traceEvent(
     attempt: zone.attempt,
     attemptTick,
     chunk: chunk < 0 ? undefined : chunk,
+    chunkId: chunk < 0 ? undefined : chunkIds?.[zone.area]?.[chunk],
     deathReason: zone.death?.reason,
     input,
     kind,

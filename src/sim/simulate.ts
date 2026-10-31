@@ -25,6 +25,7 @@ export interface SimulationProvenance {
 }
 
 export interface SimulationConfig {
+  readonly goal?: { readonly area: string; readonly x: number };
   readonly provenance?: SimulationProvenance;
   readonly seeds?: Partial<SimulationSeeds>;
   readonly start?: SimulationStart;
@@ -35,9 +36,11 @@ export interface SimulationConfig {
   readonly seed: number;
   readonly skill: BotSkill;
 }
-export type RunStatus = "cleared" | "retry-budget" | "step-budget" | "turned-back";
+export type RunStatus = "cleared" | "goal-reached" | "retry-budget" | "step-budget" | "turned-back";
 export interface RunResult {
   readonly config: SimulationConfig;
+  readonly provenance: SimulationProvenance;
+  readonly tuning: DuckTuning;
   readonly seeds: SimulationSeeds;
   readonly start: { readonly area: string; readonly x: number; readonly y: number };
   readonly trace: readonly TraceEvent[];
@@ -55,6 +58,11 @@ export interface RunResult {
   readonly steps: number;
 }
 export interface PreparedStage {
+  readonly source?: {
+    readonly chunkIds?: Readonly<Record<string, readonly string[]>>;
+    readonly layoutSeed?: number;
+    readonly provenance?: SimulationProvenance;
+  };
   readonly introductions: Readonly<Record<string, boolean>>;
   readonly layout: ZoneLayout;
   readonly sensors: SensorIndex;
@@ -91,6 +99,16 @@ export function validateSimulation(config: SimulationConfig): void {
     if (!Number.isSafeInteger(value) || value < min) {
       throw new Error(`Invalid ${name}`);
     }
+  }
+  if (
+    (config.skill.maxWaitTicks !== undefined &&
+      (!Number.isSafeInteger(config.skill.maxWaitTicks) || config.skill.maxWaitTicks < 0)) ||
+    (config.skill.minJumpHoldTicks !== undefined &&
+      (!Number.isSafeInteger(config.skill.minJumpHoldTicks) ||
+        config.skill.minJumpHoldTicks < 1 ||
+        config.skill.minJumpHoldTicks > config.skill.jumpHoldTicks))
+  ) {
+    throw new Error("Invalid adaptive bot timing");
   }
   for (const value of Object.values(simulationSeeds(config))) {
     if (!Number.isSafeInteger(value) || value < 0 || value > 0xffffffff) {
@@ -140,11 +158,27 @@ export function simulateStage(
   const { sensors } = stage;
   const layout = layoutAtStart(tuning, stage.layout, config.start);
   const seeds = simulationSeeds(config);
+  if (stage.source?.layoutSeed !== undefined && stage.source.layoutSeed !== seeds.layout) {
+    throw new Error("Prepared layout seed does not match requested seed");
+  }
   let zone = startZone(tuning, layout, seeds.motion);
   if (config.start) {
     validateStart(tuning, layout, zone);
   }
   const start = { area: zone.area, x: zone.duck.x, y: zone.duck.y };
+  if (config.goal) {
+    const goalArea = areaOf(layout, config.goal.area);
+    const edge = zone.duck.x + (config.policy.move === 1 ? tuning.width : 0);
+    if (
+      !Number.isFinite(config.goal.x) ||
+      config.goal.x < goalArea.backX ||
+      config.goal.x > goalArea.exitX ||
+      config.policy.move === 0 ||
+      (config.goal.area === zone.area && config.policy.move * (config.goal.x - edge) <= 0)
+    ) {
+      throw new Error("Invalid section goal");
+    }
+  }
   let bot = newBot(seeds.bot);
   const trace: TraceEvent[] = [];
   let traceDropped = 0;
@@ -203,6 +237,7 @@ export function simulateStage(
               attemptTick,
               input,
               zone,
+              stage.source?.chunkIds,
             ),
           );
         } else {
@@ -211,7 +246,18 @@ export function simulateStage(
             const expendable = trace.findIndex((event) => event.kind !== "death");
             if (expendable >= 0) {
               trace.splice(expendable, 1);
-              trace.push(traceEvent(tuning, layout, "death", steps, attemptTick, input, zone));
+              trace.push(
+                traceEvent(
+                  tuning,
+                  layout,
+                  "death",
+                  steps,
+                  attemptTick,
+                  input,
+                  zone,
+                  stage.source?.chunkIds,
+                ),
+              );
             }
           }
         }
@@ -225,6 +271,16 @@ export function simulateStage(
       Math.min(1, (zone.duck.x + tuning.width - area.backX) / (area.exitX - area.backX)),
     );
     peakProgress = Math.max(peakProgress, progress);
+    if (
+      !zone.death &&
+      config.goal?.area === zone.area &&
+      config.policy.move *
+        (zone.duck.x + (config.policy.move === 1 ? tuning.width : 0) - config.goal.x) >=
+        0
+    ) {
+      status = "goal-reached";
+      break;
+    }
     if (zone.cleared) {
       status = "cleared";
       break;
@@ -260,6 +316,7 @@ export function simulateStage(
     dialogues,
     peakProgress,
     progress,
+    provenance: { ...stage.source?.provenance, ...config.provenance },
     retries,
     runtimeMs: performance.now() - started,
     seed: config.seed,
@@ -269,5 +326,6 @@ export function simulateStage(
     steps,
     trace,
     traceDropped,
+    tuning,
   };
 }

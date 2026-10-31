@@ -1,0 +1,94 @@
+import { describe, expect, it } from "vitest";
+
+import { DUCK } from "../data/duck";
+import type { ObjectLayout, Rect, ZoneLayout } from "../data/types";
+import { startZone } from "../rules/zone";
+import { DUCK_FRAME } from "../view/duck";
+import { botInput, DIAGNOSTIC_SKILL, FORWARD_POLICY, newBot, prepareSensors } from "./bot";
+
+const ground = { height: 20, width: 1100, x: 0, y: 120 };
+function fixture(solids: readonly Rect[], objects: readonly ObjectLayout[] = []): ZoneLayout {
+  return {
+    areas: {
+      main: {
+        backX: 0,
+        chunks: [],
+        entries: { start: { x: 60, y: 120 } },
+        exitX: 1000,
+        height: 200,
+        objects,
+        solids,
+        terrain: [],
+        tileset: undefined,
+        width: 1100,
+      },
+    },
+    duckFrame: DUCK_FRAME,
+    start: { area: "main", entry: "start" },
+  };
+}
+const platform: ObjectLayout = {
+  animations: {
+    idle: undefined,
+    move: undefined,
+    open: undefined,
+    react: undefined,
+    talk: undefined,
+  },
+  art: "platform",
+  character: "platform",
+  collision: "ledge",
+  height: 12,
+  hitbox: undefined,
+  interaction: { kind: "none", range: 0 },
+  lines: [],
+  motion: {
+    algorithm: "linear",
+    direction: "left",
+    distance: 60,
+    hopHeight: 0,
+    pause: 0,
+    speed: 30,
+    variance: 0,
+  },
+  origin: { x: 150, y: 120 },
+  phase: 0,
+  quips: [],
+  quirks: [],
+  reaction: { kind: "none", range: 0, speed: 0 },
+  room: undefined,
+  scene: undefined,
+  width: 36,
+};
+
+describe("local bot decisions", () => {
+  it("uses a shorter hold for a low obstacle than for a tall one", () => {
+    const holds = [12, 60].map((height) => {
+      const layout = fixture([ground, { height, width: 12, x: 100, y: 120 - height }]);
+      const initial = startZone(DUCK, layout, 1);
+      const zone = { ...initial, duck: { ...initial.duck, grounded: true } };
+      const bot = newBot(1);
+      expect(
+        botInput(DUCK, prepareSensors(layout), layout, DIAGNOSTIC_SKILL, FORWARD_POLICY, zone, bot)
+          .jumpHeld,
+      ).toBe(true);
+      return bot.holding;
+    });
+    expect(holds[0]).toBeLessThan(holds[1] ?? 0);
+  });
+  it("waits for live platform alignment, resumes when it arrives, and bounds waiting", () => {
+    const layout = fixture([{ ...ground, width: 96 }], [platform]);
+    const sensors = prepareSensors(layout);
+    const initial = startZone(DUCK, layout, 1);
+    const zone = { ...initial, duck: { ...initial.duck, grounded: true } };
+    const bot = newBot(1);
+    const skill = { ...DIAGNOSTIC_SKILL, maxWaitTicks: 2 };
+    expect(botInput(DUCK, sensors, layout, skill, FORWARD_POLICY, zone, bot).move).toBe(0);
+    const aligned = { ...zone, objects: [{ x: 108, y: 120 }] };
+    expect(botInput(DUCK, sensors, layout, skill, FORWARD_POLICY, aligned, bot).move).toBe(1);
+    const waiting = newBot(1);
+    expect(botInput(DUCK, sensors, layout, skill, FORWARD_POLICY, zone, waiting).move).toBe(0);
+    expect(botInput(DUCK, sensors, layout, skill, FORWARD_POLICY, zone, waiting).move).toBe(0);
+    expect(botInput(DUCK, sensors, layout, skill, FORWARD_POLICY, zone, waiting).move).toBe(1);
+  });
+});

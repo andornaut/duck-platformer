@@ -14,6 +14,7 @@ export interface BatchResult {
     readonly cleared: number;
     readonly completionRate: number;
     readonly deaths: number;
+    readonly goalReached: number;
     readonly meanPeakProgress: number;
     readonly meanProgress: number;
     readonly retries: number;
@@ -54,6 +55,7 @@ export function simulateBatch(
       cleared,
       completionRate: cleared / runs.length,
       deaths: sum((run) => run.deaths),
+      goalReached: runs.filter((run) => run.status === "goal-reached").length,
       meanPeakProgress: sum((run) => run.peakProgress) / runs.length,
       meanProgress: sum((run) => run.progress) / runs.length,
       retries: sum((run) => run.retries),

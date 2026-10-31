@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 
 import { DUCK } from "../data/duck";
@@ -5,15 +6,22 @@ import { ZONE_MAP } from "../data/map";
 import { DIAGNOSTIC_SKILL, FORWARD_POLICY, type JumpPolicy } from "./bot";
 import { stageLoader } from "./catalogue";
 import { simulateBatch } from "./report";
-import { validateSimulation } from "./simulate";
+import { type SimulationConfig, type SimulationSeeds, validateSimulation } from "./simulate";
 
 const HELP = `npm run simulate -- [--stage ID] [--seed N] [--runs N] [--max-steps N]
   [--max-retries N] [--reaction-ticks N] [--look-ahead PX] [--hold-ticks N]
+  [--layout-seed N] [--motion-seed N] [--bot-seed N]
+  [--area ID --entry ID | --area ID --start-x PX --start-y PX] [--goal-x PX]
+  [--trace-cap N] [--trace-every N] [--stall-ticks N]
+  [--adaptive-jump true|false] [--min-hold-ticks N] [--wait-for-movers true|false]
+  [--max-wait-ticks N] [--build-id ID] [--data-id ID]
   [--error-rate 0..1] [--jump reactive|continuous|never] [--move -1|0|1] [--out FILE]
 
 Defaults: first map stage, seed 1, one run, 3600 total ticks/run, zero retries.
 Bot defaults are mechanical diagnostic settings, not calibrated human skills.
-Consecutive seeds select both assembled layouts and motion; bot randomness is separate.
+Consecutive seeds select layout/motion/bot unless explicitly overridden by component flags.
+Section coordinates are collision-box top-left pixels. --goal-x requires --area and nonzero move.
+Omitting a goal runs the whole stage from the selected cold start. Tracing is off by default.
 Output is JSON with per-run and aggregate metrics. Runtime includes no rendering.
 Only run bounded batches in the project container; coordinate larger batches with gameplay.`;
 
@@ -28,6 +36,17 @@ function main(args: readonly string[]): void {
   let maxSteps = 3600;
   let maxRetries = 0;
   let out: string | undefined;
+  const seeds: Partial<{ -readonly [Key in keyof SimulationSeeds]: SimulationSeeds[Key] }> = {};
+  let area: string | undefined;
+  let entry: string | undefined;
+  let startX: number | undefined;
+  let startY: number | undefined;
+  let goalX: number | undefined;
+  let traceCap: number | undefined;
+  let traceEvery: number | undefined;
+  let stallTicks = 120;
+  let build: string | undefined;
+  let data: string | undefined;
   const skill = { ...DIAGNOSTIC_SKILL };
   const policy = { ...FORWARD_POLICY };
   for (let at = 0; at < args.length; at += 2) {
@@ -36,7 +55,66 @@ function main(args: readonly string[]): void {
     if (value === undefined || value.trim() === "") {
       throw new Error(`${flag} needs a value`);
     }
+    const boolean = () => {
+      if (value !== "true" && value !== "false") {
+        throw new Error(`${flag} takes true or false`);
+      }
+      return value === "true";
+    };
     switch (flag) {
+      case "--layout-seed":
+        seeds.layout = Number(value);
+        break;
+      case "--motion-seed":
+        seeds.motion = Number(value);
+        break;
+      case "--bot-seed":
+        seeds.bot = Number(value);
+        break;
+      case "--area":
+        area = value;
+        break;
+      case "--entry":
+        entry = value;
+        break;
+      case "--start-x":
+        startX = Number(value);
+        break;
+      case "--start-y":
+        startY = Number(value);
+        break;
+      case "--goal-x":
+        goalX = Number(value);
+        break;
+      case "--trace-cap":
+        traceCap = Number(value);
+        break;
+      case "--trace-every":
+        traceEvery = Number(value);
+        traceCap ??= 128;
+        break;
+      case "--stall-ticks":
+        stallTicks = Number(value);
+        traceCap ??= 128;
+        break;
+      case "--adaptive-jump":
+        skill.adaptiveJump = boolean();
+        break;
+      case "--wait-for-movers":
+        skill.waitForMovers = boolean();
+        break;
+      case "--min-hold-ticks":
+        skill.minJumpHoldTicks = Number(value);
+        break;
+      case "--max-wait-ticks":
+        skill.maxWaitTicks = Number(value);
+        break;
+      case "--build-id":
+        build = value;
+        break;
+      case "--data-id":
+        data = value;
+        break;
       case "--stage":
         stage = value;
         break;
@@ -80,17 +158,64 @@ function main(args: readonly string[]): void {
   if (!Number.isSafeInteger(runs) || runs < 1 || runs > 10000 || seed + runs - 1 > 0xffffffff) {
     throw new Error("Invalid runs or seed range");
   }
-  validateSimulation({ maxRetries, maxSteps, policy, seed, skill });
+  const hasPoint = startX !== undefined || startY !== undefined;
+  if (
+    (hasPoint && (startX === undefined || startY === undefined)) ||
+    (entry !== undefined && hasPoint) ||
+    ((hasPoint || entry !== undefined || goalX !== undefined) && area === undefined) ||
+    (area !== undefined && !hasPoint && entry === undefined && goalX === undefined)
+  ) {
+    throw new Error("Provide an explicit area and either entry or both start coordinates");
+  }
+  if (build === undefined) {
+    try {
+      build = execFileSync("git", ["rev-parse", "HEAD"], {
+        cwd: new URL("../..", import.meta.url),
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      }).trim();
+    } catch {
+      /* A caller can supply the exact build when Git metadata is unavailable. */
+    }
+  }
+  const config: SimulationConfig = {
+    maxRetries,
+    maxSteps,
+    policy,
+    seed,
+    seeds,
+    skill,
+    ...(area !== undefined && entry !== undefined
+      ? { start: { area, entry } }
+      : area !== undefined && startX !== undefined && startY !== undefined
+        ? { start: { area, x: startX, y: startY } }
+        : {}),
+    ...(area !== undefined && goalX !== undefined ? { goal: { area, x: goalX } } : {}),
+    ...(traceCap !== undefined
+      ? {
+          trace: {
+            maxEvents: traceCap,
+            stallTicks,
+            ...(traceEvery !== undefined ? { sampleEveryTicks: traceEvery } : {}),
+          },
+        }
+      : {}),
+    provenance: {
+      ...(build !== undefined ? { build } : {}),
+      ...(data !== undefined ? { data } : {}),
+    },
+  };
+  validateSimulation(config);
   const started = performance.now();
   const prepare = stageLoader(stage);
   const result = simulateBatch(
     DUCK,
     prepare,
-    { maxRetries, maxSteps, policy, skill },
+    config,
     Array.from({ length: runs }, (_, index) => seed + index),
   );
   const report = {
-    config: { maxRetries, maxSteps, policy, runs, seed, skill, stage },
+    config: { ...config, runs, stage },
     ...result,
     totalRuntimeMs: performance.now() - started,
   };

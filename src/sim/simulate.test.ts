@@ -166,3 +166,45 @@ describe("simulation sections and diagnostics", () => {
     expect(report.runs[0]?.seeds).toEqual({ bot: 23, layout: 19, motion: 29 });
   });
 });
+
+describe("bounded section goals and reproducibility", () => {
+  it("reports section success independently of stage completion and joins chunk IDs", () => {
+    const layout = fixture(ground);
+    const main = layout.areas.main;
+    if (!main) {
+      throw new Error("Missing fixture area");
+    }
+    const stage = {
+      ...prepareStage({ ...layout, areas: { main: { ...main, chunks: [{ width: 1100, x: 0 }] } } }),
+      source: { chunkIds: { main: ["fixture-section"] }, layoutSeed: config.seed },
+    };
+    const run = simulateStage(DUCK, stage, {
+      ...config,
+      goal: { area: "main", x: 200 },
+      trace: { maxEvents: 1, sampleEveryTicks: 1, stallTicks: 10 },
+    });
+    expect(run.status).toBe("goal-reached");
+    expect(run.progress).toBeLessThan(1);
+    expect(run.trace[0]?.chunkId).toBe("fixture-section");
+    expect(() => simulateStage(DUCK, stage, { ...config, goal: { area: "main", x: 10 } })).toThrow(
+      "Invalid section goal",
+    );
+    expect(() => simulateStage(DUCK, stage, { ...config, seeds: { layout: 99 } })).toThrow(
+      "Prepared layout seed",
+    );
+  });
+  it("repeats one bot seed and changes actual inputs with an independent bot seed", () => {
+    const stage = prepareStage(fixture(ground));
+    const play = (bot: number) =>
+      simulateStage(DUCK, stage, {
+        ...config,
+        maxSteps: 60,
+        policy: { jump: "continuous", move: 1 },
+        seeds: { bot, layout: 1, motion: 2 },
+        skill: { ...DIAGNOSTIC_SKILL, errorRate: 0.5 },
+        trace: { maxEvents: 60, sampleEveryTicks: 1, stallTicks: 120 },
+      }).trace.map(({ input, x, y }) => ({ input, x, y }));
+    expect(play(10)).toEqual(play(10));
+    expect(play(10)).not.toEqual(play(11));
+  });
+});
