@@ -231,6 +231,12 @@ Pieces placed from stage data by their bottom-left corner at the bottom y given,
 | river-reeds       | repeating backdrop                 | 48x72   | Bottom-left, y 600, repeat x                     |
 | tiles-countryside | tileset, 12px cells, eight columns | 96x48   | Four material families, seven terrain tiles each |
 
+## Goose antagonist
+
+| Key              | Type                         | Size  | Tags                         |
+| ---------------- | ---------------------------- | ----- | ---------------------------- |
+| goose-antagonist | character; hit box 2,2,44,46 | 48x48 | idle, walk, warn, rush, rest |
+
 ## Industrial materials
 
 | Key                   | Type                               | Size    | Contract                                         |

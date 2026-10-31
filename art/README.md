@@ -393,7 +393,7 @@ A hazard restarts the floor on contact. `art/tools/hazards.py` draws the hazard 
 
 Every non-player animal in the main stage or foreground is an enemy. Read an enemy from its silhouette, movement and stronger colour against the muted environment, without a red contact rectangle or red silhouette outline. Natural coloured sprite outlines remain part of the house style. The shared red bands still identify dangerous terrain surfaces.
 
-Friendly animals appear only as muted background flavour, never in the foreground, or inside rooms reached through doors for shops, quests and conversations. Background animals stay below play in contrast, saturation and detail; their placement never suggests a usable platform or foreground interaction. There are no friendly animal background replacements in the current scenery. Stage enemies include `dog-antagonist` and `raccoon-antagonist`; room casts are retained.
+Friendly animals appear only as muted background flavour, never in the foreground, or inside rooms reached through doors for shops, quests and conversations. Background animals stay below play in contrast, saturation and detail; their placement never suggests a usable platform or foreground interaction. There are no friendly animal background replacements in the current scenery. Stage enemies include `dog-antagonist`, `goose-antagonist` and `raccoon-antagonist`; room casts are retained.
 
 ## Street cast
 
@@ -566,6 +566,22 @@ Farmland and River crossing use the countryside destination's muted straw primar
 | river-reeds     | 48x72   | x      | Gameplay, decorative |
 
 Backdrops use bottom-left anchors with default bottom y 600. Use sky factors 0,0; far factors 0.15,0.05; middle factors 0.4,0.15. Select the stage's middle-distance layer. Near props use factors 1,1 and align to the local floor through placement data. Decorative river scenery does not define water collision or danger. Barns, fences and reeds have no safe lip or contact band; keep their silhouettes clear of usable surfaces. Existing street-door artwork may supply room entrances.
+
+## Goose antagonist
+
+`art/tools/goose.py` draws the countryside's `goose-antagonist`. A long neck, small head and pale body distinguish it from the duck; a warm beak and feet keep its silhouette readable against the muted scenery. Its warning raises its wing and neck before the short committed charge. It has no red outline or dialogue portrait.
+
+The frame is 48x48 with bottom-centre anchor 24,48. Its constant contact box is x 2, y 2, width 44, height 46, containing every pose and its mirrored version. The skin uses the shared enemy state graph; gameplay owns warning, charge and recovery durations. Contact remains lethal in every state.
+
+| Tag  | Art cycle               | Pose                            |
+| ---- | ----------------------- | ------------------------------- |
+| idle | Two frames, 400ms each  | Quiet standing                  |
+| rest | Two frames, 400ms each  | Recovery pause                  |
+| rush | Four frames, 80ms each  | Neck extended during the charge |
+| walk | Four frames, 120ms each | Alternating steps               |
+| warn | Two frames, 160ms each  | Raised wing and neck signal     |
+
+All tags loop; state transitions belong to the runtime. These art timings do not define the charge's distance or duration.
 
 ## Industrial material pack
 
