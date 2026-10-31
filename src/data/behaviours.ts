@@ -1,4 +1,4 @@
-import type { BehaviourNode, BehaviourPlan } from "./types";
+import type { BehaviourCondition, BehaviourNode, BehaviourPlan } from "./types";
 
 const CROSSING_PAUSE = 1;
 const CROSSING_SPEED = 6;
@@ -39,6 +39,77 @@ function shuttleStates(
   };
 }
 
+interface PatrolChargeTuning {
+  readonly alert: readonly BehaviourCondition[];
+  readonly patrolPause: number;
+  readonly patrolSpeed: number;
+  readonly preparation: "crouch" | "warn";
+  readonly preparationSeconds: number;
+  readonly restSeconds: number;
+  readonly rushSeconds: number;
+  readonly rushSpeed: number;
+}
+
+function patrolChargeStates(tuning: PatrolChargeTuning): BehaviourPlan["states"] {
+  return {
+    [tuning.preparation]: {
+      animation: tuning.preparation,
+      enter: "face-target",
+      motion: { kind: "wait" },
+      transitions: [
+        { to: "rush", when: [{ kind: "elapsed", seconds: tuning.preparationSeconds }] },
+      ],
+    },
+    "patrol-left": {
+      animation: "walk",
+      motion: { direction: -1, kind: "move", speed: tuning.patrolSpeed },
+      transitions: [
+        { to: tuning.preparation, when: tuning.alert },
+        { to: "wait-left", when: [{ kind: "boundary" }] },
+      ],
+    },
+    "patrol-right": {
+      animation: "walk",
+      motion: { direction: 1, kind: "move", speed: tuning.patrolSpeed },
+      transitions: [
+        { to: tuning.preparation, when: tuning.alert },
+        { to: "wait-right", when: [{ kind: "boundary" }] },
+      ],
+    },
+    rest: {
+      animation: "rest",
+      motion: { kind: "wait" },
+      transitions: [
+        { to: "patrol-left", when: [{ kind: "elapsed", seconds: tuning.restSeconds }] },
+      ],
+    },
+    rush: {
+      animation: "rush",
+      motion: { direction: "facing", kind: "move", speed: tuning.rushSpeed },
+      transitions: [
+        { to: "rest", when: [{ kind: "boundary" }] },
+        { to: "rest", when: [{ kind: "elapsed", seconds: tuning.rushSeconds }] },
+      ],
+    },
+    "wait-left": {
+      animation: "idle",
+      motion: { kind: "wait" },
+      transitions: [
+        { to: tuning.preparation, when: tuning.alert },
+        { to: "patrol-right", when: [{ kind: "elapsed", seconds: tuning.patrolPause }] },
+      ],
+    },
+    "wait-right": {
+      animation: "idle",
+      motion: { kind: "wait" },
+      transitions: [
+        { to: tuning.preparation, when: tuning.alert },
+        { to: "patrol-left", when: [{ kind: "elapsed", seconds: tuning.patrolPause }] },
+      ],
+    },
+  };
+}
+
 export const BOAT_BEHAVIOUR: BehaviourPlan = {
   axis: "x",
   distance: 30,
@@ -72,59 +143,36 @@ export const DOG_BEHAVIOUR: BehaviourPlan = {
   distance: -12,
   inactiveAnimation: "idle",
   initial: "patrol-left",
-  states: {
-    crouch: {
-      animation: "crouch",
-      enter: "face-target",
-      motion: { kind: "wait" },
-      transitions: [{ to: "rush", when: [{ kind: "elapsed", seconds: 0.45 }] }],
-    },
-    "patrol-left": {
-      animation: "walk",
-      motion: { direction: -1, kind: "move", speed: DOG_PATROL_SPEED },
-      transitions: [
-        { to: "crouch", when: DOG_ALERT },
-        { to: "wait-left", when: [{ kind: "boundary" }] },
-      ],
-    },
-    "patrol-right": {
-      animation: "walk",
-      motion: { direction: 1, kind: "move", speed: DOG_PATROL_SPEED },
-      transitions: [
-        { to: "crouch", when: DOG_ALERT },
-        { to: "wait-right", when: [{ kind: "boundary" }] },
-      ],
-    },
-    rest: {
-      animation: "rest",
-      motion: { kind: "wait" },
-      transitions: [{ to: "patrol-left", when: [{ kind: "elapsed", seconds: 0.65 }] }],
-    },
-    rush: {
-      animation: "rush",
-      motion: { direction: "facing", kind: "move", speed: 20 },
-      transitions: [
-        { to: "rest", when: [{ kind: "boundary" }] },
-        { to: "rest", when: [{ kind: "elapsed", seconds: 0.6 }] },
-      ],
-    },
-    "wait-left": {
-      animation: "idle",
-      motion: { kind: "wait" },
-      transitions: [
-        { to: "crouch", when: DOG_ALERT },
-        { to: "patrol-right", when: [{ kind: "elapsed", seconds: DOG_PATROL_PAUSE }] },
-      ],
-    },
-    "wait-right": {
-      animation: "idle",
-      motion: { kind: "wait" },
-      transitions: [
-        { to: "crouch", when: DOG_ALERT },
-        { to: "patrol-left", when: [{ kind: "elapsed", seconds: DOG_PATROL_PAUSE }] },
-      ],
-    },
-  },
+  states: patrolChargeStates({
+    alert: DOG_ALERT,
+    patrolPause: DOG_PATROL_PAUSE,
+    patrolSpeed: DOG_PATROL_SPEED,
+    preparation: "crouch",
+    preparationSeconds: 0.45,
+    restSeconds: 0.65,
+    rushSeconds: 0.6,
+    rushSpeed: 20,
+  }),
+};
+
+export const GOOSE_BEHAVIOUR: BehaviourPlan = {
+  axis: "x",
+  distance: -8,
+  inactiveAnimation: "idle",
+  initial: "patrol-left",
+  states: patrolChargeStates({
+    alert: [
+      { kind: "nearby", range: 10 },
+      { kind: "same-ground", tolerance: 1 },
+    ],
+    patrolPause: 0.35,
+    patrolSpeed: 2,
+    preparation: "warn",
+    preparationSeconds: 0.65,
+    restSeconds: 1,
+    rushSeconds: 0.45,
+    rushSpeed: 14,
+  }),
 };
 
 export const RACCOON_BEHAVIOUR: BehaviourPlan = {

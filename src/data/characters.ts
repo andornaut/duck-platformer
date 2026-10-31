@@ -4,6 +4,7 @@ import {
   CITY_LIFT_BEHAVIOUR,
   CITY_SHUTTLE_BEHAVIOUR,
   DOG_BEHAVIOUR,
+  GOOSE_BEHAVIOUR,
   RACCOON_BEHAVIOUR,
 } from "./behaviours";
 import type { Character } from "./types";
@@ -181,6 +182,13 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     art: "frog-courier",
     cols: 5,
     rows: 3,
+  },
+  "goose-antagonist": {
+    archetype: "hazard",
+    art: "goose-antagonist",
+    behaviour: GOOSE_BEHAVIOUR,
+    cols: 4,
+    rows: 4,
   },
   // A cellar hatch's edges: the sidewalk's edge tile with an open steel leaf standing 2 above it.
   "hatch-left": {
