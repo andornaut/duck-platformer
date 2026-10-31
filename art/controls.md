@@ -8,12 +8,14 @@ Status means **implemented**, **approved target** (a decision awaiting implement
 
 Apply this guide to menu actions, modal actions and ordinary form controls. A primary action keeps the same colour and geometry wherever it appears; disabled is a state, not another action role.
 
-| Control                        | Reason for exception                                     | Retained rules                                                               |
-| ------------------------------ | -------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Compact Install action         | A 28px action sits within a full-height settings row     | Full 48px row target; compact content padding must still fit the shared font |
-| Icon-only navigation and close | Compact, recognisable action without a text label        | Consistent icon placement, accessible action name, focus and press area      |
-| Movement hint and knob         | Continuous directional input rather than a form action   | Contrast and clear state indication                                          |
-| Pause, Use and Jump            | In-game controls must remain visible over varied scenery | Contrast, adequate press area and consistent press feedback                  |
+| Control                | Reason for exception                                     | Retained rules                                                               |
+| ---------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Compact Install action | A 28px action sits within a full-height settings row     | Full 48px row target; compact content padding must still fit the shared font |
+| Icon-only navigation   | Compact, recognisable action without a text label        | Consistent icon placement, accessible action name, focus and press area      |
+| Movement hint and knob | Continuous directional input rather than a form action   | Contrast and clear state indication                                          |
+| Pause, Use and Jump    | In-game controls must remain visible over varied scenery | Contrast, adequate press area and consistent press feedback                  |
+
+Ordinary modal close controls use a 24x24 face exactly 6px from the panel's top and left edges, with their existing 48x48 press target. Relative to the panel, the face spans (6,6) through (30,30), while the centred press target spans (-6,-6) through (42,42). Keep the target centred on its face; do not clamp or shift it into the panel. This positioning exception does not apply to bespoke page or top-bar controls. Ordinary body content retains 16px padding.
 
 A new exception names its concrete purpose and retained rules in this table. Placement alone does not justify another button style.
 
@@ -37,22 +39,25 @@ Palette names refer to [palette.json](../public/art/palette.json). Colours are o
 
 A texture's nine-slice margins preserve its corners and are not content padding. Keep face dimensions, content padding, gaps and expanded press areas separate.
 
-| Name                             | Value                                              | Unit             | Purpose                                                      | Status                                                           |
-| -------------------------------- | -------------------------------------------------- | ---------------- | ------------------------------------------------------------ | ---------------------------------------------------------------- |
-| Button content inset, horizontal | 16 minimum                                         | px per side      | Clear space between visible label/icon group and button edge | Approved target                                                  |
-| Button content inset, vertical   | 12 minimum                                         | px per side      | Clear space above and below label ink                        | Approved target                                                  |
-| Button height, standard          | 48                                                 | px               | Ordinary menu and modal actions                              | Implemented on cards and start screen; approved target elsewhere |
-| Button width                     | Shared within an action group; grow to fit content | rule             | Like actions have matching sizes                             | Approved target                                                  |
-| Card content padding             | 16                                                 | px on every side | Clear space around the measured content union                | Approved target                                                  |
-| Compact action height            | 28                                                 | px               | Install's compact action within its full-size row            | Implemented exception                                            |
-| Focus expansion                  | 4                                                  | px per side      | Ring outside the focused face                                | Implemented                                                      |
-| Icon-to-label gap                | 6                                                  | px               | Leading play mark and label                                  | Implemented                                                      |
-| Control row height               | 48                                                 | px               | Full labelled selection row                                  | Implemented for settings; approved target throughout             |
-| Ordinary control gap             | 8                                                  | px               | Separate unrelated controls or groups                        | Approved target                                                  |
-| Press displacement               | 2                                                  | px down          | Move face, label and icon together                           | Implemented                                                      |
-| Press target                     | 48 minimum                                         | px per axis      | Minimum interactive target                                   | Implemented                                                      |
-| Press target growth              | 25% of shorter face side, clamped to 6..16         | px per side      | Enlarge the drawn control's press area                       | Implemented                                                      |
-| Stacked action gap               | 4                                                  | px               | Consecutive equal-height card actions                        | Implemented                                                      |
+| Name                             | Value                                              | Unit                       | Purpose                                                                     | Status                                                           |
+| -------------------------------- | -------------------------------------------------- | -------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Button content inset, horizontal | 16 minimum                                         | px per side                | Clear space between visible label/icon group and button edge                | Approved target                                                  |
+| Button content inset, vertical   | 12 minimum                                         | px per side                | Clear space above and below label ink                                       | Approved target                                                  |
+| Button height, standard          | 48                                                 | px                         | Ordinary menu and modal actions                                             | Implemented on cards and start screen; approved target elsewhere |
+| Button width                     | Shared within an action group; grow to fit content | rule                       | Like actions have matching sizes                                            | Approved target                                                  |
+| Card content padding             | 16                                                 | px on every side           | Clear space around ordinary body content; close face is exempt              | Approved target                                                  |
+| Close face inset                 | 6                                                  | px from panel top and left | Ordinary modal close placement, excluding bespoke page and top-bar controls | Approved target                                                  |
+| Close face size                  | 24x24                                              | px                         | Preserve existing close artwork                                             | Implemented                                                      |
+| Close press target               | 48x48                                              | px                         | Preserve the target centred on the face                                     | Implemented                                                      |
+| Compact action height            | 28                                                 | px                         | Install's compact action within its full-size row                           | Implemented exception                                            |
+| Focus expansion                  | 4                                                  | px per side                | Ring outside the focused face                                               | Implemented                                                      |
+| Icon-to-label gap                | 6                                                  | px                         | Leading play mark and label                                                 | Implemented                                                      |
+| Control row height               | 48                                                 | px                         | Full labelled selection row                                                 | Implemented for settings; approved target throughout             |
+| Ordinary control gap             | 8                                                  | px                         | Separate unrelated controls or groups                                       | Approved target                                                  |
+| Press displacement               | 2                                                  | px down                    | Move face, label and icon together                                          | Implemented                                                      |
+| Press target                     | 48 minimum                                         | px per axis                | Minimum interactive target                                                  | Implemented                                                      |
+| Press target growth              | 25% of shorter face side, clamped to 6..16         | px per side                | Enlarge the drawn control's press area                                      | Implemented                                                      |
+| Stacked action gap               | 4                                                  | px                         | Consecutive equal-height card actions                                       | Implemented                                                      |
 
 Vertical content is centred within the usable face, with the existing two-pixel press displacement. Do not shrink text to meet a size token: grow the button or reword its label. The compact Install exception uses its existing 8px horizontal inset rather than the standard 16px; the whole 48px row remains interactive. Standardizing height does not make every button equally wide; use a shared width within the same action group.
 
@@ -60,11 +65,11 @@ Start-screen Start and Continue use `ui-button-primary`, dslate with white label
 
 ### Modal content fitting
 
-Every ordinary modal sizes its nine-slice frame to the union of its actual content, with 16px clear padding on all four sides. Measure visible text ink at its existing font size, plus icons, switches, close controls and button faces. Include required gaps in the content layout before adding the outer padding. Do not reserve a shared canvas size, absent rows or empty footer space.
+Every ordinary modal sizes its nine-slice frame to its actual content, with 16px clear padding around ordinary body content. The close face is a positioning exception: it sits exactly 6px from the panel's top and left edges. Measure visible text ink at its existing font size, plus icons, switches, the full positioned close press target and button faces. Include required gaps in the content layout before adding body padding. Do not reserve a shared canvas size, absent rows or empty footer space.
 
 - Actions: equal widths within a group, each the widest action label's visible ink plus 16px on each side. Keep the standard 48px height, minimum 12px vertical label inset and 8px horizontal action gap. Stacked actions retain their 4px gap.
 - Content: ordinary single-line stat rows use 16px line boxes at the existing 2x font size, with 4px between boxes. The actual glyph ink can be shorter; centre that ink in its line box. Keep an 8px gap between the text block and action row. Paragraphs wrap or grow their box; text never shrinks to fit.
-- Headers: centre the title across the complete card. Where a 24x24 close control is present, reserve its width plus an 8px clearance on both sides of the title, so the centred heading clears the close control. The opposite reservation preserves the heading's centre; it is measured header clearance, not a fixed canvas width. The close control stays inside the outer padding at the header's top right. A required decision without a close control has no reserved close area.
+- Headers: centre the title across the complete card. Reserve the entire positioned 48x48 close press target plus an 8px clearance, mirrored on the opposite side to preserve the title's centre. The reservation includes the target's offset relative to the panel, not just the face or target width. The target extends to x42 and y42 relative to the panel, so the mirrored horizontal title reservation is 42+8=50px on each side. Keep the complete press rectangle of every interactive body row or action at or below y50 relative to the panel. Account for that control's own expanded target, not only its drawn face; noninteractive title text remains in the header. The close face remains 24x24 at the panel's top left, inset exactly 6px on both axes. A required decision without a close control has no reserved close area.
 - Placement: ordinary cards centre within the game view. The retry card is top-centred at y16 to leave the seated duck and contact area visible below it. Its content uses the same 16px padding.
 - Special-purpose framing: conversation panels retain their portrait-frame borders and paired-speaker layout because those borders frame 64px character artwork. In-game touch controls and the compact Install face retain their documented control exceptions. These do not introduce another ordinary modal padding rule.
 
@@ -81,7 +86,7 @@ The left-to-right order carries meaning: leaving is secondary, retrying is prima
 
 ### Update notice action
 
-The update notice uses one primary Update now action and the ordinary close X, which defers the update. There is no separate Later action or redundant body copy. Keep the shared 2x fonts, focus ring, pressed feedback and expanded press targets. Only the explicit primary action accepts; tapping the card face does not accept. See [the update notice](README.md#update-notice) for its content-fitted header and measured example.
+The update notice uses one primary Update now action and the ordinary close X, which defers the update. There is no separate Later action or redundant body copy. Keep the shared 2x fonts, focus ring, pressed feedback and expanded press targets. Only the explicit primary action accepts; tapping the card face does not accept. See [the update notice](README.md#update-notice) for its content-fitted header.
 
 ## Button roles and states
 
