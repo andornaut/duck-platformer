@@ -10,14 +10,28 @@ import type {
 import { startDuck, stepDuck } from "../rules/duck";
 import { STEP_SECONDS } from "../rules/step";
 import {
+  activateCharge,
   areaOf,
   enterArea,
   standsOn,
   startZone,
-  stepZone,
+  stepZone as stepActualZone,
   type ZoneInput,
   type ZoneState,
 } from "../rules/zone";
+
+// Conversations do not move the world. The walker activates their patrols explicitly so it
+// verifies the active encounter, including on any fresh attempt.
+function stepZone(
+  tuning: DuckTuning,
+  layout: ZoneLayout,
+  seconds: number,
+  input: ZoneInput,
+  zone: ZoneState,
+): ZoneState {
+  const active = zone.charges.reduce((state, _, index) => activateCharge(index, state), zone);
+  return stepActualZone(tuning, layout, seconds, input, active);
+}
 
 // A top she can stand on in an area: a still span from left to right at height y, or a moving
 // platform's top (mover: its object's index), placed where its track starts. Still spans are
@@ -483,7 +497,10 @@ function moveBounds(tuning: DuckTuning, carry: number) {
 // The steps a moving thing takes to go round its track once, at most MAX_CYCLE.
 function cycleSteps(object: ObjectLayout): number {
   const { distance, pause, speed } = object.motion;
-  const seconds = speed > 0 ? 2 * (distance / speed + pause) : 0;
+  const patrol = speed > 0 ? 2 * (distance / speed + pause) : 0;
+  const charge = object.charge;
+  const seconds =
+    patrol + (charge ? charge.crouchSeconds + charge.rushSeconds + charge.restSeconds : 0);
   return Math.ceil(Math.min(seconds, MAX_CYCLE) / STEP_SECONDS);
 }
 

@@ -3,9 +3,11 @@ import { describe, expect, it } from "vitest";
 import { DUCK } from "../data/duck";
 import type { AreaLayout, Motion, ObjectLayout, Point, ZoneLayout } from "../data/types";
 import { DUCK_FRAME } from "../view/duck";
+import type { ChargePhase } from "./charge";
 import { duckBox, duckFrameRect, startDuck } from "./duck";
 import { STEP_SECONDS } from "./step";
 import {
+  activateCharge,
   doorAt,
   enterArea,
   leaveRoom,
@@ -102,6 +104,66 @@ function run(
 }
 
 const bottomOf = (state: ZoneState | undefined) => (state?.duck.y ?? 0) + DUCK.height;
+
+describe("charge encounters", () => {
+  const patrol = object({
+    charge: {
+      crouchSeconds: 0.25,
+      groundTolerance: 1,
+      restSeconds: 0.25,
+      rushSeconds: 0.5,
+      rushSpeed: 10000,
+      triggerRange: 80,
+    },
+    collision: "hazard",
+    height: 20,
+    motion: { ...STATIC, algorithm: "linear", direction: "left", distance: 100, speed: 20 },
+    origin: { x: 150, y: 280 },
+    scene: "first-encounter",
+    width: 12,
+  });
+  const layout = zone(area([patrol]));
+
+  it("activates after its conversation and resets inactive on the next attempt", () => {
+    const initial = startZone(DUCK, layout, SEED);
+    expect(initial.charges[0]?.active).toBe(false);
+    const active = activateCharge(0, initial);
+    expect(active.charges[0]?.active).toBe(true);
+    const reset = stepZone(DUCK, layout, STEP, STILL, {
+      ...active,
+      duck: { ...active.duck, x: patrol.origin.x, y: patrol.origin.y },
+    });
+    expect(reset.attempt).toBe(initial.attempt + 1);
+    expect(reset.charges[0]).toEqual(initial.charges[0]);
+  });
+
+  it.each<ChargePhase>(["crouch", "patrol", "rest", "rush"])("is lethal during %s", (phase) => {
+    const initial = activateCharge(0, startZone(DUCK, layout, SEED));
+    const charge = initial.charges[0];
+    if (!charge) {
+      throw new Error("Missing fixture charge");
+    }
+    const result = stepZone(DUCK, layout, STEP, STILL, {
+      ...initial,
+      charges: [{ ...charge, phase }],
+      duck: { ...initial.duck, x: patrol.origin.x, y: patrol.origin.y },
+    });
+    expect(result.restarts).toBe(1);
+  });
+
+  it("detects a rush that crosses the duck entirely between fixed frames", () => {
+    const initial = activateCharge(0, startZone(DUCK, layout, SEED));
+    const charge = initial.charges[0];
+    if (!charge) {
+      throw new Error("Missing fixture charge");
+    }
+    const result = stepZone(DUCK, layout, STEP, STILL, {
+      ...initial,
+      charges: [{ ...charge, phase: "rush" }],
+    });
+    expect(result.restarts).toBe(1);
+  });
+});
 
 describe("restarts", () => {
   const narrow = area([], { solids: [{ ...GROUND, width: 200 }] });

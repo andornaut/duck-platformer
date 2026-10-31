@@ -11,6 +11,13 @@ import type {
   ZoneLayout,
 } from "../data/types";
 import {
+  chargeContactBox,
+  type ChargeState,
+  startCharge,
+  stepCharge,
+  sweptContact,
+} from "./charge";
+import {
   duckBox,
   duckFrameRect,
   type DuckInput,
@@ -38,6 +45,7 @@ export interface ZoneInput extends DuckInput {
 export interface ZoneState {
   readonly area: string;
   readonly attempt: number;
+  readonly charges: readonly (ChargeState | undefined)[];
   readonly cleared: boolean;
   readonly door: number | undefined;
   readonly duck: DuckState;
@@ -91,6 +99,9 @@ export function enterArea(
   return {
     ...zone,
     area: link.area,
+    charges: area.objects.some((object) => object.charge)
+      ? area.objects.map((object) => object.charge && startCharge(object))
+      : [],
     cleared: false,
     door: undefined,
     duck: startDuck(tuning, entry),
@@ -107,6 +118,20 @@ export function enterArea(
 // where it held still. Use must go down again before it acts.
 export function leaveRoom(zone: ZoneState): ZoneState {
   return { ...zone, door: undefined, useHeld: true };
+}
+
+// A conversation can activate its patrol only after closing. Re-entering the area creates a
+// fresh inactive state again for every patrol with a scene.
+export function activateCharge(index: number, zone: ZoneState): ZoneState {
+  const charge = zone.charges[index];
+  return charge === undefined || charge.active
+    ? zone
+    : {
+        ...zone,
+        charges: zone.charges.map((state, at) =>
+          at === index ? { ...charge, active: true } : state,
+        ),
+      };
 }
 
 const centreOf = (rect: Rect): Point => ({
@@ -249,9 +274,20 @@ export function stepZone(
   const time = zone.seconds + seconds;
   const objects = area.objects.map((object, index) => {
     const before = zone.objects[index] ?? object.origin;
+    const charge = object.charge
+      ? stepCharge(
+          tuning,
+          object,
+          area.solids,
+          seconds,
+          zone.duck,
+          before,
+          zone.charges[index] ?? startCharge(object),
+        )
+      : undefined;
     const path = pathAt(object, zone.tracks[index] as Track, time);
-    const after = objectStep(tuning, object, seconds, path, zone.duck, before);
-    return { after: rectAt(object, after), before: rectAt(object, before), object };
+    const after = charge?.at ?? objectStep(tuning, object, seconds, path, zone.duck, before);
+    return { after: rectAt(object, after), before: rectAt(object, before), charge, object };
   });
   const platforms = objects.filter(
     ({ object }) => object.collision === "solid" || object.collision === "ledge",
@@ -285,18 +321,36 @@ export function stepZone(
   }
   const hazards = objects
     .filter(({ object }) => object.collision === "hazard")
-    .map(({ after, object }) =>
-      object.hitbox
-        ? { ...object.hitbox, x: after.x + object.hitbox.x, y: after.y + object.hitbox.y }
-        : after,
+    .map(({ after, charge, object }) =>
+      charge
+        ? chargeContactBox(object, after, charge.state.facing)
+        : object.hitbox
+          ? { ...object.hitbox, x: after.x + object.hitbox.x, y: after.y + object.hitbox.y }
+          : after,
     );
   duck = stepDuck(tuning, solids, rects("ledge"), seconds, input, duck);
   if (riding && !duck.grounded) {
     duck = { ...duck, carryVx: dx / seconds };
   }
   const box = duckBox(tuning, duck);
+  const beforeBox = duckBox(tuning, zone.duck);
+  const duckAt = (time: number): Rect => ({
+    ...beforeBox,
+    x: beforeBox.x + ((box.x - beforeBox.x) * time) / seconds,
+    y: beforeBox.y + ((box.y - beforeBox.y) * time) / seconds,
+  });
+  const swept =
+    zone.charges.length > 0 &&
+    seconds > 0 &&
+    objects.some(({ charge, object }) =>
+      charge?.segments.some((segment) => {
+        const before = chargeContactBox(object, segment.from, segment.facing);
+        const after = chargeContactBox(object, segment.to, segment.facing);
+        return sweptContact(before, after, duckAt(segment.start), duckAt(segment.end));
+      }),
+    );
   const steps = zone.steps + 1;
-  if (crushed || duck.y > area.height || hazards.some((hazard) => overlaps(box, hazard))) {
+  if (crushed || swept || duck.y > area.height || hazards.some((hazard) => overlaps(box, hazard))) {
     return enterArea(tuning, layout, layout.start, {
       attempt: zone.attempt + 1,
       restarts: zone.restarts + 1,
@@ -316,6 +370,7 @@ export function stepZone(
     : undefined;
   return {
     ...zone,
+    charges: zone.charges.length > 0 ? objects.map(({ charge }) => charge?.state) : zone.charges,
     cleared: box.x + box.width > area.exitX,
     door,
     duck,
