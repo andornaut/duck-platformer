@@ -33,6 +33,9 @@ export const ZONE_1: ZonePlan = {
         { character: "roofline-brownstone", col: 192, cols: 48, row: 20 },
         { character: "cornice", col: 192, cols: 48, row: 20 },
         // Safe walking room precedes the tap step and full-jump block in the depot floor.
+        // The depot ledge gives her a refuge above the dog's contact box.
+        { character: "platform-ledge", col: 25, cols: 6, row: 44 },
+        { character: "dog-antagonist", col: 35, row: 46, scene: "depot-dog-intro" },
         { character: "walk-signal", col: 62, row: 43 },
         { character: "red-edge-top", col: 56, cols: 6, row: 54 },
         { character: "red-edge-support", col: 56, cols: 6, row: 55, rows: 5 },
