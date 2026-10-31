@@ -1,0 +1,253 @@
+import { animationKey } from "@andornaut/game-kit/art/aseprite";
+import { snapshotRemapped } from "@andornaut/game-kit/view/phaser/snapshotRemap";
+import { type Cameras, type Game, type GameObjects, type Input, Scene, Scenes } from "phaser";
+
+import { SCREEN } from "../data/screen";
+import { TEXT } from "../data/text";
+import { TOUCH } from "../data/touch";
+import {
+  cardActions,
+  cardActionsSize,
+  cardTextSize,
+  contentCardLayout,
+} from "../layout/contentCard";
+import { type PressArea, pressedArea } from "../layout/hitAreas";
+import { PHONE_EVENTS, startWakeLock, stopWakeLock, updateOffer } from "../pwa";
+import { dimColour } from "../view/dim";
+import {
+  addCardTextIn,
+  addSlice,
+  addTextButton,
+  captureTab,
+  cardFonts,
+  palette,
+  paletteColour,
+  pressTextButton,
+  PRIMARY_BUTTON,
+  ringFocus,
+  type TextButton,
+  TITLE_FONT,
+} from "./cardParts";
+import { catchModalTaps } from "./modalTaps";
+import { canvasRect, fitCanvasCamera, fitPlayCamera, playPoint } from "./playCamera";
+
+// Pausing the world does not change PWA eligibility: closing this offer cannot reopen it.
+export function installUpdateModalBridge(game: Game): void {
+  let paused: string[] = [];
+  const unsubscribe = updateOffer.subscribe((shown) => {
+    if (shown) {
+      paused = game.scene
+        .getScenes(true)
+        .filter((scene) => scene.scene.key !== "update")
+        .map((scene) => scene.scene.key);
+      for (const key of paused) {
+        game.scene.pause(key);
+      }
+      stopWakeLock();
+      game.scene.start("update");
+    } else {
+      if (game.scene.isActive("update")) {
+        game.scene.stop("update");
+      }
+      for (const key of paused) {
+        if (game.scene.isPaused(key)) {
+          game.scene.resume(key);
+        }
+      }
+      if (paused.includes("zone")) {
+        startWakeLock();
+      }
+      paused = [];
+    }
+  });
+  game.events.once("destroy", unsubscribe);
+}
+
+type Action = "accept" | "close";
+
+export class UpdateScene extends Scene {
+  private cardCamera!: Cameras.Scene2D.Camera;
+  private layout!: ReturnType<typeof contentCardLayout>;
+  private action!: ReturnType<typeof cardActions>[number];
+  private button!: TextButton;
+  private closeX!: GameObjects.Sprite;
+  private focus: Action | undefined;
+  private readyToInteract = false;
+  private ring: GameObjects.NineSlice | undefined;
+  private press:
+    | { at: { x: number; y: number }; cancelled: boolean; id: number; target: Action | undefined }
+    | undefined;
+
+  constructor() {
+    super("update");
+  }
+
+  create(): void {
+    this.readyToInteract = false;
+    this.focus = undefined;
+    this.ring = undefined;
+    this.press = undefined;
+    const canvasCamera = this.cameras.main;
+    fitCanvasCamera(this, canvasCamera);
+    this.cardCamera = this.cameras.add();
+    fitPlayCamera(this, this.cardCamera);
+    const dim = this.add.image(0, 0, "__DEFAULT").setOrigin(0).setVisible(false);
+    this.cardCamera.ignore(dim);
+    const toCard = (object: GameObjects.GameObject) => canvasCamera.ignore(object);
+    this.events.on(Scenes.Events.ADDED_TO_SCENE, toCard);
+    this.events.once("shutdown", () => this.events.off(Scenes.Events.ADDED_TO_SCENE, toCard));
+    canvasCamera.setVisible(false);
+    this.cardCamera.setVisible(false);
+    const key = "update-modal-dim";
+    void snapshotRemapped(dimColour(palette(this)), this, canvasRect(this), key).then((drawn) => {
+      if (!this.sys.isActive()) {
+        return;
+      }
+      if (drawn) {
+        dim.setTexture(key).setVisible(true);
+      }
+      canvasCamera.setVisible(true);
+      this.cardCamera.setVisible(true);
+      this.readyToInteract = true;
+    });
+    this.events.once("shutdown", () => {
+      if (this.textures.exists(key)) {
+        this.textures.remove(key);
+      }
+    });
+    const fonts = cardFonts(this);
+    this.layout = contentCardLayout(
+      { ...SCREEN, x: 0, y: 0 },
+      [{ key: "actions", ...cardActionsSize(fonts.body, "row", [TEXT.update.accept]) }],
+      { close: true, titleWidth: cardTextSize(fonts.title, TEXT.update.title).width },
+    );
+    const group = this.layout.groups.actions;
+    const title = this.layout.title;
+    const close = this.layout.close;
+    if (!group || !title || !close) {
+      throw new Error("Missing upgrade card content");
+    }
+    const action = cardActions(fonts.body, "row", group, [TEXT.update.accept])[0];
+    if (!action) {
+      throw new Error("Missing upgrade action");
+    }
+    this.action = action;
+    addSlice(this, "ui-settings-card", this.layout.card);
+    addCardTextIn(this, TITLE_FONT, title, TEXT.update.title, paletteColour(this, "ink"));
+    this.closeX = this.add.sprite(close.at.x, close.at.y, "ui-close").setOrigin(0);
+    this.closeX.play(animationKey("ui-close", "normal"));
+    this.button = addTextButton(this, action, TEXT.update.accept, { style: PRIMARY_BUTTON });
+    catchModalTaps(this, this.cardCamera, {
+      close: () => updateOffer.defer(),
+      covered: () => [this.layout.card, this.action.hit, close.hit],
+    });
+    captureTab(this, true);
+    const back = (event: Event) => {
+      event.stopImmediatePropagation();
+      updateOffer.defer();
+    };
+    window.addEventListener(PHONE_EVENTS.backPressed, back, true);
+    this.events.once("shutdown", () => {
+      captureTab(this, false);
+      window.removeEventListener(PHONE_EVENTS.backPressed, back, true);
+    });
+    this.input.keyboard?.on("keydown", (event: KeyboardEvent) => {
+      event.stopPropagation();
+      if (event.key === "Escape") {
+        updateOffer.defer();
+      } else if (event.key === "Tab" || event.key.startsWith("Arrow")) {
+        event.preventDefault();
+        this.focus = this.focus === "accept" ? "close" : "accept";
+        this.render();
+      } else if (
+        (event.key === "Enter" || event.key === " ") &&
+        !event.repeat &&
+        this.focus !== undefined
+      ) {
+        event.preventDefault();
+        this.act(this.focus);
+      }
+    });
+    this.input.keyboard?.on("keyup", (event: KeyboardEvent) => event.stopPropagation());
+    this.input.on("pointerdown", (pointer: Input.Pointer) => {
+      this.input.stopPropagation();
+      if (this.readyToInteract && !this.press) {
+        const at = playPoint(this, pointer, this.cardCamera);
+        this.press = {
+          at,
+          cancelled: false,
+          id: pointer.id,
+          target: pressedArea(this.areas(), at),
+        };
+        this.render();
+      }
+    });
+    this.input.on("pointermove", (pointer: Input.Pointer) => {
+      this.input.stopPropagation();
+      if (this.press?.id === pointer.id) {
+        const at = playPoint(this, pointer, this.cardCamera);
+        this.press.cancelled ||=
+          Math.hypot(at.x - this.press.at.x, at.y - this.press.at.y) > TOUCH.tapMaxDistance;
+        this.render();
+      }
+    });
+    const up = (pointer: Input.Pointer, outside: boolean) => {
+      this.input.stopPropagation();
+      if (this.press?.id !== pointer.id) {
+        return;
+      }
+      const press = this.press;
+      this.press = undefined;
+      this.render();
+      const at = playPoint(this, pointer, this.cardCamera);
+      if (
+        !outside &&
+        !pointer.wasCanceled &&
+        !press.cancelled &&
+        press.target !== undefined &&
+        Math.hypot(at.x - press.at.x, at.y - press.at.y) <= TOUCH.tapMaxDistance &&
+        pressedArea(this.areas(), at) === press.target
+      ) {
+        this.act(press.target);
+      }
+    };
+    this.input.on("pointerup", (pointer: Input.Pointer) => up(pointer, false));
+    this.input.on("pointerupoutside", (pointer: Input.Pointer) => up(pointer, true));
+  }
+
+  private areas(): readonly PressArea<Action>[] {
+    const close = this.layout.close;
+    return [
+      { art: this.action.button, hit: this.action.hit, key: "accept" },
+      ...(close ? [{ art: close.art, hit: close.hit, key: "close" as const }] : []),
+    ];
+  }
+  private act(action: Action): void {
+    if (!this.readyToInteract) {
+      return;
+    }
+    if (action === "accept") {
+      updateOffer.accept();
+    } else {
+      updateOffer.defer();
+    }
+  }
+  private render(): void {
+    this.closeX.play(
+      animationKey(
+        "ui-close",
+        this.press?.target === "close" && !this.press.cancelled ? "pressed" : "normal",
+      ),
+    );
+    pressTextButton(this.button, this.press?.target === "accept" && !this.press.cancelled);
+    this.ring = ringFocus(
+      this,
+      this.ring,
+      this.focus === "accept"
+        ? this.action.button
+        : this.focus === "close"
+          ? this.layout.close?.art
+          : undefined,
+    );
+  }
+}

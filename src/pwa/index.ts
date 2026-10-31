@@ -4,9 +4,9 @@
 //
 // Offline play registers the service worker (serviceWorker.ts) and follows the kit's update
 // flow. The game page is the only screen, so it counts as the home screen: a newer version takes
-// over at once before the player has interacted, and after that the #update-ready toast in
-// pages/play/index.html offers it. The flow checks for one on each load, and again when the page
-// comes back into view (an installed app resumed without relaunching). The game loads meanwhile:
+// over at once before the player has interacted, and after that an ordinary game modal offers
+// it. The flow checks on each load and when the page comes back into view (an installed app
+// resumed without relaunching). The game loads meanwhile:
 // only its first screen and any save wait for the check (launchReady).
 import { appCannotClose } from "@andornaut/game-kit/pwa/appWindow";
 import {
@@ -23,13 +23,15 @@ import { createScreenWakeLock, type ScreenWakeLock } from "@andornaut/game-kit/p
 
 import { dispatchPhoneEvent, PHONE_EVENTS } from "./events";
 import { type HomeCover, type HomeScreen, trackHomeScreen } from "./homeScreen";
+import { createUpdateOffer } from "./updateOffer";
 
 export { PHONE_EVENTS } from "./events";
 
 // The history state key of the extra entry that back pops instead of leaving the game.
 const BACK_GUARD_KEY = "duckBackGuard";
 const SERVICE_WORKER_URL = "/sw.js";
-const UPDATE_READY_ID = "update-ready";
+let acceptWaitingUpdate: () => void = () => undefined;
+export const updateOffer = createUpdateOffer(() => acceptWaitingUpdate());
 
 // How long a fresh load holds the first screen and the save for a newer version to be checked for
 // and installed, so it reloads into that version before the zone draws; the game loads
@@ -52,20 +54,15 @@ function setupOfflinePlay(): void {
   if (page === undefined) {
     return;
   }
-  const toast = document.getElementById(UPDATE_READY_ID);
   const play = startOfflinePlay(
     {
       bootWaitMs: BOOT_WAIT_MS,
-      onUpdateShown: (visible) => {
-        if (toast) {
-          toast.hidden = !visible;
-        }
-      },
+      onUpdateShown: updateOffer.eligibility,
       serviceWorkerUrl: serviceWorkerUrl(SERVICE_WORKER_URL, undefined),
     },
     page,
   );
-  toast?.querySelector("button")?.addEventListener("click", () => play.flow.accept());
+  acceptWaitingUpdate = () => play.flow.accept();
   home = trackHomeScreen(play.setOnHome);
   ready = play.bootable;
 }
@@ -117,12 +114,12 @@ export function launchReady(): Promise<void> {
 }
 
 // The zone's first frame has shown: the game page is now the home screen, where the update
-// toast may show and a first visit registers the service worker.
+// modal may show and a first visit registers the service worker.
 export function zoneShown(): void {
   home?.shown();
 }
 
-// Something covers the zone, so the update toast waits until it is gone.
+// Something covers the zone, so the update modal waits until it is gone.
 export function coverZone(what: HomeCover, covering: boolean): void {
   home?.cover(what, covering);
 }
