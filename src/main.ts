@@ -27,6 +27,7 @@ import { RoomScene } from "./scenes/RoomScene";
 import { SettingsScene } from "./scenes/SettingsScene";
 import { StageSelectScene } from "./scenes/StageSelectScene";
 import { StartScene } from "./scenes/StartScene";
+import { installUpdateModalBridge, UpdateScene } from "./scenes/UpdateScene";
 import { ZoneScene } from "./scenes/ZoneScene";
 
 // The page's ink background (public/site.css), which the canvas's bars match.
@@ -67,11 +68,13 @@ function startGame(): void {
       DialogueChoiceScene,
       DeathScene,
       StageSelectScene,
+      UpdateScene,
     ],
     // WebGL only: the build's Phaser has no Canvas renderer (src/tools/phaserBuild.ts).
     type: WEBGL,
     width: SCREEN.width,
   });
+  installUpdateModalBridge(game);
   // Phaser fits the canvas to #game and measures and maps pointers through the frame's turn, and
   // the page is kept to the visible area with the fit refreshed whenever it or the turn may have
   // changed (the kit's followFrameTurn).
