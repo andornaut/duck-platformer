@@ -289,6 +289,16 @@ export const RECIPES: Readonly<Record<string, ZoneRecipe>> = {
     start: "city-boundary-start",
     theme: "city-boundary",
   },
+  "freight-terminal": {
+    difficulty: ZONE_DIFFICULTY,
+    doors: [{ count: 1, room: "test" }],
+    events: [],
+    finish: "freight-terminal-finish",
+    length: { max: 480, min: 360 },
+    spawnCol: 2,
+    start: "freight-terminal-start",
+    theme: "freight-terminal",
+  },
   // The park: 6 to 10 screens within the shared difficulty band, with one door to the test room.
   // No events exist yet.
   park: {
@@ -310,5 +320,15 @@ export const RECIPES: Readonly<Record<string, ZoneRecipe>> = {
     spawnCol: 4,
     start: "street-start",
     theme: "street",
+  },
+  "warehouse-district": {
+    difficulty: ZONE_DIFFICULTY,
+    doors: [{ count: 1, room: "test" }],
+    events: [],
+    finish: "warehouse-district-finish",
+    length: { max: 480, min: 360 },
+    spawnCol: 2,
+    start: "warehouse-district-start",
+    theme: "warehouse-district",
   },
 };

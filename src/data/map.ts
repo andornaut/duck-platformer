@@ -44,7 +44,9 @@ const DESTINATIONS: readonly MapDestination[] = [
 // Only built stages have playable keys; unbuilt catalogue entries remain unavailable.
 const BUILT_STAGES: Readonly<Record<string, string>> = {
   "city-boundary": "city-boundary",
+  "freight-terminal": "freight-terminal",
   street: "street",
+  "warehouse-district": "warehouse-district",
 };
 const STAGES = DESTINATIONS.flatMap(({ stages }) => stages);
 const REGION_ORIGIN = { x: 60, y: 36 };
