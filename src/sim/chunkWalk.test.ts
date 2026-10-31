@@ -11,7 +11,7 @@ const SEEDS = [1, 2, 3, 4, 5];
 // A chunk played alone, slots empty: she starts on its entry seam and clears at its right edge.
 function alone(library: ChunkLibrary, chunk: ChunkPlan): ZonePlan {
   const only = { ...library, chunks: { chunk } };
-  return zonePlanOf(only, () => 0, { door: [], event: [] }, themesOf(chunk)[0] ?? "", ["chunk"]);
+  return zonePlanOf(only, () => 0, { door: [], event: [] }, themesOf(chunk)[0] ?? "", 2, ["chunk"]);
 }
 
 describe.each(ALL_CHUNKS)("chunk %s alone", (_, library, chunk) => {

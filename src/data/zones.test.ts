@@ -19,7 +19,6 @@ import { ROOMS } from "./rooms";
 import { SCREEN, TILE } from "./screen";
 import { TEXT } from "./text";
 import type { AreaPlan, TileRect, ZonePlan } from "./types";
-import { ZONE_1 } from "./zone1";
 import { RECIPES, TEST_ZONES, ZONES as ZONES_BY_KEY } from "./zones";
 
 const MANIFEST = manifestJson as ArtManifest;
@@ -31,7 +30,11 @@ const tagsOf = (art: string) => {
   const sheet = SHEETS[`../../public/art/sprites/${art}.json`];
   return sheet ? [...sheetTags(sheet).keys()] : [];
 };
-const ZONES = [ZONE_1, ...TEST_ZONES];
+const ZONES = [
+  ...Object.values(ZONES_BY_KEY),
+  ...Object.keys(RECIPES).map((key) => zonePlanFor(1, key)),
+  ...TEST_ZONES,
+];
 const CATALOGUE = { archetypes: ARCHETYPES, characters: CHARACTERS };
 
 const inside = (area: AreaPlan, rect: TileRect) =>
@@ -213,7 +216,7 @@ const turnsBackWithin = (seconds: number, plan: ZonePlan) => {
 
 describe("going back from a zone's start", () => {
   it.each([
-    ["zone 1", ZONE_1],
+    ...Object.entries(ZONES_BY_KEY),
     ...TEST_ZONES.map((plan, index): [string, ZonePlan] => [`test zone ${index + 1}`, plan]),
     ...Object.keys(RECIPES).map((key): [string, ZonePlan] => [
       `recipe ${key}`,
@@ -259,17 +262,16 @@ describe("the map", () => {
     }
   });
 
-  it("keeps only the first playable zone fixed, with every later built zone assembled", () => {
+  it("assembles every playable stage, including the first, from a recipe", () => {
     const first = ZONE_MAP.nodes.find(({ id }) => id === ZONE_MAP.start);
     expect(first?.kind).toBe("zone");
     expect(first?.zone).toBeDefined();
-    expect(Object.keys(ZONES_BY_KEY)).toEqual([first?.zone]);
-    const built = reach(ZONE_MAP.start, (id) => after(id, true));
-    const later = ZONE_MAP.nodes.filter(
-      (node) => node.kind === "zone" && node.id !== first?.id && built.has(node.id),
+    const playable = ZONE_MAP.nodes.filter(
+      (node) => node.kind === "zone" && node.zone !== undefined,
     );
+    expect(playable.length).toBeGreaterThan(0);
     expect(
-      later.map(({ zone }) => zone).filter((key) => key === undefined || !(key in RECIPES)),
+      playable.map(({ zone }) => zone).filter((key) => key === undefined || !(key in RECIPES)),
     ).toEqual([]);
   });
 

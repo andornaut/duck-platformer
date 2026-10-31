@@ -192,12 +192,13 @@ const shiftInstance = (col: number, instance: Instance): Instance => ({
 // random. A filled door slot places the theme's door at its own size, centred across the slot
 // (half a tile in where the two widths differ by an odd number of tiles) and standing on its
 // floor, leading to its room.
-// She starts on the first chunk's entry seam, half its footing in.
+// She starts at spawnCol on the first chunk's entry row.
 export function zonePlanOf(
   library: ChunkLibrary,
   random: Random,
   fills: Readonly<Record<SlotKind, readonly string[]>>,
   themeKey: string,
+  spawnCol: number,
   ids: readonly string[],
 ): ZonePlan {
   const theme = library.themes[themeKey];
@@ -205,6 +206,12 @@ export function zonePlanOf(
     throw new Error(`No theme ${themeKey}`);
   }
   const chunks = ids.map((id) => chunkOf(library, id));
+  const first = chunks[0];
+  if (!first || !Number.isInteger(spawnCol) || spawnCol <= 1 || spawnCol >= first.cols) {
+    throw new Error(
+      `Spawn column ${spawnCol} must be an integer beyond the first column and inside the opening chunk`,
+    );
+  }
   const placed = chunks.reduce<PlacedChunk[]>((list, chunk, index) => {
     const last = list.at(-1);
     list.push({ chunk: ids[index] ?? "", col: last ? last.col + last.cols : 0, cols: chunk.cols });
@@ -260,7 +267,6 @@ export function zonePlanOf(
       },
     ];
   });
-  const first = chunks[0];
   return {
     areas: {
       [ASSEMBLED_AREA]: {
@@ -268,8 +274,8 @@ export function zonePlanOf(
         cols,
         entries: {
           [START_ENTRY]: {
-            col: Math.floor(library.rules.footing / 2),
-            row: first?.entry.row ?? library.rows,
+            col: spawnCol,
+            row: first.entry.row,
           },
         },
         noCross: chunks.flatMap((chunk, index) =>
@@ -334,9 +340,12 @@ export function assembleZone(
         "with slots for its events and doors",
     );
   }
-  return zonePlanOf(library, randomStream(seed, `slots:${key}`), fillsOf(recipe), recipe.theme, [
-    recipe.start,
-    ...run,
-    recipe.finish,
-  ]);
+  return zonePlanOf(
+    library,
+    randomStream(seed, `slots:${key}`),
+    fillsOf(recipe),
+    recipe.theme,
+    recipe.spawnCol,
+    [recipe.start, ...run, recipe.finish],
+  );
 }

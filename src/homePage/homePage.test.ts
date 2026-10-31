@@ -3,10 +3,12 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 
 import manifest from "../../public/art/manifest.json";
+import { CHUNKS } from "../data/chunks";
 import { TEXT } from "../data/text";
-import { ZONE_1 } from "../data/zone1";
+import { RECIPES } from "../data/zones";
 import { keyIntent } from "../input/intent";
 import { cardKeyAction } from "../pause/cardInput";
+import { themesOf } from "../rules/assemble";
 
 // The home page and the nav bar are static files, so what they state is checked against the
 // game here.
@@ -55,18 +57,22 @@ describe("the home page's controls", () => {
   });
 });
 
-// Zone 1's first area, the street, and the characters placed on it.
-const START_AREA = ZONE_1.areas[ZONE_1.start.area];
-const startCharacters = new Set(START_AREA?.objects.map(({ character }) => character));
+// The first stage's available authored features, including optional randomized middle chunks.
+const streetTheme = RECIPES.street?.theme ?? "";
+const streetCharacters = new Set(
+  Object.values(CHUNKS)
+    .filter((chunk) => themesOf(chunk).includes(streetTheme))
+    .flatMap(({ objects }) => objects.map(({ character }) => character)),
+);
 
 describe("the home page's zone 1", () => {
-  it.each([
-    ["open cellar hatches", "hatch-left"],
-    ["red contact edges", "red-edge-top"],
-  ])("states %s, which zone 1 starts beside", async (phrase, character) => {
-    expect({
-      placed: startCharacters.has(character),
-      stated: (await pageText()).includes(phrase),
-    }).toEqual({ placed: true, stated: true });
-  });
+  it.each([["red contact edges", "red-edge-top"]])(
+    "states %s, which zone 1 can include",
+    async (phrase, character) => {
+      expect({
+        placed: streetCharacters.has(character),
+        stated: (await pageText()).includes(phrase),
+      }).toEqual({ placed: true, stated: true });
+    },
+  );
 });

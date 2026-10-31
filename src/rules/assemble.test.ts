@@ -51,6 +51,7 @@ function recipe(middles: number, extra: Partial<ZoneRecipe> = {}): ZoneRecipe {
     events: [],
     finish: "finish",
     length: { max: cols, min: cols },
+    spawnCol: 2,
     start: "start",
     theme: "t",
     ...extra,
@@ -69,6 +70,20 @@ const runs = (lib: ChunkLibrary, zone: ZoneRecipe) =>
   new Set(SEEDS.map((seed) => middleIds(areaOf(assembleZone(lib, seed, "z", zone))).join(" ")));
 
 describe("assembleZone", () => {
+  it("places the configured spawn on the opening entry row", () => {
+    const lib = library({
+      a: chunk(50, 50),
+      start: chunk(40, 50),
+    });
+    const plan = assembleZone(lib, 1, "unrelated-stage-key", recipe(1, { spawnCol: 9 }));
+    expect(plan.areas[plan.start.area]?.entries[plan.start.entry]).toEqual({ col: 9, row: 40 });
+  });
+
+  it.each([-1, 0, 1, 2.5, 60, 61, NaN, Infinity])("refuses invalid spawn column %s", (spawnCol) => {
+    expect(() =>
+      assembleZone(library({ a: chunk(50, 50) }), 1, "z", recipe(1, { spawnCol })),
+    ).toThrow(/^Spawn column/);
+  });
   it.each<[string, Record<string, ChunkPlan>, ZoneRecipe, string[]]>([
     [
       "joins only where an exit meets the next entry, backing out of a likelier dead end",

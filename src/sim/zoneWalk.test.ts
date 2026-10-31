@@ -4,15 +4,15 @@ import { DUCK } from "../data/duck";
 import { REACH } from "../data/reach";
 import { TILE } from "../data/screen";
 import type { ZonePlan } from "../data/types";
-import { ZONE_1 } from "../data/zone1";
-import { TEST_ZONES } from "../data/zones";
+import { TEST_ZONES, ZONES as FIXED_ZONES } from "../data/zones";
 import { zoneLayout } from "../rules/tiles";
 import { CATALOGUE, WALK_MS, walkSuite } from "../testing/walkSuite";
 import { DUCK_FRAME } from "../view/duck";
 import { crosses, type Surface, walkZone, zoneSurfaces } from "./zoneWalk";
 
+// Recipe stages are walked in chunkWalk.test.ts, alongside every individual chunk.
 const ZONES: [string, ZonePlan][] = [
-  ["1", ZONE_1],
+  ...Object.entries(FIXED_ZONES),
   ...TEST_ZONES.map((zone, index): [string, ZonePlan] => [`test ${index + 1}`, zone]),
 ];
 

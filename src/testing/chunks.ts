@@ -170,6 +170,7 @@ export const FIXTURE_RECIPE: ZoneRecipe = {
   events: [{ count: 1, id: "test-event" }],
   finish: "test-finish",
   length: { max: 480, min: 300 },
+  spawnCol: 2,
   start: "test-start",
   theme: "test",
 };
