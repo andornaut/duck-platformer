@@ -583,6 +583,22 @@ The frame is 48x48 with bottom-centre anchor 24,48. Its constant contact box is 
 
 All tags loop; state transitions belong to the runtime. These art timings do not define the charge's distance or duration.
 
+## Owl antagonist
+
+`art/tools/owl.py` draws `owl-antagonist`. A compact round head and broad wings distinguish the owl. Its preparation pose signals a descending swoop before it returns and rests. There is no red outline or dialogue portrait.
+
+The frame is 48x48 with bottom-centre anchor 24,48. Its fixed contact box is x 2, y 2, width 44, height 46, containing all visible poses and mirrored versions. All states remain lethal. The appearance uses the generic enemy state graph; gameplay owns physical movement and state durations.
+
+| Tag     | Art cycle               | Pose                      |
+| ------- | ----------------------- | ------------------------- |
+| drop    | Two frames, 100ms each  | Descending swoop          |
+| idle    | Two frames, 400ms each  | Perched breathing         |
+| prepare | Two frames, 160ms each  | Readable wing preparation |
+| rest    | Two frames, 400ms each  | Settled recovery          |
+| return  | Four frames, 120ms each | Wingbeat on the return    |
+
+Every tag loops. These frame timings are art cycle defaults, not the runtime motion or warning durations.
+
 ## Woodland material pack
 
 `art/tools/woodland.py` draws reusable skins for Forest paths and Ravine, using the destination's canonical `zone-green` primary. Appearance bindings retain the common terrain geometry, obstacle behaviours and collision profiles.

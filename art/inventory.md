@@ -237,6 +237,12 @@ Pieces placed from stage data by their bottom-left corner at the bottom y given,
 | ---------------- | ---------------------------- | ----- | ---------------------------- |
 | goose-antagonist | character; hit box 2,2,44,46 | 48x48 | idle, walk, warn, rush, rest |
 
+## Owl antagonist
+
+| Key            | Type                         | Size  | Tags                              |
+| -------------- | ---------------------------- | ----- | --------------------------------- |
+| owl-antagonist | character; hit box 2,2,44,46 | 48x48 | drop, idle, prepare, rest, return |
+
 ## Woodland materials
 
 | Key            | Type                               | Size    | Contract                                         |

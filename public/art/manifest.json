@@ -279,6 +279,18 @@
       "once": []
     },
     {
+      "key": "owl-antagonist",
+      "png": "sprites/owl-antagonist.png",
+      "json": "sprites/owl-antagonist.json",
+      "once": [],
+      "hitbox": {
+        "x": 2,
+        "y": 2,
+        "width": 44,
+        "height": 46
+      }
+    },
+    {
       "key": "park-boat",
       "png": "sprites/park-boat.png",
       "json": "sprites/park-boat.json",
@@ -575,6 +587,11 @@
       "key": "tiles-street",
       "png": "tilesets/tiles-street.png",
       "json": "tilesets/tiles-street.json"
+    },
+    {
+      "key": "tiles-woodland",
+      "png": "tilesets/tiles-woodland.png",
+      "json": "tilesets/tiles-woodland.json"
     }
   ],
   "backdrops": [
@@ -802,6 +819,33 @@
       "anchor": "bottom-left",
       "y": 432,
       "repeat": "x"
+    },
+    {
+      "key": "forest-mid",
+      "png": "backdrops/forest-mid.png",
+      "width": 720,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
+      "key": "forest-shrub",
+      "png": "backdrops/forest-shrub.png",
+      "width": 48,
+      "height": 48,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
+      "key": "forest-tree",
+      "png": "backdrops/forest-tree.png",
+      "width": 96,
+      "height": 216,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "none"
     },
     {
       "key": "freight-gantry",
@@ -1092,6 +1136,24 @@
       "repeat": "x"
     },
     {
+      "key": "ravine-mid",
+      "png": "backdrops/ravine-mid.png",
+      "width": 720,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
+      "key": "ravine-rock",
+      "png": "backdrops/ravine-rock.png",
+      "width": 72,
+      "height": 72,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "none"
+    },
+    {
       "key": "river-mid",
       "png": "backdrops/river-mid.png",
       "width": 720,
@@ -1297,6 +1359,24 @@
       "anchor": "bottom-left",
       "y": 240,
       "repeat": "none"
+    },
+    {
+      "key": "woodland-far",
+      "png": "backdrops/woodland-far.png",
+      "width": 720,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
+      "key": "woodland-sky",
+      "png": "backdrops/woodland-sky.png",
+      "width": 48,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
     }
   ],
   "images": [
