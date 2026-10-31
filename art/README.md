@@ -14,7 +14,7 @@ The art plan and pipeline for Duck Platformer. Art owns `art/` and the served ar
 - Accents: reserve amber for doors and small points of interest. Other hues add restrained foliage, signs and character details. Red contact edges always mean danger in every theme.
 - Colour: each V1 destination uses its canonical muted primary from [Zone primary colours](#zone-primary-colours), carried through atmosphere, materials, map identity and progress. Keep distant colours close to the sky and spend saturation on a few useful accents. The park remains a separate prototype outside the V1 route.
 - Detail: distant scenery uses broad silhouettes without window grids. Near architecture uses sparse window groups and quiet surfaces. Avoid repeated stripes and single-pixel texture that compete with the duck.
-- Layouts: the first level has a fixed layout. Every subsequent level is randomized, including the final level. Reusable tiles, scenery and gameplay chunks assemble independently; a background image never encodes a required route. Levels are at most two screens tall (720px, 60 rows).
+- Layouts: the first stage has a fixed layout. Every subsequent stage is randomized, including the final stage. Reusable tiles, scenery and gameplay chunks assemble independently; a background image never encodes a required route. Stages are at most two screens tall (720px, 60 rows).
 - Obstacles: use ledges, cliffs, walls and ceilings. Short-clearance jumps and full-height jumps share the same visual vocabulary. Ladders are not part of the obstacle set. Difficulty and jump requirements belong to gameplay data, with variation around a common configurable difficulty.
 - Readability: safe walkable tops use a dark edge and a bright two-pixel lip. On darker scenery the lip holds at least 2:1 against its backdrop; against a pale sky the dark edge supplies the separation, so retain both parts of the edge. Dangerous faces instead use the shared red band, without spikes or a safe light lip. Text keeps 4.5:1 and meaningful UI marks 3:1 contrast.
 
@@ -75,9 +75,9 @@ In order:
 - `art/tools/palette.py` writes `public/art/palette.json`, listed under `data` in the manifest: `colours` maps each palette name to `#rrggbb`, `darker` maps each colour one ramp step down, and `dim2` two steps down, the settings card's dim. Keys are sorted.
 - `art/tools/icons.py` draws the favicon and app icons, the duck on a sky-blue sunburst disc (whole from 32px up, her head and back at 16px on flat sky, where the rays do not hold), as plain PNGs, not sprites or manifest entries: `public/favicon.ico` (16 and 32), `public/art/favicon-16.png` and `public/art/favicon.png`, and in `public/icons/` the 180 apple-touch icon on a full-bleed sunburst square, the 192 and 512 icons on a sunburst disc with a transparent outside, and a 512 maskable icon with the subject inside the central 80%. The 16 and 32 are drawn natively; the larger icons are 64 and 90 drawings scaled by whole numbers.
 - `art/inventory.md` lists every asset (key, type, size, tags).
-- `art/tools/floor<n>.py` draws one zone's tilesets and backdrop pieces as plain PNGs, not Aseprite sprites, so the game builds each zone from level data instead of a fixed panorama (`floor1.py` draws Zone 1). A chunk theme has its own module, such as `art/tools/park.py`, with the same `build` and `preview OUT.png` commands; each tool merges its own keys into the manifest's `tilesets` and `backdrops` and keeps the others.
-- A tileset is `public/art/tilesets/<key>.png`, 12x12 tiles in rows of 8 with no spacing or margin, plus `<key>.json`: `{"tileSize": 12, "columns": 8, "tiles": {"<name>": <index>}, "pieces": {"<name>": [[<index>, ...], ...]}, "hitboxes": {"<name>": {"x", "y", "width", "height"}}}`. An index counts row by row. A piece is a multi-tile unit as rows of indices, top row first. `hitboxes` is optional and written only when a tile has one: a `hazard-*` tile's hit box in pixels within its 12x12 tile, the same shape as a sprite's `hitbox`. A tile without an entry hits its whole cell. `pixel.write_tileset` writes every tileset. A tile named `one-way-*` is a one-way ledge, which stops only a fall onto its top edge. A tile named `door-*` or `exit-*` is a doorway with no collision. A doorway leads only to a room: where the level gives it one, the game puts a Use zone over its piece. A zone is cleared at its right edge, never through a doorway. A tile named `pit-*` is a pit with no collision, so she falls through it and out of the level. A tile named `hazard-*` has no collision and is drawn for a hazard instance placed with a width: touching its hit box restarts her. Every other tile with art is solid. The manifest lists each under `tilesets` as `{"key", "png", "json"}`.
-- A backdrop piece is `public/art/backdrops/<key>.png`, drawn behind the play layer. The manifest lists each under `backdrops` as `{"key", "png", "width", "height", "anchor": "bottom-left", "y", "repeat"}`: its bottom edge sits at world `y`, at an x the level data chooses, and `"repeat": "x"` tiles it across a run while `"none"` places it once.
+- `art/tools/floor<n>.py` draws one zone's tilesets and backdrop pieces as plain PNGs, not Aseprite sprites, so the game builds each zone from stage data instead of a fixed panorama (`floor1.py` draws Zone 1). A chunk theme has its own module, such as `art/tools/park.py`, with the same `build` and `preview OUT.png` commands; each tool merges its own keys into the manifest's `tilesets` and `backdrops` and keeps the others.
+- A tileset is `public/art/tilesets/<key>.png`, 12x12 tiles in rows of 8 with no spacing or margin, plus `<key>.json`: `{"tileSize": 12, "columns": 8, "tiles": {"<name>": <index>}, "pieces": {"<name>": [[<index>, ...], ...]}, "hitboxes": {"<name>": {"x", "y", "width", "height"}}}`. An index counts row by row. A piece is a multi-tile unit as rows of indices, top row first. `hitboxes` is optional and written only when a tile has one: a `hazard-*` tile's hit box in pixels within its 12x12 tile, the same shape as a sprite's `hitbox`. A tile without an entry hits its whole cell. `pixel.write_tileset` writes every tileset. A tile named `one-way-*` is a one-way ledge, which stops only a fall onto its top edge. A tile named `door-*` or `exit-*` is a doorway with no collision. A doorway leads only to a room: where the stage gives it one, the game puts a Use zone over its piece. A zone is cleared at its right edge, never through a doorway. A tile named `pit-*` is a pit with no collision, so she falls through it and out of the stage. A tile named `hazard-*` has no collision and is drawn for a hazard instance placed with a width: touching its hit box restarts her. Every other tile with art is solid. The manifest lists each under `tilesets` as `{"key", "png", "json"}`.
+- A backdrop piece is `public/art/backdrops/<key>.png`, drawn behind the play layer. The manifest lists each under `backdrops` as `{"key", "png", "width", "height", "anchor": "bottom-left", "y", "repeat"}`: its bottom edge sits at world `y`, at an x the stage data chooses, and `"repeat": "x"` tiles it across a run while `"none"` places it once.
 - Art reads game layout and data from the generated export files the game writes, never from `src/`. The export files are in `shared/export/`. Art writes the shared data files the game reads (`lights.json`, `palette.json`).
 - Keys are kebab-case, named after what the player sees. Internal names match displayed names.
 - Checks run in a container: the art manifest, art tests that assert every key the game uses exists with its tags, and prettier on the docs. PLACEHOLDER: the image and command.
@@ -107,7 +107,7 @@ Each V1 destination has one muted primary, chosen for its materials and atmosphe
 - Application: the primary dominates each map region's silhouette and backs its icon. Essential outlines and symbols remain ink or dslate, so the pastel fill is not responsible for contrast. Locked and unbuilt markers retain the coloured illustration around them.
 - Progress: fill uses the same primary on a dslate track, with no brighter substitute. Standard primary buttons remain dslate with white text. Hazard red remains the existing saturated `red`; muted `zone-red` is the apartment interior colour and never signals lethal contact.
 - Ramps: every zone primary has one muted `-shade` colour, then joins a house ramp. The six bases and six shades extend the house palette without changing any existing colour. `palette.py` exports their darker and two-step dim mappings with every other palette colour.
-- Planned level use: backgrounds follow the destination's primary family, with far silhouettes low in contrast and nearer layers using its shade. Quiet secondary colours provide restrained highlights. Far scenery scrolls more slowly than the gameplay plane; attached ledges, doors and props stay with terrain. This is an art plan for later themes, not a claim that those levels exist.
+- Planned stage use: backgrounds follow the destination's primary family, with far silhouettes low in contrast and nearer layers using its shade. Quiet secondary colours provide restrained highlights. Far scenery scrolls more slowly than the gameplay plane; attached ledges, doors and props stay with terrain. This is an art plan for later themes, not a claim that those stages exist.
 
 ### Outlines
 
@@ -162,7 +162,7 @@ The protagonist is a wide, round, cream-coloured duck, drawn facing right and mi
 
 ## Logo
 
-The logo is the duck peeking over a big sky-blue DUCK, her head and back showing over its top edge, with PLATFORMER in cream below. `art/tools/logo.py` draws it as plain PNGs on a transparent ground, listed in the manifest under `images` with their sizes: `logo` (360x193, the title screen), `logo-nav` (214x30, the site's nav bar, on one line) and `logo-icon` (53x41, the top of the /play/ page's nav column: her profile alone, no lettering, on the downstroke with the wing level behind her and feet tucked, redrawn at 1.25x).
+The logo is the duck peeking over a big sky-blue DUCK, her head and back showing over its top edge, with PLATFORMER in cream below. `art/tools/logo.py` draws it as plain PNGs on a transparent ground, listed in the manifest under `images` with their sizes: `logo` (360x193, the title screen), `logo-nav` (214x30, the site's nav bar, on one line) and `logo-icon` (53x41, the top of the /play/ page's nav column: her profile alone, no lettering, on the downstroke with the wing stage behind her and feet tucked, redrawn at 1.25x).
 
 - The lettering is a 5x7 pixel alphabet drawn bold at a block size, with rounded corners, a light rim, a shade crescent and an ink outline; PLATFORMER takes a 2px blue drop shadow so it holds on a cream ground.
 - The title is one string in the script, `WORDMARK`. The alphabet has A C D E F K L M O P R T U, so a new title adds any other letters to `GLYPHS`.
@@ -201,15 +201,16 @@ All positions are in base pixels (x, y, w, h) of the 720x360 layout as drawn. Th
 
 Both paragraph regions use `font-body` at 2x with a 20px line pitch. Labels, portraits and text move as layout elements; their textures keep their authored orientation and scale.
 
-### Level progress and retry
+### Stage progress and retry
 
 Approved target for paired runtime integration. The rulebook owns failure behaviour, timing, progress calculation and time accumulation; the game supplies every label and value.
 
-- Progress is a restrained 2px line at the top of the game view. Its filled length shows percentage through the level, using the current destination's canonical primary from `zone-themes` over a `dslate` track. Keep it separate from UI buttons, with no glow or pulse.
+- Progress is a restrained 2px line at the top of the game view. Its filled length shows percentage through the stage, using the current destination's canonical primary from `zone-themes` over a `dslate` track. Keep it separate from UI buttons, with no glow or pulse.
 - On failure, show a small recoil, a physical fall to support, an extra impact squash and a small spring back up into a visibly deflated seated rest. The face is flatter and the feet are completely hidden in the impact and seated poses. Keep the camera at the failure view; the sprite has no baked world movement. Show the retry card as soon as the seated pose is reached, holding that pose beneath it without an extra timed pause or automatic retry.
 - Dim the frozen environment two palette ramp steps. Keep the duck and the small hazard contact area readable at their world positions, without an added ring or flash. The compact card stays above the ground-level contact area rather than covering it.
-- Reuse `ui-settings-card` at 176,16,368,176, with no close X or title bar. Show the zone and level, cumulative play time on this level across attempts since its last clear (or first entry), and percentage at the current position through the level. The time is not the current attempt's duration and resets on clear.
-- Place the secondary Back to title action on the left and primary Try again on the right, using the standard faces, equal sizes, label font and focus treatment in [the form control guide](controls.md#retry-actions). Neither an outside tap nor an elapsed timer retries the level.
+- Reuse `ui-settings-card` at 176,16,368,176, with no close X or title bar. Its four text rows stay in this order: zone name; `Stage <number>: <stage name>`; `Progress: X%`; `Time: 0:00`. Stage numbers are 1 or 2 within the selected zone, not global route numbers. Keep the standard fonts and sizes; never shrink text to fit.
+- The time is cumulative play time on this stage across attempts since its last clear (or first entry). It is not the current attempt's duration and resets on clear. Progress is percentage at the current position through the stage.
+- Place the secondary Back to title action on the left and primary Try again on the right, using the standard faces, equal sizes, label font and focus treatment in [the form control guide](controls.md#retry-actions). Neither an outside tap nor an elapsed timer retries the stage.
 
 ### Quip
 
@@ -260,7 +261,7 @@ A pause button at the top left opens the pause card over the game, which is dimm
 
 ## Map
 
-The map presents the six V1 zone destinations on a cool pastel overview. `art/tools/map.py` draws the frame, zone markers, theme icons and small regional illustrations. Names, availability, level choices and route positions belong to game data; the illustrations describe themes, not playable layouts.
+The map presents the six V1 zone destinations on a cool pastel overview. `art/tools/map.py` draws the frame, zone markers, theme icons and small regional illustrations. Names, availability, stage choices and route positions belong to game data; the illustrations describe themes, not playable layouts.
 
 | Destination          | Grid centre (col,row) | Pixel centre | Icon and region suffix |
 | -------------------- | --------------------- | ------------ | ---------------------- |
@@ -281,14 +282,14 @@ The map presents the six V1 zone destinations on a cool pastel overview. `art/to
 - Footer: Back to title uses secondary `ui-button` at 164,300,192,48, with an ink label; Continue uses `ui-button-primary` at 364,300,192,48, with a white label. Neither uses a play mark. Continue is the default keyboard action; a tap on an open zone marker selects that destination.
 - Legacy assets: `map-fork`, `map-hill`, `map-wave` and `map-compass` remain available. The six-destination layout does not require fork or pen-mark decorations.
 
-### Level picker
+### Stage picker
 
-Selecting a zone with only one unlocked level enters that level directly. With more than one unlocked level, the picker reuses the standard modal card and controls, with no new asset shapes.
+Selecting a zone with only one unlocked stage enters that stage directly. With more than one unlocked stage, the picker reuses the standard modal card and controls, with no new asset shapes.
 
 - Frame: `ui-settings-card` at 176,88,368,176. The zone heading is centred at x360, origin y96, in ink, with the standard 24x24 close X at 510,94.
-- Rows: level buttons at 184,136,352,48 and 184,188,352,48. The latest reached available level uses `ui-button-primary` and white text; the other uses `ui-button` and ink text. Labels use `font-body` at 2x, centred with the standard button-label inset.
+- Rows: stage buttons at 184,136,352,48 and 184,188,352,48. The latest reached available stage uses `ui-button-primary` and white text; the other uses `ui-button` and ink text. Labels use `font-body` at 2x, centred with the standard button-label inset.
 - Return: close, back and outside taps close the picker and return to the map. No extra Back button repeats the close action. The normal modal input isolation and keyboard focus apply.
-- Unbuilt levels stay unavailable. A preview showing two unlocked choices illustrates the future state, not the current content's availability.
+- Unbuilt stages stay unavailable. A preview showing two unlocked choices illustrates the future state, not the current content's availability.
 
 The celebration and restart screens remain placeholders using the standard card and buttons.
 
@@ -423,7 +424,7 @@ Every environment theme (a zone's street, a chunk theme's park) follows these ru
 
 ## Modular platforming tiles
 
-`art/tools/obstacles.py` builds `tiles-platforming`: 17 tiles, each 12x12, packed into a 96x36 PNG with eight columns. Solid blue blocks and one-way ledges assemble independently of scenery. A level chooses the terrain look `platform`; individual characters can choose this tileset while their area uses a different theme.
+`art/tools/obstacles.py` builds `tiles-platforming`: 17 tiles, each 12x12, packed into a 96x36 PNG with eight columns. Solid blue blocks and one-way ledges assemble independently of scenery. A stage chooses the terrain look `platform`; individual characters can choose this tileset while their area uses a different theme.
 
 - `one-way-ledge-left`, `one-way-ledge-middle`, `one-way-ledge-right`: thin safe ledges, transparent underneath. Only falling onto the top lands on them.
 - `platform-bottom`, `platform-bottom-left`, `platform-bottom-right`: solid underside and lower corners for floating blocks and ceilings.
@@ -432,7 +433,7 @@ Every environment theme (a zone's street, a chunk theme's park) follows these ru
 
 ### Shared red contact edges
 
-For a dangerous top, use a plain solid face under the hazard instead of a safe white-lipped top. All themes use the same flat strip: two pixels of Endesga red (`#e43b44`) with a one-pixel ink backing. No spikes. Contact with any part of the three-pixel strip restarts the level at its beginning. These tiles are hazards with no solid collision; place them in the cell immediately outside the supporting solid, which retains its ordinary collision. Repeat horizontally for floors and ceilings, vertically for walls. The orientation names describe the face of the supporting solid, not the edge of the hazard's own cell.
+For a dangerous top, use a plain solid face under the hazard instead of a safe white-lipped top. All themes use the same flat strip: two pixels of Endesga red (`#e43b44`) with a one-pixel ink backing. No spikes. Contact with any part of the three-pixel strip restarts the stage at its beginning. These tiles are hazards with no solid collision; place them in the cell immediately outside the supporting solid, which retains its ordinary collision. Repeat horizontally for floors and ceilings, vertically for walls. The orientation names describe the face of the supporting solid, not the edge of the hazard's own cell.
 
 | Tile            | Placement relative to solid | Hit box within its 12x12 cell (x, y, width, height) |
 | --------------- | --------------------------- | --------------------------------------------------- |
@@ -450,7 +451,7 @@ The first zone has a fixed layout, beginning at an opened parcel in an industria
 - Depot: blue-grey ribbed wall modules, roller loading bays and cream parcel icons, with warm cardboard reserved for the opened parcel. No labels are baked into the art. The three modules are static backdrops with no collision, animation or interaction; gameplay places solid surfaces separately. All stay on the play plane, with parallax factors 1,1.
 - Outdoor scale: the street is drawn as if zoomed out 4x while the duck and the 12px tiles keep their size. A storey is 180px and a door is about 45px, so the duck (42px) stands almost as tall as a street door.
 - The street is 720px (60 tiles) tall: the sidewalk's top is y 600 (row 50), with sidewalk and road filling rows 50 to 59 below it so the camera can hold her feet two thirds down the screen. The ground storey runs from y 420 to the sidewalk, and storeys stack every 180px above: a two-storey roof is at y 240 (row 20) and a three-storey roof at y 60 (row 5), the tallest that fits. A water tower (its tank top 6 tiles above its roof) fits on a two-storey roof, not a three-storey one. Every street piece's bottom y below is in that frame.
-- Street tiles (`tiles-street`): a pale concrete sidewalk (tops alternating with a 2px joint every 24px, ends, a slate face), a pale stone kerb where it meets a cross street, the road one tile lower, an ochre-and-cream one-way shop awning, a dark-brown one-way canopy with a white lip, a 2-tile planter with a hedge top, the cellar hatch and its pit, and the door as a 3x4 piece: a pair of lit amber glass doors, 36x48, the brightest thing at the door, for a room's door where the level has one.
+- Street tiles (`tiles-street`): a pale concrete sidewalk (tops alternating with a 2px joint every 24px, ends, a slate face), a pale stone kerb where it meets a cross street, the road one tile lower, an ochre-and-cream one-way shop awning, a dark-brown one-way canopy with a white lip, a 2-tile planter with a hedge top, the cellar hatch and its pit, and the door as a 3x4 piece: a pair of lit amber glass doors, 36x48, the brightest thing at the door, for a room's door where the stage has one.
 - Climbing tiles, appended so every earlier index holds: one-way fire-escape landings (black iron), window sills, a rooftop cornice and a water tower's flat top, each with left, middle and right tiles at any width. Every ledge's top carries the same 2px white lip under a 1px dark edge, so it reads against any facade in greyscale.
 - Climbing backdrops: upper storeys and rooflines stack as reusable facade pieces. Standable ledges and solid faces come from modular tiles, placed independently of the scenery. Existing fire-escape ladder images remain available for compatibility; new platforming layouts use ledges and cliffs instead.
 - Backdrops are modular: a sky and a far skyline of faded downtown skyscrapers in two layers that cover both screens and rise above the near roofs, one repeating facade per building type (one-storey, walk-up, brownstone, and a tall stone building), facade pieces, one storefront per shop, and street furniture placed singly (a cab, a hot-dog cart, a subway railing, a street tree, a walk signal, the doorman's podium, the canopy's poles). A cross street is a gap with no facade, where the skyline shows over the far avenue.
@@ -510,6 +511,15 @@ Below the sidewalk's top, the sidewalk and road tiles fill rows 50 to 59.
 The opened parcel is scenery, without the bright safe ledge lip or a red danger strip. It marks the starting location without blocking movement. The depot wall can repeat to any run width; loading bays and parcels are independently placed pieces. No panorama or scene-specific duck drawing is exported.
 
 The separate atmosphere layers `street-city-far` and `street-city-mid` are each 720x600, bottom-left anchored at y 600 and repeating in x. Place them with the flat `street-sky`, back to front in that order. The legacy `street-skyline` is a composite compatibility asset: do not place it alongside the two separate layers. Physical facades, doors and attached ledges remain on the play plane.
+
+### City boundary
+
+City boundary is Blue cityscape, Zone 1 Stage 2. It reuses the street's existing art. Sparse low facades and short service-railing groups reveal broad views of the hazy city, distinguishing the city edge from the dense shop street without introducing another zone palette.
+
+- Atmosphere: `street-sky`, `street-city-far` and `street-city-mid` retain the street's parallax setup and the destination's `zone-blue` identity.
+- Near scenery: short `facade-one-storey` runs leave the finish open. Decorative `fire-escape-railing` groups sit on refuge ledges, sharing their gameplay plane and local floor alignment. No ladder art is required.
+- Play surfaces: `tiles-street` supplies the sidewalk ground, raised steps and safe ledges. Existing red contact-edge art remains distinct from safe white lips. Gameplay data owns the randomized layout, hazards and encounter placement.
+- Room: the existing street-door piece supplies the start room's entrance. There are no new story props, characters, palette colours or asset keys.
 
 ### Kept for a later indoor zone: the boutique lobby
 

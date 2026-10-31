@@ -68,7 +68,7 @@ Approved target for paired runtime integration. The retry card reuses the standa
 | Back to title | Secondary | 184,136,172,48 | Ink on grey     |
 | Try again     | Primary   | 364,136,172,48 | White on dslate |
 
-The left-to-right order carries meaning: leaving is secondary, retrying is primary. The row has an 8px gap, equal 172px widths and the shared minimum 16px horizontal content inset. Labels use `font-body` at 2x, centred by visible ink, with the standard pressed displacement and focus ring. Apply the shared expanded press targets and nearest-centre overlap rule. The game supplies the exact labels and activation behaviour; the art does not bake text into either button. See [the retry layout](README.md#level-progress-and-retry) for the card's metrics and frozen scene.
+The left-to-right order carries meaning: leaving is secondary, retrying is primary. The row has an 8px gap, equal 172px widths and the shared minimum 16px horizontal content inset. Labels use `font-body` at 2x, centred by visible ink, with the standard pressed displacement and focus ring. Apply the shared expanded press targets and nearest-centre overlap rule. The game supplies the exact labels and activation behaviour; the art does not bake text into either button. See [the retry layout](README.md#stage-progress-and-retry) for the card's metrics and frozen scene.
 
 ## Button roles and states
 

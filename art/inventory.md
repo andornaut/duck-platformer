@@ -124,7 +124,7 @@ Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with 
 
 ## Backdrops
 
-Pieces placed from level data by their bottom-left corner at the bottom y given, from `art/tools/floor1.py` (Zone 1: New York street, 720px tall, sidewalk top y 600, row 50).
+Pieces placed from stage data by their bottom-left corner at the bottom y given, from `art/tools/floor1.py` (Zone 1: New York street, 720px tall, sidewalk top y 600, row 50).
 
 | Key                     | Type                                                                 | Size    | Bottom y, repeat |
 | ----------------------- | -------------------------------------------------------------------- | ------- | ---------------- |

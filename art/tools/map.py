@@ -30,10 +30,10 @@ Back to title is ui-button at164,300,192,48; Continue is ui-button-primary at364
 map-duck remains 26x22 with idle2x400ms, centred on the current node and standing on its top ring.
 Legacy map-fork and pen marks remain available but the six-zone V1 route needs no fork markers.
 
-The level picker reuses ui-settings-card at176,88,368,176, an ink zone heading centred atx360,y96,
-the standard close X at510,94,24,24, and two352x48 level buttons at184,136 and184,188. The latest
-available level uses ui-button-primary with white text; the other uses ui-button with ink text.
-It opens only when more than one level is unlocked. Close, back and outside taps return to the map.
+The stage picker reuses ui-settings-card at176,88,368,176, an ink zone heading centred atx360,y96,
+the standard close X at510,94,24,24, and two352x48 stage buttons at184,136 and184,188. The latest
+available stage uses ui-button-primary with white text; the other uses ui-button with ink text.
+It opens only when more than one stage is unlocked. Close, back and outside taps return to the map.
 """
 
 import math
