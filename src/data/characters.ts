@@ -59,11 +59,11 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     cols: 5,
     rows: 4,
     tuning: {
-      interaction: { kind: "talk", range: 18 },
+      interaction: { kind: "talk", range: 26 },
       motion: {
         algorithm: "linear",
         direction: "left",
-        distance: 7,
+        distance: 12,
         pause: 0.4,
         speed: 2,
         variance: 0,

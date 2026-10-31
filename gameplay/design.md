@@ -148,10 +148,11 @@ The park is a prototype for randomized levels, not V1's second level. The identi
 ### First dog encounter
 
 - **Activation:** proximity starts the introduction once per attempt, freezing play. Completing or skipping it activates the dog and resumes play
+- **Approach:** the loading yard follows the basic hop and full-jump lessons and precedes the streets. A refuge ledge before the ground patrol and another beyond it give safe observation and landing points. Neither requires a maximum-height jump. The first encounter has no other hazards
 - **Contact:** the dog is always lethal on contact, including during crouch and rest, with a thin red contact outline
 - **Cycle:** patrol, crouch, rush, rest, then patrol again. A nearby duck on the same ground triggers the crouch; the rush direction locks when crouching starts, and the rush stays inside the patrol area
 - **Dialogue:** the first introduction has three lines: the dog says the ferret asked him to stop the duck; the duck says he is going home; the dog tells him to get past. The player-facing wording lives in the text data files, with Skip available
-- **Timing:** the dog uses the same timing across both planned levels of the first zone; their layouts vary. This change implements only the first encounter in the first level
+- **Timing:** the dog uses the same timing across both planned levels of the first zone; their layouts vary. The encounter draft covers only the first encounter in the first level
 
 ### Rooms
 
