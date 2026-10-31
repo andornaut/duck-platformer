@@ -4,6 +4,7 @@ import {
   CITY_LIFT_BEHAVIOUR,
   CITY_SHUTTLE_BEHAVIOUR,
   DOG_BEHAVIOUR,
+  RACCOON_BEHAVIOUR,
 } from "./behaviours";
 import type { Character } from "./types";
 
@@ -361,6 +362,13 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     art: "hazard-pond",
     cols: 3,
     rows: 2,
+  },
+  "raccoon-antagonist": {
+    archetype: "hazard",
+    art: "raccoon-antagonist",
+    behaviour: RACCOON_BEHAVIOUR,
+    cols: 4,
+    rows: 4,
   },
   "red-edge-bottom": {
     archetype: "hazard",

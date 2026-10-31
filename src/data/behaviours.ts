@@ -126,3 +126,31 @@ export const DOG_BEHAVIOUR: BehaviourPlan = {
     },
   },
 };
+
+export const RACCOON_BEHAVIOUR: BehaviourPlan = {
+  axis: "y",
+  distance: -10,
+  initial: "climb",
+  states: {
+    climb: {
+      animation: "climb",
+      motion: { direction: -1, kind: "move", speed: 3 },
+      transitions: [{ to: "prepare", when: [{ kind: "boundary" }] }],
+    },
+    drop: {
+      animation: "drop",
+      motion: { direction: 1, kind: "move", speed: 12 },
+      transitions: [{ to: "rest", when: [{ kind: "boundary" }] }],
+    },
+    prepare: {
+      animation: "prepare",
+      motion: { kind: "wait" },
+      transitions: [{ to: "drop", when: [{ kind: "elapsed", seconds: 0.6 }] }],
+    },
+    rest: {
+      animation: "rest",
+      motion: { kind: "wait" },
+      transitions: [{ to: "climb", when: [{ kind: "elapsed", seconds: 0.8 }] }],
+    },
+  },
+};
