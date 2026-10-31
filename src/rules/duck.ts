@@ -23,8 +23,8 @@ export interface DuckState {
   readonly jumpHeld: boolean;
   // Seconds Jump has been held since it started her jump; 0 while it is up.
   readonly jumpHeldFor: number;
-  // Her y when her latest jump took off.
-  readonly jumpFromY: number;
+  // The ascent profile ends on a late release, ceiling contact or apex.
+  readonly jumpRise: "free" | "held" | "hop";
   readonly vx: number;
   readonly vy: number;
   // Her collision box's top-left corner.
@@ -39,9 +39,9 @@ export function startDuck(tuning: DuckTuning, start: Point): DuckState {
     coyoteLeft: 0,
     facing: 1,
     grounded: false,
-    jumpFromY: 0,
     jumpHeld: false,
     jumpHeldFor: 0,
+    jumpRise: "free",
     vx: 0,
     vy: 0,
     x: start.x - tuning.width / 2,
@@ -69,10 +69,16 @@ function approach(speed: number, target: number, step: number): number {
   return speed < target ? Math.min(target, speed + step) : Math.max(target, speed - step);
 }
 
-// The upward speed that stops her climbing at the hop's height, having risen px since she
-// took off: 0 once she is there.
-function hopSpeed(tuning: DuckTuning, risen: number): number {
-  return Math.sqrt(2 * tuning.gravity * Math.max(0, tuning.jumpHopHeight - risen));
+// Smoothly add height and restore normal ascent gravity as a hold passes the tap window.
+function jumpProfile(tuning: DuckTuning, heldFor: number): { gravity: number; height: number } {
+  const progress = Math.max(0, Math.min(1, (heldFor - tuning.jumpTapWindow) / tuning.jumpLiftTime));
+  const lift = progress * progress * (3 - 2 * progress);
+  const hopGravity = (2 * tuning.jumpHopHeight) / tuning.jumpHopTime ** 2;
+  const fullHeight = tuning.jumpSpeed ** 2 / (2 * tuning.gravity);
+  return {
+    gravity: hopGravity + (tuning.gravity - hopGravity) * lift,
+    height: tuning.jumpHopHeight + (fullHeight - tuning.jumpHopHeight) * lift,
+  };
 }
 
 // One fixed step of seconds: steer, jump, fall, then move along x and along y in turn, each
@@ -94,31 +100,45 @@ export function stepDuck(
   const jumpPressed = input.jumpHeld && !duck.jumpHeld;
   let bufferLeft = jumpPressed ? tuning.jumpBuffer : Math.max(0, duck.bufferLeft - seconds);
   let coyoteLeft = Math.max(0, duck.coyoteLeft - seconds);
-  let jumpFromY = duck.jumpFromY;
+  let jumpRise = duck.jumpRise;
   // Seconds Jump was held before this step, since it started her jump.
   let heldBefore = duck.jumpHeldFor;
   if ((jumpPressed || bufferLeft > 0) && (duck.grounded || duck.coyoteLeft > 0)) {
-    vy = -tuning.jumpSpeed;
+    vy = -(2 * tuning.jumpHopHeight) / tuning.jumpHopTime;
     bufferLeft = 0;
     coyoteLeft = 0;
-    jumpFromY = duck.y;
     heldBefore = 0;
-    // A buffered jump whose button was already released is a hop.
-    if (!input.jumpHeld) {
-      vy = -hopSpeed(tuning, 0);
-    }
+    // A buffered press already released remains a low hop.
+    jumpRise = input.jumpHeld ? "held" : "hop";
   }
   const jumpHeldFor = input.jumpHeld ? heldBefore + seconds : 0;
-  // Letting go while she rises: within the tap window, she rises no higher than the hop from where
-  // she took off; after it, her climb is cut short.
   const released = duck.jumpHeld && !input.jumpHeld;
-  if (released && vy < 0) {
-    vy =
-      heldBefore < tuning.jumpTapWindow
-        ? -Math.min(-vy, hopSpeed(tuning, jumpFromY - duck.y))
-        : vy * tuning.jumpReleaseCut;
+  if (released && vy < 0 && jumpRise === "held") {
+    const earned = jumpProfile(tuning, Math.max(0, heldBefore - seconds));
+    if (heldBefore - seconds <= tuning.jumpTapWindow) {
+      jumpRise = "hop";
+    } else {
+      jumpRise = "free";
+      // Freeze the earned apex and restore normal gravity without adding more lift.
+      vy *= Math.sqrt(tuning.gravity / earned.gravity);
+    }
   }
-  vy = Math.min(vy + tuning.gravity * seconds, tuning.flutterFallSpeed);
+  let gravity = tuning.gravity;
+  if (vy < 0 && jumpRise !== "free") {
+    const profile = jumpProfile(tuning, jumpRise === "held" ? heldBefore : 0);
+    gravity = profile.gravity;
+    if (jumpRise === "held") {
+      const previous = jumpProfile(tuning, Math.max(0, heldBefore - seconds));
+      // Add only the newly earned lift. Replacing speed from remaining height every step
+      // would counter gravity near the apex and prevent the duck from beginning to fall.
+      const energy = vy ** 2 / previous.gravity + 2 * (profile.height - previous.height);
+      vy = -Math.sqrt(gravity * energy);
+    }
+  }
+  vy = Math.min(vy + gravity * seconds, tuning.flutterFallSpeed);
+  if (vy >= 0) {
+    jumpRise = "free";
+  }
 
   let carryVx = duck.carryVx;
   const moving = vx + carryVx;
@@ -146,6 +166,7 @@ export function stepDuck(
         y = solid.y + solid.height;
       }
       vy = 0;
+      jumpRise = "free";
     }
   }
   const bottom = duck.y + tuning.height;
@@ -155,6 +176,7 @@ export function stepDuck(
       y = ledge.y - tuning.height;
       grounded = true;
       vy = 0;
+      jumpRise = "free";
     }
   }
   if (grounded) {
@@ -168,9 +190,9 @@ export function stepDuck(
     coyoteLeft,
     facing: input.move === 0 ? duck.facing : input.move,
     grounded,
-    jumpFromY,
     jumpHeld: input.jumpHeld,
     jumpHeldFor,
+    jumpRise,
     vx,
     vy,
     x,

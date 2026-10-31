@@ -41,8 +41,6 @@ export interface DuckTuning {
   readonly jumpHopTime: number;
   // Seconds after the tap window over which held input smoothly adds full-jump lift.
   readonly jumpLiftTime: number;
-  // Share of upward speed retained on release after the tap window.
-  readonly jumpReleaseCut: number;
   // Defines the existing full-jump height: speed squared divided by twice gravity.
   readonly jumpSpeed: number;
   // Seconds of forgiving low-hop input before held input starts adding lift.

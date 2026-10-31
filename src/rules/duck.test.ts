@@ -57,51 +57,64 @@ describe("stepDuck", () => {
     run(240, (step) => ({ jumpHeld: step * STEP < seconds, move: 0 }), [GROUND], tuning);
   // How high she rises for a press.
   const rise = (tuning: typeof DUCK, seconds: number) => startY - lowestY(press(tuning, seconds));
-  const { gravity, jumpHopHeight, jumpSpeed, jumpTapWindow } = DUCK;
-  const top = jumpSpeed / gravity;
+  const { gravity, jumpHopHeight, jumpHopTime, jumpLiftTime, jumpSpeed, jumpTapWindow } = DUCK;
+  const full = jumpSpeed ** 2 / (2 * gravity);
   const within = jumpSpeed * STEP;
 
-  it("hops the hop's height for the shortest press", () => {
-    expect(Math.abs(rise(DUCK, STEP) - jumpHopHeight)).toBeLessThanOrEqual(within);
-  });
-
-  it("rises no lower for a longer press, from one step to the full jump", () => {
-    const heights = Array.from({ length: Math.ceil(top / STEP) + 2 }, (_, step) =>
-      rise(DUCK, (step + 1) * STEP),
-    );
-    expect(heights.every((height, i) => i === 0 || height >= (heights[i - 1] ?? 0))).toBe(true);
-  });
-
-  it.each([
-    ["half the tap window", jumpTapWindow / 2],
-    ["a step short of the tap window", jumpTapWindow - STEP],
-  ])("stops rising where she is when let go at %s, past the hop's height", (_name, seconds) => {
-    const states = press(DUCK, seconds);
-    // states[step + 1] follows step's input: the first step with Jump up is the release.
-    const released = states[Math.ceil(seconds / STEP) + 1] as DuckState;
-    expect(startY - released.y).toBeGreaterThan(jumpHopHeight);
-    expect(released.y - lowestY(states)).toBeLessThanOrEqual(within);
-  });
-
-  it.each([0.25, 0.5, 0.75])(
-    "keeps %d of her upward speed when let go after the tap window",
-    (cut) => {
-      const seconds = jumpTapWindow + 2 * STEP;
-      const states = press({ ...DUCK, jumpReleaseCut: cut }, seconds);
-      const released = Math.ceil(seconds / STEP) + 1;
-      const before = states[released - 1] as DuckState;
-      const after = states[released] as DuckState;
-      const speed = -before.vy * cut - gravity * STEP;
-      expect(after.vy).toBeCloseTo(-speed, 6);
+  it.each([STEP, 0.06, 0.1, 0.12, jumpTapWindow])(
+    "keeps a %fs tap at the low-hop height and starts moving immediately",
+    (seconds) => {
+      const states = press(DUCK, seconds);
+      expect(states[1]?.vy).toBeLessThan(0);
+      expect(states[1]?.y).toBeLessThan(startY);
+      expect(Math.abs(startY - lowestY(states) - jumpHopHeight)).toBeLessThan(1);
     },
   );
 
-  it.each([
-    ["to the top", top + STEP],
-    ["twice as long", 2 * top],
-  ])("rises the full jump when held %s", (_name, seconds) => {
-    const full = jumpSpeed ** 2 / (2 * gravity);
-    expect(Math.abs(rise(DUCK, seconds) - full)).toBeLessThanOrEqual(within);
+  it("adds height progressively through the held lift ramp", () => {
+    const heights = Array.from({ length: Math.ceil(jumpLiftTime / STEP) + 2 }, (_, step) =>
+      rise(DUCK, jumpTapWindow + step * STEP),
+    );
+    expect(heights.every((height, i) => i === 0 || height + 0.05 >= (heights[i - 1] ?? 0))).toBe(
+      true,
+    );
+    expect(heights.at(-1)).toBeGreaterThan(jumpHopHeight * 2);
+  });
+
+  it.each([0.25, 0.5, 0.75, 1])(
+    "earns a proportional apex after %d of the lift ramp",
+    (progress) => {
+      const seconds = jumpTapWindow + jumpLiftTime * progress + STEP;
+      const earnedSeconds = (Math.ceil(seconds / STEP) - 1) * STEP;
+      const earned = Math.min(1, (earnedSeconds - jumpTapWindow) / jumpLiftTime);
+      const blend = earned * earned * (3 - 2 * earned);
+      const expected = jumpHopHeight + (full - jumpHopHeight) * blend;
+      expect(Math.abs(rise(DUCK, seconds) - expected)).toBeLessThan(within);
+    },
+  );
+
+  it("preserves full-jump height without pausing or reversing during added lift", () => {
+    const states = press(DUCK, 1);
+    const transitionEnd = Math.ceil((jumpTapWindow + jumpLiftTime) / STEP);
+    expect(states.slice(1, transitionEnd + 1).every((state) => state.vy < 0)).toBe(true);
+    expect(Math.abs(startY - lowestY(states) - full)).toBeLessThan(within);
+    const apex = states.findIndex((state, index) => index > 1 && state.vy >= 0);
+    expect(states[apex + 1]?.vy).toBeGreaterThan(states[apex]?.vy ?? 0);
+  });
+
+  it("uses normal gravity immediately after the low-hop apex", () => {
+    const states = press(DUCK, STEP);
+    const apex = states.findIndex((state, index) => index > 1 && state.vy >= 0);
+    expect(apex * STEP).toBeLessThan(jumpHopTime + 2 * STEP);
+    expect((states[apex + 1]?.vy ?? 0) - (states[apex]?.vy ?? 0)).toBeCloseTo(gravity * STEP);
+  });
+
+  it("does not add lift when Jump is pressed again during a released hop", () => {
+    const states = run(120, (step) => ({
+      jumpHeld: step === 0 || (step > 4 && step < 20),
+      move: 0,
+    }));
+    expect(Math.abs(startY - lowestY(states) - jumpHopHeight)).toBeLessThan(1);
   });
 
   it("hops when a buffered jump's button was already released", () => {
