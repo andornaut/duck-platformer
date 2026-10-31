@@ -17,6 +17,7 @@ const node = (id: string, kind: MapNode["kind"], zone?: string): MapNode => ({
 // is gone, and the finish.
 const MAP: ZoneMap = {
   decorations: [],
+  destinations: [],
   edges: [
     { built: true, from: "start", to: "fork" },
     { built: true, from: "fork", to: "built" },

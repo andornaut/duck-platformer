@@ -7,6 +7,7 @@ import { isLastZone, openMap, pathsFrom } from "./map";
 // finish z, a fork.
 const MAP: ZoneMap = {
   decorations: [],
+  destinations: [],
   edges: [
     { built: true, from: "a", to: "f" },
     { built: true, from: "f", to: "b" },

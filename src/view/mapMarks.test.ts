@@ -17,6 +17,7 @@ import {
 // d, all three joining at the finish z, a fork.
 const MAP: ZoneMap = {
   decorations: [],
+  destinations: [],
   edges: [
     { built: true, from: "a", to: "f" },
     { built: true, from: "f", to: "b" },

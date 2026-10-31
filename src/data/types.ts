@@ -96,10 +96,10 @@ export interface GameText {
   };
   // What characters say in dialogue, by key.
   readonly lines: Readonly<Record<string, string>>;
-  // The map screen between zones: its title, the button that goes on, and each zone node's name,
-  // by its id in the map, under its marker and on the button that chooses it.
+  // Map destination and level names, indexed separately by catalogue and level-node id.
   readonly map: {
     readonly continue: string;
+    readonly levels: Readonly<Record<string, string>>;
     readonly title: string;
     readonly zones: Readonly<Record<string, string>>;
   };
@@ -656,10 +656,20 @@ export interface MapDecoration {
   readonly at: Point;
 }
 
+// A themed map destination groups the two ordered level-node ids shown by the V1 route.
+// Its marker centre is on the map grid; icon is an art key with normal and visited tags.
+export interface MapDestination {
+  readonly at: TilePoint;
+  readonly icon: string;
+  readonly id: string;
+  readonly levels: readonly [string, string];
+}
+
 // The map of zones: every path starts at start and ends at finish. decorations: the pen marks on
 // its paper.
 export interface ZoneMap {
   readonly decorations: readonly MapDecoration[];
+  readonly destinations: readonly MapDestination[];
   readonly edges: readonly MapEdge[];
   readonly finish: string;
   readonly nodes: readonly MapNode[];
