@@ -59,6 +59,33 @@ describe("motionTrack", () => {
   const WANDER: Motion = { ...LINEAR, algorithm: "wander" };
   const VARIED: Motion = { ...LINEAR, variance: 0.5 };
 
+  it("draws random legs only as time reaches them, including zero-travel legs", () => {
+    let draws = 0;
+    const track = motionTrack(
+      { ...LINEAR, algorithm: "hop", hopHeight: 20, variance: 1 },
+      0,
+      () => {
+        draws += 1;
+        return draws === 1 ? 0 : 0.5;
+      },
+    );
+    expect(draws).toBe(0);
+    expect(track.at(0)).toEqual({ x: 0, y: 0 });
+    expect(draws).toBe(3);
+    expect(track.at(0.5)).toEqual({ x: 0, y: 0 });
+    expect(track.at(0)).toEqual({ x: 0, y: 0 });
+    expect(draws).toBe(3);
+    track.at(1);
+    expect(draws).toBe(5);
+  });
+
+  it("keeps the hop parabola local to each leg and stays grounded during pauses", () => {
+    const track = motionTrack({ ...LINEAR, algorithm: "hop", hopHeight: 20 }, 0.5, random());
+    expect(track.at(0.5)).toEqual({ x: 75, y: -15 });
+    expect(track.at(2)).toEqual({ x: 0, y: 0 });
+    expect(track.at(2.75)).toEqual({ x: 0, y: 0 });
+  });
+
   it.each([
     ["wander", WANDER],
     ["varied linear", VARIED],

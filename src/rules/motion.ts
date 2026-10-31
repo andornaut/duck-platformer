@@ -1,3 +1,4 @@
+import { easeProgress, progressAt } from "@andornaut/game-kit/motion";
 import type { Random } from "@andornaut/game-kit/random";
 
 import type { Direction, Motion, Point } from "../data/types";
@@ -29,15 +30,11 @@ interface Leg {
   readonly travel: number;
 }
 
-// How far along a leg's travel the object is, 0 to 1, at fraction f of its travel time.
-function eased(motion: Motion, f: number): number {
-  return motion.algorithm === "ease" ? (1 - Math.cos(Math.PI * f)) / 2 : f;
-}
-
 function pointOn(motion: Motion, leg: Leg, sinceStart: number): Point {
   const axis = axisOf(motion.direction);
-  const f = leg.travel > 0 ? Math.min(1, sinceStart / leg.travel) : 1;
-  const along = leg.from + (leg.to - leg.from) * eased(motion, f);
+  const f = progressAt(0, leg.travel, sinceStart);
+  const eased = easeProgress(motion.algorithm === "ease" ? "sineInOut" : "linear", f);
+  const along = leg.from + (leg.to - leg.from) * eased;
   const lift = motion.algorithm === "hop" ? motion.hopHeight * 4 * f * (1 - f) : 0;
   return { x: axis.x * along, y: axis.y * along - lift };
 }
