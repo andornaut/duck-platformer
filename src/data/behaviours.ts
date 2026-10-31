@@ -2,11 +2,11 @@ import type { BehaviourPlan } from "./types";
 
 const BOAT_PAUSE = 1;
 const BOAT_SPEED = 6;
-const DOG_PATROL_PAUSE = 0.4;
-const DOG_PATROL_SPEED = 2;
+const DOG_PATROL_PAUSE = 0.2;
+const DOG_PATROL_SPEED = 3;
 
 const DOG_ALERT = [
-  { kind: "nearby", range: 8 },
+  { kind: "nearby", range: 14 },
   { kind: "same-ground", tolerance: 1 },
 ] as const;
 
@@ -48,7 +48,7 @@ export const DOG_BEHAVIOUR: BehaviourPlan = {
       animation: "crouch",
       enter: "face-target",
       motion: { kind: "wait" },
-      transitions: [{ to: "rush", when: [{ kind: "elapsed", seconds: 0.7 }] }],
+      transitions: [{ to: "rush", when: [{ kind: "elapsed", seconds: 0.45 }] }],
     },
     "patrol-left": {
       animation: "walk",
@@ -69,11 +69,11 @@ export const DOG_BEHAVIOUR: BehaviourPlan = {
     rest: {
       animation: "rest",
       motion: { kind: "wait" },
-      transitions: [{ to: "patrol-left", when: [{ kind: "elapsed", seconds: 1.1 }] }],
+      transitions: [{ to: "patrol-left", when: [{ kind: "elapsed", seconds: 0.65 }] }],
     },
     rush: {
       animation: "rush",
-      motion: { direction: "facing", kind: "move", speed: 12 },
+      motion: { direction: "facing", kind: "move", speed: 20 },
       transitions: [
         { to: "rest", when: [{ kind: "boundary" }] },
         { to: "rest", when: [{ kind: "elapsed", seconds: 0.6 }] },
