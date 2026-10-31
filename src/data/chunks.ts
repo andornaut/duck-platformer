@@ -1,7 +1,8 @@
+import { PATROL_FINISH_GEOMETRY } from "./chunkTemplates";
 import type { ChunkPlan, ChunkRules, ElementBinding, ThemePlan } from "./types";
 import { STREET_CHUNKS } from "./zone1";
 import { INDUSTRIAL_CHUNKS } from "./zone2";
-import { COUNTRYSIDE_CHUNKS, PATROL_FINISH_GEOMETRY } from "./zone3";
+import { COUNTRYSIDE_CHUNKS } from "./zone3";
 
 // The rows a chunk's entry and exit stand on.
 export const SEAM_ROWS = [30, 40, 50] as const;
