@@ -17,6 +17,12 @@ export const TEXT: GameText = {
     reload: "Reload",
     title: "Something went wrong",
   },
+  death: {
+    progress: "{percent}%",
+    retry: "Try again",
+    time: "Time: {time}",
+    title: "{level}",
+  },
   dialogue: {
     continue: "Continue",
     skip: "Skip",
