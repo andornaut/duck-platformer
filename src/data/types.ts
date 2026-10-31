@@ -438,6 +438,7 @@ export interface NoCross {
 // never reach from the start. An assembled zone's area also lists the chunks it is made of, left
 // to right, and its slots with what the seed put in each; a hand-built area has neither.
 export interface AreaPlan {
+  readonly walkLinks?: { readonly left?: AreaLink; readonly right?: AreaLink };
   readonly chunks?: readonly PlacedChunk[];
   readonly cols: number;
   readonly entries: Readonly<Record<string, TilePoint>>;
@@ -453,6 +454,7 @@ export interface AreaPlan {
 // A zone: its areas by name, and where she starts, its only checkpoint: a fall or a hazard
 // puts her back there.
 export interface ZonePlan {
+  readonly areaOrder?: readonly string[];
   readonly areas: Readonly<Record<string, AreaPlan>>;
   readonly start: AreaLink;
 }
@@ -551,6 +553,19 @@ export interface ZoneRecipe {
   readonly theme: string;
 }
 
+// Every section chooses one chunk from its pool. Only the entire stage's outer ends add caps.
+export interface ZoneSectionRecipe extends Pick<ZoneRecipe, "difficulty" | "doors" | "events" | "spawnCol" | "theme"> {
+  readonly chunks: readonly string[];
+  readonly id: string;
+}
+export interface OrderedZoneRecipe {
+  readonly finish: string;
+  readonly sections: readonly ZoneSectionRecipe[];
+  readonly start: string;
+  readonly transitionRoles: { readonly left: string; readonly right: string };
+}
+export type StageRecipe = ZoneRecipe | OrderedZoneRecipe;
+
 // A sprite in a room playing one tag, looping, its frame's top-left at `at`, in base pixels.
 export interface RoomAnimation {
   readonly art: string;
@@ -640,6 +655,7 @@ export interface ObjectLayout {
 // plan's, in tiles, for drawing. chunks: an assembled area's chunks, left to right, for the
 // camera; none in a hand-built one.
 export interface AreaLayout {
+  readonly walkLinks?: { readonly left?: AreaLink; readonly right?: AreaLink };
   readonly backX: number;
   readonly chunks: readonly { readonly width: number; readonly x: number }[];
   readonly entries: Readonly<Record<string, Point>>;
@@ -660,6 +676,7 @@ export interface ArtHitbox {
 }
 
 export interface ZoneLayout {
+  readonly areaOrder?: readonly string[];
   readonly areas: Readonly<Record<string, AreaLayout>>;
   // Her drawn frame's size, from art: Use reaches a door her drawn frame covers any of.
   readonly duckFrame: Size;
