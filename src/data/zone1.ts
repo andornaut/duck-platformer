@@ -1,7 +1,7 @@
 import type { ZonePlan } from "./types";
 
 // Zone 1: a fixed parcel depot opening into the street, in one area.
-// The first screen teaches walking, a one-tile tap, a full six-tile jump and a short gap.
+// The first screen teaches walking, a three-tile tap, a full six-tile jump and a short gap.
 // A loading yard separates those lessons from the street and its optional upper route.
 // A ceiling over a one-tile step teaches releasing Jump early; red edges restart the zone.
 export const ZONE_1: ZonePlan = {
@@ -103,11 +103,11 @@ export const ZONE_1: ZonePlan = {
         { character: "storefront-noodle-bar", col: 206, row: 40 },
         { character: "awning", col: 206, cols: 10, row: 44 },
         // Short presses pass the step under this ceiling; a full jump reaches its red edge.
-        { character: "red-edge-bottom", col: 220, cols: 18, row: 45 },
-        { character: "red-edge-left", col: 219, row: 43, rows: 2 },
-        { character: "red-edge-right", col: 238, row: 43, rows: 2 },
-        { character: "red-edge-top", col: 220, cols: 18, row: 42 },
-        { character: "red-edge-support", col: 220, cols: 18, row: 43, rows: 2 },
+        { character: "red-edge-bottom", col: 220, cols: 18, row: 41 },
+        { character: "red-edge-left", col: 219, row: 39, rows: 2 },
+        { character: "red-edge-right", col: 238, row: 39, rows: 2 },
+        { character: "red-edge-top", col: 220, cols: 18, row: 38 },
+        { character: "red-edge-support", col: 220, cols: 18, row: 39, rows: 2 },
         { character: "pedestrian-cat", col: 242, row: 45 },
         { character: "pedestrian-raccoon", col: 248, phase: 0.5, row: 45 },
         // Another red edge, then a canopy before the street's end.
@@ -124,7 +124,7 @@ export const ZONE_1: ZonePlan = {
       rows: 60,
       solids: [
         { col: 0, cols: 20, look: "sidewalk", row: 50, rows: 10 },
-        { col: 20, cols: 4, look: "sidewalk", row: 49, rows: 11 },
+        { col: 20, cols: 4, look: "sidewalk", row: 47, rows: 13 },
         { col: 24, cols: 16, look: "sidewalk", row: 50, rows: 10 },
         { col: 40, cols: 6, look: "sidewalk", row: 44, rows: 16 },
         { col: 46, cols: 10, look: "sidewalk", row: 50, rows: 10 },

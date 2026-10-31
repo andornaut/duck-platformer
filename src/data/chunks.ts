@@ -124,18 +124,18 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     theme: "park",
   },
   // A short press clears the one-tile step beneath the red ceiling; a full jump hits it.
-  // The overhead block is seven tiles above the lawn, beyond the full jump's reach.
+  // The overhead block is eleven tiles above the lawn, beyond the full jump's reach.
   "park-low-ceiling": {
     cols: 72,
     difficulty: 3,
     entry: { row: 50 },
     exit: { row: 50 },
     objects: [
-      { character: "red-edge-bottom", col: 20, cols: 18, row: 45 },
-      { character: "red-edge-left", col: 19, row: 43, rows: 2 },
-      { character: "red-edge-right", col: 38, row: 43, rows: 2 },
-      { character: "red-edge-top", col: 20, cols: 18, row: 42 },
-      { character: "red-edge-support", col: 20, cols: 18, row: 43, rows: 2 },
+      { character: "red-edge-bottom", col: 20, cols: 18, row: 41 },
+      { character: "red-edge-left", col: 19, row: 39, rows: 2 },
+      { character: "red-edge-right", col: 38, row: 39, rows: 2 },
+      { character: "red-edge-top", col: 20, cols: 18, row: 38 },
+      { character: "red-edge-support", col: 20, cols: 18, row: 39, rows: 2 },
     ],
     solids: [
       { col: 0, cols: 26, look: "ground", row: 50, rows: 10 },
