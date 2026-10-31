@@ -32,13 +32,14 @@ Plain PNGs and one ICO from `art/tools/icons.py`, not manifest entries.
 
 ## Images
 
-Plain PNGs from `art/tools/logo.py`, listed in the manifest under `images` with their sizes.
+Plain PNGs from their drawing tools, listed in the manifest under `images` with their sizes.
 
-| Key       | Type                                              | Size    | Path                       |
-| --------- | ------------------------------------------------- | ------- | -------------------------- |
-| logo      | title-screen logo                                 | 360x193 | `public/art/logo.png`      |
-| logo-icon | nav-column logo: duck on a platform, no lettering | 53x41   | `public/art/logo-icon.png` |
-| logo-nav  | nav-bar logo, one line                            | 214x30  | `public/art/logo-nav.png`  |
+| Key                        | Type                                              | Size    | Path                                               |
+| -------------------------- | ------------------------------------------------- | ------- | -------------------------------------------------- |
+| logo                       | title-screen logo                                 | 360x193 | `public/art/logo.png`                              |
+| logo-icon                  | nav-column logo: duck on a platform, no lettering | 53x41   | `public/art/logo-icon.png`                         |
+| logo-nav                   | nav-bar logo, one line                            | 214x30  | `public/art/logo-nav.png`                          |
+| stage-cutscene-placeholder | neutral stage-transition illustration             | 720x360 | `public/art/images/stage-cutscene-placeholder.png` |
 
 ## Sprites
 

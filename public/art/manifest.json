@@ -1692,6 +1692,12 @@
       "png": "logo-nav.png",
       "width": 214,
       "height": 30
+    },
+    {
+      "key": "stage-cutscene-placeholder",
+      "png": "images/stage-cutscene-placeholder.png",
+      "width": 720,
+      "height": 360
     }
   ]
 }
