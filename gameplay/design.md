@@ -164,10 +164,10 @@ The park is a prototype for randomized levels, not V1's second level. The identi
 
 ### Dialogue
 
-- **Box:** a fixed box along the top, not a speech bubble, for a conversation between two characters, sometimes three. It shows the speaker's 64 px portrait with a name tab inside the panel, and one paragraph of at most 3 lines. A paragraph that runs to a 4th line is reworded
-- **Forward:** a tap or keypress moves to the next box. There is no back and no timer
+- **Box:** a fixed box along the top, not a speech bubble, for a conversation between two characters, sometimes three. It shows one paragraph at a time, with the current speaker's 64 px portrait and name tab inside the panel. The duck's portrait is on the left; other speakers' portraits are on the right. Consecutive paragraphs from the same speaker keep the same alignment. Each paragraph has at most 3 lines. A paragraph that runs to a 4th line is reworded
+- **Forward:** Continue advances one paragraph; a tap or keypress also advances. Continue and Skip are visible controls. There is no back, timer or scrolling chat history
 - **Restarts:** after a level restart, the level's dialogue plays again. The first dog introduction is once per attempt
-- **Skip:** every dialogue has a skip button at the top right that skips the conversation. Skip runs ahead to the next choice and stops there; once it is answered, Skip works again
+- **Skip:** Skip skips all remaining dialogue. If the conversation ends in a choice, Skip opens its modal without choosing an answer or bypassing the choice
 
 ### Quips
 
@@ -184,7 +184,7 @@ The park is a prototype for randomized levels, not V1's second level. The identi
 ### Choices
 
 - **Effect:** a choice changes where the duck goes, what he does and what he sees
-- **Kinds:** dialogue answers, as two or three answer buttons in a row above the dialogue box. Route forks in zones and on the map are planned for Next
+- **Kinds:** dialogue choices always appear in a modal. Route forks in zones and on the map are planned for Next
 - **Reach:** choice effects on later zones or the ending are undecided. Branching routes are planned for Next
 
 ### Start screen
