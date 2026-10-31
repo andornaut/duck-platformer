@@ -38,6 +38,7 @@ export interface DeathTuning {
 }
 
 export interface DeathText {
+  readonly level: string;
   readonly progress: string;
   readonly retry: string;
   readonly time: string;
