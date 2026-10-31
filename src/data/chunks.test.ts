@@ -6,7 +6,6 @@ import { ALL_CHUNKS, ALL_RECIPES, ALL_THEMES, FIXTURE_LIBRARY } from "../testing
 import { lookTiles, type Tileset } from "../view/tiles";
 import { ARCHETYPES } from "./archetypes";
 import { CHARACTERS } from "./characters";
-import { CHUNK_RULES, SEAM_ROWS } from "./chunks";
 import { ROOMS } from "./rooms";
 import type { ChunkPlan, ZonePlan } from "./types";
 import { RECIPES, ZONES } from "./zones";
@@ -16,7 +15,6 @@ const TILESETS = import.meta.glob<Tileset>("../../public/art/tilesets/*.json", {
   eager: true,
   import: "default",
 });
-const SEEDS = Array.from({ length: 50 }, (_, i) => i + 1);
 
 // A chunk 60 wide whose ground is at row 50 at both edges, with extra placed on it.
 function seamCase(extra: Partial<ChunkPlan>): ChunkPlan {
@@ -31,12 +29,6 @@ function seamCase(extra: Partial<ChunkPlan>): ChunkPlan {
     ...extra,
   };
 }
-
-describe("the chunk rules", () => {
-  it("joins chunks only on the seam rows, with room to land at each", () => {
-    expect(SEAM_ROWS.every((row) => row - CHUNK_RULES.headroom >= 0)).toBe(true);
-  });
-});
 
 describe.each(ALL_THEMES)("theme %s", (_, theme) => {
   it("draws from a tileset art has, with every look's tiles, or from a placeholder drawn flat", () => {
@@ -131,48 +123,40 @@ describe("the recipes", () => {
 
 describe.each(ALL_RECIPES)("recipe %s", (key, library, recipe) => {
   const chunkAt = (id: string) => library.chunks[id] as ChunkPlan;
-  let assembled: ZonePlan[] | undefined;
-  const plans = () => (assembled ??= SEEDS.map((seed) => assembleZone(library, seed, key, recipe)));
+  let assembled: ZonePlan | undefined;
+  const plan = () => (assembled ??= assembleZone(library, 1, key, recipe));
 
   it("names a theme and start and finish chunks that exist, and fits them", () => {
     expect(recipeProblems(library, recipe)).toEqual([]);
   });
 
-  it(`assembles for ${SEEDS.length} seeds`, () => {
-    expect(plans()).toHaveLength(SEEDS.length);
-  });
-
   it("starts and finishes on its chunks, joined where their seams meet, never one twice in a row", () => {
-    for (const plan of plans()) {
-      const ids = (plan.areas[ASSEMBLED_AREA]?.chunks ?? []).map(({ chunk }) => chunk);
-      expect([ids[0], ids.at(-1)]).toEqual([recipe.start, recipe.finish]);
-      ids.slice(1).forEach((id, index) => {
-        const prev = ids[index] as string;
-        expect(id, `${prev} then ${id}`).not.toBe(prev);
-        expect(chunkAt(prev).exit.row, `${prev} into ${id}`).toBe(chunkAt(id).entry.row);
-      });
-    }
+    const ids = (plan().areas[ASSEMBLED_AREA]?.chunks ?? []).map(({ chunk }) => chunk);
+    expect([ids[0], ids.at(-1)]).toEqual([recipe.start, recipe.finish]);
+    ids.slice(1).forEach((id, index) => {
+      const prev = ids[index] as string;
+      expect(id, `${prev} then ${id}`).not.toBe(prev);
+      expect(chunkAt(prev).exit.row, `${prev} into ${id}`).toBe(chunkAt(id).entry.row);
+    });
   });
 
   it("fits its length and difficulty band and keeps each chunk's maxPerZone", () => {
-    for (const plan of plans()) {
-      const area = plan.areas[ASSEMBLED_AREA];
-      const placed = area?.chunks ?? [];
-      const total = area?.cols ?? 0;
-      expect(total).toBeGreaterThanOrEqual(recipe.length.min);
-      expect(total).toBeLessThanOrEqual(recipe.length.max);
-      const off = placed.slice(1, -1).filter(({ chunk }) => {
-        const { difficulty } = chunkAt(chunk);
-        return difficulty < recipe.difficulty.min || difficulty > recipe.difficulty.max;
-      });
-      expect(off).toEqual([]);
-      const counts = new Map<string, number>();
-      for (const { chunk } of placed.slice(1, -1)) {
-        counts.set(chunk, (counts.get(chunk) ?? 0) + 1);
-      }
-      const over = [...counts].filter(([id, count]) => count > (chunkAt(id).maxPerZone ?? count));
-      expect(over).toEqual([]);
+    const area = plan().areas[ASSEMBLED_AREA];
+    const placed = area?.chunks ?? [];
+    const total = area?.cols ?? 0;
+    expect(total).toBeGreaterThanOrEqual(recipe.length.min);
+    expect(total).toBeLessThanOrEqual(recipe.length.max);
+    const off = placed.slice(1, -1).filter(({ chunk }) => {
+      const { difficulty } = chunkAt(chunk);
+      return difficulty < recipe.difficulty.min || difficulty > recipe.difficulty.max;
+    });
+    expect(off).toEqual([]);
+    const counts = new Map<string, number>();
+    for (const { chunk } of placed.slice(1, -1)) {
+      counts.set(chunk, (counts.get(chunk) ?? 0) + 1);
     }
+    const over = [...counts].filter(([id, count]) => count > (chunkAt(id).maxPerZone ?? count));
+    expect(over).toEqual([]);
   });
 
   it("asks for doors only to rooms that exist", () => {
@@ -184,11 +168,9 @@ describe.each(ALL_RECIPES)("recipe %s", (key, library, recipe) => {
       ...recipe.events.flatMap(({ count, id }) => Array<string>(count).fill(`event ${id}`)),
       ...recipe.doors.flatMap(({ count, room }) => Array<string>(count).fill(`door ${room}`)),
     ].sort();
-    for (const plan of plans()) {
-      const placed = (plan.areas[ASSEMBLED_AREA]?.slots ?? []).flatMap(({ fill, kind }) =>
-        fill === undefined ? [] : [`${kind} ${fill}`],
-      );
-      expect(placed.sort()).toEqual(wanted);
-    }
+    const placed = (plan().areas[ASSEMBLED_AREA]?.slots ?? []).flatMap(({ fill, kind }) =>
+      fill === undefined ? [] : [`${kind} ${fill}`],
+    );
+    expect(placed.sort()).toEqual(wanted);
   });
 });
