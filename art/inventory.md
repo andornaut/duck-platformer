@@ -200,7 +200,7 @@ Pieces placed from level data by their bottom-left corner at the bottom y given,
 
 ## Dog antagonist
 
-| Key            | Type                                                         | Size  | Tags                           |
-| -------------- | ------------------------------------------------------------ | ----- | ------------------------------ |
-| dog-antagonist | character, runtime contact-outline target; hit box 2,2,56,38 | 60x40 | idle, walk, crouch, rush, rest |
-| portrait-dog   | dialogue portrait, transparent                               | 64x64 | neutral                        |
+| Key            | Type                                                        | Size  | Tags                           |
+| -------------- | ----------------------------------------------------------- | ----- | ------------------------------ |
+| dog-antagonist | character, runtime red contact rectangle; hit box 2,2,56,38 | 60x40 | idle, walk, crouch, rush, rest |
+| portrait-dog   | dialogue portrait, transparent                              | 64x64 | neutral                        |

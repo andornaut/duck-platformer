@@ -11,7 +11,6 @@ Apply this guide to menu actions, modal actions and ordinary form controls. A pr
 | Control                        | Reason for exception                                     | Retained rules                                                               |
 | ------------------------------ | -------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | Compact Install action         | A 28px action sits within a full-height settings row     | Full 48px row target; compact content padding must still fit the shared font |
-| Dialogue answer                | A choice has selected and speaker-context states         | Readable labels, focus, keyboard support and adequate press area             |
 | Icon-only navigation and close | Compact, recognisable action without a text label        | Consistent icon placement, accessible action name, focus and press area      |
 | Movement hint and knob         | Continuous directional input rather than a form action   | Contrast and clear state indication                                          |
 | Pause, Use and Jump            | In-game controls must remain visible over varied scenery | Contrast, adequate press area and consistent press feedback                  |
@@ -75,6 +74,8 @@ Primary and secondary buttons share one silhouette, cut corners and nine-slice g
 | Any role, disabled | `lgrey`                     | `dslate`   | Flat face, no outline or raised lip        | Same outer size; no press displacement | Approved target                                                  |
 
 A disabled action retains its label and layout but cannot activate. The disabled face is pale steel (`lgrey`, `#c0cbdc`), with dark steel (`dslate`, `#3a4466`) text at 5.83:1 contrast. Primary is dark steel with white text; secondary is grey (`#8b9bb4`) with ink (`#181425`) text. Its flat silhouette distinguishes it from a raised secondary action without relying on colour alone. Ordinary buttons have no approved hover-specific visual treatment; hover must not change their size or role colour.
+
+Dialogue Continue and Skip use the ordinary primary and secondary button styles, respectively, at 192x48 with an 8px gap. Required dialogue choices use ordinary buttons on a modal card rather than the legacy `ui-answer` artwork.
 
 ## Labels and icons
 

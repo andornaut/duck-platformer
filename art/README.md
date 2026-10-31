@@ -170,13 +170,18 @@ All positions are in base pixels (x, y, w, h) of the 720x360 layout as drawn. Th
 
 ### Dialogue box
 
-- A box at the bottom, 40,256,640,96, with the speaker's 64px portrait in a 68px frame at 48,270 and a name tab on the box's top edge. Two or three speakers use the same box: the portrait and name tab change.
-- The name tab's fill is the speaker's colour: amber, green, pink or tan. Ink text holds at least 6.6:1 on each, and each holds at least 5:1 on the box's navy.
-- Text area at x 128, y 268, 504 wide, 3 lines at a 20px pitch, one paragraph per box.
-- Forward mark 10x14 at 653,323. A tap anywhere or a key also advances. There is no back button and no timer.
-- Skip at the top right: mark 634,8,78,20. It runs ahead to the next choice; while a choice shows, it is disabled (greyed with the grey ramp, and changed in shape).
-- Choices: a row of two or three answer buttons above the box, each 208x36, 8 apart, row top y 192, at most 166px of text. Three sit at x 40, 256 and 472, spanning the box; two at 148 and 364. The selected answer shows a cursor as well as a fill.
-- The touch controls hide while a box is open.
+- The dialogue panel is at the top, 40,8,640,96. One paragraph of at most three lines shows at a time; advancing replaces that paragraph rather than adding a chat history. Play is frozen and touch controls hide while the conversation is open.
+- The duck's portrait is on the left. Other speakers' portraits are on the right; consecutive paragraphs from the same speaker keep that side. Reposition the 68x68 portrait frame and 64x64 portrait without mirroring either artwork.
+- Name tabs sit inside the panel. Their fill is the speaker's colour: amber, green, pink or tan. Ink text holds at least 6.6:1 on each, and each holds at least 5:1 on the panel's navy.
+- Continue is the primary `ui-button-primary`, 488,112,192,48, with a white label. Skip is the secondary `ui-button`, 288,112,192,48, with an ink label. Both remain visible below the panel, separated by 8px; labels begin 13px below the top and sink 2px when pressed. Primary actions omit the dark play mark.
+- Continue advances the current conversation. Skip skips its remaining paragraphs but opens any required terminal choice without selecting an answer. A required choice uses a modal card with ordinary form buttons; while it shows, Continue and Skip underneath cannot activate. No live conversation currently configures a choice.
+
+| Speaker | Portrait frame | Portrait origin | Name origin | Paragraph origin and width |
+| ------- | -------------- | --------------- | ----------- | -------------------------- |
+| Duck    | 48,22,68,68    | 50,24           | 124,13      | 128,42, width 504          |
+| Other   | 604,22,68,68   | 606,24          | 84,13       | 88,42, width 504           |
+
+Both paragraph regions use `font-body` at 2x with a 20px line pitch. Labels, portraits and text move as layout elements; their textures keep their authored orientation and scale.
 
 ### Quip
 
@@ -330,11 +335,11 @@ The ambient characters of the Zone 1 street, drawn by `art/tools/cast.py`; its d
 
 ## Dog antagonist
 
-The approved sprite and portrait assets are available. Encounter runtime, contact-outline rendering and dialogue integration remain a draft; the behaviour and placement below specify the integration target, not shipped gameplay.
+The sprite and portrait integrate with the dog encounter and its frozen introduction. The runtime selects the movement-state animation and draws the contact outline; the harmless pug remains a separate ambient animal.
 
 `dog-antagonist` is a separate floppy-eared, ochre-and-brown dog, drawn facing right in a 60x40 frame and mirrored for left. It does not replace the harmless `dog-pug`. The brighter coat separates the animal from the muted blue environment; the long floppy ears and round cream muzzle identify it independently of colour.
 
-The target contact box is fixed across all poses: x 2, y 2, width 56, height 38, in frame pixels. The target runtime draws a three-pixel red rectangle marking those exact bounds in every state. The red line is not baked into the sprite. All drawn body parts remain inside the contact envelope, which does not shrink when the dog crouches or rests. In the target encounter, contact is always lethal; a crouch or rest is a movement cue, never a safe state.
+The contact box is fixed across all poses: x 2, y 2, width 56, height 38, in frame pixels. The runtime draws a three-pixel red rectangle marking those exact bounds in every state. The red line is not baked into the sprite. All drawn body parts remain inside the contact envelope, which does not shrink when the dog crouches or rests. Contact is always lethal; a crouch or rest is a movement cue, never a safe state.
 
 | State  | Tag      | Art cycle               | Pose                                     |
 | ------ | -------- | ----------------------- | ---------------------------------------- |
@@ -344,9 +349,9 @@ The target contact box is fixed across all poses: x 2, y 2, width 56, height 38,
 | Rest   | `rest`   | two frames, 400ms each  | settled body after the rush              |
 | Rush   | `rush`   | two frames, 80ms each   | stretched body and reaching legs         |
 
-These animation tags are available as loops. The target runtime selects a tag for each active gameplay state. Gameplay data will own the duration and transition of patrol, crouch, committed rush and rest; art cycle durations do not set encounter timing. The target five-column by four-row placement (60x48) bottom-anchors the 60x40 frame, putting the contact box ten pixels below the placement's top and ending at its bottom.
+These animation tags are available as loops. The runtime selects a tag for each active gameplay state. Gameplay data owns the duration and transition of patrol, crouch, committed rush and rest; art cycle durations do not set encounter timing. The five-column by four-row placement (60x48) bottom-anchors the 60x40 frame, putting the contact box ten pixels below the placement's top and ending at its bottom.
 
-`portrait-dog` is 64x64, facing right towards the text, with the matching floppy ears and coat, an ink outline and a transparent ground, cut off at the bottom. Its `neutral` tag is one frame at 1000ms. It uses the existing dialogue portrait frame; no proper name or specific breed is encoded in the art.
+`portrait-dog` is 64x64, authored facing right, with the matching floppy ears and coat, an ink outline and a transparent ground, cut off at the bottom. Its `neutral` tag is one frame at 1000ms. It uses the existing dialogue portrait frame; no proper name or specific breed is encoded in the art.
 
 ## Environment aesthetic
 
