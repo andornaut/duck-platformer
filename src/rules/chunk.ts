@@ -1,5 +1,6 @@
 import type { ChunkPlan, ChunkSeam, Instance, TileRect, ZoneRecipe } from "../data/types";
 import { type ChunkLibrary, themesOf } from "./assemble";
+import { bindElement } from "./elementBinding";
 import { type Catalogue, objectLayout } from "./tiles";
 
 // A rectangle in tiles, as columns [left, right) and rows [top, bottom).
@@ -26,7 +27,10 @@ const inside = (rows: number, cols: number, rect: TileRect) =>
 // A placed thing in tiles: its collision, whether it moves, and the span it can be in over its
 // track (its rectangle swept along its motion's axis, its reaction's range and its hops).
 function thingOf(catalogue: Catalogue, instance: Instance) {
-  const object = objectLayout(1, catalogue, {}, undefined, instance);
+  // Chunk checks use canonical geometry; visual metadata is validated during area resolution.
+  const physical = { ...instance };
+  delete physical.skin;
+  const object = objectLayout(1, catalogue, {}, undefined, {}, physical);
   if (object.behaviour) {
     const { axis, distance, states } = object.behaviour;
     const dx = axis === "x" ? distance : 0;
@@ -144,22 +148,48 @@ export function chunkProblems(
       problems.push(`terrain at col ${solid.col} row ${solid.row} is outside the chunk`);
     }
   }
-  let resolved = true;
-  for (const instance of [...(chunk.backdrops ?? []), ...chunk.objects]) {
-    const character = catalogue.characters[instance.character];
-    if (!character || !catalogue.archetypes[character.archetype]) {
-      problems.push(`no character ${instance.character}`);
-      resolved = false;
+  for (const key of themes) {
+    const theme = library.themes[key];
+    if (!theme) {
       continue;
     }
-    const rect = {
-      col: instance.col,
-      cols: instance.cols ?? character.cols,
-      row: instance.row,
-      rows: instance.rows ?? character.rows,
-    };
-    if (!inside(rows, chunk.cols, rect)) {
-      problems.push(`${instance.character} at col ${instance.col} row ${instance.row} is outside`);
+    let variant: ChunkPlan;
+    try {
+      variant = {
+        ...chunk,
+        backdrops: (chunk.backdrops ?? []).map((instance) => bindElement(theme.bindings, instance)),
+        objects: chunk.objects.map((instance) => bindElement(theme.bindings, instance)),
+      };
+    } catch (error) {
+      problems.push(`${key}: ${error instanceof Error ? error.message : String(error)}`);
+      continue;
+    }
+    let resolved = true;
+    for (const instance of [...(variant.backdrops ?? []), ...variant.objects]) {
+      const character = catalogue.characters[instance.character];
+      if (!character || !catalogue.archetypes[character.archetype]) {
+        problems.push(`no character ${instance.character}`);
+        resolved = false;
+        continue;
+      }
+      const rect = {
+        col: instance.col,
+        cols: instance.cols ?? character.cols,
+        row: instance.row,
+        rows: instance.rows ?? character.rows,
+      };
+      if (!inside(rows, chunk.cols, rect)) {
+        problems.push(
+          `${instance.character} at col ${instance.col} row ${instance.row} is outside`,
+        );
+      }
+    }
+    // The seam rule reads each placed thing's character.
+    if (resolved) {
+      problems.push(
+        ...seamProblems(library, catalogue, variant, "entry", chunk.entry),
+        ...seamProblems(library, catalogue, variant, "exit", chunk.exit),
+      );
     }
   }
   const slots = chunk.slots ?? [];
@@ -179,13 +209,6 @@ export function chunkProblems(
     (!Number.isInteger(chunk.maxPerZone) || chunk.maxPerZone < 1)
   ) {
     problems.push(`maxPerZone ${chunk.maxPerZone} is not a positive whole number`);
-  }
-  // The seam rule reads each placed thing's character.
-  if (resolved) {
-    problems.push(
-      ...seamProblems(library, catalogue, chunk, "entry", chunk.entry),
-      ...seamProblems(library, catalogue, chunk, "exit", chunk.exit),
-    );
   }
   return problems;
 }

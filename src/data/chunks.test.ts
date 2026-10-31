@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { ASSEMBLED_AREA, assembleZone, themesOf } from "../rules/assemble";
 import { chunkProblems, recipeProblems } from "../rules/chunk";
+import { bindElement } from "../rules/elementBinding";
 import { ALL_CHUNKS, ALL_RECIPES, ALL_THEMES, FIXTURE_LIBRARY } from "../testing/chunks";
 import { lookTiles, type Tileset } from "../view/tiles";
 import { ARCHETYPES } from "./archetypes";
@@ -44,11 +45,16 @@ describe.each(ALL_THEMES)("theme %s", (_, theme) => {
   });
 
   it("draws each backdrop from a character that exists", () => {
-    expect(theme.backdrops.filter(({ character }) => !(character in CHARACTERS))).toEqual([]);
+    expect(
+      theme.backdrops
+        .map((backdrop) => bindElement(theme.bindings, { ...backdrop, col: 0 }))
+        .filter(({ character }) => !(character in CHARACTERS)),
+    ).toEqual([]);
   });
 
   it("places doors as a character whose archetype is a door", () => {
-    expect(CHARACTERS[theme.door]?.archetype, theme.door).toBe("door");
+    const character = theme.bindings[theme.door]?.character;
+    expect(character && CHARACTERS[character]?.archetype, theme.door).toBe("door");
   });
 });
 
@@ -60,7 +66,8 @@ describe.each(ALL_CHUNKS)("chunk %s", (_, library, chunk) => {
   if ((chunk.slots ?? []).some(({ kind }) => kind === "door")) {
     it("fits each of its themes' doors in each door slot", () => {
       const tooSmall = themesOf(chunk).flatMap((key) => {
-        const door = CHARACTERS[library.themes[key]?.door ?? ""];
+        const theme = library.themes[key];
+        const door = CHARACTERS[theme?.bindings[theme.door]?.character ?? ""];
         return (chunk.slots ?? [])
           .filter(
             ({ area, kind }) =>

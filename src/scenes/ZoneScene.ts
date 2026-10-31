@@ -822,7 +822,7 @@ export class ZoneScene extends Scene implements DeathOpener, DialogueOpener {
       item.destroy();
     }
     this.objectArt = area.objects.map((object, index) => {
-      const key = object.tileset ?? area.tileset;
+      const key = object.tileset === null ? undefined : (object.tileset ?? area.tileset);
       const source = loadedTileset(
         TILE,
         (name) => this.cache.json.get(name) as Tileset | undefined,

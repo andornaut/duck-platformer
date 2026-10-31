@@ -14,6 +14,7 @@ import type {
   ZonePlan,
   ZoneRecipe,
 } from "../data/types";
+import { bindElement } from "./elementBinding";
 
 // What zones are assembled from: the chunks and themes by key, the chunk rules, the seam rows,
 // a zone's height in rows, and the characters by key, for the size of each theme's door.
@@ -248,19 +249,25 @@ export function zonePlanOf(
     }
     want.forEach((fill, index) => filled.set(open[index] as FilledSlot, fill));
   }
-  const door = library.characters[theme.door];
+  const doorTemplate = bindElement(theme.bindings, {
+    character: "",
+    col: 0,
+    role: theme.door,
+    row: 0,
+  });
+  const door = library.characters[doorTemplate.character];
+  if (!door) {
+    throw new Error(`No character ${doorTemplate.character} for theme ${themeKey}'s doors`);
+  }
   const doors = slots.flatMap((slot): Instance[] => {
     const room = filled.get(slot);
     if (slot.kind !== "door" || room === undefined) {
       return [];
     }
-    if (!door) {
-      throw new Error(`No character ${theme.door} for theme ${themeKey}'s doors`);
-    }
     const { area } = slot;
     return [
       {
-        character: theme.door,
+        ...doorTemplate,
         col: area.col + (area.cols - door.cols) / 2,
         room,
         row: area.row + area.rows - door.rows,
@@ -285,12 +292,18 @@ export function zonePlanOf(
           })),
         ),
         objects: [
-          ...theme.backdrops.map((backdrop) => ({ ...backdrop, col: 0, cols })),
-          ...chunks.flatMap((chunk, index) =>
-            (chunk.backdrops ?? []).map((instance) => shiftInstance(at(index), instance)),
+          ...theme.backdrops.map((backdrop) =>
+            bindElement(theme.bindings, { ...backdrop, col: 0, cols }),
           ),
           ...chunks.flatMap((chunk, index) =>
-            chunk.objects.map((instance) => shiftInstance(at(index), instance)),
+            (chunk.backdrops ?? []).map((instance) =>
+              bindElement(theme.bindings, shiftInstance(at(index), instance)),
+            ),
+          ),
+          ...chunks.flatMap((chunk, index) =>
+            chunk.objects.map((instance) =>
+              bindElement(theme.bindings, shiftInstance(at(index), instance)),
+            ),
           ),
           ...doors,
         ],

@@ -34,6 +34,7 @@ function library(chunks: Readonly<Record<string, ChunkPlan>>): ChunkLibrary {
     themes: {
       t: {
         backdrops: [{ character: "sky", row: 0 }],
+        bindings: { door: { character: "door" } },
         door: "door",
         looks: { ground: "grass" },
         tileset: "tiles",
@@ -205,6 +206,54 @@ describe("assembleZone", () => {
       { character: "sky", col: 0, cols: area.cols, parallax: { x: 0, y: 0 }, row: 0 },
       { character: "tree", col: 63, parallax: { x: 0.4, y: 0.2 }, row: 20 },
     ]);
+  });
+
+  it("binds all placed categories and sizes filled doors from the selected character", () => {
+    const base = library({
+      a: chunk(50, 50, {
+        backdrops: [{ character: "tree", col: 3, role: "scenery", row: 20 }],
+        objects: [{ character: "animal", col: 5, role: "actor", row: 45, scene: "old-intro" }],
+        slots: [{ area: { col: 10, cols: 4, row: 45, rows: 5 }, id: "door", kind: "door" }],
+      }),
+    });
+    const theme = base.themes.t;
+    if (!theme) {
+      throw new Error("Missing fixture theme");
+    }
+    const bound = {
+      ...base,
+      characters: { ...base.characters, industrialDoor: { cols: 4, rows: 5 } },
+      themes: {
+        t: {
+          ...theme,
+          backdrops: [{ character: "sky", role: "sky", row: 0 }],
+          bindings: {
+            actor: { character: "industrial-animal", scene: null },
+            door: { character: "industrialDoor" },
+            scenery: { character: "factory-prop" },
+            sky: { character: "factory-sky", parallax: { x: 0, y: 0 } },
+          },
+        },
+      },
+    };
+    const area = areaOf(
+      assembleZone(bound, 1, "stage", recipe(1, { doors: [{ count: 1, room: "test" }] })),
+    );
+    expect(area.objects).toMatchObject([
+      { character: "factory-sky", col: 0, cols: 180, parallax: { x: 0, y: 0 }, row: 0 },
+      { character: "factory-prop", col: 63, row: 20 },
+      { character: "industrial-animal", col: 65, row: 45 },
+      { character: "industrialDoor", col: 70, room: "test", row: 45 },
+    ]);
+    expect(area.objects[2]?.scene).toBeUndefined();
+    expect(() =>
+      assembleZone(
+        { ...bound, themes: { t: { ...bound.themes.t, bindings: {} } } },
+        1,
+        "stage",
+        recipe(1),
+      ),
+    ).toThrow("No binding for role door");
   });
 
   it("moves each chunk's contents to its zone columns, drawn in the theme, with its doors", () => {

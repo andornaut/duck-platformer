@@ -168,6 +168,97 @@ describe("zoneLayout", () => {
     } as ZonePlan;
     expect(() => zoneLayout(10, DUCK_FRAME, catalogue, {}, {}, new Set(), bad)).toThrow(message);
   });
+  it("changes a sprite skin while preserving canonical collision, footprint and bottom-centred anchor", () => {
+    const assets = {
+      ...hitboxes,
+      industrial: {
+        frame: { height: 20, width: 60 },
+        hitbox: { height: 6, width: 30, x: 15, y: 12 },
+      },
+    };
+    const instance = { character: "lift", col: 20, row: 30 };
+    const canonical = objectLayout(10, CATALOGUE, assets, undefined, {}, instance);
+    const skinned = objectLayout(
+      10,
+      CATALOGUE,
+      assets,
+      undefined,
+      {},
+      { ...instance, skin: { art: "industrial", tileset: null } },
+    );
+    expect(skinned).toEqual({ ...canonical, art: "industrial", tileset: null });
+    expect(() =>
+      objectLayout(
+        10,
+        CATALOGUE,
+        {
+          ...assets,
+          industrial: { ...assets.industrial, hitbox: { ...assets.industrial.hitbox, width: 28 } },
+        },
+        undefined,
+        {},
+        { ...instance, skin: { art: "industrial", tileset: null } },
+      ),
+    ).toThrow("canonical hitbox");
+  });
+
+  it("accepts matching tile skins and rejects incompatible tile size, piece footprint and hitboxes", () => {
+    const source = {
+      columns: 4,
+      pieces: { panel: [[0, 0, 0, 0]] },
+      tileSize: 10,
+      tiles: { edge: 0 },
+    };
+    const instance = {
+      character: "lift",
+      col: 20,
+      row: 30,
+      skin: { art: "panel", tileset: "industrial" },
+    };
+    const canonical = objectLayout(
+      10,
+      CATALOGUE,
+      {},
+      undefined,
+      {},
+      { character: "lift", col: 20, row: 30 },
+    );
+    expect(objectLayout(10, CATALOGUE, {}, undefined, { industrial: source }, instance)).toEqual({
+      ...canonical,
+      art: "panel",
+      tileset: "industrial",
+    });
+    expect(() =>
+      objectLayout(
+        10,
+        CATALOGUE,
+        {},
+        undefined,
+        { industrial: { ...source, tileSize: 12 } },
+        instance,
+      ),
+    ).toThrow("Invalid skin");
+    expect(() =>
+      objectLayout(
+        10,
+        CATALOGUE,
+        {},
+        undefined,
+        { industrial: { ...source, pieces: { panel: [[0, 0]] } } },
+        instance,
+      ),
+    ).toThrow("footprint");
+    expect(() =>
+      objectLayout(
+        10,
+        CATALOGUE,
+        {},
+        undefined,
+        { industrial: { ...source, hitboxes: { edge: { height: 5, width: 10, x: 0, y: 5 } } } },
+        { ...instance, skin: { art: "edge", tileset: "industrial" } },
+      ),
+    ).toThrow("canonical hitbox");
+  });
 });
 
 describe("backdrop parallax", () => {
@@ -194,6 +285,7 @@ describe("backdrop parallax", () => {
       },
       {},
       undefined,
+      {},
       { character: "sky", col: 0, row: 0, ...instance },
     );
 

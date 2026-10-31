@@ -43,6 +43,7 @@ const resolve = (character = CHARACTER, archetype = ACTOR, tile = 1, behaviour?:
     { archetypes: { actor: archetype }, characters: { actor: character } },
     {},
     undefined,
+    {},
     { ...(behaviour && { behaviour }), character: "actor", col: 100, row: 280 },
   );
 const OBJECT = resolve();

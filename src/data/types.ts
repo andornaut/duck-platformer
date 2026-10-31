@@ -524,8 +524,8 @@ export interface ThemeBackdrop {
 // What every chunk of a theme is drawn with, so seams never show (THEMES by key, in
 // src/data/chunks.ts). tileset: the art tileset. looks: each look a chunk's terrain names, as
 // the tileset's look it is drawn with. backdrops: its repeated backdrops, back to front. door:
-// the character, a door, each filled door slot places at its own size, centred across the slot
-// and standing on its floor.
+// the binding role whose selected door character each filled slot places at its own size,
+// centred across the slot and standing on its floor.
 export interface ThemePlan {
   readonly backdrops: readonly ThemeBackdrop[];
   readonly bindings: Readonly<Record<string, ElementBinding>>;
@@ -612,8 +612,8 @@ export interface Reaches {
 // its art declares one; else its whole rectangle.
 export interface ObjectLayout {
   readonly behaviour?: BehaviourPlan;
-  // The character's shared tileset, otherwise the area's tileset.
-  readonly tileset?: string;
+  // The visual tileset, otherwise the area's tileset; null explicitly selects sprite/image art.
+  readonly tileset?: string | null;
   readonly animations: Readonly<Record<CharacterState, string | undefined>>;
   readonly art: string;
   readonly character: string;

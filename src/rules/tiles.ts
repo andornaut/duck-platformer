@@ -18,7 +18,7 @@ import type {
   ZoneLayout,
   ZonePlan,
 } from "../data/types";
-import { tileHitbox, type Tileset } from "../view/tiles";
+import { drawsFrom, tileHitbox, type Tileset } from "../view/tiles";
 import { layoutBehaviour } from "./behaviour";
 
 export function tileRect(tile: number, rect: TileRect): Rect {
@@ -60,6 +60,18 @@ export function resolveNames(
   return { archetype, character };
 }
 
+function alignedHitbox(art: ArtHitbox, width: number, height: number): Rect {
+  return {
+    ...art.hitbox,
+    x: art.hitbox.x + (width - art.frame.width) / 2,
+    y: art.hitbox.y + height - art.frame.height,
+  };
+}
+
+function sameRect(a: Rect, b: Rect): boolean {
+  return a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height;
+}
+
 // An instance resolved into one flat object, in pixels: its instance's overrides over its
 // character's tuning over its archetype, and the character's art, animations (a state left out
 // plays idle's, and open the tag named "open"), words and quirks, which an instance's own lines
@@ -70,6 +82,7 @@ export function objectLayout(
   catalogue: Catalogue,
   hitboxes: Readonly<Record<string, ArtHitbox>>,
   tileset: Tileset | undefined,
+  skinTilesets: Readonly<Record<string, Tileset>>,
   instance: Instance,
 ): ObjectLayout {
   const { archetype, character } = resolveNames(catalogue, instance);
@@ -125,6 +138,36 @@ export function objectLayout(
   const width = (instance.cols ?? character.cols) * tile;
   const height = (instance.rows ?? character.rows) * tile;
   const art = hitboxes[character.art];
+  const hitbox = art
+    ? alignedHitbox(art, width, height)
+    : tileset && tileHitbox(tile, tileset, character.art, width / tile, height / tile);
+  const skin = instance.skin;
+  if (skin) {
+    const visualTileset = skin.tileset === null ? undefined : skinTilesets[skin.tileset];
+    if (
+      skin.tileset !== null &&
+      (!visualTileset || visualTileset.tileSize !== tile || !drawsFrom(visualTileset, skin.art))
+    ) {
+      throw new Error(`Invalid skin tileset or art ${skin.tileset}:${skin.art}`);
+    }
+    if (archetype.collision !== "none") {
+      const piece = visualTileset?.pieces[skin.art];
+      if (
+        piece &&
+        (piece.length * tile !== height || piece.some((row) => row.length * tile !== width))
+      ) {
+        throw new Error(`Skin ${skin.art} changes the collidable footprint`);
+      }
+      const visualArt = skin.tileset === null ? hitboxes[skin.art] : undefined;
+      const visualHitbox = visualArt
+        ? alignedHitbox(visualArt, width, height)
+        : visualTileset && tileHitbox(tile, visualTileset, skin.art, width / tile, height / tile);
+      const full = { height, width, x: 0, y: 0 };
+      if (!sameRect(hitbox ?? full, visualHitbox ?? full)) {
+        throw new Error(`Skin ${skin.art} changes the canonical hitbox`);
+      }
+    }
+  }
   const idle = character.animations?.idle;
   return {
     animations: {
@@ -133,19 +176,17 @@ export function objectLayout(
       ) as Record<Exclude<CharacterState, "open">, string | undefined>),
       open: character.animations?.open ?? OPEN_TAG,
     },
-    art: character.art,
-    ...(character.tileset !== undefined && { tileset: character.tileset }),
+    art: skin?.art ?? character.art,
+    ...(skin
+      ? { tileset: skin.tileset }
+      : character.tileset !== undefined
+        ? { tileset: character.tileset }
+        : {}),
     character: instance.character,
     ...(behaviour && { behaviour }),
     collision: archetype.collision,
     height,
-    hitbox: art
-      ? {
-          ...art.hitbox,
-          x: art.hitbox.x + (width - art.frame.width) / 2,
-          y: art.hitbox.y + height - art.frame.height,
-        }
-      : tileset && tileHitbox(tile, tileset, character.art, width / tile, height / tile),
+    hitbox,
     interaction: { ...interaction, range: interaction.range * tile },
     lines: instance.lines ?? character.lines ?? [],
     motion: {
@@ -200,7 +241,7 @@ export function areaLayout(
         if (key !== undefined && !source) {
           throw new Error(`No tileset ${key} for ${instance.character}`);
         }
-        return objectLayout(tile, catalogue, hitboxes, source, instance);
+        return objectLayout(tile, catalogue, hitboxes, source, tilesets, instance);
       }),
     solids: area.solids.map((rect) => tileRect(tile, rect)),
     terrain: area.solids,
