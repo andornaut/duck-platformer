@@ -34,7 +34,7 @@ A landscape platformer: a duck travels back to the apartment he shared with his 
 
 ## Rules
 
-A stage is the individual playable layout, currently represented by `ZonePlan` in code. A zone is the themed map destination containing two stages. The V1 map has six themed destinations with two catalogued stages each. The two stages in each of Blue cityscape, Industrial outskirts, Countryside and Woodland are built; all other V1 stages remain visibly unavailable. The map and selection rules below are the approved scope for the current implementation change.
+A stage is the individual playable layout, currently represented by `ZonePlan` in code. A zone is the themed map destination containing two stages. The V1 map has six themed destinations with two catalogued stages each. The two stages in each of Blue cityscape, Industrial outskirts, Countryside, Woodland and Home city are built; all other V1 stages remain visibly unavailable. The map and selection rules below are the approved scope for the current implementation change.
 
 ### Screen and controls
 
@@ -69,14 +69,14 @@ A stage is the individual playable layout, currently represented by `ZonePlan` i
 
 ### Map
 
-- **Availability:** all six V1 zones appear in route order. Each has two catalogued stages. The first eight stages are built: Parcel depot and streets (`street`), City boundary (`city-boundary`), Warehouse district (`warehouse-district`), Freight terminal (`freight-terminal`), Farmland (`farmland`), River crossing (`river-crossing`), Forest paths (`forest-paths`) and Ravine (`ravine`). Unbuilt zones and stages are visibly unavailable and cannot be entered. The park is a debug prototype outside the V1 map
+- **Availability:** all six V1 zones appear in route order. Each has two catalogued stages. The first ten stages are built: Parcel depot and streets (`street`), City boundary (`city-boundary`), Warehouse district (`warehouse-district`), Freight terminal (`freight-terminal`), Farmland (`farmland`), River crossing (`river-crossing`), Forest paths (`forest-paths`), Ravine (`ravine`), City outskirts (`city-outskirts`) and Familiar neighbourhood (`familiar-neighbourhood`). Unbuilt zones and stages are visibly unavailable and cannot be entered. The park is a debug prototype outside the V1 map
 - **Backtracking:** unlocked built stages remain available for replay. Replaying an earlier stage never removes later unlocks
 - **Between stages:** clearing a stage returns to the map on its zone. Completed stages and opened paths are marked
 - **Buttons:** Back to title is on the left; Continue is on the right and is the default keyboard action
 - **Celebration:** only clearing Apartment building's second stage, Climb to the apartment, shows the finish celebration, including on replay. Clearing the depot does not finish V1. Continue returns to the map; Restart asks first, as on the start screen
 - **Checkpoints:** each stage begins at its own checkpoint, with unlimited retries. Walking left from either stage checkpoint returns to the map
 - **Forks:** branching routes are deferred to Next. V1 is linear and has no laps
-- **Progression:** the first stage is unlocked from the start. Completing Parcel depot and streets unlocks City boundary; completing City boundary unlocks Warehouse district, which unlocks Freight terminal on completion. Completing Freight terminal unlocks Farmland; completing Farmland unlocks River crossing. Completing River crossing unlocks Forest paths; completing Forest paths unlocks Ravine. Home city remains unavailable until built. Completing a zone's first stage unlocks its second stage when built; completing its second stage opens the next zone. Unbuilt content remains unavailable
+- **Progression:** the first stage is unlocked from the start. Completing Parcel depot and streets unlocks City boundary; completing City boundary unlocks Warehouse district, which unlocks Freight terminal on completion. Completing Freight terminal unlocks Farmland; completing Farmland unlocks River crossing. Completing River crossing unlocks Forest paths; completing Forest paths unlocks Ravine. Completing Ravine unlocks City outskirts; completing City outskirts unlocks Familiar neighbourhood. Apartment building remains unavailable until built. Completing a zone's first stage unlocks its second stage when built; completing its second stage opens the next zone. Unbuilt content remains unavailable
 - **Selection:** selecting a zone with one unlocked playable stage enters that stage directly. A zone with more than one unlocked playable stage opens a stage-choice modal. The latest available stage is highlighted and is the default; the earlier stage is secondary. Unbuilt or locked stages are visibly unavailable. Persisted unlocks survive replays
 - **Walk:** the duck stands on a zone. Left and Right move through available zones, and Continue selects the zone he stands on
 
@@ -124,7 +124,7 @@ This is the approved implementation scope for the current change, including the 
 
 Everything in a stage except its terrain is placed in data through archetypes, characters and instances.
 
-- **Animals:** every animal in the main stage foreground, apart from the duck, is an enemy and lethal on contact. Animals have no red contact outlines. The dog, raccoon, goose and owl antagonists are the only world-stage animals currently placed; there are no friendly background animals in the current stages
+- **Animals:** every animal in the main stage foreground, apart from the duck, is an enemy and lethal on contact. Animals have no red contact outlines. The dog, raccoon, goose, owl and rabbit antagonists are the only world-stage animals currently placed; there are no friendly background animals in the current stages
 - **Archetypes:** a behaviour: collision (none, solid, one-way ledge, hazard or Use), movement, reaction, interaction (such as talking on Use or a quip on approach) and default tuning
 - **Behaviour patterns:** reusable patterns in the data choose behaviour primitives, their sequence or states, transition conditions, timing, animations and tuning. Animals and moving inanimate objects use the same composition approach. Code implements the primitives, condition evaluation and shared executor; character-specific cycles are composed in data rather than hardcoded in code
 - **Characters:** who something is: one archetype plus tuning overrides, its art and animations, hit box, size, its dialogue and quip lines, and quirks. No character inherits from another. Props (platforms, hazards, doors and backdrops) are characters with art but no voice
@@ -137,7 +137,7 @@ Everything in a stage except its terrain is placed in data through archetypes, c
 
 ### V1 route
 
-The target play time is about 30 minutes across six themed zones of two stages, in this order. Both stages in Blue cityscape, Industrial outskirts, Countryside and Woodland are built; the later zones remain unavailable. The six-zone map and conditional stage-selection flow preserve unlocked stages for replay. Every stage, including the depot tutorial and final climb, has a fixed opening and ending with a randomized middle.
+The target play time is about 30 minutes across six themed zones of two stages, in this order. Both stages in Blue cityscape, Industrial outskirts, Countryside, Woodland and Home city are built; the later zones remain unavailable. The six-zone map and conditional stage-selection flow preserve unlocked stages for replay. Every stage, including the depot tutorial and final climb, has a fixed opening and ending with a randomized middle.
 
 | Zone                 | First stage              | Second stage           |
 | -------------------- | ------------------------ | ---------------------- |
@@ -156,7 +156,7 @@ The target play time is about 30 minutes across six themed zones of two stages, 
 - **Rooms:** the street door leads to the prototype test room
 - **Route:** the main path continues right toward the city boundary; middle chunks can include upper street ledges. City boundary is the zone's second stage and unlocks when this tutorial is completed
 
-The park is a prototype for randomized stages, not V1's second stage. The identities of the ferret's friends beyond the dog, raccoon, goose and owl and the later encounters along the route are undecided.
+The park is a prototype for randomized stages, not V1's second stage. The identities of the ferret's friends beyond the dog, raccoon, goose, owl and rabbit and the later encounters along the route are undecided.
 
 ### City boundary
 
@@ -196,13 +196,26 @@ The park is a prototype for randomized stages, not V1's second stage. The identi
 - **Appearance:** woodland uses its canonical green theme through shared terrain, structure, prop and background skins
 - **Encounters:** both stages use the owl antagonist through the existing vertical behaviour graph. The dog, raccoon and goose retain their existing behaviours and tuning in their zones
 - **Layout:** Forest paths and Ravine each use fixed 60-column openings and endings around shared randomized middle layouts, for a total of 360 to 480 columns in the shared difficulty band. Mandatory climbs, moving ledges and red hazards use the common stage object and layout system
-- **Progression:** clearing River crossing opens Forest paths; clearing Forest paths opens Ravine. Both preserve replay unlocks. Home city remains unavailable. Catalogue IDs and save shape are unchanged
+- **Progression:** clearing River crossing opens Forest paths; clearing Forest paths opens Ravine. Both preserve replay unlocks. Catalogue IDs and save shape are unchanged
 - **Rooms:** doors use the existing prototype test room; there are no new rooms, plot, dialogue, bosses or combat. Water does not add hidden hazards
 
 ### Owl encounter
 
 - **Contact:** the owl is always lethal on contact, including during preparation, rest and return, without a red contact outline
 - **Cycle:** the owl prepares visibly, swoops down, rests and returns upward using the shared vertical behaviour graph. Numerical movement and timing values stay in data
+
+### Home city
+
+- **Appearance:** City outskirts and Familiar neighbourhood use the canonical peach theme through shared terrain, structure, prop and background skins
+- **Encounters:** both stages use the rabbit antagonist through the existing hop primitive. The dog, raccoon, goose and owl retain their existing behaviours and tuning in their zones
+- **Layout:** each stage uses fixed 60-column openings and endings around shared randomized middle layouts, for a total of 360 to 480 columns in the shared difficulty band. Mandatory climbs, moving ledges and red hazards use the common stage object and layout system
+- **Progression:** clearing Ravine opens City outskirts; clearing City outskirts opens Familiar neighbourhood. Both preserve replay unlocks. Apartment building remains unavailable. Catalogue IDs and save shape are unchanged
+- **Rooms:** doors use the existing prototype test room; there are no new rooms, plot, dialogue, bosses or combat. Water does not add hidden hazards
+
+### Rabbit encounter
+
+- **Contact:** the rabbit is always lethal on contact, including during its pauses, without a red contact outline
+- **Cycle:** repeated hops stay inside bounded territory, separated by predictable pauses. The shared hop primitive and behaviour data define the movement and timing
 
 ### First dog encounter
 
@@ -234,7 +247,7 @@ The park is a prototype for randomized stages, not V1's second stage. The identi
 
 ### The ferret
 
-- **Appearances:** the ferret enlists his friends as a favour. A friend or group is responsible for a themed zone and appears in person or through dialogue overlays; identities beyond the dog, raccoon, goose and owl are undecided
+- **Appearances:** the ferret enlists his friends as a favour. A friend or group is responsible for a themed zone and appears in person or through dialogue overlays; identities beyond the dog, raccoon, goose, owl and rabbit are undecided
 - **Boss encounters:** deferred to Next, outside V1
 - **Calling card:** every trap it sets carries a badge of its stovepipe hat and bow tie
 - **Ending:** the duck returns home; the outcome of their friendship is undecided. There is no combat

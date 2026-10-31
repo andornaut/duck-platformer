@@ -28,7 +28,7 @@ Gameplay owns the rulebook and the values and content in the data value files (e
 
 The target is about 30 minutes across six themed map destinations (zones), each with two playable stages, on a linear route back to the shared apartment. The ordered zones and agreed story are in [`design.md`](design.md). The first stage combines the depot and streets of the blue cityscape. Every stage has a fixed opening and ending with a randomized middle assembled from hand-designed chunks. The park remains a prototype, not the final second stage. Branching routes and boss encounters are deferred to Next.
 
-The six-destination V1 map has eight built stages: Blue cityscape's Parcel depot and streets (`street`) and City boundary (`city-boundary`), followed by Industrial outskirts' Warehouse district (`warehouse-district`) and Freight terminal (`freight-terminal`), then Countryside's Farmland (`farmland`) and River crossing (`river-crossing`), followed by Woodland's Forest paths (`forest-paths`) and Ravine (`ravine`). The other catalogued stages and zones are visibly unavailable. A zone with one unlocked playable stage enters directly; more than one opens a choice modal with the latest available stage as the highlighted default and the earlier stage secondary. Clearing a stage returns to the map; completing a first stage unlocks its second when built, and completing the second opens the next zone. Replays preserve unlocks. The park is a debug prototype outside the V1 map. Current code still calls an individual stage `ZonePlan`.
+The six-destination V1 map has ten built stages: Blue cityscape's Parcel depot and streets (`street`) and City boundary (`city-boundary`), followed by Industrial outskirts' Warehouse district (`warehouse-district`) and Freight terminal (`freight-terminal`), then Countryside's Farmland (`farmland`) and River crossing (`river-crossing`), followed by Woodland's Forest paths (`forest-paths`) and Ravine (`ravine`), then Home city's City outskirts (`city-outskirts`) and Familiar neighbourhood (`familiar-neighbourhood`). The other catalogued stages and zones are visibly unavailable. A zone with one unlocked playable stage enters directly; more than one opens a choice modal with the latest available stage as the highlighted default and the earlier stage secondary. Clearing a stage returns to the map; completing a first stage unlocks its second when built, and completing the second opens the next zone. Replays preserve unlocks. The park is a debug prototype outside the V1 map. Current code still calls an individual stage `ZonePlan`.
 
 ## Targets
 
@@ -42,7 +42,7 @@ Each target is a band, not a point, assessed per stage and player skill. PLACEHO
 
 ## Remaining for the first build
 
-**Current implementation scope:** both Woodland stages, Forest paths and Ravine, using the canonical green theme with shared stage layouts, objects and skins. The owl prepares visibly, swoops down and returns through the existing vertical behaviour graph; it is always lethal without an outline. Fixed openings and endings surround randomized middles with mandatory climbs, moving ledges and red hazards. Clearing River crossing opens Forest paths, which opens Ravine on completion. Existing jump tuning, earlier-zone enemies, IDs, save shape and replay unlocks are preserved. Home city and Apartment building remain unavailable. There are no new rooms, plot, dialogue, bosses, combat or hidden water hazards.
+**Current implementation scope:** both Home city stages, City outskirts and Familiar neighbourhood, using the canonical peach theme with shared stage layouts, objects and skins. The rabbit makes repeated bounded hops with predictable pauses through the existing hop primitive; it is always lethal without an outline. Fixed openings and endings surround randomized middles with mandatory climbs, moving ledges and red hazards. Clearing Ravine opens City outskirts, which opens Familiar neighbourhood on completion. Existing jump tuning, earlier-zone enemies, IDs, save shape and replay unlocks are preserved. Apartment building's two stages remain unavailable; the finish celebration still belongs only to its final stage. There are no new rooms, plot, dialogue, bosses, combat or hidden water hazards.
 
 Open questions:
 
@@ -51,7 +51,7 @@ Open questions:
 - **Confirm, one-way ledges:** assumed, he jumps up through an awning or other one-way ledge from below and lands on top of it
 - **Confirm, restarts reset choices:** assumed, a zone restart also resets the choices made in that zone
 - **Ending:** the outcome of their friendship when the duck returns to the shared apartment
-- **Friends:** the identities of the friends the ferret enlists beyond the dog, raccoon, goose and owl, and their encounters
+- **Friends:** the identities of the friends the ferret enlists beyond the dog, raccoon, goose, owl and rabbit, and their encounters
 - **Map:** Next's branching routes
 - **Rooms:** the currency and what items do; what quests and rewards give and how they are tracked; what a threat leads to; whether a room can be revisited, and whether its dialogue changes
 - **Use:** what it acts on besides doors (assumed: talking to animals, and objects at route forks)
