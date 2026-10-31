@@ -104,6 +104,12 @@ const ACTIVE = stepZone(DUCK, LAYOUT, 0.1, INPUT, INITIAL);
 describe("active-step time", () => {
   it.each<[string, ZoneState, ZoneState, number]>([
     ["active physics", INITIAL, ACTIVE, 0.1],
+    [
+      "linked-area clock reset",
+      { ...ACTIVE, area: "lower", seconds: 10, steps: 10 },
+      { ...ACTIVE, area: "upper", seconds: 0, steps: 11 },
+      0.1,
+    ],
     ["paused/dialogue/modal hold", INITIAL, INITIAL, 0],
     [
       "death hold",
