@@ -31,7 +31,7 @@ export const THEMES: Readonly<Record<string, ThemePlan>> = {
 
 // The chunks zones are assembled from, by id. Rows are the chunk's own: seams at 50 (the lawn), 40
 // and 30 (the terraces). Every required rise is at most 6 and every required gap at most 16, and
-// the boat crossing is 40 across, beyond the running jump's reach of 22.
+// the boat crossing is 40 across, beyond the running jump's reach of 21.
 export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
   // Difficulty 2, up from the lawn (50) to the high terrace (30): a bench (up 2), a terrace (up 4),
   // a bench on it (up 2), the bandstand's roof (up 4, 6 above its base), a step (up 4) and the
