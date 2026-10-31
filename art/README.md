@@ -261,6 +261,14 @@ Every ordinary modal uses the [shared content-fitting rule](controls.md#modal-co
 - Keyboard focus: `ui-focus`, with nine-slice margins 4, stays 4px outside the focused element on every side. Its 2px yellow band between ink lines remains visible on the card, rows, buttons and dim. Focus follows each fitted row, button or close control.
 - Install steps: each uses a 16x16 glyph and up to two lines of text at the existing font size. The first shows Share or the browser-menu glyph; the second shows the install glyph. Fit the frame to the actual wrapped steps and close control instead of a shared modal canvas.
 
+### Update notice
+
+The update notice is an ordinary modal over the dimmed home view. It has the title Update available, one primary Update now button and a close X that defers the update. It needs no redundant body paragraph or separate Later button. Runtime presents it once per home visit or notice-mode change; only the explicit Update now action accepts, never a tap on the card face. The game supplies the words and behaviour.
+
+- Assets: existing `ui-settings-card`, `ui-button-primary` and `ui-close`, with the standard 2x title and body fonts. Use the ordinary focus, press and dismissal treatment, without new art or palette colours.
+- Fit: apply the [shared modal sizing rule](controls.md#modal-content-fitting), with 16px outer padding. The header height is the larger of its 16px title line box and 24px close control; keep an 8px gap before the 48px primary action. Centre the title across the card, reserving the close control and its clearance symmetrically.
+- Measured example: the title ink is 170px wide and Update now is 78px. The header needs 170+2x(24+8)=234px; the action needs 78+32=110px. The fitted card is 266x112, centred in the 720x360 view. Longer actual copy grows the frame rather than shrinking the font or forcing a shared modal width.
+
 ## Map
 
 The map presents the six V1 zone destinations on a cool pastel overview. `art/tools/map.py` draws the frame, zone markers, theme icons and small regional illustrations. Names, availability, stage choices and route positions belong to game data; the illustrations describe themes, not playable layouts.

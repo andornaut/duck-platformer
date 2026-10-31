@@ -64,7 +64,7 @@ Every ordinary modal sizes its nine-slice frame to the union of its actual conte
 
 - Actions: equal widths within a group, each the widest action label's visible ink plus 16px on each side. Keep the standard 48px height, minimum 12px vertical label inset and 8px horizontal action gap. Stacked actions retain their 4px gap.
 - Content: ordinary single-line stat rows use 16px line boxes at the existing 2x font size, with 4px between boxes. The actual glyph ink can be shorter; centre that ink in its line box. Keep an 8px gap between the text block and action row. Paragraphs wrap or grow their box; text never shrinks to fit.
-- Headers: include both the title and any 24x24 close control in the measured content union. A close control occupies the header's top-right position inside the same outer padding. A required decision without a close control has no reserved close area.
+- Headers: centre the title across the complete card. Where a 24x24 close control is present, reserve its width plus an 8px clearance on both sides of the title, so the centred heading clears the close control. The opposite reservation preserves the heading's centre; it is measured header clearance, not a fixed canvas width. The close control stays inside the outer padding at the header's top right. A required decision without a close control has no reserved close area.
 - Placement: ordinary cards centre within the game view. The retry card is top-centred at y16 to leave the seated duck and contact area visible below it. Its content uses the same 16px padding.
 - Special-purpose framing: conversation panels retain their portrait-frame borders and paired-speaker layout because those borders frame 64px character artwork. In-game touch controls and the compact Install face retain their documented control exceptions. These do not introduce another ordinary modal padding rule.
 
@@ -78,6 +78,10 @@ The retry card uses the content-fitted pale steel frame and ordinary secondary a
 | Try again     | Primary   | Equal group width x 48 | White on dslate |
 
 The left-to-right order carries meaning: leaving is secondary, retrying is primary. Derive the shared width from the widest actual label, with an 8px gap between actions. Labels use `font-body` at 2x, centred by visible ink, with the standard pressed displacement and focus ring. Apply the shared expanded press targets and nearest-centre overlap rule. The game supplies every label and value; art does not bake text into the textures. See [the retry layout](README.md#stage-progress-and-retry) for the four stat rows, measured example and frozen scene.
+
+### Update notice action
+
+The update notice uses one primary Update now action and the ordinary close X, which defers the update. There is no separate Later action or redundant body copy. Keep the shared 2x fonts, focus ring, pressed feedback and expanded press targets. Only the explicit primary action accepts; tapping the card face does not accept. See [the update notice](README.md#update-notice) for its content-fitted header and measured example.
 
 ## Button roles and states
 
