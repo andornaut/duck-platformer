@@ -1,64 +1,38 @@
 #!/usr/bin/env python3
-"""The map screen, drawn as a paper map: the paper and its frame, scattered pen marks, zone and fork markers and the
-duck's marker. Paths and labels have no art: the game draws them by the rules below.
+"""Cool pastel route-map assets, with six themed destinations and standard modal controls.
 
 Usage, from the repository root:
-  python3 -I art/tools/map.py build            write art/map/<key>.aseprite and public/art/sprites/<key>.png + .json,
-                                               list them in the manifest
-  python3 -I art/tools/map.py preview OUT.png  contact sheet of every frame on cream, tan and slate
+  python3 -I art/tools/map.py build            write Aseprite sources, PNG/JSON and manifest entries
+  python3 -I art/tools/map.py preview OUT.png  contact sheet on pale steel, cream and slate
 
-A node's centre is (col * 12 + 6, row * 12 + 6) on the 60x30 grid of 12px tiles (cx, cy below). Every marker has an
-odd frame with a centre pixel, so it is drawn with that pixel on the node's centre. Ink is dbrown (5.85:1 on cream),
-the accent dred (5.07:1), unbuilt slate (3.8:1); the pen marks are tan (1.45:1), below the 3:1 of anything that
-carries meaning. Every state differs in shape as well as colour. One exception: a built path is brown (2.67:1), a step
-dimmer than the ink, and its dash pattern carries its state.
+The map uses a 720x360 view and six 35x35 zone markers, centred on the 12px grid:
+Blue cityscape (126,90), Industrial (354,90), Countryside (582,90), Woodland (582,222),
+Home city (354,222), Apartment (126,222). The route follows that order without forks.
 
-Paper
-- map-paper, nine-slice 32x32, margins 13,13,13,13, drawn 720x360 at 0,0: cream, with a 2px brown rule 6px in from
-  each edge and a 2px tan rule 11px in. One tag, rest.
-- Pen marks, tan, one tag rest each, placed by the map's data at a top-left in base pixels, at least a tile clear of
-  every node, path and label: map-hill (20x11, one hill), map-wave (22x4, one wave) and map-compass (25x33, a
-  four-point star under an N, for a corner). The data places them because the node layout varies with the map.
+map-paper is a 32x32 nine-slice, margins 13,13,13,13, with a pale steel lgrey face and grey/slate rules.
+Meaningful marks use dslate, navy or slate. Selection never uses lethal red.
+map-zone keeps its existing tags and frame positions: normal cream disc with a dslate ring; current adds
+an outer dslate ring; visited is navy with a cream tick badge; locked replaces the icon with a dslate
+padlock; unbuilt is a broken slate ring and question mark. Shape carries each state as well as colour.
 
-Zone marker: map-zone, 35x35, centre pixel 17,17 (top-left cx-17, cy-17). A 25px disc (radius 12).
-- normal: a cream disc in a 2px dbrown ring.
-- current: normal inside a second 2px dred ring of radius 17.
-- visited: a solid dbrown disc, and a tick badge (a 13px cream disc ringed in dbrown with a dbrown tick) at its
-  lower right, centre 27,26.
-- locked: built, but behind a zone she has not completed: normal with a dbrown padlock (10x12, 2px strokes, a
-  keyhole in its body) in place of the icon, top-left 12,11.
-- unbuilt: a cream disc in a slate ring broken into eight dashes, with a slate question mark; no icon.
-Zone icon: map-icon-<zone>, 14x14, top-left cx-7, cy-7, over every state but locked and unbuilt. Tags normal
-(dbrown, for the normal and current markers) and visited (cream, on the solid disc). map-icon-street is a brownstone
-(windows and a door); map-icon-zone, a map pin, stands in for any zone without its own icon. A new zone needs only a
-new icon.
+map-icon-<destination> is 14x14, centred over normal/current/visited nodes. Normal uses the theme's dark
+blue, brown or forest ink; visited uses cream. Locked/unbuilt nodes show no icon. The street and generic
+zone icons remain available. map-region-<destination> is a 120x60 static illustration placed at cx-60,
+cy-36, behind paths and markers. These decorative buildings, fields and trees keep destination identity
+visible while its marker is locked or unbuilt. No region depicts a playable layout.
 
-Fork marker: map-fork, 29x29, centre pixel 14,14 (top-left cx-14, cy-14). A 17px diamond (radius 8).
-- normal: a dbrown diamond with a cream centre (radius 5).  current: normal inside a 2px dred ring of radius 14.
-- visited: a solid dbrown diamond.  unbuilt: four slate 5px diamonds at the corners, no outline between them.
+Paths and labels are runtime drawings. Open paths are 4px solid dslate; built, locked paths are 2px slate
+dashes (6 on, 4 off); unbuilt paths are 2x2 slate dots every 6px. Zone names use font-title at 2x, ink,
+centred under their markers, with their visible capitals on cy+20..29 and an lgrey knock-out behind.
+Back to title is ui-button at164,300,192,48; Continue is ui-button-primary at364,300,192,48.
 
-map-duck, 26x22: her idle frame redrawn at half size (cream body with a tan crescent and white rim, a round head set
-up above the back, a 2x2 ink eye, a 3x3 orange bill, a tan wing patch, orange foot stubs, dark-slate outline),
-facing right. Tag idle, 2 x 400ms: frame 1 lifts everything but the feet 1px. She stands on the current node: top-left
-(cx-13, cy-39) on a zone, (cx-13, cy-36) on a fork, her outline's bottom row on the current ring's top row.
+map-duck remains 26x22 with idle2x400ms, centred on the current node and standing on its top ring.
+Legacy map-fork and pen marks remain available but the six-zone V1 route needs no fork markers.
 
-Continue is ui-resume, 160x44, at 280,300 (the hit area), label "Continue" ink, origin 339,311 (339,313 pressed).
-
-Paths, drawn by the game from node centre to node centre, as a gentle curve: a quadratic Bezier whose control point
-is the chord's midpoint pushed sideways by 8% of the chord's length, to the left of travel for even edge indices and
-to the right for odd ones. Trim each end 3px outside the marker (15px from a zone's centre, 11px from a fork's). Stamp
-a w x w square every 0.5px along the curve, its top-left at (floor(x - w/2 + 0.5), floor(y - w/2 + 0.5)). A dash
-pattern (on, off) counts the stamps' centres along the curve from the start, so a dash shows on + w long and a gap
-off - w.
-- built: w 2, brown, dashes 6 on, 4 off (8px dashes, 2px gaps).        travelled: w 4, dred, solid.
-- unbuilt: 2x2 slate dots, n = floor(length / 6) + 1 of them spaced length / (n - 1) apart, the first and last on the
-  trimmed ends.
-
-Labels: a zone's name in font-title at 2x, plum (9.4:1 on cream), centred under its marker. A is its advance width at
-2x; its ink is A - 4 wide, starting 2px right of the origin, capitals on origin rows +8..+17. Origin
-(cx - floor((A - 4) / 2) - 2, cy + 12), so the capitals sit on rows cy+20..cy+29. Under it the game fills a cream
-knock-out (ox - 2, cy + 17, A + 4, 16) after the paths and before the markers, so a path never runs through a name.
-A fork has no label.
+The level picker reuses ui-settings-card at176,88,368,176, an ink zone heading centred atx360,y96,
+the standard close X at510,94,24,24, and two352x48 level buttons at184,136 and184,188. The latest
+available level uses ui-button-primary with white text; the other uses ui-button with ink text.
+It opens only when more than one level is unlocked. Close, back and outside taps return to the map.
 """
 
 import math
@@ -110,16 +84,16 @@ def diamond(g, cx, cy, r, c):
 # ---------------------------------------------------------------- paper
 
 def paper():
-    """32x32 nine-slice: cream, a 2px brown rule 6px in and a 2px tan rule 11px in."""
+    """32x32 nine-slice: pale steel, a 2px slate rule 6px in and a 2px grey rule 11px in."""
     g = Grid(32, 32)
-    g.rect(0, 0, 32, 32, "cream")
-    for inset, c in ((6, "brown"), (11, "tan")):
+    g.rect(0, 0, 32, 32, "lgrey")
+    for inset, c in ((6, "slate"), (11, "grey")):
         n = 32 - 2 * inset
         g.rect(inset, inset, n, 2, c)
         g.rect(inset, 32 - inset - 2, n, 2, c)
         g.rect(inset, inset, 2, n, c)
         g.rect(32 - inset - 2, inset, 2, n, c)
-    g.rect(13, 13, 6, 6, "cream")
+    g.rect(13, 13, 6, 6, "lgrey")
     return g.px
 
 
@@ -167,6 +141,76 @@ ICONS = {
              "..##......##..", "..###....###..", "...########...", "....######....", ".....####.....",
              ".....####.....", "......##......", "......##......", ".............."),
 }
+# Small landmarks use thick clusters and a different silhouette for each destination.
+ICONS.update({
+    "apartment": ("..##########..", "..##########..", "..##..##..##..", "..##..##..##..",
+                  "..##########..", "..##..##..##..", "..##..##..##..", "..##########..",
+                  "..##..##..##..", "..##..##..##..", "..##########..", "..###....###..",
+                  "..###....###..", "..##########.."),
+    "blue-cityscape": ("......####....", "......####....", "..####.##.####", "..####.##.####",
+                       "..##...##...##", "..##...##...##", "..####.##.####", "..####.##.####",
+                       "..##...##...##", "..##...##...##", "..####.##.####", "..####.##.####",
+                       "..############", "..############"),
+    "countryside": ("......##......", "....######....", "..##########..", "##############",
+                    "##..........##", "##...####...##", "##...####...##", "##...####...##",
+                    "##############", "..............", "##############", "##############",
+                    "..##########..", "....######...."),
+    "home-city": ("...##.........", "...##.##......", "....######....", "...########...",
+                 "..##########..", ".############.", "##..........##", "##..##..##..##",
+                 "##..##..##..##", "##..........##", "##...####...##", "##...####...##",
+                 "##############", "##############"),
+    "industrial": ("..##..........", "..##..........", "..##..##..##..", "..##.###.###..",
+                   "..##########..", "..##########..", "..##..##..##..", "..##..##..##..",
+                   "..##########..", "..##########..", "..###....###..", "..###....###..",
+                   "..##########..", "..##########.."),
+    "woodland": ("...##....##...", "..####..####..", ".############.", "##############",
+                 "..####..####..", ".############.", "##############", "##############",
+                 "...##....##...", "...##....##...", "...##....##...", "...##....##...",
+                 "..####..####..", "..####..####.."),
+})
+THEME_INK = {"apartment": "dslate", "blue-cityscape": "dslate", "countryside": "dbrown",
+             "home-city": "dslate", "industrial": "dslate", "woodland": "forest"}
+
+
+def region(kind):
+    """120x60 decorative theme fragments; the central marker keeps a clear 40px opening."""
+    g = Grid(120, 60)
+    if kind in ("blue-cityscape", "home-city", "apartment", "industrial"):
+        for x, w, top in ((2, 24, 18), (24, 14, 6), (86, 18, 14), (104, 14, 26)):
+            g.rect(x, top, w, 58 - top, "grey")
+        if kind == "industrial":
+            g.rect(4, 30, 32, 28, "slate")
+            g.rect(8, 12, 6, 22, "slate")
+            g.tri((86, 36), (103, 24), (103, 36), "slate")
+            g.rect(86, 36, 30, 22, "slate")
+        elif kind == "home-city":
+            for x in (3, 88):
+                g.tri((x, 32), (x + 14, 20), (x + 28, 32), "slate")
+                g.rect(x + 3, 32, 22, 26, "grey")
+        elif kind == "apartment":
+            for x in (5, 94):
+                g.rect(x, 8, 20, 50, "grey")
+                for y in (16, 28, 40):
+                    g.rect(x + 4, y, 4, 4, "slate")
+                    g.rect(x + 12, y, 4, 4, "slate")
+                g.rect(x + 8, 50, 6, 8, "tan")
+        else:
+            for x in (8, 92):
+                g.rect(x, 32, 20, 26, "slate")
+    elif kind == "countryside":
+        for x in (0, 82):
+            g.tri((x, 44), (x + 18, 34), (x + 38, 44), "tan")
+            g.rect(x, 45, 38, 12, "tan")
+            g.rect(x + 4, 49, 28, 2, "brown")
+            g.rect(x + 10, 55, 26, 2, "brown")
+    elif kind == "woodland":
+        for x, y in ((12, 34), (28, 42), (92, 38), (108, 30)):
+            g.rect(x - 2, y + 2, 4, 20, "brown")
+            g.tri((x, y - 22), (x - 12, y + 6), (x + 12, y + 6), "forest")
+            g.tri((x, y - 14), (x - 12, y + 14), (x + 12, y + 14), "dgreen")
+    return g.px
+
+
 QMARK = bm("..####..", ".##..##.", ".....##.", "....##..", "...##...", "...##...", "........", "...##...",
            "...##...")
 TICK = bm("....##", "...##.", "##.##.", ".###..", "..#...")
@@ -191,17 +235,17 @@ def zone(state):
         stamp(g, QMARK, c - 4, c - 4, "slate")
         return g.px
     if state == "current":
-        ring(g, c, c, 17, 2, "dred")
+        ring(g, c, c, 17, 2, "dslate")
     if state == "visited":
-        disc(g, c, c, 12, "dbrown")
+        disc(g, c, c, 12, "navy")
         disc(g, 27, 26, 6, "cream")
-        ring(g, 27, 26, 6, 2, "dbrown")
-        stamp(g, TICK, 24, 24, "dbrown")
+        ring(g, 27, 26, 6, 2, "dslate")
+        stamp(g, TICK, 24, 24, "dslate")
         return g.px
     disc(g, c, c, 12, "cream")
-    ring(g, c, c, 12, 2, "dbrown")
+    ring(g, c, c, 12, 2, "dslate")
     if state == "locked":
-        stamp(g, LOCK, c - 5, c - 6, "dbrown")
+        stamp(g, LOCK, c - 5, c - 6, "dslate")
     return g.px
 
 
@@ -213,8 +257,8 @@ def fork(state):
             diamond(g, c + dx, c + dy, 2, "slate")
         return g.px
     if state == "current":
-        ring(g, c, c, 14, 2, "dred")
-    diamond(g, c, c, 8, "dbrown")
+        ring(g, c, c, 14, 2, "dslate")
+    diamond(g, c, c, 8, "navy")
     if state != "visited":
         diamond(g, c, c, 5, "cream")
     return g.px
@@ -248,12 +292,14 @@ def sprites():
     yield "map-fork", [(s, [fork(s)], 100) for s in ("normal", "current", "visited", "unbuilt")]
     yield "map-hill", one(hill())
     for key in sorted(ICONS):
-        yield f"map-icon-{key}", [("normal", [icon(ICONS[key], "dbrown")], 100),
+        yield f"map-icon-{key}", [("normal", [icon(ICONS[key], THEME_INK.get(key, "dslate"))], 100),
                                   ("visited", [icon(ICONS[key], "cream")], 100)]
     yield "map-paper", one(paper())
+    for key in sorted(THEME_INK):
+        yield f"map-region-{key}", one(region(key))
     yield "map-wave", one(wave())
     yield "map-zone", [(s, [zone(s)], 100) for s in ("normal", "current", "visited", "locked", "unbuilt")]
 
 
 if __name__ == "__main__":
-    pixel.main(sys.argv, sprites, SRC, __doc__, grounds=("ead4aa", "e4a672", "5a6988"), slices=SLICES, once=ONCE)
+    pixel.main(sys.argv, sprites, SRC, __doc__, grounds=("c0cbdc", "ead4aa", "5a6988"), slices=SLICES, once=ONCE)

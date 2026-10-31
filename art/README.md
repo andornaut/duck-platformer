@@ -242,17 +242,37 @@ A pause button at the top left opens the pause card over the game, which is dimm
 
 ## Map
 
-The map screen shows the zones and the forks between them as a paper map, after the start screen and after each zone is cleared, with the duck on a zone she may play: the first from the start, then any zone the ones she has completed open, back or on. `art/tools/map.py` draws it; its docstring gives every sprite's states, anchor and placement, and the drawing rules below in full. The game lays the nodes out from the map data, on the 60x30 grid of 12px tiles, centred at (12 col + 6, 12 row + 6).
+The map presents the six V1 zone destinations on a cool pastel overview. `art/tools/map.py` draws the frame, zone markers, theme icons and small regional illustrations. Names, availability, level choices and route positions belong to game data; the illustrations describe themes, not playable layouts.
 
-- Paper: `map-paper`, a nine-slice drawn 720x360 at 0,0: cream with a brown rule 6px in and a tan rule 11px in. The pen marks (`map-hill`, `map-wave`, `map-compass`) are tan sprites the map data places, at least a tile clear of every node, path and label, since the node layout varies with the map.
-- Ink is dbrown, the accent dred, unbuilt slate; the pen marks are tan, below the 3:1 of anything that carries meaning. One exception: a built path is brown (2.67:1), a step dimmer than the ink, and its dash pattern carries its state.
-- Zone marker `map-zone`, 35x35 centred on the node: normal (a cream disc in a dbrown ring), current (a second dred ring outside), visited (a solid dbrown disc with a tick badge, for a zone she has completed), locked (normal with a dbrown padlock in place of the icon, for a built zone behind one she has not completed) and unbuilt (a broken slate ring round a question mark). Over every state but locked and unbuilt the zone's icon, `map-icon-<zone>` (14x14, tag `normal` or `visited`), sits centred; a zone without one shows `map-icon-zone`, so a new zone needs only its icon.
-- Fork marker `map-fork`, 29x29: a hollow dbrown diamond, ringed in dred when current, solid when visited, four slate corner dots when unbuilt. A fork has no label.
-- The duck's marker `map-duck` (26x22, `idle` 2 x 400ms) stands on the current node's ring.
-- Paths have no art. The game draws each from node to node as a gentle curve (a quadratic Bezier bent 8% of its length, alternating sides), trimmed 3px outside the markers, by stamping squares along it: built a 2px brown dash (6 on, 4 off), opened (by the zones she has completed) a 4px solid dred line, unbuilt 2x2 slate dots every 6px.
-- Labels: the zone's name in `font-title` at 2x, plum, centred under its marker: origin (cx - floor((A - 4) / 2) - 2, cy + 12), where A is its advance width at 2x, over a cream knock-out (ox - 2, cy + 17, A + 4, 16) that hides the paths behind it.
-- Back to title is the secondary `ui-button` on the left, grey with an ink label. Continue is the primary `ui-button-primary` on the right, dslate with a white label, and plays the current zone. Back to title is at 164,300,192,48 and Continue at 364,300,192,48, with an 8px gap. Neither uses a play mark. Continue is the first Tab stop and the default Enter or Space action before focus moves; arrows and A/D retain zone selection. A tap on an open zone marker walks the duck there.
-- The celebration screen after the last zone, and the restart card that asks before Restart, are placeholders awaiting art: they reuse the settings card, `ui-button`, `ui-resume` and `ui-focus`.
+| Destination    | Grid centre (col,row) | Pixel centre | Icon and region suffix |
+| -------------- | --------------------- | ------------ | ---------------------- |
+| Blue cityscape | 10,7                  | 126,90       | blue-cityscape         |
+| Industrial     | 29,7                  | 354,90       | industrial             |
+| Countryside    | 48,7                  | 582,90       | countryside            |
+| Woodland       | 48,18                 | 582,222      | woodland               |
+| Home city      | 29,18                 | 354,222      | home-city              |
+| Apartment      | 10,18                 | 126,222      | apartment              |
+
+- Frame: `map-paper`, a 32x32 nine-slice with margins 13 on each side, drawn at 0,0,720,360. Its face is lgrey with grey and slate inset rules. Text and meaningful marks are ink, dslate, navy or slate. Selection uses dslate, never lethal red.
+- Regions: `map-region-<suffix>`, 120x60, tag `rest`, at cx-60,cy-36 behind paths and markers. Blue-grey buildings flank city destinations, tan fields identify the countryside and green trees identify woodland. The central opening leaves each marker clear. These illustrations remain visible for locked and unbuilt destinations.
+- Route: one linear path follows the table's order, left to right across the top row, then right to left across the bottom row. There are no fork markers on the V1 route. Runtime paths use 4px solid dslate for open paths, 2px slate dashes (6 on, 4 off) for built paths still locked, and 2x2 slate dots every 6px for unbuilt paths. State is carried by the pattern as well as colour.
+- Zone marker: `map-zone`, 35x35 centred on the node. `normal` is a cream disc with a dslate ring; `current` adds a second dslate ring; `visited` is navy with a cream tick badge. `locked` replaces the zone icon with a dslate padlock. `unbuilt` uses a broken slate ring and a question mark. Tags retain their existing order and frame indices.
+- Zone icons: `map-icon-<suffix>`, 14x14, centred on normal, current and visited markers. The `normal` tag uses the theme's dark blue, brown or forest ink, and `visited` is cream. Locked and unbuilt markers show no icon. `map-icon-street` and `map-icon-zone` remain available for other maps and unspecified icons.
+- Duck: `map-duck`, 26x22, tag `idle`, two frames at 400ms. He stands above the current node's ring, top-left cx-13,cy-39. The current marker's double ring also carries selection when the duck is not visible.
+- Labels: names in `font-title` at 2x, ink, centred below the markers. With advance width A, origin is cx-floor((A-4)/2)-2,cy+12, so visible capitals occupy cy+20 through cy+29. An lgrey knock-out behind the name keeps paths and regional art clear of the letters. Optional availability text uses `font-body` at 2x, dslate, origin cy+32, with strings supplied by gameplay.
+- Footer: Back to title uses secondary `ui-button` at 164,300,192,48, with an ink label; Continue uses `ui-button-primary` at 364,300,192,48, with a white label. Neither uses a play mark. Continue is the default keyboard action; a tap on an open zone marker selects that destination.
+- Legacy assets: `map-fork`, `map-hill`, `map-wave` and `map-compass` remain available. The six-destination layout does not require fork or pen-mark decorations.
+
+### Level picker
+
+Selecting a zone with only one unlocked level enters that level directly. With more than one unlocked level, the picker reuses the standard modal card and controls, with no new asset shapes.
+
+- Frame: `ui-settings-card` at 176,88,368,176. The zone heading is centred at x360, origin y96, in ink, with the standard 24x24 close X at 510,94.
+- Rows: level buttons at 184,136,352,48 and 184,188,352,48. The latest reached available level uses `ui-button-primary` and white text; the other uses `ui-button` and ink text. Labels use `font-body` at 2x, centred with the standard button-label inset.
+- Return: close, back and outside taps close the picker and return to the map. No extra Back button repeats the close action. The normal modal input isolation and keyboard focus apply.
+- Unbuilt levels stay unavailable. A preview showing two unlocked choices illustrates the future state, not the current content's availability.
+
+The celebration and restart screens remain placeholders using the standard card and buttons.
 
 ## Animation
 

@@ -159,9 +159,45 @@
       "once": []
     },
     {
+      "key": "map-icon-apartment",
+      "png": "sprites/map-icon-apartment.png",
+      "json": "sprites/map-icon-apartment.json",
+      "once": []
+    },
+    {
+      "key": "map-icon-blue-cityscape",
+      "png": "sprites/map-icon-blue-cityscape.png",
+      "json": "sprites/map-icon-blue-cityscape.json",
+      "once": []
+    },
+    {
+      "key": "map-icon-countryside",
+      "png": "sprites/map-icon-countryside.png",
+      "json": "sprites/map-icon-countryside.json",
+      "once": []
+    },
+    {
+      "key": "map-icon-home-city",
+      "png": "sprites/map-icon-home-city.png",
+      "json": "sprites/map-icon-home-city.json",
+      "once": []
+    },
+    {
+      "key": "map-icon-industrial",
+      "png": "sprites/map-icon-industrial.png",
+      "json": "sprites/map-icon-industrial.json",
+      "once": []
+    },
+    {
       "key": "map-icon-street",
       "png": "sprites/map-icon-street.png",
       "json": "sprites/map-icon-street.json",
+      "once": []
+    },
+    {
+      "key": "map-icon-woodland",
+      "png": "sprites/map-icon-woodland.png",
+      "json": "sprites/map-icon-woodland.json",
       "once": []
     },
     {
@@ -181,6 +217,42 @@
         "right": 13,
         "bottom": 13
       }
+    },
+    {
+      "key": "map-region-apartment",
+      "png": "sprites/map-region-apartment.png",
+      "json": "sprites/map-region-apartment.json",
+      "once": []
+    },
+    {
+      "key": "map-region-blue-cityscape",
+      "png": "sprites/map-region-blue-cityscape.png",
+      "json": "sprites/map-region-blue-cityscape.json",
+      "once": []
+    },
+    {
+      "key": "map-region-countryside",
+      "png": "sprites/map-region-countryside.png",
+      "json": "sprites/map-region-countryside.json",
+      "once": []
+    },
+    {
+      "key": "map-region-home-city",
+      "png": "sprites/map-region-home-city.png",
+      "json": "sprites/map-region-home-city.json",
+      "once": []
+    },
+    {
+      "key": "map-region-industrial",
+      "png": "sprites/map-region-industrial.png",
+      "json": "sprites/map-region-industrial.json",
+      "once": []
+    },
+    {
+      "key": "map-region-woodland",
+      "png": "sprites/map-region-woodland.png",
+      "json": "sprites/map-region-woodland.json",
+      "once": []
     },
     {
       "key": "map-wave",
