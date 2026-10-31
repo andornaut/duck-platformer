@@ -19,7 +19,7 @@ Gameplay owns the rulebook and the values and content in the data value files (e
 
 - **Decisions:** the user's. Gameplay asks with a prompt, recommendation first and the trade-off in a line; routine work needs no asking.
 - **Design sessions:** start with "design session" and a topic. Claude keeps floated ideas apart from agreed ones, asks the question that unblocks a decision, and on "wrap up" proposes doc changes, writing them once confirmed.
-- **Difficulty:** keep zones around the same configurable difficulty target and variation band, whose defaults live in `src/data/`, rather than guaranteed escalation. The first level is fixed; every later level, including the final level, randomizes on entry.
+- **Difficulty:** keep zones around the same configurable difficulty target and variation band, whose defaults live in `src/data/`, rather than guaranteed escalation. The first stage is fixed; every later stage, including the final stage, randomizes on entry.
 - **Jump tuning:** use one uninterrupted ballistic ascent, with a minimum hop for short presses and the full jump on a hold. Place overhead short-jump challenges to match the measured hop. Keep the reaches in the rulebook aligned with the simulator, including coyote time in the running gap reach
 - **Playtest what needs eyes:** play the build headless on a landscape phone viewport, and report what broke to tech or art. The user playtests. PLACEHOLDER: the build URL and its dev parameters.
 - **Simulate before tuning:** every difficulty change is compared before and after against a baseline, with a headless simulator that plays the real rules with bots at three skills (novice, typical, expert) and reports the targets per zone. Simulate only what a decision needs, with the same seed before and after, and re-baseline after a change that reorders random draws. Results go to the user as tables with a recommendation. Only gameplay runs simulations at scale. PLACEHOLDER: the simulator and its command; tech builds it.
@@ -27,23 +27,23 @@ Gameplay owns the rulebook and the values and content in the data value files (e
 
 ## V1 plan
 
-The target is about 30 minutes across six themed map destinations (zones), each with two playable levels, on a linear route back to the shared apartment. The ordered zones and agreed story are in [`design.md`](design.md). The first level combines the depot and streets of the blue cityscape in a fixed tutorial; every later level is randomized. The park remains a prototype, not the final second level. Branching routes and boss encounters are deferred to Next.
+The target is about 30 minutes across six themed map destinations (zones), each with two playable stages, on a linear route back to the shared apartment. The ordered zones and agreed story are in [`design.md`](design.md). The first stage combines the depot and streets of the blue cityscape in a fixed tutorial; every later stage is randomized. The park remains a prototype, not the final second stage. Branching routes and boss encounters are deferred to Next.
 
-The six-destination V1 map has two built levels in Blue cityscape: Parcel depot and streets, level key `street`, and City boundary, level key `city-boundary`. The other catalogued levels and zones are visibly unavailable. A zone with one unlocked playable level enters directly; more than one opens a choice modal with the latest available level as the highlighted default and the earlier level secondary. Clearing a level returns to the map; completing a first level unlocks its second when built, and completing the second opens the next zone. Replays preserve unlocks. The park is a debug prototype outside the V1 map. Current code still calls an individual level `ZonePlan`.
+The six-destination V1 map has two built stages in Blue cityscape: Parcel depot and streets, stage key `street`, and City boundary, stage key `city-boundary`. The other catalogued stages and zones are visibly unavailable. A zone with one unlocked playable stage enters directly; more than one opens a choice modal with the latest available stage as the highlighted default and the earlier stage secondary. Clearing a stage returns to the map; completing a first stage unlocks its second when built, and completing the second opens the next zone. Replays preserve unlocks. The park is a debug prototype outside the V1 map. Current code still calls an individual stage `ZonePlan`.
 
 ## Targets
 
-Each target is a band, not a point, that the simulator reports per level and skill. PLACEHOLDER: every band, agreed with the user. The kinds of target:
+Each target is a band, not a point, that the simulator reports per stage and skill. PLACEHOLDER: every band, agreed with the user. The kinds of target:
 
-- **Level length:** cumulative active time to clear a level, by skill, including retries and excluding pause, dialogue, menus and the death flow. A retry starts at the level checkpoint and touch jumps are imprecise, so a level is short enough that a restart doesn't sting
+- **Stage length:** cumulative active time to clear a stage, by skill, including retries and excluding pause, dialogue, menus and the death flow. A retry starts at the stage checkpoint and touch jumps are imprecise, so a stage is short enough that a restart doesn't sting
 - **Reaches:** the duck makes every jump at a reach in the rulebook's Grid, and never one tile beyond it. A pass or fail check, not a band
-- **Restarts:** a failed attempt is one that ends in death (a fall, hazard or crush), followed by the retry choice. Restarts per level, by skill: some attempts fail, and the band says how often
-- **Route spread:** every route a choice opens lands within a narrow window of the level's median clear time and restart rate, so no route is a lot easier or harder
+- **Restarts:** a failed attempt is one that ends in death (a fall, hazard or crush), followed by the retry choice. Restarts per stage, by skill: some attempts fail, and the band says how often
+- **Route spread:** every route a choice opens lands within a narrow window of the stage's median clear time and restart rate, so no route is a lot easier or harder
 - **Session length:** the time to finish the game, by skill
 
 ## Remaining for the first build
 
-**Current implementation scope:** playable City boundary as Blue cityscape's second level, using the existing map, level-choice modal and unlock flow. Completing Parcel depot and streets unlocks City boundary; both remain replayable. Existing catalogue and progress IDs and the save format are unchanged. The remaining zones are planned content; the finish celebration belongs only to Apartment building's final level.
+**Current implementation scope:** playable City boundary as Blue cityscape's second stage, using the existing map, stage-choice modal and unlock flow. Completing Parcel depot and streets unlocks City boundary; both remain replayable. Existing catalogue and progress IDs and the save format are unchanged. The remaining zones are planned content; the finish celebration belongs only to Apartment building's final stage.
 
 Open questions:
 
@@ -56,4 +56,4 @@ Open questions:
 - **Map:** Next's branching routes
 - **Rooms:** the currency and what items do; what quests and rewards give and how they are tracked; what a threat leads to; whether a room can be revisited, and whether its dialogue changes
 - **Use:** what it acts on besides doors (assumed: talking to animals, and objects at route forks)
-- **Zones:** detailed layouts and encounters for the remaining planned levels
+- **Zones:** detailed layouts and encounters for the remaining planned stages
