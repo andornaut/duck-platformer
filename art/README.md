@@ -544,6 +544,29 @@ City boundary is Blue cityscape, Zone 1 Stage 2. It reuses the street's existing
 - Play surfaces: `tiles-street` supplies the sidewalk ground, raised steps and safe ledges. Existing red contact-edge art remains distinct from safe white lips. Gameplay data owns the randomized layout, hazards and encounter placement.
 - Room: the existing street-door piece supplies the start room's entrance. There are no new story props, characters, palette colours or asset keys.
 
+## Countryside material pack
+
+Farmland and River crossing use the countryside destination's muted straw primary, `zone-yellow`. `art/tools/countryside.py` supplies appearance bindings for the same terrain roles and structures used by the other zones. It adds no collision rules or obstacle behaviours.
+
+| Stage appearance | Logical ground look | Logical raised look |
+| ---------------- | ------------------- | ------------------- |
+| Farmland         | country-ground      | hay-stack           |
+| River crossing   | riverbank           | timber-crossing     |
+
+`tiles-countryside` contains 28 cells of 12x12 in eight columns, exported as a 96x48 sheet. Every family supplies `top`, `top-left`, `top-right`, `top-joint`, `face`, `face-left` and `face-right`. Safe tops retain the dark edge and white lip. One-way ledges, moving elements and red contact strips reuse the shared skins and geometry.
+
+| Backdrop        | Size    | Repeat | Plane                |
+| --------------- | ------- | ------ | -------------------- |
+| countryside-far | 720x600 | x      | Far distance         |
+| countryside-sky | 48x600  | x      | Fixed sky            |
+| farmland-barn   | 120x144 | none   | Gameplay, decorative |
+| farmland-fence  | 48x48   | x      | Gameplay, decorative |
+| farmland-mid    | 720x600 | x      | Middle distance      |
+| river-mid       | 720x600 | x      | Middle distance      |
+| river-reeds     | 48x72   | x      | Gameplay, decorative |
+
+Backdrops use bottom-left anchors with default bottom y 600. Use sky factors 0,0; far factors 0.15,0.05; middle factors 0.4,0.15. Select the stage's middle-distance layer. Near props use factors 1,1 and align to the local floor through placement data. Decorative river scenery does not define water collision or danger. Barns, fences and reeds have no safe lip or contact band; keep their silhouettes clear of usable surfaces. Existing street-door artwork may supply room entrances.
+
 ## Industrial material pack
 
 Warehouse district and Freight terminal use the industrial destination's canonical smoky lavender, `zone-purple`. `art/tools/industrial.py` draws reusable material skins and scenery. The pack adds no obstacle types, collision rules or stage-specific physics; data may combine these skins with shared structures in any zone.
