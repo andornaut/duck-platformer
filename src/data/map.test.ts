@@ -39,6 +39,7 @@ describe("ZONE_MAP", () => {
       industrial: { kind: "unavailable" },
       open: ["street", "city-boundary"],
       stage: "after the depot clear",
+      woodland: { kind: "unavailable" },
     },
     {
       completed: ["street", "city-boundary"],
@@ -46,6 +47,7 @@ describe("ZONE_MAP", () => {
       industrial: { kind: "play", stage: "warehouse-district" },
       open: ["street", "city-boundary", "warehouse-district"],
       stage: "after both cityscape stages clear",
+      woodland: { kind: "unavailable" },
     },
     {
       completed: ["street", "city-boundary", "warehouse-district"],
@@ -57,6 +59,7 @@ describe("ZONE_MAP", () => {
       },
       open: ["street", "city-boundary", "warehouse-district", "freight-terminal"],
       stage: "after the warehouse clear",
+      woodland: { kind: "unavailable" },
     },
     {
       completed: ["street", "city-boundary", "warehouse-district", "freight-terminal"],
@@ -68,6 +71,7 @@ describe("ZONE_MAP", () => {
       },
       open: ["street", "city-boundary", "warehouse-district", "freight-terminal", "farmland"],
       stage: "after both industrial stages clear",
+      woodland: { kind: "unavailable" },
     },
     {
       completed: ["street", "city-boundary", "warehouse-district", "freight-terminal", "farmland"],
@@ -90,6 +94,7 @@ describe("ZONE_MAP", () => {
         "river-crossing",
       ],
       stage: "after the farmland clear",
+      woodland: { kind: "unavailable" },
     },
     {
       completed: [
@@ -117,12 +122,81 @@ describe("ZONE_MAP", () => {
         "freight-terminal",
         "farmland",
         "river-crossing",
+        "forest-paths",
       ],
       stage: "after both countryside stages clear",
+      woodland: { kind: "play", stage: "forest-paths" },
+    },
+    {
+      completed: [
+        "street",
+        "city-boundary",
+        "warehouse-district",
+        "freight-terminal",
+        "farmland",
+        "river-crossing",
+        "forest-paths",
+      ],
+      countryside: {
+        kind: "choose",
+        latest: "river-crossing",
+        stages: ["farmland", "river-crossing"],
+      },
+      industrial: {
+        kind: "choose",
+        latest: "freight-terminal",
+        stages: ["warehouse-district", "freight-terminal"],
+      },
+      open: [
+        "street",
+        "city-boundary",
+        "warehouse-district",
+        "freight-terminal",
+        "farmland",
+        "river-crossing",
+        "forest-paths",
+        "ravine",
+      ],
+      stage: "after the forest clear",
+      woodland: { kind: "choose", latest: "ravine", stages: ["forest-paths", "ravine"] },
+    },
+    {
+      completed: [
+        "street",
+        "city-boundary",
+        "warehouse-district",
+        "freight-terminal",
+        "farmland",
+        "river-crossing",
+        "forest-paths",
+        "ravine",
+      ],
+      countryside: {
+        kind: "choose",
+        latest: "river-crossing",
+        stages: ["farmland", "river-crossing"],
+      },
+      industrial: {
+        kind: "choose",
+        latest: "freight-terminal",
+        stages: ["warehouse-district", "freight-terminal"],
+      },
+      open: [
+        "street",
+        "city-boundary",
+        "warehouse-district",
+        "freight-terminal",
+        "farmland",
+        "river-crossing",
+        "forest-paths",
+        "ravine",
+      ],
+      stage: "after both woodland stages clear",
+      woodland: { kind: "choose", latest: "ravine", stages: ["forest-paths", "ravine"] },
     },
   ])(
     "preserves replays and unlocks only built stages $stage",
-    ({ completed, countryside, industrial, open: expectedOpen }) => {
+    ({ completed, countryside, industrial, open: expectedOpen, woodland }) => {
       const plans = new Set([...Object.keys(ZONES), ...Object.keys(RECIPES)]);
       const open = openMap(ZONE_MAP, new Set(completed));
       expect(open.zones).toEqual(expectedOpen);
@@ -149,7 +223,10 @@ describe("ZONE_MAP", () => {
       expect(
         destinationSelection(plans, ZONE_MAP, open, destinationForStage(ZONE_MAP, "farmland")),
       ).toEqual(countryside);
-      for (const destination of ZONE_MAP.destinations.slice(3)) {
+      expect(
+        destinationSelection(plans, ZONE_MAP, open, destinationForStage(ZONE_MAP, "forest-paths")),
+      ).toEqual(woodland);
+      for (const destination of ZONE_MAP.destinations.slice(4)) {
         expect(destinationSelection(plans, ZONE_MAP, open, destination)).toEqual({
           kind: "unavailable",
         });
