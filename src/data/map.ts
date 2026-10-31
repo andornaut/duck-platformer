@@ -42,7 +42,10 @@ const DESTINATIONS: readonly MapDestination[] = [
 ];
 
 // Only built levels have playable keys; unbuilt catalogue entries remain unavailable.
-const BUILT_LEVELS: Readonly<Record<string, string>> = { street: "street" };
+const BUILT_LEVELS: Readonly<Record<string, string>> = {
+  "city-boundary": "city-boundary",
+  street: "street",
+};
 const LEVELS = DESTINATIONS.flatMap(({ levels }) => levels);
 const REGION_ORIGIN = { x: 60, y: 36 };
 

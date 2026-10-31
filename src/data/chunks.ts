@@ -11,6 +11,16 @@ export const CHUNK_RULES: ChunkRules = {
 
 // The themes chunks are drawn in, by key.
 export const THEMES: Readonly<Record<string, ThemePlan>> = {
+  "city-boundary": {
+    backdrops: [
+      { character: "street-sky", parallax: { x: 0, y: 0 }, row: 0 },
+      { character: "street-city-far", parallax: { x: 0.15, y: 0.05 }, row: 0 },
+      { character: "street-city-mid", parallax: { x: 0.4, y: 0.15 }, row: 0 },
+    ],
+    door: "street-door",
+    looks: { ground: "sidewalk", raised: "sidewalk" },
+    tileset: "tiles-street",
+  },
   // The park, outdoors in autumn. Chunks name two looks, ground (the lawn, its top at row 50)
   // and raised (the terraces above it), both drawn as art's grass top over turf over soil. Its
   // backdrops, back to front: the sky, the clouds, the city, the far trees and the treetops,
@@ -33,6 +43,127 @@ export const THEMES: Readonly<Record<string, ThemePlan>> = {
 // and 30 (the terraces). Every required rise is at most 6 and every required gap at most 16, and
 // the boat crossing is 40 across, beyond the running jump's reach of 19.
 export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
+  "city-boundary-edge-yard": {
+    backdrops: [{ character: "facade-one-storey", col: 8, cols: 12, row: 34 }],
+    cols: 84,
+    difficulty: 2,
+    entry: { row: 50 },
+    exit: { row: 50 },
+    objects: [
+      { character: "platform-ledge", col: 16, cols: 8, row: 45 },
+      { character: "red-edge-top", col: 24, cols: 4, row: 49 },
+      { character: "red-edge-support", col: 24, cols: 4, row: 50, rows: 10 },
+      { character: "platform-ledge", col: 36, cols: 8, row: 44 },
+      { character: "red-edge-top", col: 52, cols: 4, row: 49 },
+      { character: "red-edge-support", col: 52, cols: 4, row: 50, rows: 10 },
+    ],
+    solids: [
+      { col: 0, cols: 24, look: "ground", row: 50, rows: 10 },
+      { col: 28, cols: 24, look: "ground", row: 50, rows: 10 },
+      { col: 56, cols: 28, look: "ground", row: 50, rows: 10 },
+    ],
+    theme: "city-boundary",
+  },
+  "city-boundary-finish": {
+    backdrops: [
+      { character: "facade-one-storey", col: 6, cols: 8, row: 34 },
+      { character: "fire-escape-railing", col: 8, cols: 6, row: 44 },
+      { character: "fire-escape-railing", col: 42, cols: 6, row: 44 },
+    ],
+    cols: 60,
+    difficulty: 1,
+    entry: { row: 50 },
+    exit: { row: 50 },
+    objects: [
+      { character: "platform-ledge", col: 8, cols: 6, row: 46 },
+      { character: "dog-antagonist", col: 31, row: 46 },
+      { character: "platform-ledge", col: 42, cols: 6, row: 46 },
+    ],
+    solids: [{ col: 0, cols: 60, look: "ground", row: 50, rows: 10 }],
+    theme: "city-boundary",
+  },
+  "city-boundary-gaps": {
+    backdrops: [{ character: "facade-one-storey", col: 4, cols: 12, row: 34 }],
+    cols: 84,
+    difficulty: 2,
+    entry: { row: 50 },
+    exit: { row: 50 },
+    objects: [
+      { character: "red-edge-top", col: 20, cols: 12, row: 54 },
+      { character: "red-edge-support", col: 20, cols: 12, row: 55, rows: 5 },
+      { character: "red-edge-top", col: 48, cols: 16, row: 54 },
+      { character: "red-edge-support", col: 48, cols: 16, row: 55, rows: 5 },
+    ],
+    solids: [
+      { col: 0, cols: 20, look: "ground", row: 50, rows: 10 },
+      { col: 32, cols: 16, look: "ground", row: 50, rows: 10 },
+      { col: 64, cols: 20, look: "ground", row: 50, rows: 10 },
+    ],
+    theme: "city-boundary",
+  },
+  "city-boundary-jumps": {
+    backdrops: [{ character: "facade-one-storey", col: 12, cols: 12, row: 34 }],
+    cols: 72,
+    difficulty: 2,
+    entry: { row: 50 },
+    exit: { row: 50 },
+    objects: [],
+    solids: [
+      { col: 0, cols: 20, look: "ground", row: 50, rows: 10 },
+      { col: 20, cols: 10, look: "raised", row: 44, rows: 16 },
+      { col: 30, cols: 14, look: "raised", row: 48, rows: 12 },
+      { col: 44, cols: 10, look: "raised", row: 44, rows: 16 },
+      { col: 54, cols: 18, look: "ground", row: 50, rows: 10 },
+    ],
+    theme: "city-boundary",
+  },
+  // The red ceiling leaves room for a short hop over the step, but not a full held jump.
+  "city-boundary-low-ceiling": {
+    cols: 72,
+    difficulty: 3,
+    entry: { row: 50 },
+    exit: { row: 50 },
+    objects: [
+      { character: "red-edge-bottom", col: 20, cols: 18, row: 42 },
+      { character: "red-edge-left", col: 19, row: 40, rows: 2 },
+      { character: "red-edge-right", col: 38, row: 40, rows: 2 },
+      { character: "red-edge-top", col: 20, cols: 18, row: 39 },
+      { character: "red-edge-support", col: 20, cols: 18, row: 40, rows: 2 },
+    ],
+    solids: [
+      { col: 0, cols: 26, look: "ground", row: 50, rows: 10 },
+      { col: 26, cols: 6, look: "raised", row: 49, rows: 11 },
+      { col: 32, cols: 40, look: "ground", row: 50, rows: 10 },
+    ],
+    theme: "city-boundary",
+  },
+  "city-boundary-start": {
+    backdrops: [{ character: "facade-one-storey", col: 8, cols: 16, row: 34 }],
+    cols: 60,
+    difficulty: 1,
+    entry: { row: 50 },
+    exit: { row: 50 },
+    objects: [],
+    slots: [{ area: { col: 18, cols: 4, row: 46, rows: 4 }, id: "street-room", kind: "door" }],
+    solids: [{ col: 0, cols: 60, look: "ground", row: 50, rows: 10 }],
+    theme: "city-boundary",
+  },
+  "city-boundary-steps": {
+    backdrops: [{ character: "facade-one-storey", col: 4, cols: 16, row: 34 }],
+    cols: 72,
+    difficulty: 1,
+    entry: { row: 50 },
+    exit: { row: 50 },
+    objects: [],
+    solids: [
+      { col: 0, cols: 20, look: "ground", row: 50, rows: 10 },
+      { col: 20, cols: 6, look: "raised", row: 49, rows: 11 },
+      { col: 26, cols: 6, look: "raised", row: 48, rows: 12 },
+      { col: 32, cols: 6, look: "raised", row: 49, rows: 11 },
+      { col: 38, cols: 34, look: "ground", row: 50, rows: 10 },
+    ],
+    theme: "city-boundary",
+  },
   // Difficulty 2, up from the lawn (50) to the high terrace (30): a bench (up 2), a terrace (up 4),
   // a bench on it (up 2), the bandstand's roof (up 4, 6 above its base), a step (up 4) and the
   // high terrace (up 4). An event slot on the lawn.

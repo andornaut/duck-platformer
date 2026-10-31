@@ -284,6 +284,15 @@ export const ZONE_DIFFICULTY = { max: 3, min: 1 } as const;
 
 // The zones assembled from chunks, by key. A key here is never also a key in ZONES.
 export const RECIPES: Readonly<Record<string, ZoneRecipe>> = {
+  "city-boundary": {
+    difficulty: ZONE_DIFFICULTY,
+    doors: [{ count: 1, room: "test" }],
+    events: [],
+    finish: "city-boundary-finish",
+    length: { max: 480, min: 360 },
+    start: "city-boundary-start",
+    theme: "city-boundary",
+  },
   // The park: 6 to 10 screens within the shared difficulty band, with one door to the test room.
   // No events exist yet.
   park: {
