@@ -256,6 +256,19 @@ Pieces placed from stage data by their bottom-left corner at the bottom y given,
 | woodland-far   | decorative backdrop                | 720x600 | Bottom-left, y 600, repeat x                     |
 | woodland-sky   | decorative backdrop                | 48x600  | Bottom-left, y 600, repeat x                     |
 
+## Home city materials
+
+| Key                | Type                               | Size    | Contract                                         |
+| ------------------ | ---------------------------------- | ------- | ------------------------------------------------ |
+| homecity-awning    | decorative backdrop                | 96x36   | Bottom-left, y 600, repeat none                  |
+| homecity-far       | decorative backdrop                | 720x600 | Bottom-left, y 600, repeat x                     |
+| homecity-sky       | decorative backdrop                | 48x600  | Bottom-left, y 600, repeat x                     |
+| neighbourhood-mid  | decorative backdrop                | 720x600 | Bottom-left, y 600, repeat x                     |
+| neighbourhood-wall | decorative backdrop                | 48x180  | Bottom-left, y 600, repeat x                     |
+| outskirts-mid      | decorative backdrop                | 720x600 | Bottom-left, y 600, repeat x                     |
+| outskirts-wall     | decorative backdrop                | 48x144  | Bottom-left, y 600, repeat x                     |
+| tiles-homecity     | tileset, 12px cells, eight columns | 96x48   | Four material families, seven terrain tiles each |
+
 ## Industrial materials
 
 | Key                   | Type                               | Size    | Contract                                         |

@@ -622,6 +622,29 @@ Every tag loops. These frame timings are art cycle defaults, not the runtime mot
 
 All backdrops use bottom-left anchors and default bottom y 600. Sky factors are 0,0; far factors 0.15,0.05; middle factors 0.4,0.15. Select the appropriate stage middle layer. Near props use factors 1,1 and placement data aligns them to the local floor. Decorative silhouettes carry no white safe lips or red contact bands and must not imply usable platforms. Scenery adds no collision, hidden hazard or movement rules. Room entrances may reuse the existing street-door artwork.
 
+## Home city material pack
+
+`art/tools/homecity.py` draws reusable skins for City outskirts and Familiar neighbourhood, using the destination's canonical `zone-peach` primary. Appearance bindings retain the common terrain geometry, obstacle behaviours and collision profiles.
+
+| Stage appearance       | Logical ground look  | Logical raised look |
+| ---------------------- | -------------------- | ------------------- |
+| City outskirts         | outskirts-ground     | brick-stack         |
+| Familiar neighbourhood | neighbourhood-ground | stoop-stack         |
+
+`tiles-homecity` contains 28 cells of 12x12 in eight columns, exported as a 96x48 sheet. Every family supplies `top`, `top-left`, `top-right`, `top-joint`, `face`, `face-left` and `face-right`. Safe tops keep the dark edge and white lip. Shared one-way ledges, moving elements and red hazard strips retain their existing skins and geometry.
+
+| Backdrop           | Size    | Repeat | Plane                |
+| ------------------ | ------- | ------ | -------------------- |
+| homecity-awning    | 96x36   | none   | Gameplay, decorative |
+| homecity-far       | 720x600 | x      | Far distance         |
+| homecity-sky       | 48x600  | x      | Fixed sky            |
+| neighbourhood-mid  | 720x600 | x      | Middle distance      |
+| neighbourhood-wall | 48x180  | x      | Gameplay, decorative |
+| outskirts-mid      | 720x600 | x      | Middle distance      |
+| outskirts-wall     | 48x144  | x      | Gameplay, decorative |
+
+All backdrops use bottom-left anchors and default bottom y 600. Sky factors are 0,0; far factors 0.15,0.05; middle factors 0.4,0.15. Select the appropriate stage middle layer. Near props use factors 1,1 and placement data aligns them to the local floor. Decorative silhouettes carry no white safe lips or red contact bands and must not imply usable platforms. Scenery adds no collision, hidden hazard or movement rules. Room entrances may reuse the existing street-door artwork.
+
 ## Industrial material pack
 
 Warehouse district and Freight terminal use the industrial destination's canonical smoky lavender, `zone-purple`. `art/tools/industrial.py` draws reusable material skins and scenery. The pack adds no obstacle types, collision rules or stage-specific physics; data may combine these skins with shared structures in any zone.
