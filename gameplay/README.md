@@ -28,7 +28,7 @@ Gameplay owns the rulebook and the values and content in the data value files (e
 
 The target is about 30 minutes across six themed map destinations (zones), each with two playable stages, on a linear route back to the shared apartment. The ordered zones and agreed story are in [`design.md`](design.md). The first stage combines the depot and streets of the blue cityscape. Every stage has a fixed opening and ending with a randomized middle assembled from hand-designed chunks. The park remains a prototype, not the final second stage. Branching routes and boss encounters are deferred to Next.
 
-The six-destination V1 map has two built stages in Blue cityscape: Parcel depot and streets, stage key `street`, and City boundary, stage key `city-boundary`. The other catalogued stages and zones are visibly unavailable. A zone with one unlocked playable stage enters directly; more than one opens a choice modal with the latest available stage as the highlighted default and the earlier stage secondary. Clearing a stage returns to the map; completing a first stage unlocks its second when built, and completing the second opens the next zone. Replays preserve unlocks. The park is a debug prototype outside the V1 map. Current code still calls an individual stage `ZonePlan`.
+The six-destination V1 map has four built stages: Blue cityscape's Parcel depot and streets (`street`) and City boundary (`city-boundary`), followed by Industrial outskirts' Warehouse district (`warehouse-district`) and Freight terminal (`freight-terminal`). The other catalogued stages and zones are visibly unavailable. A zone with one unlocked playable stage enters directly; more than one opens a choice modal with the latest available stage as the highlighted default and the earlier stage secondary. Clearing a stage returns to the map; completing a first stage unlocks its second when built, and completing the second opens the next zone. Replays preserve unlocks. The park is a debug prototype outside the V1 map. Current code still calls an individual stage `ZonePlan`.
 
 ## Targets
 
@@ -42,7 +42,7 @@ Each target is a band, not a point, assessed per stage and player skill. PLACEHO
 
 ## Remaining for the first build
 
-**Current implementation scope:** strengthen the shared middle-chunk pool for Parcel depot and streets and City boundary with required climbs, moving ledges, ground red strips and dog yards, using the shared difficulty band. Fixed openings and endings, stage lengths, jump tuning, dog timing, story and progression remain as specified in the rulebook. The two stages retain their catalogue IDs and existing unlock/replay flow. The remaining zones are planned content; the finish celebration belongs only to Apartment building's final stage.
+**Current implementation scope:** both Industrial outskirts stages, using shared layout templates, objects and behaviour graphs with theme-specific art and configuration. The raccoon uses a climb, prepare, drop and rest cycle; Blue cityscape's dog is unchanged. Each industrial stage has fixed boundaries and a randomized middle with required climbs, moving platforms and red-edged hazards inside the shared difficulty band. Clearing City boundary opens Warehouse district; clearing Warehouse district opens Freight terminal. Existing IDs, save shape and replay unlocks are preserved. Countryside and the later zones remain unavailable. There are no new rooms, plot, dialogue or bosses.
 
 Open questions:
 
@@ -51,7 +51,7 @@ Open questions:
 - **Confirm, one-way ledges:** assumed, he jumps up through an awning or other one-way ledge from below and lands on top of it
 - **Confirm, restarts reset choices:** assumed, a zone restart also resets the choices made in that zone
 - **Ending:** the outcome of their friendship when the duck returns to the shared apartment
-- **Friends:** the identities of the friends the ferret enlists beyond the first dog, and their encounters
+- **Friends:** the identities of the friends the ferret enlists beyond the dog and raccoon, and their encounters
 - **Map:** Next's branching routes
 - **Rooms:** the currency and what items do; what quests and rewards give and how they are tracked; what a threat leads to; whether a room can be revisited, and whether its dialogue changes
 - **Use:** what it acts on besides doors (assumed: talking to animals, and objects at route forks)

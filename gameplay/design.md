@@ -34,7 +34,7 @@ A landscape platformer: a duck travels back to the apartment he shared with his 
 
 ## Rules
 
-A stage is the individual playable layout, currently represented by `ZonePlan` in code. A zone is the themed map destination containing two stages. The V1 map has six themed destinations with two catalogued stages each. Blue cityscape's Parcel depot and streets and City boundary are built; all other V1 stages remain visibly unavailable. The map and selection rules below are the approved scope for the current implementation change.
+A stage is the individual playable layout, currently represented by `ZonePlan` in code. A zone is the themed map destination containing two stages. The V1 map has six themed destinations with two catalogued stages each. The two Blue cityscape stages and two Industrial outskirts stages are built; all other V1 stages remain visibly unavailable. The map and selection rules below are the approved scope for the current implementation change.
 
 ### Screen and controls
 
@@ -69,14 +69,14 @@ A stage is the individual playable layout, currently represented by `ZonePlan` i
 
 ### Map
 
-- **Availability:** all six V1 zones appear in route order. Each has two catalogued stages. The first zone's Parcel depot and streets, using stage key `street`, and City boundary, using stage key `city-boundary`, are built. Unbuilt zones and stages are visibly unavailable and cannot be entered. The park is a debug prototype outside the V1 map
+- **Availability:** all six V1 zones appear in route order. Each has two catalogued stages. The first four stages are built: Parcel depot and streets (`street`), City boundary (`city-boundary`), Warehouse district (`warehouse-district`) and Freight terminal (`freight-terminal`). Unbuilt zones and stages are visibly unavailable and cannot be entered. The park is a debug prototype outside the V1 map
 - **Backtracking:** unlocked built stages remain available for replay. Replaying an earlier stage never removes later unlocks
 - **Between stages:** clearing a stage returns to the map on its zone. Completed stages and opened paths are marked
 - **Buttons:** Back to title is on the left; Continue is on the right and is the default keyboard action
 - **Celebration:** only clearing Apartment building's second stage, Climb to the apartment, shows the finish celebration, including on replay. Clearing the depot does not finish V1. Continue returns to the map; Restart asks first, as on the start screen
 - **Checkpoints:** each stage begins at its own checkpoint, with unlimited retries. Walking left from either stage checkpoint returns to the map
 - **Forks:** branching routes are deferred to Next. V1 is linear and has no laps
-- **Progression:** the first stage is unlocked from the start. Completing Parcel depot and streets unlocks City boundary. Completing a zone's first stage unlocks its second stage when built; completing its second stage opens the next zone. Unbuilt content remains unavailable
+- **Progression:** the first stage is unlocked from the start. Completing Parcel depot and streets unlocks City boundary; completing City boundary unlocks Warehouse district, which unlocks Freight terminal on completion. Countryside remains unavailable until built. Completing a zone's first stage unlocks its second stage when built; completing its second stage opens the next zone. Unbuilt content remains unavailable
 - **Selection:** selecting a zone with one unlocked playable stage enters that stage directly. A zone with more than one unlocked playable stage opens a stage-choice modal. The latest available stage is highlighted and is the default; the earlier stage is secondary. Unbuilt or locked stages are visibly unavailable. Persisted unlocks survive replays
 - **Walk:** the duck stands on a zone. Left and Right move through available zones, and Continue selects the zone he stands on
 
@@ -117,13 +117,14 @@ This is the approved implementation scope for the current change, including the 
 - **Seams:** a chunk's entry and exit are the ground rows at its left and right edges: 50, 40 or 30. The seam surface is terrain and runs at least 4 tiles in from the edge, with no gap there, and nothing (no solid, ledge, hazard or moving platform) in the 6 rows above it
 - **Shape:** one or two screens wide (60 to 120 tiles) and at most 60 rows (720 px) tall
 - **Slots:** marked regions where the seed places an event or a door. A chunk must pass with every slot empty
+- **Shared layouts:** every zone uses the same layout templates and object/archetype library. Theme configuration supplies terrain, structures, props, enemies, doors, triggers, backgrounds, parallax and recipes; it does not add zone-specific mechanics
 - **Themes:** a theme sets the tileset, terrain looks and repeated backdrops for every chunk of that theme, so seams never show. A chunk can still place its own scenery. The park is an outdoor prototype theme
 
 ### Objects
 
 Everything in a stage except its terrain is placed in data through archetypes, characters and instances.
 
-- **Animals:** every animal in the main stage foreground, apart from the duck, is an enemy and lethal on contact. Animals have no red contact outlines. The dog antagonist is the only world-stage animal currently placed; there are no friendly background animals in the current stages
+- **Animals:** every animal in the main stage foreground, apart from the duck, is an enemy and lethal on contact. Animals have no red contact outlines. The dog and raccoon antagonists are the only world-stage animals currently placed; there are no friendly background animals in the current stages
 - **Archetypes:** a behaviour: collision (none, solid, one-way ledge, hazard or Use), movement, reaction, interaction (such as talking on Use or a quip on approach) and default tuning
 - **Behaviour patterns:** reusable patterns in the data choose behaviour primitives, their sequence or states, transition conditions, timing, animations and tuning. Animals and moving inanimate objects use the same composition approach. Code implements the primitives, condition evaluation and shared executor; character-specific cycles are composed in data rather than hardcoded in code
 - **Characters:** who something is: one archetype plus tuning overrides, its art and animations, hit box, size, its dialogue and quip lines, and quirks. No character inherits from another. Props (platforms, hazards, doors and backdrops) are characters with art but no voice
@@ -136,7 +137,7 @@ Everything in a stage except its terrain is placed in data through archetypes, c
 
 ### V1 route
 
-The target play time is about 30 minutes across six themed zones of two stages, in this order. Both Blue cityscape stages are built; the later zones remain unavailable. The six-zone map and conditional stage-selection flow preserve unlocked stages for replay. Every stage, including the depot tutorial and final climb, has a fixed opening and ending with a randomized middle.
+The target play time is about 30 minutes across six themed zones of two stages, in this order. Both stages in Blue cityscape and Industrial outskirts are built; the later zones remain unavailable. The six-zone map and conditional stage-selection flow preserve unlocked stages for replay. Every stage, including the depot tutorial and final climb, has a fixed opening and ending with a randomized middle.
 
 | Zone                 | First stage              | Second stage           |
 | -------------------- | ------------------------ | ---------------------- |
@@ -155,7 +156,7 @@ The target play time is about 30 minutes across six themed zones of two stages, 
 - **Rooms:** the street door leads to the prototype test room
 - **Route:** the main path continues right toward the city boundary; middle chunks can include upper street ledges. City boundary is the zone's second stage and unlocks when this tutorial is completed
 
-The park is a prototype for randomized stages, not V1's second stage. The identities of the ferret's friends beyond the first dog and the later encounters along the route are undecided.
+The park is a prototype for randomized stages, not V1's second stage. The identities of the ferret's friends beyond the dog and raccoon and the later encounters along the route are undecided.
 
 ### City boundary
 
@@ -163,6 +164,19 @@ The park is a prototype for randomized stages, not V1's second stage. The identi
 - **Layout:** the second Blue cityscape stage is randomized from a fixed start, seeded middle chunks and a fixed finish. It uses the existing street backgrounds and sidewalk terrain, with steps, required climbing routes, moving ledges, dog yards, red ground strips, red-edged gaps and low-ceiling short-jump challenges inside the shared difficulty band. The finish has sparse facades and an open outward view
 - **Replay:** entering from the map draws a fresh assembly seed; retries keep that layout. Completing Parcel depot and streets unlocks this stage, and the existing stage-choice modal keeps both available for replay
 - **Rooms:** one door in the fixed start leads to the existing prototype test room
+
+### Industrial outskirts
+
+- **Appearance:** purple industrial scenery uses floor, crate and container art, shared moving platforms and red-edged inanimate hazards
+- **Encounters:** both stages use the raccoon antagonist through the shared data-driven behaviour system. The Blue cityscape dog keeps its existing behaviour and timing
+- **Layout:** Warehouse district and Freight terminal each have fixed openings and endings with randomized middle chunks, 360 to 480 columns long, inside the shared difficulty band. Required climbing sections, moving ledges and red-edged hazards use the shared layouts and primitives
+- **Progression:** clearing City boundary opens Warehouse district; clearing Warehouse district opens Freight terminal. Both remain replayable through the existing stage-choice flow. Catalogue IDs and save shape are unchanged
+- **Rooms:** doors use the existing prototype test room. These stages add no new room, plot or dialogue
+
+### Raccoon encounter
+
+- **Contact:** the raccoon is always lethal on contact, including while preparing and resting, without a red contact outline
+- **Cycle:** climb, prepare, drop, rest, then climb again. The shared behaviour graph and data define its vertical extent, movement speeds and state timings
 
 ### First dog encounter
 
@@ -194,7 +208,7 @@ The park is a prototype for randomized stages, not V1's second stage. The identi
 
 ### The ferret
 
-- **Appearances:** the ferret enlists his friends as a favour. A friend or group is responsible for a themed zone and appears in person or through dialogue overlays; identities beyond the first dog are undecided
+- **Appearances:** the ferret enlists his friends as a favour. A friend or group is responsible for a themed zone and appears in person or through dialogue overlays; identities beyond the dog and raccoon are undecided
 - **Boss encounters:** deferred to Next, outside V1
 - **Calling card:** every trap it sets carries a badge of its stovepipe hat and bow tie
 - **Ending:** the duck returns home; the outcome of their friendship is undecided. There is no combat
