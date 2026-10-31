@@ -212,6 +212,8 @@ The park is a prototype for randomized stages, not V1's second stage. The identi
 - **Settings:** at the top right, beside Exit. It opens the settings card
 - **Start:** with no save it reads Start and opens the map with him on the first zone. With a save (reached through Back to title) Start gives way to Continue, which opens the map where he stands, and Restart beside it. There is one save
 
+- **Updates:** an offered update uses a compact modal with a concise title and one primary Update now button. Its close X defers the update and restores control to the underlying screen. There is no redundant body text or separate Later button
+
 ### Settings
 
 - **Back:** back during play opens the pause card, and back with the card open closes it. Where the browser can't hand back to the game (Firefox for Android's installed app, and before the first tap or key in browsers without CloseWatcher), back is the browser's own
