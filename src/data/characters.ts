@@ -5,6 +5,7 @@ import {
   CITY_SHUTTLE_BEHAVIOUR,
   DOG_BEHAVIOUR,
   GOOSE_BEHAVIOUR,
+  OWL_BEHAVIOUR,
   RACCOON_BEHAVIOUR,
 } from "./behaviours";
 import type { Character } from "./types";
@@ -208,6 +209,13 @@ export const CHARACTERS: Readonly<Record<string, Character>> = {
     art: "hot-dog-cart",
     cols: 3,
     rows: 6,
+  },
+  "owl-antagonist": {
+    archetype: "hazard",
+    art: "owl-antagonist",
+    behaviour: OWL_BEHAVIOUR,
+    cols: 4,
+    rows: 4,
   },
   // Pedestrians walking past, back and forth, paying her no attention. React and talk fall back
   // to idle.

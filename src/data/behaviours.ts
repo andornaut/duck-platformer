@@ -110,6 +110,43 @@ function patrolChargeStates(tuning: PatrolChargeTuning): BehaviourPlan["states"]
   };
 }
 
+interface VerticalDropTuning {
+  readonly dropSpeed: number;
+  readonly preparationSeconds: number;
+  readonly restSeconds: number;
+  readonly returnSpeed: number;
+  readonly returnState: "climb" | "return";
+}
+
+function verticalDropStates(tuning: VerticalDropTuning): BehaviourPlan["states"] {
+  return {
+    [tuning.returnState]: {
+      animation: tuning.returnState,
+      motion: { direction: -1, kind: "move", speed: tuning.returnSpeed },
+      transitions: [{ to: "prepare", when: [{ kind: "boundary" }] }],
+    },
+    drop: {
+      animation: "drop",
+      motion: { direction: 1, kind: "move", speed: tuning.dropSpeed },
+      transitions: [{ to: "rest", when: [{ kind: "boundary" }] }],
+    },
+    prepare: {
+      animation: "prepare",
+      motion: { kind: "wait" },
+      transitions: [
+        { to: "drop", when: [{ kind: "elapsed", seconds: tuning.preparationSeconds }] },
+      ],
+    },
+    rest: {
+      animation: "rest",
+      motion: { kind: "wait" },
+      transitions: [
+        { to: tuning.returnState, when: [{ kind: "elapsed", seconds: tuning.restSeconds }] },
+      ],
+    },
+  };
+}
+
 export const BOAT_BEHAVIOUR: BehaviourPlan = {
   axis: "x",
   distance: 30,
@@ -175,30 +212,28 @@ export const GOOSE_BEHAVIOUR: BehaviourPlan = {
   }),
 };
 
+export const OWL_BEHAVIOUR: BehaviourPlan = {
+  axis: "y",
+  distance: -10,
+  initial: "return",
+  states: verticalDropStates({
+    dropSpeed: 12,
+    preparationSeconds: 0.65,
+    restSeconds: 0.6,
+    returnSpeed: 4,
+    returnState: "return",
+  }),
+};
+
 export const RACCOON_BEHAVIOUR: BehaviourPlan = {
   axis: "y",
   distance: -10,
   initial: "climb",
-  states: {
-    climb: {
-      animation: "climb",
-      motion: { direction: -1, kind: "move", speed: 3 },
-      transitions: [{ to: "prepare", when: [{ kind: "boundary" }] }],
-    },
-    drop: {
-      animation: "drop",
-      motion: { direction: 1, kind: "move", speed: 12 },
-      transitions: [{ to: "rest", when: [{ kind: "boundary" }] }],
-    },
-    prepare: {
-      animation: "prepare",
-      motion: { kind: "wait" },
-      transitions: [{ to: "drop", when: [{ kind: "elapsed", seconds: 0.6 }] }],
-    },
-    rest: {
-      animation: "rest",
-      motion: { kind: "wait" },
-      transitions: [{ to: "climb", when: [{ kind: "elapsed", seconds: 0.8 }] }],
-    },
-  },
+  states: verticalDropStates({
+    dropSpeed: 12,
+    preparationSeconds: 0.6,
+    restSeconds: 0.8,
+    returnSpeed: 3,
+    returnState: "climb",
+  }),
 };
