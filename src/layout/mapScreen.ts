@@ -1,15 +1,24 @@
+import { SCREEN } from "../data/screen";
 import type { MapNode, Point, Rect, Size } from "../data/types";
 import type { PathStroke } from "../view/mapPath";
+import { TEXT_BUTTON } from "./buttonLabel";
 import { hitAround } from "./hitAreas";
+import { labelledButton } from "./restartCard";
 
 // Art's paper map (art/README.md, Map), in base pixels. Offsets marked "from the centre" are from
 // a node's centre. The paper fills the screen; each marker's centre pixel sits on its node's
 // centre; a zone's icon sits centred over its marker; the duck stands on the current marker's
-// ring. Continue's label, centred with its play mark, starts at labelY, sinking to pressedLabelY
-// while Continue is pressed. Continue's press area, hit, is its drawn button grown by
-// hitAreas.ts's rule; a tap on a zone marker lands within nodeHit, centred on its node, the zone
+// ring. Back to title and Continue share standard-height footer buttons, secondary left and
+// primary right. Labels use shared placement and press displacement without play marks; each
+// press area grows by hitAreas.ts's rule. A tap on a zone marker lands within nodeHit, the zone
 // marker's frame (ZONE_MARKER square) grown the same way.
-const CONTINUE_ART: Rect = { height: 44, width: 160, x: 280, y: 300 };
+const ACTION_WIDTH = 192;
+const ACTION_Y = 300;
+const actionButton = (x: number) =>
+  labelledButton(
+    { height: TEXT_BUTTON.height, width: ACTION_WIDTH, x, y: ACTION_Y },
+    TEXT_BUTTON.labelDy,
+  );
 const ZONE_MARKER = 35;
 const NODE_HIT = hitAround({
   height: ZONE_MARKER,
@@ -19,16 +28,12 @@ const NODE_HIT = hitAround({
 });
 
 export const MAP_SCREEN = {
-  continue: {
-    art: CONTINUE_ART,
-    hit: hitAround(CONTINUE_ART),
-    labelY: 311,
-    pressedLabelY: 313,
-  },
+  continue: actionButton(SCREEN.width / 2 + TEXT_BUTTON.gap / 2),
   duck: {
     fork: { x: -13, y: -36 } satisfies Point,
     zone: { x: -13, y: -39 } satisfies Point,
   },
+  home: actionButton(SCREEN.width / 2 - ACTION_WIDTH - TEXT_BUTTON.gap / 2),
   icon: { x: -7, y: -7 } satisfies Point,
   marker: {
     fork: { x: -14, y: -14 } satisfies Point,

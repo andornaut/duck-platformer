@@ -9,7 +9,8 @@ import { ZONE_MAP } from "../data/map";
 import { TILE } from "../data/screen";
 import { TEXT } from "../data/text";
 import type { MapNode, Point, Rect } from "../data/types";
-import { pressedArea } from "../layout/hitAreas";
+import { MAP_ACTIONS, type MapAction, mapKeyAction } from "../input/mapInput";
+import { type PressArea, pressedArea } from "../layout/hitAreas";
 import { MAP_PATH, MAP_PATH_LOOKS, MAP_SCREEN, mapLabel, type PathLook } from "../layout/mapScreen";
 import { nodeOf, type OpenMap, openMap } from "../rules/map";
 import { savedMap, saveStand } from "../save";
@@ -23,25 +24,25 @@ import {
   zoneAtTap,
 } from "../view/mapMarks";
 import { bentCurve, pathRects } from "../view/mapPath";
-import { addButtonLabel, type ButtonLabel, placeButtonLabel } from "./cardParts";
+import {
+  addTextButton,
+  captureTab,
+  pressTextButton,
+  PRIMARY_BUTTON,
+  ringFocus,
+  type TextButton,
+} from "./cardParts";
 import { fitPlayCamera, playPoint } from "./playCamera";
 import type { ZoneData } from "./ZoneScene";
 
 const PALETTE = "palette";
 const TITLE_FONT = "font-title";
 const ICON_FALLBACK = "map-icon-zone";
-const STEP_KEYS: Readonly<Record<string, -1 | 1>> = {
-  ArrowLeft: -1,
-  ArrowRight: 1,
-  KeyA: -1,
-  KeyD: 1,
-};
-const CONTINUE_KEYS = ["ArrowUp", "Enter", "KeyE", "KeyW", "Space"];
 // Paths are drawn in this order, so the open ones lie on top.
 const LOOK_ORDER: readonly PathLook[] = ["unbuilt", "built", "open"];
 
-// A control on the map: Continue, or an open zone node by its id.
-type Control = { readonly kind: "continue" } | { readonly kind: "node"; readonly id: string };
+// Footer actions, or an open zone node by its id.
+type Control = { readonly kind: MapAction } | { readonly kind: "node"; readonly id: string };
 
 // The map between zones, drawn as art's paper map: its pen marks, every path and node, each
 // zone's name, and the duck on the zone node she stands on. The zones she has completed open the
@@ -51,8 +52,9 @@ type Control = { readonly kind: "continue" } | { readonly kind: "node"; readonly
 export class MapScene extends Scene {
   private colours: Readonly<Record<string, string>> = {};
   private completed: ReadonlySet<string> = new Set();
-  private continueArt!: GameObjects.Sprite;
-  private continueLabel!: ButtonLabel;
+  private buttons!: Readonly<Record<MapAction, TextButton>>;
+  private focus: MapAction | undefined;
+  private focusRing: GameObjects.NineSlice | undefined;
   private open!: OpenMap;
   private pressed: Control | undefined;
   private stand = ZONE_MAP.start;
@@ -69,6 +71,8 @@ export class MapScene extends Scene {
     this.open = openMap(ZONE_MAP, this.completed);
     this.stand = this.open.zones.includes(stand) ? stand : ZONE_MAP.start;
     this.pressed = undefined;
+    this.focus = undefined;
+    this.focusRing = undefined;
   }
 
   create(): void {
@@ -86,9 +90,11 @@ export class MapScene extends Scene {
       .bitmapText(title.x, title.y, TITLE_FONT, TEXT.map.title)
       .setScale(textScale)
       .setTint(this.colour("plum"));
-    this.addContinue();
+    this.addActions();
     this.showPressed(undefined);
-    this.input.keyboard?.on("keydown", (event: KeyboardEvent) => this.key(event.code));
+    this.input.keyboard?.on("keydown", (event: KeyboardEvent) => this.key(event));
+    captureTab(this, true);
+    this.events.once("shutdown", () => captureTab(this, false));
     this.input.on("pointerdown", (pointer: Input.Pointer) => {
       this.showPressed(this.controlAt(pointer));
     });
@@ -99,10 +105,10 @@ export class MapScene extends Scene {
       if (control === undefined || lifted === undefined || !sameControl(control, lifted)) {
         return;
       }
-      if (control.kind === "continue") {
-        this.play();
-      } else {
+      if (control.kind === "node") {
         this.walkTo(control.id);
+      } else {
+        this.act(control.kind);
       }
     });
   }
@@ -188,40 +194,61 @@ export class MapScene extends Scene {
       .play(animationKey("map-duck", "idle"));
   }
 
-  private addContinue(): void {
-    const { art, labelY } = MAP_SCREEN.continue;
-    this.continueArt = this.add.sprite(art.x, art.y, "ui-resume").setOrigin(0);
-    this.continueLabel = addButtonLabel(this, art, labelY, TEXT.map.continue, {
-      colour: this.colour("ink"),
-      marked: true,
-    });
+  private addActions(): void {
+    this.buttons = {
+      continue: addTextButton(this, MAP_SCREEN.continue, TEXT.map.continue, {
+        style: PRIMARY_BUTTON,
+      }),
+      home: addTextButton(this, MAP_SCREEN.home, TEXT.pause.home),
+    };
   }
 
-  // A pressed Continue shows its pressed look until the press lifts: its face and label sink.
+  // Both footer actions use the shared normal/pressed faces, label displacement and focus ring.
   private showPressed(control: Control | undefined): void {
     this.pressed = control;
-    const { labelY, pressedLabelY } = MAP_SCREEN.continue;
-    const pressed = control?.kind === "continue";
-    this.continueArt.play(animationKey("ui-resume", pressed ? "pressed" : "normal"));
-    placeButtonLabel(this.continueLabel, pressed ? pressedLabelY : labelY);
+    for (const name of MAP_ACTIONS) {
+      pressTextButton(this.buttons[name], control?.kind === name);
+    }
+    this.focusRing = ringFocus(
+      this,
+      this.focusRing,
+      this.focus === undefined ? undefined : MAP_SCREEN[this.focus].button,
+    );
   }
 
   private controlAt(pointer: Input.Pointer): Control | undefined {
     const point = playPoint(this, pointer);
-    const { continue: go } = MAP_SCREEN;
-    if (pressedArea([{ art: go.art, hit: go.hit, key: "continue" }], point) !== undefined) {
-      return { kind: "continue" };
+    const areas: PressArea<MapAction>[] = MAP_ACTIONS.map((key) => ({
+      art: MAP_SCREEN[key].button,
+      hit: MAP_SCREEN[key].hit,
+      key,
+    }));
+    const action = pressedArea(areas, point);
+    if (action !== undefined) {
+      return { kind: action };
     }
     const id = zoneAtTap(TILE, MAP_SCREEN.nodeHit, ZONE_MAP, this.open, point);
     return id === undefined ? undefined : { id, kind: "node" };
   }
 
-  private key(code: string): void {
-    const step = STEP_KEYS[code];
-    if (step !== undefined) {
-      this.walkTo(steppedZone(this.open, this.stand, step));
-    } else if (CONTINUE_KEYS.includes(code)) {
+  private key(event: KeyboardEvent): void {
+    const action = mapKeyAction(this.focus, event);
+    if (action?.kind === "step") {
+      this.walkTo(steppedZone(this.open, this.stand, action.by));
+    } else if (action?.kind === "focus") {
+      this.focus = action.target;
+      this.showPressed(this.pressed);
+    } else if (action?.kind === "activate") {
+      this.act(action.target);
+    }
+  }
+
+  private act(action: MapAction): void {
+    if (action === "continue") {
       this.play();
+    } else {
+      // Returning to the title changes no completed zones or saved map position.
+      this.scene.start("start");
     }
   }
 
@@ -262,5 +289,5 @@ export class MapScene extends Scene {
 }
 
 function sameControl(a: Control, b: Control): boolean {
-  return a.kind === b.kind && (a.kind === "continue" || a.id === (b as { id: string }).id);
+  return a.kind === b.kind && (a.kind !== "node" || (b.kind === "node" && a.id === b.id));
 }

@@ -1,6 +1,18 @@
+import { inkWidth, parseBitmapFont } from "@andornaut/game-kit/text/bitmapFont";
 import { describe, expect, it } from "vitest";
 
-import { mapLabel } from "./mapScreen";
+import fontBody from "../../public/art/fonts/font-body.fnt?raw";
+import mapCompass from "../../public/art/sprites/map-compass.json";
+import mapHill from "../../public/art/sprites/map-hill.json";
+import mapWave from "../../public/art/sprites/map-wave.json";
+import { ZONE_MAP } from "../data/map";
+import { SCREEN, TILE } from "../data/screen";
+import { TEXT } from "../data/text";
+import { MAP_ACTIONS } from "../input/mapInput";
+import { nodeCentre } from "../view/mapMarks";
+import { TEXT_BUTTON } from "./buttonLabel";
+import { type PressArea, pressedArea } from "./hitAreas";
+import { MAP_SCREEN, mapLabel } from "./mapScreen";
 
 describe("mapLabel", () => {
   it.each([38, 91])("centres a name %i px in advance under its marker", (advance) => {
@@ -11,5 +23,55 @@ describe("mapLabel", () => {
     expect(Math.abs((ink.left + ink.right) / 2 - centre.x)).toBeLessThanOrEqual(1);
     expect(knockout.x).toBeLessThan(ink.left);
     expect(knockout.x + knockout.width).toBeGreaterThan(ink.right);
+  });
+});
+
+describe("map footer actions", () => {
+  const labels = { continue: TEXT.map.continue, home: TEXT.pause.home };
+  const areas: PressArea<string>[] = MAP_ACTIONS.map((key) => ({
+    art: MAP_SCREEN[key].button,
+    hit: MAP_SCREEN[key].hit,
+    key,
+  }));
+
+  it.each(MAP_ACTIONS)("fits %s at the shared font size with standard padding", (key) => {
+    const button = MAP_SCREEN[key].button;
+    const ink = inkWidth(parseBitmapFont(fontBody), MAP_SCREEN.textScale, labels[key]);
+    expect((button.width - ink) / 2).toBeGreaterThanOrEqual(TEXT_BUTTON.inset);
+    expect(button.height).toBe(TEXT_BUTTON.height);
+    expect(button.y + button.height).toBeLessThanOrEqual(SCREEN.height);
+  });
+
+  it("puts Back to title left and Continue right in one centred row", () => {
+    const { continue: go, home } = MAP_SCREEN;
+    expect(home.button.x + home.button.width + TEXT_BUTTON.gap).toBe(go.button.x);
+    expect(home.button.width).toBe(go.button.width);
+    expect((home.button.x + go.button.x + go.button.width) / 2).toBe(SCREEN.width / 2);
+    expect(home.button.y).toBe(go.button.y);
+  });
+
+  it.each(areas)("takes all corners of $key as the intended action", ({ art, key }) => {
+    expect(
+      [
+        { x: art.x, y: art.y },
+        { x: art.x + art.width - 1, y: art.y + art.height - 1 },
+      ].map((point) => pressedArea(areas, point)),
+    ).toEqual([key, key]);
+  });
+
+  it.each(ZONE_MAP.nodes)("keeps node $id and its label above the footer", (node) => {
+    const centre = nodeCentre(TILE, node);
+    const label = mapLabel(0, centre);
+    expect(label.knockout.y + label.knockout.height).toBeLessThan(MAP_SCREEN.home.button.y);
+  });
+
+  const frames: Readonly<Record<string, { frames: Record<string, { frame: { h: number } }> }>> = {
+    "map-compass": mapCompass,
+    "map-hill": mapHill,
+    "map-wave": mapWave,
+  };
+  it.each(ZONE_MAP.decorations)("keeps $art scenery above the footer", ({ art, at }) => {
+    const height = Object.values(frames[art]!.frames)[0]!.frame.h;
+    expect(at.y + height).toBeLessThan(MAP_SCREEN.home.button.y);
   });
 });
