@@ -535,6 +535,11 @@
   ],
   "tilesets": [
     {
+      "key": "tiles-countryside",
+      "png": "tilesets/tiles-countryside.png",
+      "json": "tilesets/tiles-countryside.json"
+    },
+    {
       "key": "tiles-industrial",
       "png": "tilesets/tiles-industrial.png",
       "json": "tilesets/tiles-industrial.json"
@@ -578,6 +583,24 @@
       "anchor": "bottom-left",
       "y": 600,
       "repeat": "none"
+    },
+    {
+      "key": "countryside-far",
+      "png": "backdrops/countryside-far.png",
+      "width": 720,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
+      "key": "countryside-sky",
+      "png": "backdrops/countryside-sky.png",
+      "width": 48,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
     },
     {
       "key": "cross-street",
@@ -676,6 +699,33 @@
       "height": 180,
       "anchor": "bottom-left",
       "y": 288,
+      "repeat": "x"
+    },
+    {
+      "key": "farmland-barn",
+      "png": "backdrops/farmland-barn.png",
+      "width": 120,
+      "height": 144,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "none"
+    },
+    {
+      "key": "farmland-fence",
+      "png": "backdrops/farmland-fence.png",
+      "width": 48,
+      "height": 48,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
+      "key": "farmland-mid",
+      "png": "backdrops/farmland-mid.png",
+      "width": 720,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
       "repeat": "x"
     },
     {
@@ -1025,6 +1075,24 @@
       "png": "backdrops/park-treetops.png",
       "width": 360,
       "height": 420,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
+      "key": "river-mid",
+      "png": "backdrops/river-mid.png",
+      "width": 720,
+      "height": 600,
+      "anchor": "bottom-left",
+      "y": 600,
+      "repeat": "x"
+    },
+    {
+      "key": "river-reeds",
+      "png": "backdrops/river-reeds.png",
+      "width": 48,
+      "height": 72,
       "anchor": "bottom-left",
       "y": 600,
       "repeat": "x"
