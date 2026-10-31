@@ -49,6 +49,14 @@ export interface DuckTuning {
   readonly walkSpeed: number;
 }
 
+// How the camera follows her. groundSpot is the fraction of screen height from the top at
+// which her feet rest on the ground. seamEase is the fraction of screen width over which the
+// ground line blends between chunks, centred on the seam.
+export interface CameraTuning {
+  readonly groundSpot: number;
+  readonly seamEase: number;
+}
+
 // The words the player reads.
 export interface GameText {
   // Dialogue controls and speaker names; paragraph text lives in lines.

@@ -19,6 +19,7 @@ import { pageToGame } from "@andornaut/game-kit/view/pagePoint";
 import { type GameObjects, Input, Scale, Scene, Scenes, type Tilemaps } from "phaser";
 
 import { ARCHETYPES } from "../data/archetypes";
+import { CAMERA } from "../data/camera";
 import { CHARACTERS } from "../data/characters";
 import { DUCK } from "../data/duck";
 import { ZONE_MAP } from "../data/map";
@@ -806,7 +807,7 @@ export class ZoneScene extends Scene implements DialogueOpener {
     const at = duckFrameAt(DUCK, this.duck.frame, duck);
     this.duck.setPosition(at.x, at.y).setFlipX(duck.facing < 0);
     const feet = { x: duck.x + DUCK.width / 2, y: duck.y + DUCK.height };
-    const scroll = cameraScroll(SCREEN, areaOf(this.layout, this.zone.area), feet);
+    const scroll = cameraScroll(CAMERA, SCREEN, areaOf(this.layout, this.zone.area), feet);
     this.cameras.main.setScroll(scroll.x, scroll.y);
   }
 
