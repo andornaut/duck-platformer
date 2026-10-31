@@ -21,8 +21,8 @@ THEMES = {
     "industrial": {"primary": "zone-purple", "colour": "b6aecb", "shade": "90869f", "end": "purple"},
     "countryside": {"primary": "zone-yellow", "colour": "d8c994", "shade": "b2a16e", "end": "brown"},
     "woodland": {"primary": "zone-green", "colour": "a9bea0", "shade": "7c9673", "end": "forest"},
-    "home-city": {"primary": "zone-red", "colour": "d0a7aa", "shade": "aa7d83", "end": "dbrown"},
-    "apartment": {"primary": "zone-peach", "colour": "d6b39d", "shade": "ae8b75", "end": "brown"},
+    "home-city": {"primary": "zone-peach", "colour": "d6b39d", "shade": "ae8b75", "end": "brown"},
+    "apartment": {"primary": "zone-red", "colour": "d0a7aa", "shade": "aa7d83", "end": "dbrown"},
 }
 OUT = "public/art/zone-themes.json"
 

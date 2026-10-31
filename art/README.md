@@ -101,11 +101,11 @@ Each V1 destination has one muted primary, chosen for its materials and atmosphe
 | Industrial outskirts | zone-purple   | #b6aecb | Smoky lavender steel and factory shadows |
 | Countryside          | zone-yellow   | #d8c994 | Butter-yellow wheat fields               |
 | Woodland             | zone-green    | #a9bea0 | Sage foliage                             |
-| Home city            | zone-red      | #d0a7aa | Dusty brick-rose neighbourhood masonry   |
-| Apartment            | zone-peach    | #d6b39d | Warm peach interior plaster              |
+| Home city            | zone-peach    | #d6b39d | Warm peach neighbourhood plaster         |
+| Apartment            | zone-red      | #d0a7aa | Dusty rose apartment interior            |
 
 - Application: the primary dominates each map region's silhouette and backs its icon. Essential outlines and symbols remain ink or dslate, so the pastel fill is not responsible for contrast. Locked and unbuilt markers retain the coloured illustration around them.
-- Progress: fill uses the same primary on a dslate track, with no brighter substitute. Standard primary buttons remain dslate with white text. Hazard red remains the existing saturated `red`; muted `zone-red` is the home city's masonry colour and never signals lethal contact.
+- Progress: fill uses the same primary on a dslate track, with no brighter substitute. Standard primary buttons remain dslate with white text. Hazard red remains the existing saturated `red`; muted `zone-red` is the apartment interior colour and never signals lethal contact.
 - Ramps: every zone primary has one muted `-shade` colour, then joins a house ramp. The six bases and six shades extend the house palette without changing any existing colour. `palette.py` exports their darker and two-step dim mappings with every other palette colour.
 - Planned level use: backgrounds follow the destination's primary family, with far silhouettes low in contrast and nearer layers using its shade. Quiet secondary colours provide restrained highlights. Far scenery scrolls more slowly than the gameplay plane; attached ledges, doors and props stay with terrain. This is an art plan for later themes, not a claim that those levels exist.
 

@@ -1,6 +1,6 @@
 {
   "apartment": {
-    "primary": "zone-peach"
+    "primary": "zone-red"
   },
   "blue-cityscape": {
     "primary": "zone-blue"
@@ -9,7 +9,7 @@
     "primary": "zone-yellow"
   },
   "home-city": {
-    "primary": "zone-red"
+    "primary": "zone-peach"
   },
   "industrial": {
     "primary": "zone-purple"
