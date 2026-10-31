@@ -72,7 +72,8 @@ describe("the home page's controls", () => {
 });
 
 // The first stage's available authored features, including optional randomized middle chunks.
-const streetTheme = RECIPES.street?.theme ?? "";
+const streetRecipe = RECIPES.street;
+const streetTheme = streetRecipe && "theme" in streetRecipe ? streetRecipe.theme : "";
 const streetCharacters = new Set(
   Object.values(CHUNKS)
     .filter((chunk) => themesOf(chunk).includes(streetTheme))
