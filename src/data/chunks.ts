@@ -40,6 +40,7 @@ const CITY_THEME: ThemePlan = {
     "depot-wall": { character: "depot-wall" },
     door: { character: "street-door" },
     "far-background": { character: "street-city-far" },
+    "fire-escape-railing": { character: "fire-escape-railing" },
     "loading-bay": { character: "depot-loading-bay" },
     "mid-background": { character: "street-city-mid" },
     "near-wall": { character: "facade-one-storey" },
