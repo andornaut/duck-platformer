@@ -78,7 +78,7 @@ describe("the characters", () => {
       ];
       const known = tagsOf(character.art);
       expect(
-        tags.filter((tag) => !known.includes(tag)),
+        tags.filter((tag) => tag !== null && !known.includes(tag)),
         `${name}'s tags in ${character.art}`,
       ).toEqual([]);
       expect((character.lines ?? []).filter((key) => !(key in TEXT.lines))).toEqual([]);

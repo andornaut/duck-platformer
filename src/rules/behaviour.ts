@@ -40,7 +40,8 @@ export function layoutBehaviour(tile: number, plan: BehaviourPlan): BehaviourPla
   const states = Object.fromEntries(
     Object.entries(plan.states).map(([key, node]) => {
       if (
-        !node.animation ||
+        (node.animation !== null &&
+          (typeof node.animation !== "string" || node.animation.length === 0)) ||
         (node.motion.kind === "move" &&
           (!valid(node.motion.speed) || node.motion.speed === 0 || plan.distance === 0))
       ) {

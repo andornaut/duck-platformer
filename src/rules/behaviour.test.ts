@@ -49,6 +49,19 @@ const OBJECT = resolve();
 const initial = (object = OBJECT) => startBehaviour(DUCK, object, duck());
 
 describe("behaviour plans", () => {
+  it.each([null, "walk"])("moves art with animation %j", (animation) => {
+    const plan = {
+      ...TEST_SHUTTLE,
+      states: Object.fromEntries(
+        Object.entries(TEST_SHUTTLE.states).map(([key, node]) => [key, { ...node, animation }]),
+      ),
+    };
+    const object = resolve(CHARACTER, ACTOR, 1, plan);
+    const result = stepBehaviour(DUCK, object, [], 0.1, duck(), object.origin, initial(object));
+    expect(result.at.y).toBeLessThan(object.origin.y);
+    expect(behaviourPose(object, result.state).animation).toBe(animation ?? undefined);
+  });
+
   it("converts signed extent, speeds and spatial conditions without changing time or graph keys", () => {
     const plan = resolve(CHARACTER, ACTOR, 12).behaviour;
     const node = plan?.states.watchRight;
