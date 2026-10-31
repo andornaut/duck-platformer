@@ -12,6 +12,8 @@ export interface Stats {
 
 export const STATS_VERSION = 1;
 const KEYS = { backup: "duck-platformer.stats-backup", save: "duck-platformer.stats" } as const;
+// A dirty clock is checkpointed at most once per second between lifecycle flushes.
+const CHECKPOINT_MS = 1000;
 const fresh = (): Stats => ({ levels: {} });
 
 export function statsFormat(levels: ReadonlySet<string>): SaveFormat<Stats> {
@@ -56,7 +58,7 @@ export interface LevelStatsStore {
 }
 
 // A separate store keeps unfinished level clocks independent of progress restarts. Mutations
-// update memory immediately and begin persistence immediately; flush awaits the latest write.
+// update memory immediately, coalescing persistence until a checkpoint or lifecycle flush.
 export function levelStatsStore(
   storage: SaveStorage,
   levels: ReadonlySet<string>,
@@ -64,12 +66,31 @@ export function levelStatsStore(
   const store = saveStore(storage, KEYS, statsFormat(levels));
   let stats = fresh();
   let pending: Promise<unknown> = Promise.resolve();
-  const write = (level: string, seconds: number) => {
+  let checkpoint: ReturnType<typeof setTimeout> | undefined;
+  let dirty = false;
+  const flush = async () => {
+    if (checkpoint !== undefined) {
+      clearTimeout(checkpoint);
+      checkpoint = undefined;
+    }
+    if (dirty) {
+      dirty = false;
+      pending = store.save(stats);
+    }
+    await pending;
+  };
+  const update = (level: string, seconds: number) => {
     if (!levels.has(level) || !Number.isFinite(seconds) || seconds < 0) {
       throw new Error("Invalid level clock update");
     }
     stats = { levels: { ...stats.levels, [level]: { activeSeconds: seconds } } };
-    pending = store.save(stats);
+    dirty = true;
+    if (checkpoint === undefined) {
+      checkpoint = setTimeout(() => {
+        checkpoint = undefined;
+        void flush();
+      }, CHECKPOINT_MS);
+    }
   };
   return {
     addActiveTime(level, seconds) {
@@ -77,13 +98,14 @@ export function levelStatsStore(
         throw new Error("Invalid active play duration");
       }
       if (seconds > 0) {
-        write(level, (stats.levels[level]?.activeSeconds ?? 0) + seconds);
+        update(level, (stats.levels[level]?.activeSeconds ?? 0) + seconds);
       }
     },
-    clearLevel: (level) => write(level, 0),
-    async flush() {
-      await pending;
+    clearLevel(level) {
+      update(level, 0);
+      void flush();
     },
+    flush,
     async load() {
       stats = (await store.load()).save;
     },

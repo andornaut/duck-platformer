@@ -13,6 +13,29 @@ const LEVELS = new Set(["park", "street"]);
 const FORMAT = statsFormat(LEVELS);
 
 describe("persistent active level clocks", () => {
+  it("coalesces active steps into one checkpoint and makes explicit flush idempotent", async () => {
+    vi.useFakeTimers();
+    const storage = memoryStorage();
+    const writes = vi.spyOn(storage, "write");
+    const clock = levelStatsStore(storage, LEVELS);
+    await clock.load();
+    for (let step = 0; step < 60; step++) {
+      clock.addActiveTime("street", 1 / 60);
+    }
+    expect(writes).not.toHaveBeenCalled();
+    expect(vi.getTimerCount()).toBe(1);
+    await vi.runOnlyPendingTimersAsync();
+    expect(writes).toHaveBeenCalledTimes(1);
+    clock.addActiveTime("street", 2);
+    clock.addActiveTime("street", 3);
+    await clock.flush();
+    await clock.flush();
+    expect(writes).toHaveBeenCalledTimes(2);
+    expect(vi.getTimerCount()).toBe(0);
+    const reopened = levelStatsStore(storage, LEVELS);
+    await reopened.load();
+    expect(reopened.seconds("street")).toBeCloseTo(6);
+  });
   it("retains independent unfinished clocks across reopen and resets each clear", async () => {
     const storage = memoryStorage();
     const first = levelStatsStore(storage, LEVELS);
@@ -104,7 +127,10 @@ describe("active-step time", () => {
   });
 });
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
 
 it("preserves stats on progress restart, then resets the level on every clear", async () => {
   const values = new Map<string, string>();

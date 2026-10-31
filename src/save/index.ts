@@ -24,11 +24,28 @@ const store = saveStore(
 let progress: Progress = BEGINNING;
 const LEVELS = new Set([...Object.keys(ZONES), ...Object.keys(RECIPES)]);
 const stats = levelStatsStore(localSaveStorage(), LEVELS);
+let statsLifecycleInstalled = false;
+
+function installStatsLifecycle(): void {
+  if (statsLifecycleInstalled || typeof window === "undefined" || typeof document === "undefined") {
+    return;
+  }
+  statsLifecycleInstalled = true;
+  window.addEventListener("pagehide", () => {
+    void stats.flush();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") {
+      void stats.flush();
+    }
+  });
+}
 
 // Reads the stored progress into savedProgress.
 export async function loadProgress(): Promise<void> {
   const [loaded] = await Promise.all([store.load(), stats.load()]);
   progress = loaded.save;
+  installStatsLifecycle();
 }
 
 export function activeLevelTime(level: string): number {
@@ -70,6 +87,7 @@ export function savedMap(): { readonly completed: readonly string[]; readonly st
 
 // She stands on the zone node stand: the map opens there.
 export function saveStand(stand: string): void {
+  void stats.flush();
   write({ at: "map", completed: savedMap().completed, stand });
 }
 
@@ -95,5 +113,6 @@ function write(next: Progress): void {
 // Restart: progress goes back to the beginning, and the map opens on the first zone with nothing
 // completed. Only progress is cleared.
 export function clearProgress(): void {
+  void stats.flush();
   write(BEGINNING);
 }
