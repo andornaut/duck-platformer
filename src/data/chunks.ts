@@ -4,6 +4,7 @@ import { STREET_CHUNKS } from "./zone1";
 import { INDUSTRIAL_CHUNKS } from "./zone2";
 import { COUNTRYSIDE_CHUNKS } from "./zone3";
 import { WOODLAND_CHUNKS } from "./zone4";
+import { HOME_CITY_CHUNKS } from "./zone5";
 
 // The rows a chunk's entry and exit stand on.
 export const SEAM_ROWS = [30, 40, 50] as const;
@@ -16,6 +17,8 @@ export const CHUNK_RULES: ChunkRules = {
 
 const MECHANICAL_THEMES = [
   "city-boundary",
+  "city-outskirts",
+  "familiar-neighbourhood",
   "farmland",
   "forest-paths",
   "freight-terminal",
@@ -24,7 +27,14 @@ const MECHANICAL_THEMES = [
   "street",
   "warehouse-district",
 ];
-const PATROL_THEMES = ["city-boundary", "farmland", "river-crossing", "street"];
+const PATROL_THEMES = [
+  "city-boundary",
+  "city-outskirts",
+  "familiar-neighbourhood",
+  "farmland",
+  "river-crossing",
+  "street",
+];
 
 const COMMON_BINDINGS: Readonly<Record<string, ElementBinding>> = {
   "edge-bottom": { character: "red-edge-bottom" },
@@ -131,9 +141,55 @@ const WOODLAND_BINDINGS: Readonly<Record<string, ElementBinding>> = {
   sky: { character: "street-sky", skin: { art: "woodland-sky", tileset: null } },
 };
 
+const HOME_CITY_BINDINGS: Readonly<Record<string, ElementBinding>> = {
+  ...COMMON_BINDINGS,
+  antagonist: { character: "rabbit-antagonist", scene: null },
+  "boundary-wall": {
+    character: "facade-one-storey",
+    skin: { art: "outskirts-wall", tileset: null },
+  },
+  door: { character: "street-door", skin: { art: "door", tileset: "tiles-street" } },
+  "far-background": { character: "street-city-far", skin: { art: "homecity-far", tileset: null } },
+  "loading-bay": {
+    character: "depot-loading-bay",
+    skin: { art: "homecity-awning", tileset: null },
+  },
+  "mid-background": { character: "street-city-mid", skin: { art: "outskirts-mid", tileset: null } },
+  "near-wall": { character: "facade-one-storey", skin: { art: "outskirts-wall", tileset: null } },
+  sky: { character: "street-sky", skin: { art: "homecity-sky", tileset: null } },
+};
+
 // The themes chunks are drawn in, by key.
 export const THEMES: Readonly<Record<string, ThemePlan>> = {
   "city-boundary": CITY_THEME,
+  "city-outskirts": {
+    backdrops: COMMON_BACKDROPS,
+    bindings: HOME_CITY_BINDINGS,
+    door: "door",
+    looks: { ground: "outskirts-ground", raised: "brick-stack" },
+    tileset: "tiles-homecity",
+  },
+  "familiar-neighbourhood": {
+    backdrops: COMMON_BACKDROPS,
+    bindings: {
+      ...HOME_CITY_BINDINGS,
+      "boundary-wall": {
+        character: "facade-one-storey",
+        skin: { art: "neighbourhood-wall", tileset: null },
+      },
+      "mid-background": {
+        character: "street-city-mid",
+        skin: { art: "neighbourhood-mid", tileset: null },
+      },
+      "near-wall": {
+        character: "facade-one-storey",
+        skin: { art: "neighbourhood-wall", tileset: null },
+      },
+    },
+    door: "door",
+    looks: { ground: "neighbourhood-ground", raised: "stoop-stack" },
+    tileset: "tiles-homecity",
+  },
   farmland: {
     backdrops: COMMON_BACKDROPS,
     bindings: COUNTRYSIDE_BINDINGS,
@@ -814,6 +870,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     theme: "park",
   },
   ...COUNTRYSIDE_CHUNKS,
+  ...HOME_CITY_CHUNKS,
   ...INDUSTRIAL_CHUNKS,
   ...STREET_CHUNKS,
   ...WOODLAND_CHUNKS,
