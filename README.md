@@ -50,11 +50,12 @@ npm run clean
 
 ## Deploying
 
-To deploy by hand, to the account pinned by `account_id` in `wrangler.jsonc`:
-
-```bash
-npx wrangler login
-npm run deploy
-```
+Releases use the scheduled integration queue at :10, :30 and :50 each hour
+(America/Toronto). Each nonempty batch runs the type check, lint, tests and build
+in an isolated container. A failed check stops the release without automatic
+test retries. After a passing gate, the release process pushes the exact commit
+and deploys its gated assets with Wrangler to the account pinned by `account_id`
+in `wrangler.jsonc`. GitHub CI and deployment must both succeed before the release
+is complete. Manual pushes and deployments are not part of this workflow.
 
 To serve a custom domain, add a `routes` entry to `wrangler.jsonc`.
