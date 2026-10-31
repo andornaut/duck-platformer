@@ -1,5 +1,4 @@
 import type { ZonePlan, ZoneRecipe } from "./types";
-import { ZONE_1 } from "./zone1";
 
 // PLACEHOLDER: parkour test zones, until gameplay designs the real zones.
 //
@@ -273,9 +272,7 @@ export const TEST_ZONES: readonly ZonePlan[] = [
 ];
 
 // The zones the map leads to, by key.
-export const ZONES: Readonly<Record<string, ZonePlan>> = {
-  street: ZONE_1,
-};
+export const ZONES: Readonly<Record<string, ZonePlan>> = {};
 
 // The shared difficulty band for every randomized real zone, centred on 2 with variation of 1.
 export const ZONE_DIFFICULTY = { max: 3, min: 1 } as const;
@@ -301,5 +298,14 @@ export const RECIPES: Readonly<Record<string, ZoneRecipe>> = {
     length: { max: 600, min: 360 },
     start: "park-start",
     theme: "park",
+  },
+  street: {
+    difficulty: ZONE_DIFFICULTY,
+    doors: [{ count: 1, room: "test" }],
+    events: [],
+    finish: "street-finish",
+    length: { max: 480, min: 360 },
+    start: "street-start",
+    theme: "street",
   },
 };

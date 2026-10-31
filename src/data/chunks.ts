@@ -1,4 +1,5 @@
 import type { ChunkPlan, ChunkRules, ThemePlan } from "./types";
+import { STREET_CHUNKS } from "./zone1";
 
 // The rows a chunk's entry and exit stand on.
 export const SEAM_ROWS = [30, 40, 50] as const;
@@ -9,18 +10,20 @@ export const CHUNK_RULES: ChunkRules = {
   headroom: 6,
 };
 
+const CITY_THEME: ThemePlan = {
+  backdrops: [
+    { character: "street-sky", parallax: { x: 0, y: 0 }, row: 0 },
+    { character: "street-city-far", parallax: { x: 0.15, y: 0.05 }, row: 0 },
+    { character: "street-city-mid", parallax: { x: 0.4, y: 0.15 }, row: 0 },
+  ],
+  door: "street-door",
+  looks: { ground: "sidewalk", raised: "sidewalk" },
+  tileset: "tiles-street",
+};
+
 // The themes chunks are drawn in, by key.
 export const THEMES: Readonly<Record<string, ThemePlan>> = {
-  "city-boundary": {
-    backdrops: [
-      { character: "street-sky", parallax: { x: 0, y: 0 }, row: 0 },
-      { character: "street-city-far", parallax: { x: 0.15, y: 0.05 }, row: 0 },
-      { character: "street-city-mid", parallax: { x: 0.4, y: 0.15 }, row: 0 },
-    ],
-    door: "street-door",
-    looks: { ground: "sidewalk", raised: "sidewalk" },
-    tileset: "tiles-street",
-  },
+  "city-boundary": CITY_THEME,
   // The park, outdoors in autumn. Chunks name two looks, ground (the lawn, its top at row 50)
   // and raised (the terraces above it), both drawn as art's grass top over turf over soil. Its
   // backdrops, back to front: the sky, the clouds, the city, the far trees and the treetops,
@@ -37,6 +40,7 @@ export const THEMES: Readonly<Record<string, ThemePlan>> = {
     looks: { ground: "grass", raised: "grass" },
     tileset: "tiles-park",
   },
+  street: CITY_THEME,
 };
 
 // The chunks zones are assembled from, by id. Rows are the chunk's own: seams at 50 (the lawn), 40
@@ -62,7 +66,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { col: 28, cols: 24, look: "ground", row: 50, rows: 10 },
       { col: 56, cols: 28, look: "ground", row: 50, rows: 10 },
     ],
-    theme: "city-boundary",
+    theme: ["city-boundary", "street"],
   },
   "city-boundary-finish": {
     backdrops: [
@@ -99,7 +103,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { col: 32, cols: 16, look: "ground", row: 50, rows: 10 },
       { col: 64, cols: 20, look: "ground", row: 50, rows: 10 },
     ],
-    theme: "city-boundary",
+    theme: ["city-boundary", "street"],
   },
   "city-boundary-jumps": {
     backdrops: [{ character: "facade-one-storey", col: 12, cols: 12, row: 34 }],
@@ -115,7 +119,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { col: 44, cols: 10, look: "raised", row: 44, rows: 16 },
       { col: 54, cols: 18, look: "ground", row: 50, rows: 10 },
     ],
-    theme: "city-boundary",
+    theme: ["city-boundary", "street"],
   },
   // The red ceiling leaves room for a short hop over the step, but not a full held jump.
   "city-boundary-low-ceiling": {
@@ -135,7 +139,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { col: 26, cols: 6, look: "raised", row: 49, rows: 11 },
       { col: 32, cols: 40, look: "ground", row: 50, rows: 10 },
     ],
-    theme: "city-boundary",
+    theme: ["city-boundary", "street"],
   },
   "city-boundary-start": {
     backdrops: [{ character: "facade-one-storey", col: 8, cols: 16, row: 34 }],
@@ -162,7 +166,7 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
       { col: 32, cols: 6, look: "raised", row: 49, rows: 11 },
       { col: 38, cols: 34, look: "ground", row: 50, rows: 10 },
     ],
-    theme: "city-boundary",
+    theme: ["city-boundary", "street"],
   },
   // Difficulty 2, up from the lawn (50) to the high terrace (30): a bench (up 2), a terrace (up 4),
   // a bench on it (up 2), the bandstand's roof (up 4, 6 above its base), a step (up 4) and the
@@ -430,4 +434,5 @@ export const CHUNKS: Readonly<Record<string, ChunkPlan>> = {
     ],
     theme: "park",
   },
+  ...STREET_CHUNKS,
 };
