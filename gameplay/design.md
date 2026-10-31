@@ -111,7 +111,7 @@ This is the approved implementation scope for the current change, including the 
 - **Card:** after the animation, hold the final pose beneath a required modal showing the zone, level, cumulative active level time and current-attempt percentage. Back to title is the secondary button on the left; Try again is the primary button on the right. The card stays until a button is pressed; outside taps, back and Escape do not dismiss it
 - **Progress:** a subtle, visible line 2 px high at the top uses the level's theme. It tracks the duck's current position during play and his death point on death, not the furthest point reached. Retrying starts the percentage at zero
 - **Retry:** Try again starts the current level from its checkpoint. Back to title opens the title screen. There is no permadeath
-- **Sequence:** lethal contact starts a small recoil, then the duck falls to support and ends deflated in a sitting pose with his feet underneath him. The level and camera freeze at the death context while the duck plays a dedicated death animation, then holds its final pose for the card
+- **Sequence:** lethal contact starts a small recoil, then the duck falls to support, squashes more deeply on landing and makes a small upward bounce into a deflated sitting pose with his feet hidden. The level and camera freeze at the death context while the duck plays a dedicated death animation, then holds its final pose for the card
 - **Storage:** active level time uses a separate stats save. Restart clears progress only and does not wipe stats
 
 ### Chunks
