@@ -27,6 +27,21 @@ const inside = (rows: number, cols: number, rect: TileRect) =>
 // track (its rectangle swept along its motion's axis, its reaction's range and its hops).
 function thingOf(catalogue: Catalogue, instance: Instance) {
   const object = objectLayout(1, catalogue, {}, undefined, instance);
+  if (object.behaviour) {
+    const { axis, distance, states } = object.behaviour;
+    const dx = axis === "x" ? distance : 0;
+    const dy = axis === "y" ? distance : 0;
+    return {
+      collision: object.collision,
+      moves: distance !== 0 && Object.values(states).some((node) => node.motion.kind === "move"),
+      span: {
+        bottom: object.origin.y + object.height + Math.max(0, dy),
+        left: object.origin.x + Math.min(0, dx),
+        right: object.origin.x + object.width + Math.max(0, dx),
+        top: object.origin.y + Math.min(0, dy),
+      },
+    };
+  }
   const { direction, distance, hopHeight } = object.motion;
   const moves = object.motion.algorithm !== "static" || object.reaction.kind !== "none";
   const reach = distance + (object.reaction.kind === "none" ? 0 : object.reaction.range);

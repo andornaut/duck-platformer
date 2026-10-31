@@ -109,6 +109,31 @@ describe("the seam rule", () => {
       },
       "entry: test-mover at col 10 row 47 moves through the seam",
     ],
+    [
+      "a graph-driven mover's path through the seam",
+      {
+        objects: [
+          {
+            behaviour: {
+              axis: "x",
+              distance: -8,
+              initial: "move",
+              states: {
+                move: {
+                  animation: null,
+                  motion: { direction: -1, kind: "move", speed: 1 },
+                  transitions: [],
+                },
+              },
+            },
+            character: "test-mover",
+            col: 10,
+            row: 47,
+          },
+        ],
+      },
+      "entry: test-mover at col 10 row 47 moves through the seam",
+    ],
     ["a seam off the seam rows", { exit: { row: 45 as 50 } }, "exit row 45 is not a seam row"],
   ])("refuses %s", (_, extra, problem) => {
     expect(chunkProblems(FIXTURE_LIBRARY, CATALOGUE, seamCase(extra))).toContain(problem);
