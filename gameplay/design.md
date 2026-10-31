@@ -152,7 +152,7 @@ The park is a prototype for randomized levels, not V1's second level. The identi
 - **Contact:** the dog is always lethal on contact, including during crouch and rest, with a thin red contact outline
 - **Cycle:** patrol, crouch, rush, rest, then patrol again. A nearby duck on the same ground triggers the crouch; the rush direction locks when crouching starts, and the rush stays inside the patrol area
 - **Dialogue:** the first introduction has three lines: the dog says the ferret asked him to stop the duck; the duck says he is going home; the dog tells him to get past. The player-facing wording lives in the text data files, with Skip available
-- **Timing:** the dog uses the same timing across both planned levels of the first zone; their layouts vary. The encounter draft covers only the first encounter in the first level
+- **Timing:** the dog uses the same timing across both planned levels of the first zone; their layouts vary. The first encounter is in the first level
 
 ### Rooms
 
@@ -163,7 +163,7 @@ The park is a prototype for randomized levels, not V1's second level. The identi
 
 ### Dialogue
 
-- **Box:** a fixed box along the bottom, not a speech bubble, for a conversation between two characters, sometimes three. It shows the speaker's 64 px portrait with a name tab, and one paragraph of at most 3 lines. A paragraph that runs to a 4th line is reworded
+- **Box:** a fixed box along the top, not a speech bubble, for a conversation between two characters, sometimes three. It shows the speaker's 64 px portrait with a name tab inside the panel, and one paragraph of at most 3 lines. A paragraph that runs to a 4th line is reworded
 - **Forward:** a tap or keypress moves to the next box. There is no back and no timer
 - **Restarts:** after a level restart, the level's dialogue plays again. The first dog introduction is once per attempt
 - **Skip:** every dialogue has a skip button at the top right that skips the conversation. Skip runs ahead to the next choice and stops there; once it is answered, Skip works again
