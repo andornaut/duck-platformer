@@ -1,7 +1,7 @@
 import type { Rect } from "../data/types";
 
 // Standard menu action geometry, shared by start-screen and card buttons.
-export const TEXT_BUTTON = { gap: 8, height: 48, labelDy: 13 } as const;
+export const TEXT_BUTTON = { gap: 8, height: 48, inset: 16, labelDy: 13 } as const;
 
 // A mark drawn just before a button's label, such as Resume's play triangle: its width, and the
 // gap from it to the label's ink.

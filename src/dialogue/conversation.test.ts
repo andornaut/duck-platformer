@@ -6,10 +6,13 @@ import { TOUCH } from "../data/touch";
 import type { DialoguePlan, DialogueSpeaker, GameText } from "../data/types";
 import { DIALOGUE_SCREEN } from "../layout/dialogueScreen";
 import {
+  dialogueChoice,
+  dialogueChoiceKey,
   dialogueKeyAction,
   dialogueLines,
   dialogueParagraphs,
   type DialoguePress,
+  dialogueProgress,
   dialogueTapAction,
   moveDialoguePress,
 } from "./conversation";
@@ -82,23 +85,34 @@ describe("dialogueLines", () => {
 
 describe("dialogueKeyAction", () => {
   it.each([
-    { action: "advance", focused: false, key: "Enter", repeat: false },
-    { action: "advance", focused: false, key: "p", repeat: false },
-    { action: "advance", focused: false, key: "Escape", repeat: false },
-    { action: "focusSkip", focused: false, key: "Tab", repeat: false },
-    { action: "skip", focused: true, key: "Enter", repeat: false },
-    { action: "skip", focused: true, key: " ", repeat: false },
-    { action: undefined, focused: true, key: "Enter", repeat: true },
-    { action: undefined, focused: false, key: "Shift", repeat: false },
-  ])("$key with focus $focused and repeat $repeat: $action", ({ action, focused, key, repeat }) => {
-    expect(dialogueKeyAction(focused, { key, repeat })).toBe(action);
-  });
+    { action: "advance", focus: undefined, key: "Enter", repeat: false },
+    { action: "advance", focus: undefined, key: "p", repeat: false },
+    { action: "advance", focus: undefined, key: "Escape", repeat: false },
+    { action: "nextFocus", focus: undefined, key: "Tab", repeat: false },
+    { action: "nextFocus", focus: undefined, key: "ArrowRight", repeat: false },
+    { action: "skip", focus: "skip", key: "Enter", repeat: false },
+    { action: "advance", focus: "continue", key: "Enter", repeat: false },
+    { action: "skip", focus: "skip", key: " ", repeat: false },
+    { action: undefined, focus: "skip", key: "Enter", repeat: true },
+    { action: undefined, focus: undefined, key: "Shift", repeat: false },
+  ] as const)(
+    "$key with focus $focus and repeat $repeat: $action",
+    ({ action, focus, key, repeat }) => {
+      expect(dialogueKeyAction(focus, { key, repeat, shiftKey: false })).toBe(action);
+    },
+  );
 });
 
 describe("dialogueTapAction", () => {
   const hit = { height: 48, width: 80, x: 100, y: 0 };
-  const ordinary: DialoguePress = { at: { x: 10, y: 10 }, cancelled: false, id: 1, skip: false };
-  const skip: DialoguePress = { ...ordinary, at: { x: 120, y: 10 }, skip: true };
+  const controls = [{ art: hit, hit, key: "skip" as const }];
+  const ordinary: DialoguePress = {
+    at: { x: 10, y: 10 },
+    cancelled: false,
+    control: undefined,
+    id: 1,
+  };
+  const skip: DialoguePress = { ...ordinary, at: { x: 120, y: 10 }, control: "skip" };
   const pointer = { id: ordinary.id, wasCanceled: false, ...ordinary.at };
 
   it.each([
@@ -124,7 +138,7 @@ describe("dialogueTapAction", () => {
     },
     { action: undefined, name: "Skip press released outside", press: skip, release: pointer },
   ])("$name", ({ action, press, release }) => {
-    expect(dialogueTapAction(hit, TOUCH.tapMaxDistance, press, release)).toBe(action);
+    expect(dialogueTapAction(controls, TOUCH.tapMaxDistance, press, release)).toBe(action);
   });
 
   it("does not advance when a drag returns to its starting point", () => {
@@ -133,6 +147,77 @@ describe("dialogueTapAction", () => {
       { ...ordinary.at, x: ordinary.at.x + TOUCH.tapMaxDistance + 1 },
       ordinary,
     );
-    expect(dialogueTapAction(hit, TOUCH.tapMaxDistance, dragged, pointer)).toBeUndefined();
+    expect(dialogueTapAction(controls, TOUCH.tapMaxDistance, dragged, pointer)).toBeUndefined();
   });
+});
+
+const choice = {
+  options: [
+    { id: "wait", label: "wait-label" },
+    { id: "go", label: "go-label" },
+  ],
+  prompt: "question",
+};
+const choiceWords = { "go-label": "Go", question: "What now?", "wait-label": "Wait" };
+
+describe("terminal dialogue choices", () => {
+  it("resolves prompt and labels without inventing an answer", () => {
+    expect(dialogueChoice(choiceWords, choice)).toEqual({
+      options: [
+        { id: "wait", label: choiceWords["wait-label"] },
+        { id: "go", label: choiceWords["go-label"] },
+      ],
+      prompt: choiceWords.question,
+    });
+  });
+
+  it.each([
+    { ...choice, options: choice.options.slice(0, 1) },
+    { ...choice, options: [...choice.options, ...choice.options] },
+    { ...choice, options: [choice.options[0]!, choice.options[0]!] },
+    { ...choice, prompt: "missing" },
+    { ...choice, options: [choice.options[0]!, { id: "other", label: "missing" }] },
+  ])("rejects incomplete or ambiguous choices", (invalid) => {
+    expect(() => dialogueChoice(choiceWords, invalid)).toThrow();
+  });
+
+  it.each(["advance", "skip"] as const)(
+    "%s at the last paragraph opens a required choice",
+    (action) => {
+      expect(dialogueProgress(choice, plan.lines.length, plan.lines.length - 1, action)).toEqual({
+        choice,
+        kind: "choice",
+      });
+      expect(dialogueProgress(undefined, plan.lines.length, plan.lines.length - 1, action)).toEqual(
+        { kind: "complete" },
+      );
+    },
+  );
+
+  it("Skip reaches the required choice while Continue keeps the next paragraph", () => {
+    const count = plan.lines.length + 1;
+    expect(dialogueProgress(choice, count, 0, "advance")).toEqual({ index: 1, kind: "paragraph" });
+    expect(dialogueProgress(choice, count, 0, "skip")).toEqual({ choice, kind: "choice" });
+  });
+
+  it.each([
+    { focus: undefined, key: "Enter", repeat: false, selection: undefined, to: undefined },
+    { focus: undefined, key: " ", repeat: false, selection: undefined, to: undefined },
+    { focus: undefined, key: "Tab", repeat: false, selection: undefined, to: "wait" },
+    { focus: "wait", key: "Enter", repeat: false, selection: "wait", to: "wait" },
+    { focus: "wait", key: "Enter", repeat: true, selection: undefined, to: "wait" },
+    { focus: "wait", key: "Escape", repeat: false, selection: undefined, to: "wait" },
+    { focus: "wait", key: "p", repeat: false, selection: undefined, to: "wait" },
+  ])(
+    "$key with focus $focus selects only through explicit activation",
+    ({ focus, key, repeat, selection, to }) => {
+      expect(
+        dialogueChoiceKey(
+          choice.options.map(({ id }) => id),
+          focus,
+          { key, repeat, shiftKey: false },
+        ),
+      ).toEqual({ focus: to, selection });
+    },
+  );
 });

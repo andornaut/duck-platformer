@@ -17,6 +17,7 @@ import { setupPhoneApp } from "./pwa";
 import { installOffer } from "./pwa/installOffer";
 import { BootScene } from "./scenes/BootScene";
 import { CelebrationScene } from "./scenes/CelebrationScene";
+import { DialogueChoiceScene } from "./scenes/DialogueChoiceScene";
 import { DialogueScene } from "./scenes/DialogueScene";
 import { MapScene } from "./scenes/MapScene";
 import { PauseScene } from "./scenes/PauseScene";
@@ -61,6 +62,7 @@ function startGame(): void {
       SettingsScene,
       RestartScene,
       DialogueScene,
+      DialogueChoiceScene,
     ],
     // WebGL only: the build's Phaser has no Canvas renderer (src/tools/phaserBuild.ts).
     type: WEBGL,

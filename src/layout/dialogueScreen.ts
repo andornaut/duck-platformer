@@ -1,30 +1,55 @@
-import { SCREEN } from "../data/screen";
-import type { Point, Rect } from "../data/types";
+import type { DialogueSpeaker, Point, Rect } from "../data/types";
+import type { DialogueControl } from "../dialogue/conversation";
 import { TEXT_BUTTON } from "./buttonLabel";
-import { labelledButton } from "./restartCard";
+import { type LabelledButton, labelledButton } from "./restartCard";
 
-const EDGE = 8;
-const CONTENT_INSET = 16;
+const BUTTON_WIDTH = 192;
+const NAME_TAB_Y = 13;
 
-// Dialogue art's fixed top panel, portrait and three lines at the shared font scale.
+// One top paragraph panel. Portraits are repositioned by speaker; neither asset is mirrored.
 export const DIALOGUE_SCREEN = {
   box: { height: 96, width: 640, x: 40, y: 8 } satisfies Rect,
-  forward: { x: 653, y: 75 } satisfies Point,
-  name: { x: 130, y: 10 } satisfies Point,
-  portrait: { x: 50, y: 24 } satisfies Point,
-  portraitFrame: { x: 48, y: 22 } satisfies Point,
-  text: { lines: 3, pitch: 20, scale: 2, width: 504, x: 128, y: 42 },
+  text: { lines: 3, pitch: 20, scale: 2, width: 504, y: 42 },
 } as const;
 
-export function dialogueNameTab(nameWidth: number): Rect {
-  return { height: 20, width: nameWidth + 12, x: 124, y: 13 };
+export function dialogueSpeakerLayout(side: DialogueSpeaker["side"]) {
+  const left = side === "left";
+  return {
+    name: { x: left ? 130 : 90, y: 10 } satisfies Point,
+    nameTabX: left ? 124 : 84,
+    portrait: { x: left ? 50 : 606, y: 24 } satisfies Point,
+    portraitFrame: { x: left ? 48 : 604, y: 22 } satisfies Point,
+    textX: left ? 128 : 88,
+  };
 }
 
-// Skip is an ordinary secondary action, ending one view-edge inset from the top-right.
-export function dialogueSkipButton(labelWidth: number) {
-  const width = Math.max(TEXT_BUTTON.height, labelWidth + 2 * CONTENT_INSET);
-  return labelledButton(
-    { height: TEXT_BUTTON.height, width, x: SCREEN.width - EDGE - width, y: EDGE },
-    TEXT_BUTTON.labelDy,
+export function dialogueNameTab(side: DialogueSpeaker["side"], nameWidth: number): Rect {
+  return {
+    height: 20,
+    width: nameWidth + 12,
+    x: dialogueSpeakerLayout(side).nameTabX,
+    y: NAME_TAB_Y,
+  };
+}
+
+// Footer below the panel: secondary Skip left, primary Continue right, with equal face sizes.
+export function dialogueButtons(
+  labels: Readonly<Record<DialogueControl, number>>,
+): Readonly<Record<DialogueControl, LabelledButton>> {
+  const width = Math.max(
+    BUTTON_WIDTH,
+    labels.continue + 2 * TEXT_BUTTON.inset,
+    labels.skip + 2 * TEXT_BUTTON.inset,
   );
+  const right = DIALOGUE_SCREEN.box.x + DIALOGUE_SCREEN.box.width;
+  const groupWidth = 2 * width + TEXT_BUTTON.gap;
+  if (groupWidth > DIALOGUE_SCREEN.box.width) {
+    throw new Error("Dialogue action labels do not fit the footer");
+  }
+  const button = (x: number) =>
+    labelledButton({ height: TEXT_BUTTON.height, width, x, y: 112 }, TEXT_BUTTON.labelDy);
+  return {
+    continue: button(right - width),
+    skip: button(right - groupWidth),
+  };
 }

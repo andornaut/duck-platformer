@@ -1,13 +1,15 @@
-import { containsPoint } from "@andornaut/game-kit/rect";
 import type { BitmapFont } from "@andornaut/game-kit/text/bitmapFont";
 import { bitmapMeasure, fitsRoom, fittingText } from "@andornaut/game-kit/text/textFit";
 
-import type { DialoguePlan, DialogueSpeaker, GameText, Point, Rect } from "../data/types";
+import type { DialogueChoice, DialoguePlan, DialogueSpeaker, GameText, Point } from "../data/types";
+import { type PressArea, pressedArea } from "../layout/hitAreas";
+import { focusKeyAction, stepFocus } from "../pause/focusInput";
 
 export interface DialogueParagraph {
   readonly colour: DialogueSpeaker["colour"];
   readonly name: string;
   readonly portrait: string;
+  readonly side: DialogueSpeaker["side"];
   readonly text: string;
 }
 
@@ -46,27 +48,34 @@ export function dialogueLines(
   return fitted.lines;
 }
 
-export type DialogueAction = "advance" | "focusSkip" | "skip";
+export type DialogueControl = "continue" | "skip";
+export type DialogueAction = "advance" | "nextFocus" | "previousFocus" | "skip";
 
-// Tab focuses Skip; a new key advances, or activates Skip with Enter or Space while focused.
+// Explicit focus navigation selects between Continue and Skip. Enter without focus advances.
 export function dialogueKeyAction(
-  skipFocused: boolean,
-  { key, repeat }: Pick<KeyboardEvent, "key" | "repeat">,
+  focus: DialogueControl | undefined,
+  { key, repeat, shiftKey }: Pick<KeyboardEvent, "key" | "repeat" | "shiftKey">,
 ): DialogueAction | undefined {
   if (repeat || ["Alt", "Control", "Meta", "Shift"].includes(key)) {
     return undefined;
   }
   if (key === "Tab") {
-    return "focusSkip";
+    return shiftKey ? "previousFocus" : "nextFocus";
   }
-  return skipFocused && ["Enter", " "].includes(key) ? "skip" : "advance";
+  if (["ArrowDown", "ArrowRight"].includes(key)) {
+    return "nextFocus";
+  }
+  if (["ArrowUp", "ArrowLeft"].includes(key)) {
+    return "previousFocus";
+  }
+  return focus === "skip" && ["Enter", " "].includes(key) ? "skip" : "advance";
 }
 
 export interface DialoguePress {
   readonly at: Point;
   readonly cancelled: boolean;
   readonly id: number;
-  readonly skip: boolean;
+  readonly control: DialogueControl | undefined;
 }
 
 // Leaving the tap radius cancels the press even when it later returns to its starting point.
@@ -81,19 +90,88 @@ export function moveDialoguePress(
   };
 }
 
-// A fresh completed tap advances. Skip must be pressed and released inside its press area.
+// A fresh completed tap advances. A button must be pressed and released on the same action.
 export function dialogueTapAction(
-  skipHit: Rect,
+  controls: readonly PressArea<DialogueControl>[],
   tapDistance: number,
   press: DialoguePress | undefined,
   pointer: Point & { readonly id: number; readonly wasCanceled: boolean },
-): Exclude<DialogueAction, "focusSkip"> | undefined {
+): "advance" | "skip" | undefined {
   if (!press || pointer.id !== press.id || pointer.wasCanceled) {
     return undefined;
   }
   if (moveDialoguePress(tapDistance, pointer, press).cancelled) {
     return undefined;
   }
-  const skip = containsPoint(skipHit, pointer.x, pointer.y);
-  return press.skip ? (skip ? "skip" : undefined) : skip ? undefined : "advance";
+  const released = pressedArea(controls, pointer);
+  if (released !== press.control) {
+    return undefined;
+  }
+  return released === "skip" ? "skip" : "advance";
+}
+
+export interface ResolvedDialogueChoice {
+  readonly options: readonly { readonly id: string; readonly label: string }[];
+  readonly prompt: string;
+}
+
+// A terminal choice has two or three explicit answers, with no default or implicit effects.
+export function dialogueChoice(
+  lines: Readonly<Record<string, string>>,
+  choice: DialogueChoice,
+): ResolvedDialogueChoice {
+  const prompt = lines[choice.prompt];
+  const ids = choice.options.map(({ id }) => id);
+  if (
+    !prompt?.trim() ||
+    choice.options.length < 2 ||
+    choice.options.length > 3 ||
+    ids.some((id) => !id.trim()) ||
+    new Set(ids).size !== ids.length
+  ) {
+    throw new Error("Invalid terminal dialogue choice");
+  }
+  return {
+    options: choice.options.map(({ id, label }) => {
+      const words = lines[label];
+      if (!words?.trim()) {
+        throw new Error(`Missing dialogue choice label ${label}`);
+      }
+      return { id, label: words };
+    }),
+    prompt,
+  };
+}
+
+// A required choice never selects an answer until it has been explicitly focused and activated.
+export function dialogueChoiceKey(
+  ids: readonly string[],
+  focus: string | undefined,
+  event: Pick<KeyboardEvent, "key" | "repeat" | "shiftKey">,
+): { readonly focus: string | undefined; readonly selection: string | undefined } {
+  const action = focusKeyAction(event.key, event.shiftKey, event.repeat);
+  if (action === "next" || action === "previous") {
+    return { focus: stepFocus(ids, focus, action), selection: undefined };
+  }
+  return {
+    focus,
+    selection: action === "press" && focus !== undefined && ids.includes(focus) ? focus : undefined,
+  };
+}
+
+// Skip and the last paragraph reach the same terminal state. A choice is returned for display,
+// never converted into an answer or a completed conversation.
+export function dialogueProgress(
+  choice: DialogueChoice | undefined,
+  paragraphCount: number,
+  index: number,
+  action: "advance" | "skip",
+):
+  | { readonly kind: "paragraph"; readonly index: number }
+  | { readonly kind: "choice"; readonly choice: DialogueChoice }
+  | { readonly kind: "complete" } {
+  if (action === "advance" && index + 1 < paragraphCount) {
+    return { index: index + 1, kind: "paragraph" };
+  }
+  return choice === undefined ? { kind: "complete" } : { choice, kind: "choice" };
 }

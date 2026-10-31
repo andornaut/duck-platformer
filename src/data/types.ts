@@ -294,8 +294,16 @@ export interface DialogueLine {
   readonly speaker: string;
 }
 
-// A linear conversation, played in order with no choices or effects.
+// A terminal required choice. Prompt and labels are TEXT.lines keys; ids are returned to the
+// opener without applying actions, flags or a default answer.
+export interface DialogueChoice {
+  readonly options: readonly { readonly id: string; readonly label: string }[];
+  readonly prompt: string;
+}
+
+// A conversation played one paragraph at a time, optionally ending with a required choice.
 export interface DialoguePlan {
+  readonly choice?: DialogueChoice;
   readonly lines: readonly DialogueLine[];
 }
 
